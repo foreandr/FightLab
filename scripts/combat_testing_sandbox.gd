@@ -19,13 +19,14 @@ var camera_dragging := false
 var camera_mouse_origin := Vector2.ZERO
 var camera_initialized := false
 var sequence=preload("res://scripts/motion_sequence.gd").new()
-var chain_menu: Array[OptionButton]=[]
+var chain_data: Array[String]=[]
+var chain_chips: Array[Control]=[]
+var chain_remove_buttons: Array[Button]=[]
 var chain_panel: HBoxContainer
 var dash_direction_menu: OptionButton
 const MAX_CHAIN_STEPS := 32
 var chain_steps: HBoxContainer
 var chain_scroll: ScrollContainer
-var add_step_button: Button
 var remove_step_button: Button
 var chain_count: Label
 
@@ -95,9 +96,6 @@ func build_ui() -> void:
 	chain_panel.add_theme_constant_override("separation",6)
 	column.add_child(chain_panel)
 	chain_count=menu_label(chain_panel,"Chain",14)
-	add_step_button=button(chain_panel,"+",add_chain_step)
-	add_step_button.custom_minimum_size=Vector2(36,32)
-	add_step_button.tooltip_text="Add an animation to the end of the combo"
 	remove_step_button=button(chain_panel,"−",remove_chain_step)
 	remove_step_button.custom_minimum_size=Vector2(36,32)
 	remove_step_button.tooltip_text="Remove the last animation"
@@ -109,7 +107,7 @@ func build_ui() -> void:
 	chain_steps=HBoxContainer.new()
 	chain_steps.add_theme_constant_override("separation",6)
 	chain_scroll.add_child(chain_steps)
-	append_chain_slot(0)
+	refresh_chain_options()
 	var options:=HBoxContainer.new()
 	options.alignment=BoxContainer.ALIGNMENT_CENTER
 	options.add_theme_constant_override("separation",12)
@@ -188,7 +186,7 @@ func settings_changed() -> void:
 	charge_toggle.tooltip_text="Held charge is available for grounded Fireball, Cinder Slash and Freezing Ray. Jump casts are quick; Flash Step and uppercut include their own charge."
 	hint_label.text="Spawn distance is center to center. "
 	if motion:
-		hint_label.text="+ adds steps. Attacks work in the air. Place an attack after Twist to perform it during the turn."
+		hint_label.text="Use + beside an animation to add it. Attacks work in the air; an attack after Twist plays during the turn."
 	elif entry.kind in ["melee","uppercut"]:
 		hint_label.text+="Suggested melee distance: %.2f m. Distant strikes can miss."%float(entry.distance)
 	elif jump_toggle.button_pressed:
@@ -225,79 +223,57 @@ func partner_shield_style() -> String:
 	return ""
 
 func chosen_steps() -> Array[String]:
-	var steps: Array[String]=[]
-	for slot in chain_menu:
-		if slot.selected==0:break
-		steps.append(sequence.OPTIONS[slot.selected])
-	return steps
+	return chain_data.duplicate()
+
+func can_append_animation(step: String) -> bool:
+	var grounded:=true
+	for existing in chain_data:grounded=sequence.state_after(existing,grounded)
+	return chain_data.size()<MAX_CHAIN_STEPS and sequence.allowed_for_state(step,grounded)
 
 func refresh_chain_options() -> void:
 	var grounded:=true
-	var ended:=false
-	for slot in chain_menu:
-		slot.disabled=ended
-		slot.tooltip_text="Grounded: motion or attack" if grounded else "Airborne: attacks, Flip, Twist or Land"
-		for i in sequence.OPTIONS.size():
-			var allowed: bool=sequence.allowed_for_state(sequence.OPTIONS[i],grounded)
-			slot.set_item_disabled(i,not allowed)
-			slot.set_item_tooltip(i,"" if allowed else ("Requires airborne — add Jump first" if grounded else "Requires grounded — add Land first"))
-		if ended or not sequence.allowed_for_state(sequence.OPTIONS[slot.selected],grounded):
-			slot.select(0)
-		var step: String=sequence.OPTIONS[slot.selected]
-		if step=="End":ended=true
+	var valid_steps: Array[String]=[]
+	for step in chain_data:
+		if step=="End" or not sequence.OPTIONS.has(step) or not sequence.allowed_for_state(step,grounded):break
+		valid_steps.append(step)
 		grounded=sequence.state_after(step,grounded)
-	chain_count.text="Chain (%d)"%chain_menu.size()
-	add_step_button.disabled=chosen_steps().size()>=MAX_CHAIN_STEPS
-	remove_step_button.disabled=chain_menu.size()<=1
-
-func append_chain_slot(choice: int=0) -> void:
-	var row:=HBoxContainer.new()
-	chain_steps.add_child(row)
-	if not chain_menu.is_empty():menu_label(row,"→",15)
-	var slot:=OptionButton.new()
-	slot.custom_minimum_size=Vector2(115,30)
-	for text_ in sequence.OPTIONS:slot.add_item(text_)
-	slot.select(choice)
-	slot.focus_mode=Control.FOCUS_NONE
-	slot.item_selected.connect(func(_index):settings_changed())
-	row.add_child(slot)
-	chain_menu.append(slot)
-
-func resize_chain(count: int) -> void:
-	count=clampi(count,1,MAX_CHAIN_STEPS)
-	while chain_menu.size()>count:
-		var slot: OptionButton=chain_menu.pop_back()
-		var row:=slot.get_parent()
-		chain_steps.remove_child(row)
-		row.queue_free()
-	while chain_menu.size()<count:append_chain_slot()
-
-func add_chain_step() -> void:
-	var steps:=chosen_steps()
-	if steps.size()>=MAX_CHAIN_STEPS:return
-	var grounded:=true
-	for step in steps:grounded=sequence.state_after(step,grounded)
-	# Replace unused End placeholders so + always creates an editable active step.
-	resize_chain(steps.size()+1)
-	chain_menu[-1].select(1 if grounded else 6)
-	settings_changed()
-	reveal_last_chain_step()
+	chain_data=valid_steps
+	for child in chain_steps.get_children():
+		chain_steps.remove_child(child)
+		child.queue_free()
+	chain_chips.clear()
+	chain_remove_buttons.clear()
+	if chain_data.is_empty():
+		menu_label(chain_steps,"Use + beside an animation to build your chain",14)
+	for i in chain_data.size():
+		if i>0:menu_label(chain_steps,"→",15)
+		var chip:=HBoxContainer.new()
+		chain_steps.add_child(chip)
+		menu_label(chip,"%d. %s"%[i+1,chain_data[i]],15)
+		var remove:=button(chip,"×",func():remove_chain_step(i))
+		remove.custom_minimum_size=Vector2(30,30)
+		remove.tooltip_text="Remove "+chain_data[i]
+		chain_chips.append(chip)
+		chain_remove_buttons.append(remove)
+	chain_count.text="Chain (%d)"%chain_data.size()
+	remove_step_button.disabled=chain_data.is_empty()
 
 func reveal_last_chain_step() -> void:
 	await get_tree().process_frame
-	if is_inside_tree() and not chain_menu.is_empty():
-		chain_scroll.ensure_control_visible(chain_menu[-1])
+	if is_inside_tree() and not chain_chips.is_empty():
+		chain_scroll.ensure_control_visible(chain_chips[-1])
 
-func remove_chain_step() -> void:
-	if chain_menu.size()<=1:return
-	resize_chain(chain_menu.size()-1)
+func remove_chain_step(index: int=-1) -> void:
+	if chain_data.is_empty():return
+	if index<0:index=chain_data.size()-1
+	if index>=chain_data.size():return
+	chain_data.remove_at(index)
 	settings_changed()
 
 func set_chain(steps: Array) -> void:
 	move_menu.select(0)
-	resize_chain(maxi(1,steps.size()))
-	for i in chain_menu.size():
-		chain_menu[i].select(maxi(0,sequence.OPTIONS.find(steps[i])) if i<steps.size() else 0)
+	chain_data.clear()
+	for step in steps.slice(0,MAX_CHAIN_STEPS):chain_data.append(str(step))
 	settings_changed()
 
 func prepare_setup(run: bool) -> void:
@@ -393,8 +369,6 @@ func reframe_camera() -> void:
 func camera_text_editing() -> bool:
 	if get_viewport().gui_get_focus_owner() is LineEdit or move_menu.get_popup().visible or block_menu.get_popup().visible or dash_direction_menu.get_popup().visible:
 		return true
-	for slot in chain_menu:
-		if slot.get_popup().visible:return true
 	return false
 
 func _process(delta: float) -> void:

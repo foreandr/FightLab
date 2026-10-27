@@ -28,7 +28,7 @@ func run() -> void:
 	await frames()
 	var animations=current_scene
 	check(animations.editor_section=="Animations" and animations.title_label.text.contains("ANIMATIONS"),"Animations must open the current animation editor with its new name")
-	check(animations.chosen_steps().is_empty() and animations.chain_menu.size()==1,"Animations should open with a blank editable chain")
+	check(animations.chosen_steps().is_empty() and animations.chain_chips.is_empty(),"Animations should open with a blank chain")
 	for node in animations.find_children("*","Button",true,false):
 		check(node.text not in ["Quick dash","Dash only","Dash → Knee","Jump → Flip → Twist"],"Removed controls must not remain in the editor")
 	animations.set_chain(["Dash","Jump","Flip","Land"])

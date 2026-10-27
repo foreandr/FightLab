@@ -8,6 +8,7 @@ var preview_heading: Label
 var preview_note: Label
 var selection_status: Label
 var library_buttons: Dictionary={}
+var library_add_buttons: Dictionary={}
 var category_buttons: Dictionary={}
 var group_buttons: Dictionary={}
 var selected_group := "Motion"
@@ -60,7 +61,7 @@ func build_ui() -> void:
 		var tab:=button(tabs,group.to_upper(),func():select_group(group))
 		tab.custom_minimum_size=Vector2(160,34)
 		group_buttons[group]=tab
-	selection_status=menu_label(header,"Hover to preview · Click to add",14)
+	selection_status=menu_label(header,"Hover to preview · + adds to chain",14)
 	selection_status.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	selection_status.offset_left=-650
 	selection_status.offset_right=-20
@@ -109,7 +110,7 @@ func build_ui() -> void:
 	preview_column.offset_bottom=-8
 	preview_panel.add_child(preview_column)
 	preview_heading=menu_label(preview_column,"Animation preview",20)
-	preview_note=menu_label(preview_column,"Looping preview · Click an animation to add it",13)
+	preview_note=menu_label(preview_column,"Looping preview · + adds to chain",13)
 	chain_backdrop=panel(ui,Vector4(0,0,0,0),true)
 	chain_panel.reparent(ui)
 	chain_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -142,7 +143,7 @@ func build_ui() -> void:
 	button(actions,"Home [Esc]",return_home)
 	result_label.reparent(footer)
 	resources_label.reparent(footer)
-	menu_label(footer,"Hover previews live · Click adds · WASD / middle mouse / wheel camera controls",13)
+	menu_label(footer,"Hover previews live · + adds to chain · × removes · WASD / middle mouse / wheel camera controls",13)
 	populate_group("Motion")
 
 func panel(parent: Node,bounds: Vector4,wide:=false) -> Panel:
@@ -183,23 +184,42 @@ func select_category(category: String) -> void:
 	selected_category=category
 	clear_list(animation_list)
 	library_buttons.clear()
+	library_add_buttons.clear()
 	category_heading.text=category
 	for name_ in category_buttons:
 		category_buttons[name_].modulate=Color("f2ce85") if name_==category else Color.WHITE
 	for entry in Library.entries():
 		if entry.group!=selected_group or entry.category!=category:continue
-		var node:=button(animation_list,entry.title,func():add_library_animation(entry))
-		node.custom_minimum_size=Vector2(240,42)
+		var row:=HBoxContainer.new()
+		animation_list.add_child(row)
+		var node:=button(row,entry.title,func():preview_animation(entry))
+		node.custom_minimum_size=Vector2(190,42)
+		node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		node.add_theme_font_size_override("font_size",15)
 		node.mouse_entered.connect(func():preview_animation(entry))
 		node.focus_entered.connect(func():preview_animation(entry))
-		node.tooltip_text="Hover to preview. Click to add to the chain."
+		node.tooltip_text="Hover or click to preview. Use + to add to the chain."
 		library_buttons[entry.step]=node
+		var add:=button(row,"+",func():add_library_animation(entry))
+		add.custom_minimum_size=Vector2(38,42)
+		add.mouse_entered.connect(func():preview_animation(entry))
+		library_add_buttons[entry.step]=add
+	refresh_library_add_buttons()
 	if not library_buttons.is_empty():
 		for entry in Library.entries():
 			if entry.group==selected_group and entry.category==category:
 				preview_animation(entry)
 				break
+
+func refresh_chain_options() -> void:
+	super.refresh_chain_options()
+	refresh_library_add_buttons()
+
+func refresh_library_add_buttons() -> void:
+	for step in library_add_buttons:
+		var add: Button=library_add_buttons[step]
+		add.disabled=not can_append_animation(step)
+		add.tooltip_text="Add "+step+" to the chain" if not add.disabled else ("Chain is full" if chain_data.size()>=MAX_CHAIN_STEPS else ("Add Jump first" if step in ["Flip","Twist","Land"] else "Add Land before a grounded move"))
 
 func preview_animation(entry: Dictionary) -> void:
 	selected_entry=entry.duplicate()

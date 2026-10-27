@@ -16,7 +16,7 @@ Set-Location C:\Users\forea\FightLab
 .\run.ps1
 ```
 
-The game opens on **Home: Story / Fight / Create**. Story is a placeholder;
+The game opens in **borderless fullscreen** on **Home: Story / Fight / Create**. Story is a placeholder;
 Fight opens the current three-way arena. **Create → Animations** opens the
 existing motion/animation editor, and **Create → Spells** opens focused casting
 and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
@@ -24,11 +24,14 @@ and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Hom
 Animations starts with **Motion / Attack** at the top. Choose a category on the
 left, and hover an animation to loop its actual action on the real arena fighter.
 The arena is live immediately on opening Create; there is no separate preview
-model or display viewport. Click to add the action to your chain.
+model or display viewport. Click an animation name to preview it; use the **+**
+beside that animation to append it to your chain.
 Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
 Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
-Throwing. Motion and Attack share one combined chain. **+ / −** edits chain
-length. Jump unlocks aerial moves; all nine attacks also work airborne. Twist
+Throwing. Motion and Attack share one combined chain of named steps, with no
+animation dropdowns. **×** removes any step; **−** removes the last, including
+the final step when you want an empty chain. Long chains scroll horizontally.
+Jump unlocks aerial moves; all nine attacks also work airborne. Twist
 has 0.12 seconds of anticipation followed by a slower 0.54-second turn. Place
 an attack immediately after Twist to cast or strike during the turn, e.g.
 **Jump → Twist → Spell Throw → Land**. Flip can also lead straight into an

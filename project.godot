@@ -18,6 +18,8 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 
 window/size/viewport_width=1152
 window/size/viewport_height=720
+window/size/mode=3
+window/size/borderless=true
 window/stretch/mode="canvas_items"
 
 [rendering]

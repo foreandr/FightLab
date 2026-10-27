@@ -28,8 +28,7 @@ func run() -> void:
 	await frames(30)
 	lab.run_setup()
 	await frames(180)
-	lab.add_chain_step()
-	lab.add_chain_step()
+	lab.set_chain(["Jump","Flip","Twist","Land","Dash","Knee"])
 	await frames(60)
 	paused=false
 	lab.field.write_report()

@@ -8,6 +8,9 @@ func run() -> void:
 	lab.camera_input_enabled=false
 	lab.set_process_unhandled_key_input(false)
 	await frames(60)
+	lab.library_add_buttons.Run.pressed.emit()
+	await frames(30)
+	lab.chain_remove_buttons[0].pressed.emit()
 	lab.inspection_camera.zoom(-2)
 	lab.inspection_camera.apply(lab.field.camera)
 	lab.distance_input.value=8
