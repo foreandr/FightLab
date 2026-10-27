@@ -1,6 +1,6 @@
 # Validation — 2026-10-26
 
-Latest: [bilateral kicks and video review](refinement.md). The notes below describe the first prototype.
+Latest: [grassland spellcasting study](spell-study.md). Prior work: [bilateral kicks](refinement.md). The notes below describe the first prototype.
 
 Engine: Godot 4.6 stable, Compatibility renderer, Windows 11.
 GPU identified by the rendered application: AMD Radeon(TM) 610M.

@@ -1,101 +1,77 @@
-# FightLab
+# FightLab — Grassland Spell Study
 
-An automatic two-NPC skeletal striking demonstration for **Godot 4.6 stable**.
-Uses the Compatibility renderer for Windows 11 / AMD integrated graphics.
+A hands-free spellcasting demonstration in **Godot 4.6 stable**, using the
+Compatibility renderer for integrated graphics. The ring has been replaced by
+an open meadow with grass, distant hills and a daylight sky.
+
+A caster stands **3.8 metres** from a stationary target and automatically cycles
+through ten skeletal casting animations. The target never walks or counterattacks;
+it stays in place and briefly reacts when a spell physically hits it.
 
 ## Launch
 
-Double-click **Play.bat** in `C:\Users\forea\FightLab`. It updates a clean checkout
-and launches the demo. Both fighters approach and fight without input.
-
-To launch your current local files without pulling from GitHub, run:
+Double-click `C:\Users\forea\FightLab\Play.bat`, or launch the current local files:
 
 ```powershell
 Set-Location C:\Users\forea\FightLab
 .\run.ps1
 ```
 
-R restarts; Space toggles slow motion; Esc exits. `run.ps1 -Editor` opens Godot.
-If Godot is missing, the launcher installs the pinned free portable 4.6 release.
-`-GodotPath 'C:\path\to\Godot.exe'` or `GODOT_PATH` overrides discovery.
-All required character and animation assets are in Git. No asset download or
-external project checkout is needed. See [asset notices](assets/combat/NOTICE.md).
+- **N:** skip to the next casting motion.
+- **Space:** toggle slow motion.
+- **R:** restart the study.
+- **Esc:** quit.
 
-## What is implemented
+Godot 4.6 is discovered automatically, or use `GODOT_PATH` / `-GodotPath`.
+All required characters and animations are versioned. No asset download is needed.
 
-- Two distinct, clothed, anatomically proportioned humanoids on the same 65-bone rig.
-- Reused skeletal guard, guarded walk, jab, cross, front kick, high kick, hit,
-  knockdown and stand-up clips. Both hands punch, both hands hook, and both legs
-  front-kick and high-kick. Each NPC uses all four limbs in autonomous exchanges.
-- Refined kicks reuse upstream's choreography and skeletal IK helpers: slower
-  chamber/recoil, weight shift, ball-of-foot contact, and high kicks that rise
-  outside the torso before sweeping at head height. Dense baked poses keep the
-  support ball of the foot planted through the pivot.
-- AnimationPlayer cross-fades between movement, strikes and recovery.
-- Godot CharacterBody3D floor and fighter collision, and bone-following head/torso
-  Area3D hurtboxes. A fist/foot-sized sphere sweeps the actual animated limb path.
-  Only an outbound collision during the strike window can score; distance alone
-  cannot cause a hit. Each swing can connect once.
-- Contact direction and measured limb speed drive collision-resolved knockback.
-  Accumulated hits trigger a skeletal fall and timed recovery. NPCs wait for a
-  downed opponent, then resume; there are no periodic teleporting round resets.
-- Readable inspection camera, contact counters and optional frame capture.
+## The ten casts
 
-## Current limits
+| Cast | Motion | Effect |
+|---|---|---|
+| Palm Fireball | Draw back and extend the right palm | Fireball |
+| Severing Flick | Finger-led horizontal arm slash | Fiery crescent |
+| Cinder Cleave | Raise both hands and chop downward | Vertical flame slash |
+| Verdant Mend | Gather light and draw both hands to the chest | Green self-heal aura |
+| Twin-Palm Blast | Compress an ember, then push with both hands | Larger fire orb |
+| Offhand Spark | Quick left-hand palm cast | Small firebolt |
+| Sun Spear | Draw above the shoulder and throw overhead | Fire lance |
+| Ground Sigil | Sink through the knees and press toward the earth | Rune and ground flame |
+| Solar Nova | Coil inward, then open both arms wide | Expanding fire pulse |
+| Flame Channel | Brace both palms forward | Sustained flame stream |
 
-This is a visually inspectable sparring prototype, not UFC-level realism.
-The characters remain stylized. Quaternius clips are authored animation; no claim
-of motion capture is made. Knockdowns/get-ups are animation-driven, not an active
-ragdoll or physically simulated balance. Hit reactions use a small set of clips
-with directional body knockback. Blocking, per-limb rigid-body reactions, precise
-foot locking during all blends and richer reactive tactics remain future work.
-The original melee hook lunged too low; the adapted hook uses shorter range.
+Each gesture gets about 3.6 seconds, including preparation, release and recovery.
+Spell origins follow the animated hands. Projectiles and the channel use Godot
+ray queries; the nova uses a growing physics shape. Self-heal affects the caster.
+The scene is a motion/effects study, without menus, progression or combat AI.
 
-## Validation and capture
+## Validation and video review
 
 ```powershell
 .\validate.ps1
+.\scripts\core\review-video.ps1 -Seconds 36
 ```
 
-This fails on Godot errors and tests 180 simulated seconds of autonomous fighting,
-all eight strike types, both NPCs landing with each hand/foot, separation and knockdowns.
-It samples all four kicks on both rigs to bound support-foot drift, and runs an
-isolated contact review requiring front kicks to hit the body and high kicks the
-head, once each. It also
-disables hurtboxes at close range and tests every strike at long range: neither
-case may register a hit. Headless tests validate behavior; rendered inspection is
-also required for motion quality.
+Validation checks the entire ten-cast cycle, nine offensive impacts, self-heal,
+fixed character positions, cleanup, missing target collision and a target moving
+out of a fireball's path. It also samples all ten clips on both compatible rigs
+for distinct release poses and grounded feet.
 
-For a rendered 35-second sample with PNG frames, impact frames and a JSON report:
+The video command writes a native 30 FPS AVI and a timestamped JSON report into
+`builds/review-*`. Compare consecutive frames around each release/impact, rather
+than judging the animation from a single screenshot. Recording speed is not a
+measure of live gameplay FPS. See [spell-study validation](docs/spell-study.md).
+
+To rebuild the casting clips:
 
 ```powershell
-.\tools\Godot_v4.6-stable_win64_console.exe --path . --resolution 1280x800 -- --duration=35 --capture-dir=C:/path/to/captures
+.\tools\Godot_v4.6-stable_win64_console.exe --headless --path . -s res://scripts/vendor/build_spell_clips.gd
 ```
 
-For repeatable video debugging (Godot records AVI directly, with no extra tools):
+The casts are original authored poses composed with the existing skeletal IK and
+foot-plant helpers, not motion capture or copied animations from proprietary games.
+The licensed Quaternius characters, rigs, hair and base poses remain in use.
+Full attribution is in [asset notices](assets/combat/NOTICE.md).
 
-```powershell
-.\scripts\core\review-video.ps1 -IsolateKicks
-.\scripts\core\review-video.ps1 -Seconds 40
-```
-
-Each run saves a 30 FPS movie and `contacts.json` under `builds/review-*`.
-The isolated review shows both legs on both characters against a passive opponent;
-normal gameplay remains autonomous. Compare consecutive video frames around the
-contact timestamps: guard → weight shift → chamber → impact → recoil → guard.
-
-The JSON report includes contact timestamps, attempted/landed strikes per limb,
-actual renderer, FPS, contacts by move and minimum fighter spacing. Capture overhead affects performance. See [validation notes](docs/validation.md)
-for the latest observed results and remaining visual limitations.
-
-## Reused systems and reproducibility
-
-Characters, hair and UAL animation libraries: **Quaternius, CC0**. Guarded locomotion,
-kicks and clothing: **Clint Christopher Canada / 3D Fighter, CC BY 4.0**.
-Hook-baking helpers: upstream **MIT** code, adapted in `scripts/vendor/`.
-Pinned upstream revision and full notices are in `assets/combat/NOTICE.md`.
-The upstream arcade combat rules were not used: this demo's hits depend on Godot
-physics contact with animated limbs. No proprietary game assets are included.
-
-`PlayExisting.bat` remains an optional, independent arcade game launcher; it is
-not required for this demonstration.
+The previous sparring experiment remains in `scenes/sparring.tscn` for regression
+work. It is not the default demonstration; no kick or fighting AI runs in the meadow.

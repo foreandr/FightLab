@@ -16,7 +16,7 @@ func frames(count: int) -> void:
 		await physics_frame
 
 func run() -> void:
-	arena = load("res://scenes/main.tscn").instantiate()
+	arena = load("res://scenes/sparring.tscn").instantiate()
 	root.add_child(arena)
 	await frames(10800)
 	check(arena.punches > 0 and arena.kicks > 0, "NPCs must land punches and kicks")

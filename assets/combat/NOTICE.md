@@ -32,3 +32,14 @@ CC BY 4.0 legal text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 To reproduce the six hook/kick clips with Godot 4.6:
 `godot --headless --path . -s res://scripts/vendor/build_sparring_clips.gd`
+
+## Grassland spellcasting study
+
+- `animations/spells.res`: original FightLab casting poses on the Quaternius CC0
+  rig, CC BY 4.0. Ten gestures plus a neutral casting idle. These are authored
+  poses, not extracted Skyrim, Oblivion or anime/game animation assets.
+- `scripts/vendor/build_spell_clips.gd`: FightLab composition code reusing the
+  vendored MIT skeletal IK and foot-plant helpers in `build_sparring_clips.gd`.
+  Rebuild with Godot 4.6 using `-s res://scripts/vendor/build_spell_clips.gd`.
+- Meadow geometry, grass blades, sky/ground settings and spell-effect meshes are
+  generated directly by FightLab code. No additional asset or runtime dependency.

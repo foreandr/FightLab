@@ -30,7 +30,7 @@ func reset_pair(attacker: int, distance: float) -> void:
 	arena.last_contact = "KICK REVIEW • %s" % ("RED" if attacker == 0 else "BLUE")
 
 func run() -> void:
-	arena = load("res://scenes/main.tscn").instantiate()
+	arena = load("res://scenes/sparring.tscn").instantiate()
 	root.add_child(arena)
 	for f in arena.fighters:
 		f.paused_ai = true

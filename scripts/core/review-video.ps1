@@ -36,4 +36,4 @@ if (-not (Test-Path -LiteralPath $reportPath)) {
 }
 Write-Host "Movie: $moviePath"
 Write-Host "Timestamped contacts: $reportPath"
-Write-Host 'Compare consecutive frames around each contact; check support foot, chamber, impact, recoil, and guard recovery.'
+Write-Host 'Compare consecutive frames around release and impact; check hand motion, spell origin, flight, contact and recovery.'
