@@ -16,20 +16,23 @@ Set-Location C:\Users\forea\FightLab
 .\run.ps1
 ```
 
-Space toggles slow motion, R restarts, M toggles sound and Esc exits.
-Press **F2** for the [combat testing sandbox](docs/combat-sandbox.md), or
-double-click **Sandbox.bat** (Showcase.bat also opens it). Choose any spell or
-physical action, set the spawn distance, and choose jumping, blocking or charge
-options. Run plays your setup; Reset restores both fighters and waits. R replays,
-X resets, Space pauses, T slows time and B returns to battle. WASD moves the
-camera; hold middle mouse to rotate, use the wheel to zoom, and F to reframe.
-The **54-case tour** button opens the [automatic showcase](docs/combat-showcase.md).
-The sandbox starts on **Motion / Combo Builder**: choose **Dash only** or
-**Dash → Knee**, set one of eight dash directions and toggle Quick dash. The
-ordered slots chain Dash, Punch, Knee and Jump through real combat actions.
-Use **+ / −** to add or remove combo steps; long chains scroll horizontally.
-Jump unlocks aerial **Flip / Twist** choices; **Land** restores grounded moves.
-Use the **Jump → Flip → Twist** preset to review a complete aerial chain.
+The game opens on **Home: Story / Fight / Create**. Story is a placeholder;
+Fight opens the current three-way arena. **Create → Animations** opens the
+existing motion/animation editor, and **Create → Spells** opens focused casting
+and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
+
+Animations starts with a blank chain. Select your first action, use **+ / −** to
+add or remove steps, and choose from Dash, Punch, Knee, Jump, Flip, Twist and
+Land. Jump unlocks aerial moves; Land restores grounded choices. There is one
+dash speed and no preset buttons. Set spacing, target behavior and Repeat as
+needed. Run plays your configuration; Reset restores it and waits.
+
+In Create, R replays, X resets, Space pauses, T slows time and B opens Fight.
+WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to
+reframe. **Home / Esc** returns to the menu. In Fight, Space slows time, R
+restarts, M mutes, F2 opens Animations and Esc returns Home. Direct commands:
+`run.ps1 -Sandbox` (Animations), `-Spells`, `-Fight`, or `-Tour` for the retained
+[54-case review](docs/combat-showcase.md). See the [Create guide](docs/combat-sandbox.md).
 Both the full fight and review scenes use the actual combat/physics paths.
 This remains an AI combat prototype; player controls are not implemented.
 

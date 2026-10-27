@@ -1,12 +1,15 @@
-# Combat testing sandbox
+# Create: Animations and Spells
 
-Double-click `Sandbox.bat` or `Showcase.bat`, run `.\run.ps1 -Sandbox`, or press
-F2 in the normal battle. It starts ready and waits for you to run a test.
+Double-click `Play.bat` to open Home. Choose **Create → Animations** for the
+motion editor or **Create → Spells** for focused spell tests. Story currently
+has a placeholder page; Fight opens the autonomous arena. Sandbox.bat and
+Showcase.bat are legacy shortcuts to Home. `run.ps1 -Sandbox` and F2 in Fight
+still open Animations directly; `run.ps1 -Spells` opens Spells.
 
-## Motion and combo testing
+## Animation chains
 
-The sandbox opens on **Motion / Combo Builder**. The **Dash only** and
-**Dash → Knee** buttons load the first two review setups. Ordered dropdowns
+Animations is the former combat sandbox. It starts with one blank (End) slot,
+ready for your own sequence. There are no preset buttons. Ordered dropdowns
 let you chain **Dash**, **Punch**, **Knee**, **Jump**, **Flip**, **Twist** and
 **Land**; **End** terminates the chain. The live result line
 shows the active step, completion, or interruption. Hits, death, freeze and
@@ -16,15 +19,14 @@ insufficient resources stop a sequence rather than skipping its requirements.
 The editor supports 1–32 slots and scrolls horizontally for long sequences.
 An appended step starts with a valid ground/air choice that you can change.
 Adding after End replaces the unused trailing slots with a usable next step.
-Editing resets playback to Ready. Presets resize the editor to their own length;
-minus is disabled when one slot remains.
+Editing resets playback to Ready. Minus is disabled when one slot remains.
 
 Choices depend on the planned state at each slot. Grounded slots offer Dash,
 Punch, Knee and Jump. **Jump unlocks Flip, Twist and Land** in the following slot;
 **Land restores grounded choices** after it. Unavailable entries are disabled
 with a reason. Changing an earlier step clears incompatible later choices.
-The **Jump → Flip → Twist** preset fills all four slots with Jump, Flip, Twist,
-Land. Jump hands off after actual lift-off when followed by an aerial step;
+For an aerial sequence, select Jump, add Flip, add Twist, then add Land.
+Jump hands off after actual lift-off when followed by an aerial step;
 Land waits for floor contact and the landing recovery. A Jump with no aerial
 follow-up retains its original jump-and-land behavior.
 
@@ -36,16 +38,15 @@ relaunch the fighter or hold them in the air. A late trick can land early; the
 next aerial move then stops with a condition message. Runtime state is displayed
 as Grounded/Airborne alongside the active step.
 
-Dash direction has eight options relative to the fighter's facing. A normal
-dash moves at 12 m/s for 0.30 seconds; Quick uses 20 m/s for 0.18 seconds. Both
-travel up to 3.6 metres, respect body/wall collisions and stop short of the
-partner when heading toward them. Direction is fixed when the dash begins.
+Dash direction has eight options relative to the fighter's facing. The dash
+moves at 12 m/s for 0.30 seconds and travels up to 3.6 metres. It respects body
+and wall collisions and stops short of the partner when heading toward them.
+Direction is fixed when the dash begins.
 Backward and sideways dashes retain facing during the dash. Dash spends stamina,
 uses no mana, and does no contact damage by itself.
 
 Start around **4.4 m** apart for a forward dash into knee. The knee uses real
-animated-limb collision and retained dash momentum; quick dash can therefore
-produce a stronger hit. A farther target can be missed. A plain Jump step jumps
+animated-limb collision and retained dash momentum. A farther target can be missed. A plain Jump step jumps
 without automatically casting. Reset clears the sequence, while Repeat replays
 the same ordered setup. Spell chain steps remain for a later pass; individual
 spell tests are still in the Move menu.
@@ -86,14 +87,14 @@ framing of both fighters. Mouse controls apply over the arena; typing in the
 distance field or scrolling a menu does not move the camera.
 
 Space pauses/resumes; T toggles 0.35× speed; M mutes; B returns to battle. The
-54-case tour button retains the guided cycle, with a Sandbox button to return.
+Home button returns to the main menu; Esc does the same. The old guided cycle
+is available through `run.ps1 -Tour`, with an Animations button to return.
 Existing saved sparring/duel scenes and the milestone tag are preserved.
 
 `validate.ps1` includes menu coverage, exact spacing, actual charge damage,
 projectile blocking and guard break, caster/partner jumps, airborne blocking,
 pause/reset and same-setup repeat tests. Record a representative menu review with
 `.\scripts\core\review-video.ps1 -SandboxShowcase`.
-Use `-MotionShowcase` instead to record forward dash, dash-knee, quick dash-knee,
-backward dash and sideways dash. Motion regression checks cover all sixteen
-direction/speed combinations, real contacts, shield blocks, misses, ordered
+Use `-MotionShowcase` instead to record forward dash, dash-knee, backward dash, sideways dash and an aerial chain. Motion regression checks cover all eight
+dash directions, real contacts, shield blocks, misses, ordered
 four-step playback, jump, reset and interruption.

@@ -1,9 +1,8 @@
 # Interactive combat showcase
 
-The new [testing sandbox](combat-sandbox.md) opens with `Showcase.bat`,
-`Sandbox.bat` or F2 in the normal battle. Its **54-case tour** button opens this
-automatic showcase. You can also run `.\run.ps1 -Tour` directly. B returns to the
-autonomous three-way battle; the Sandbox button returns to configurable testing.
+Run `.\run.ps1 -Tour` to open this retained automatic review. Normal launchers
+open Home, where Create → Animations leads to the motion editor. B opens Fight;
+the Animations button returns to the editor.
 
 The showcase automatically cycles through 54 named cases. One fighter performs
 the move while a second waits and reacts to real hits. The partner only blocks

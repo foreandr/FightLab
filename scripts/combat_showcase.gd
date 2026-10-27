@@ -296,7 +296,7 @@ func build_ui() -> void:
 	slow_button=button(buttons,"Slow [S]",toggle_slow)
 	auto_button=button(buttons,"Auto: On [A]",toggle_auto)
 	button(buttons,"Battle [B]",return_to_battle)
-	button(buttons,"Sandbox",return_to_sandbox)
+	button(buttons,"Animations",return_to_sandbox)
 	result_label=Label.new()
 	result_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	result_label.add_theme_font_size_override("font_size",15)

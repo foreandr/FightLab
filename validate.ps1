@@ -4,6 +4,7 @@ $ErrorActionPreference = 'Stop'
 $executable = Find-Godot $GodotPath
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--editor','--import','--quit')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--quit-after','60')
+Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/home_navigation_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/battle_features_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/death_ragdoll_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/wall_collision_test.gd')

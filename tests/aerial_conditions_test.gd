@@ -13,18 +13,18 @@ func run() -> void:
 	root.add_child(lab)
 	lab.camera_input_enabled=false
 	check(lab.chain_menu[0].is_item_disabled(5) and lab.chain_menu[0].is_item_disabled(6),"Grounded first slot must not allow aerial flips or twists")
-	lab.set_aerial_preset()
+	lab.set_chain(["Jump","Flip","Twist","Land"])
 	check(not lab.chain_menu[1].is_item_disabled(5) and not lab.chain_menu[1].is_item_disabled(6),"Jump must unlock aerial choices in the next slot")
 	check(lab.chain_menu[1].is_item_disabled(1) and lab.chain_menu[1].is_item_disabled(4),"Airborne slots must require Land before ground dash or another jump")
 	lab.chain_menu[2].select(7)
 	lab.chain_menu[3].select(3)
 	lab.settings_changed()
 	check(not lab.chain_menu[3].is_item_disabled(3) and lab.chain_menu[3].is_item_disabled(5),"Land must restore grounded choices in the next slot")
-	lab.set_aerial_preset()
+	lab.set_chain(["Jump","Flip","Twist","Land"])
 	lab.chain_menu[0].select(1)
 	lab.settings_changed()
 	check(lab.chain_menu[1].selected==0 and lab.chain_menu[2].disabled,"Changing an earlier condition must clear invalid later steps")
-	lab.set_aerial_preset()
+	lab.set_chain(["Jump","Flip","Twist","Land"])
 	lab.run_setup()
 	var observed: Dictionary={}
 	var maximum_height:=0.0
@@ -43,9 +43,9 @@ func run() -> void:
 	var stamina_before: float=lab.actor.stamina
 	check(not lab.actor.start_air_trick("Flip") and lab.actor.stamina==stamina_before,"Direct grounded trick request must fail without spending stamina")
 	var bad: Array[String]=["Twist"]
-	lab.sequence.start(lab.actor,bad,0,false)
+	lab.sequence.start(lab.actor,bad,0)
 	check(not lab.sequence.active and lab.sequence.status.contains("requires airborne"),"Runtime must enforce conditions independently of the menu")
-	lab.set_aerial_preset()
+	lab.set_chain(["Jump","Flip","Twist","Land"])
 	lab.run_setup()
 	while lab.actor.mode!="air_trick":await physics_frame
 	lab.toggle_pause()

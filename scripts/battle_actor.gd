@@ -333,24 +333,24 @@ func start_punch() -> void:
 		["round_kick", "boxing/high_kick_l", "ball_l", 0.32, 0.52, 17.0, 17.0, 1.3]]
 	begin_strike(moves[index])
 
-func start_motion_dash(direction_index: int,quick: bool=false) -> bool:
+func start_motion_dash(direction_index: int) -> bool:
 	if health<=0 or freeze_time>0 or is_instance_valid(ragdoll) or not is_on_floor():
 		return false
-	if not spend_stamina(18 if quick else 12):
+	if not spend_stamina(12):
 		return false
 	var angle:=float(posmod(direction_index,8))*PI/4
 	# Forward, forward-right, right, back-right, back, back-left, left, forward-left.
 	motion_direction=(global_basis.z*cos(angle)-global_basis.x*sin(angle)).normalized()
-	motion_speed=20.0 if quick else 12.0
+	motion_speed=12.0
 	mode="motion_dash"
 	mode_time=0
-	mode_length=0.18 if quick else 0.30
+	mode_length=0.30
 	combo_speed=0
 	combo_time=0
 	clip=""
 	var animation: String="duel/dash" if direction_index in [0,1,7] else ("duel/dodge_back" if direction_index in [3,4,5] else ("duel/strafe_right" if direction_index==2 else "duel/strafe_left"))
-	play(animation,1.8 if quick else 1.35)
-	count_action("quick_motion_dash" if quick else "motion_dash")
+	play(animation,1.35)
+	count_action("motion_dash")
 	arena.audio.impact("dash",global_position,0.5)
 	return true
 

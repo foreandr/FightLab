@@ -7,7 +7,6 @@ var active := false
 var status := "Ready"
 var step_time := 0.0
 var direction := 0
-var quick := false
 var history: Array[String]=[]
 
 static func allowed_for_state(step: String,grounded: bool) -> bool:
@@ -27,11 +26,10 @@ func reset() -> void:
 	status="Ready"
 	step_time=0
 
-func start(fighter: CharacterBody3D,chosen: Array[String],dash_direction: int,quick_dash: bool) -> void:
+func start(fighter: CharacterBody3D,chosen: Array[String],dash_direction: int) -> void:
 	reset()
 	steps=chosen.duplicate()
 	direction=dash_direction
-	quick=quick_dash
 	active=true
 	next_step(fighter)
 
@@ -50,7 +48,7 @@ func next_step(fighter: CharacterBody3D) -> void:
 		status="Stopped: %s requires %s"%[step,"airborne" if step in ["Flip","Twist","Land"] else "grounded"]
 		return
 	match step:
-		"Dash": accepted=fighter.start_motion_dash(direction,quick)
+		"Dash": accepted=fighter.start_motion_dash(direction)
 		"Punch","Knee":
 			accepted=fighter.stamina>= (13 if step=="Knee" else 8)
 			if accepted:

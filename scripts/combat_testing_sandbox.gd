@@ -1,4 +1,5 @@
 extends "res://scripts/combat_showcase.gd"
+@export_enum("Animations","Spells") var editor_section := "Animations"
 ## User-configurable scenarios share the showcase's real combat/reset paths.
 var moves: Array[Dictionary]=[]
 var move_menu: OptionButton
@@ -23,7 +24,6 @@ var sequence=preload("res://scripts/motion_sequence.gd").new()
 var chain_menu: Array[OptionButton]=[]
 var chain_panel: HBoxContainer
 var dash_direction_menu: OptionButton
-var quick_dash_toggle: CheckBox
 const MAX_CHAIN_STEPS := 32
 var chain_steps: HBoxContainer
 var chain_scroll: ScrollContainer
@@ -39,9 +39,12 @@ func _ready() -> void:
 	settings_changed()
 
 func build_ui() -> void:
-	moves.append({"id":"motion_chain","title":"Motion / Combo Builder","team":0,"kind":"sequence","group":"Motion","expect":"movement","distance":4.4,"plain":true})
+	if editor_section=="Animations":
+		moves.append({"id":"motion_chain","title":"Animation Chain","team":0,"kind":"sequence","group":"Motion","expect":"movement","distance":4.4,"plain":true})
 	var ids: Array[String]=["fireball_ground","cinder_slash_ground","freezing_ray_ground","armor_ground","overdrive_ground","flash_ground","melee_0","melee_1","melee_4","melee_2","melee_5","melee_3","uppercut","fire_kick","ice_knee","shield_palm","shield_brace","armor_fireball","armor_punch","overdrive_run","flash_overdrive","movement_run","movement_approach","movement_retreat","movement_strafe_left","movement_strafe_right","movement_dodge_back","movement_roll_back","movement_flip","death_fireball","death_punch"]
 	for id in ids:
+		if editor_section=="Spells" and id not in ["fireball_ground","cinder_slash_ground","freezing_ray_ground","armor_ground","overdrive_ground","flash_ground","armor_fireball","armor_punch","overdrive_run","flash_overdrive","death_fireball"]:
+			continue
 		for entry in Catalog.cases():
 			if entry.id==id:
 				moves.append(entry.duplicate(true))
@@ -64,7 +67,7 @@ func build_ui() -> void:
 	var column:=VBoxContainer.new()
 	column.add_theme_constant_override("separation",4)
 	margin.add_child(column)
-	title_label=menu_label(column,"COMBAT SANDBOX",20)
+	title_label=menu_label(column,"CREATE · "+editor_section.to_upper(),20)
 	var row:=HBoxContainer.new()
 	row.alignment=BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation",10)
@@ -107,11 +110,7 @@ func build_ui() -> void:
 	chain_steps=HBoxContainer.new()
 	chain_steps.add_theme_constant_override("separation",6)
 	chain_scroll.add_child(chain_steps)
-	append_chain_slot(1)
-	append_chain_slot(3)
-	button(chain_panel,"Dash only",func():set_motion_preset(false))
-	button(chain_panel,"Dash → Knee",func():set_motion_preset(true))
-	button(chain_panel,"Jump → Flip → Twist",set_aerial_preset)
+	append_chain_slot(0)
 	var options:=HBoxContainer.new()
 	options.alignment=BoxContainer.ALIGNMENT_CENTER
 	options.add_theme_constant_override("separation",12)
@@ -121,7 +120,6 @@ func build_ui() -> void:
 		dash_direction_menu.add_item(text_)
 	dash_direction_menu.focus_mode=Control.FOCUS_NONE
 	options.add_child(dash_direction_menu)
-	quick_dash_toggle=checkbox(options,"Quick dash")
 	jump_toggle=checkbox(options,"Caster jumps")
 	target_jump_toggle=checkbox(options,"Partner jumps")
 	charge_toggle=checkbox(options,"Charged cast")
@@ -146,18 +144,18 @@ func build_ui() -> void:
 	pause_button=button(actions,"Pause [Space]",toggle_pause)
 	slow_button=button(actions,"Slow [T]",toggle_slow)
 	button(actions,"Reframe [F]",reframe_camera)
-	button(actions,"54-case tour",open_tour)
-	button(actions,"Battle [B]",return_to_battle)
+	button(actions,"Fight [B]",return_to_battle)
+	button(actions,"Home [Esc]",return_home)
 	result_label=menu_label(footer,"Ready — choose a move, then Run",15)
 	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · F reframe · Shift faster",13)
 	move_menu.item_selected.connect(func(_index):settings_changed())
 	distance_input.value_changed.connect(func(_value):settings_changed())
 	block_menu.item_selected.connect(func(_index):settings_changed())
 	dash_direction_menu.item_selected.connect(func(_index):settings_changed())
-	for toggle in [jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,quick_dash_toggle]:
+	for toggle in [jump_toggle,target_jump_toggle,charge_toggle,weak_toggle]:
 		toggle.toggled.connect(func(_value):settings_changed())
 	# Space belongs to pause; arrows belong to the menu when it has focus.
-	for node in [move_menu,block_menu,jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,repeat_toggle,quick_dash_toggle]:
+	for node in [move_menu,block_menu,jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,repeat_toggle]:
 		node.focus_mode=Control.FOCUS_NONE
 
 func menu_label(parent: Node,text_: String,size: int) -> Label:
@@ -182,7 +180,6 @@ func settings_changed() -> void:
 	var motion: bool=entry.kind=="sequence"
 	chain_panel.visible=motion
 	dash_direction_menu.visible=motion
-	quick_dash_toggle.visible=motion
 	refresh_chain_options()
 	jump_toggle.visible=not motion
 	charge_toggle.visible=not motion
@@ -201,7 +198,7 @@ func settings_changed() -> void:
 		weak_toggle.set_pressed_no_signal(false)
 	hint_label.text="Spawn distance is center to center. "
 	if motion:
-		hint_label.text="Jump unlocks Flip / Twist. Land returns to ground moves. Each slot shows only moves valid for its planned state."
+		hint_label.text="Choose the first animation; + adds steps. Jump unlocks Flip / Twist. Land restores grounded moves."
 	elif entry.kind in ["melee","uppercut"]:
 		hint_label.text+="Suggested melee distance: %.2f m. Distant strikes can miss."%float(entry.distance)
 	elif jump_toggle.button_pressed:
@@ -298,18 +295,11 @@ func remove_chain_step() -> void:
 	resize_chain(chain_menu.size()-1)
 	settings_changed()
 
-func set_aerial_preset() -> void:
+func set_chain(steps: Array) -> void:
 	move_menu.select(0)
-	resize_chain(4)
-	for i in chain_menu.size():chain_menu[i].select([4,5,6,7][i])
-	settings_changed()
-
-func set_motion_preset(knee: bool) -> void:
-	move_menu.select(0)
-	resize_chain(2 if knee else 1)
+	resize_chain(maxi(1,steps.size()))
 	for i in chain_menu.size():
-		chain_menu[i].select(1 if i==0 else (3 if knee and i==1 else 0))
-	dash_direction_menu.select(0)
+		chain_menu[i].select(maxi(0,sequence.OPTIONS.find(steps[i])) if i<steps.size() else 0)
 	settings_changed()
 
 func prepare_setup(run: bool) -> void:
@@ -329,7 +319,7 @@ func prepare_setup(run: bool) -> void:
 			piece[0].hide()
 	field.storm_aura.hide()
 	field.shield_hit_age=[2.0,2.0,2.0]
-	title_label.text="COMBAT SANDBOX  ·  "+str(catalog[0].title).replace(" — Ground Cast","").replace(" — Unblocked","")
+	title_label.text="CREATE · %s  ·  %s"%[editor_section.to_upper(),str(catalog[0].title).replace(" — Ground Cast","").replace(" — Unblocked","")]
 	detail_label.text="%.1f m apart  ·  %s  ·  %s"%[float(distance_input.value),"Caster jumps" if jump_toggle.button_pressed else "Grounded caster",block_menu.get_item_text(block_menu.selected)]
 	get_tree().paused=not run
 	show_resources()
@@ -348,7 +338,7 @@ func perform_case() -> void:
 		target.air_momentum=Vector3.ZERO
 		partner_jumping=true
 	if catalog[0].kind=="sequence":
-		sequence.start(actor,chosen_steps(),dash_direction_menu.selected,quick_dash_toggle.button_pressed)
+		sequence.start(actor,chosen_steps(),dash_direction_menu.selected)
 		return
 	if catalog[0].get("sandbox_air",false):
 		actor.start_jump("flip")
@@ -477,6 +467,13 @@ func open_tour() -> void:
 	field.audio.stop_all()
 	get_tree().change_scene_to_file("res://scenes/combat_showcase.tscn")
 
+func return_home() -> void:
+	stop_camera_drag()
+	get_tree().paused=false
+	Engine.time_scale=1
+	field.audio.stop_all()
+	get_tree().change_scene_to_file("res://scenes/home.tscn")
+
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
@@ -494,9 +491,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			field.audio.muted=not field.audio.muted
 			if field.audio.muted:field.audio.stop_all()
 		KEY_ESCAPE:
-			get_tree().paused=false
-			write_report()
-			field.finish_run()
+			get_viewport().set_input_as_handled()
+			return_home()
+			return
 		_: return
 	get_viewport().set_input_as_handled()
 

@@ -565,7 +565,7 @@ func build_fight_ui() -> void:
 	hud.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	hud.offset_left=18
 	hud.offset_top=-30
-	hud.text="FREE-FOR-ALL  •  F2 sandbox  •  Space slow  •  R restart  •  M sound  •  Esc quit"
+	hud.text="FREE-FOR-ALL  •  F2 Animations  •  Space slow  •  R restart  •  M sound  •  Esc Home"
 	hud.add_theme_font_size_override("font_size",13)
 	root.add_child(hud)
 	round_label=Label.new()
@@ -622,7 +622,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		Engine.time_scale=1
 		get_tree().change_scene_to_file("res://scenes/combat_sandbox.tscn")
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_ESCAPE:
-		finish_run()
+		audio.stop_all()
+		Engine.time_scale=1
+		get_tree().change_scene_to_file("res://scenes/home.tscn")
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_M:
 		audio.muted=not audio.muted
 		if audio.muted:audio.stop_all()
