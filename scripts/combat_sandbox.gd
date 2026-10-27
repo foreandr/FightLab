@@ -52,7 +52,7 @@ func _physics_process(delta: float) -> void:
 		var progress := 1.0 - punch_clock / PUNCH_DURATION
 		# Wind-up, extension, recovery. Replace with a licensed skeletal clip later.
 		var extension := sin(progress * PI)
-		shoulder.rotation.x = -1.25 * extension
+		shoulder.rotation.x = 1.25 * extension
 		if progress > 0.25 and not punch_connected:
 			_try_punch()
 			punch_connected = true
