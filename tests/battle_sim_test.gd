@@ -19,6 +19,9 @@ func run() -> void:
 	var samples:=0
 	var max_bodies:=0
 	var max_body_speed:=0.0
+	var quiet:=0.0
+	var maximum_quiet:=0.0
+	var dealt:=0.0
 	for i in 10800:
 		await physics_frame
 		for f in field.fighters:
@@ -35,8 +38,19 @@ func run() -> void:
 				samples+=1
 				if field.camera.is_position_in_frustum(f.bone_point("Head")):
 					visible+=1
+		var total_damage:=0.0
+		for fighter in field.fighters:
+			total_damage+=fighter.damage_dealt
+		if field.round_active and field.elapsed>3:
+			quiet=0.0 if total_damage>dealt+0.1 else quiet+1.0/60.0
+			maximum_quiet=maxf(maximum_quiet,quiet)
+		else:
+			quiet=0
+		dealt=total_damage
 		if i%120==0:
 			max_bodies=maxi(max_bodies,field.find_children("*","RigidBody3D",true,false).size())
+	print("COMBAT longest interval without damage=",maximum_quiet)
+	check(maximum_quiet<20,"Autonomous combat must keep making damage progress instead of falling into prolonged action/resource loops")
 	check(bounded and synchronized,"All three health/resource pools must remain bounded and agree with their HUD")
 	check(finite,"Rigid-body and animation state must remain finite with bounded physical velocities")
 	check(contained,"All fighters and ragdoll parts must remain inside the finite arena")

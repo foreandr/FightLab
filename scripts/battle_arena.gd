@@ -4,6 +4,7 @@ const BattleVFX = preload("res://scripts/battle_vfx.gd")
 const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
+const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
 const OVERDRIVE_DURATION := 14.0
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
@@ -11,6 +12,7 @@ const KITS := [
 	[{"id":"overdrive","name":"Overdrive","effect":"haste","animation":"self_mend","hand":"both","release":0.95}, {"id":"flash_step","name":"Flash Step","effect":"burst","animation":"palm_fireball","hand":"hand_r","release":0.68}]]
 var audio: Node3D
 var armor_meshes: Array = []
+var freeze_effects: Array[Node3D]=[]
 var status_labels: Array = []
 var eliminated := {}
 var target_timer := 0.0
@@ -66,6 +68,10 @@ func _ready() -> void:
 			add_child(piece)
 			pieces.append([piece,bone])
 		armor_meshes.append(pieces)
+		var freeze_visual:=FrozenLegEffect.new()
+		freeze_visual.fighter=f
+		add_child(freeze_visual)
+		freeze_effects.append(freeze_visual)
 	for f in fighters:
 		f.rival = fighters[(f.team+1)%3]
 	storm_aura=OverdriveAura.new()
@@ -231,24 +237,25 @@ func _physics_process(delta: float) -> void:
 			shields[i].position = f.shield_center()
 			shields[i].basis = f.global_basis
 			shields[i].material_override.set_shader_parameter("hit_age",shield_hit_age[i])
-		charges[i].visible = round_active and f.mode in ["cast","melee_charge"] and not f.did_release
+		charges[i].visible = round_active and f.mode in ["cast","melee_charge","burst_charge"] and not f.did_release
 		if charges[i].visible:
 			charges[i].position = fighter_hand(f,f.current_spell.get("hand","hand_r"))
 			charges[i].scale = Vector3.ONE * (0.7+f.charge_value*2.5)
 			if int(elapsed*60)%5 == 0:
 				vfx.puff(charges[i].position,"magic_01",i,Vector2.ONE*(0.45+f.charge_value),Vector3.ZERO,0.2,Color(element_color(i),0.65),0.2,5)
 		for piece in armor_meshes[i]:
-			piece[0].visible = (f.armor_hp > 0 or f.freeze_time>0) and f.health > 0
+			piece[0].visible = f.armor_hp > 0 and f.health > 0
 			if piece[0].visible:
 				piece[0].position = f.bone_point(piece[1])
-				piece[0].scale = (Vector3(1.4,1.2,0.7) if piece[1]=="spine_03" else Vector3.ONE)*(1.3 if f.freeze_time>0 else 1.0)
+				piece[0].scale = Vector3(1.4,1.2,0.7) if piece[1]=="spine_03" else Vector3.ONE
+		freeze_effects[i].step()
 		if int(elapsed*60)%8 == 0 and f.health > 0:
 			if f.mode=="punch" and f.strike_augmented:
 				vfx.puff(f.bone_point(f.melee_spec[2]),"flame_04" if i==0 else "spark_05",i,Vector2.ONE*0.4,Vector3.UP*0.4,0.2,Color(element_color(i),0.8),0.4)
 			if f.burn_time > 0:
 				vfx.puff(f.bone_point("spine_03"),"flame_04",0,Vector2(0.45,0.7),Vector3.UP,0.35,Color(1,0.5,0.1,0.65),0.5)
 			if f.chill_time > 0:
-				vfx.puff(f.bone_point("pelvis"),"smoke_04",1,Vector2.ONE*0.65,Vector3.UP*0.3,0.4,Color(0.6,0.9,1,0.4),0.3)
+				vfx.puff(f.bone_point("calf_l").lerp(f.bone_point("calf_r"),0.5),"smoke_04",1,Vector2.ONE*0.65,Vector3.UP*0.3,0.4,Color(0.6,0.9,1,0.4),0.3)
 			if f.haste_time > 0:
 				vfx.puff(f.bone_point("calf_r"),"trace_02",2,Vector2(0.2,0.8),Vector3.UP,0.16,Color("fff1a3"),0.3)
 	step_shots(delta)
@@ -280,6 +287,8 @@ func finish_run() -> void:
 	get_tree().create_timer(0.15).timeout.connect(get_tree().quit)
 
 func cast_magic(f: CharacterBody3D, spec: Dictionary, _air: bool) -> void:
+	if spec.effect=="burst" and f.stamina<f.flash_stamina_requirement():
+		return
 	if not round_active or f.health <= 0 or not f.spend_mana(mana_cost(spec)):
 		return
 	var key := "%s/%s"%[element_name(f.team),spec.id]
@@ -580,6 +589,8 @@ func update_fight_ui() -> void:
 		if f.health<=0: states.append("OUT")
 		elif is_instance_valid(f.ragdoll): states.append("RAGDOLL")
 		elif f.freeze_time>0: states.append("FROZEN")
+		elif f.mode=="burst_charge": states.append("FLASH CHARGE")
+		elif f.tactics.banking: states.append("RECOVERING")
 		elif f.mode=="cast" and f.cast_phase=="hold": states.append("CHARGING %d%%"%int(f.charge_value*100))
 		elif f.mode=="melee_charge": states.append("UPPERCUT %d%%"%int(f.melee_charge*100))
 		else: states.append("FISTS" if f.close_combat else "MAGIC")
@@ -594,7 +605,7 @@ func update_fight_ui() -> void:
 func write_report() -> void:
 	var stats:=[]
 	for f in fighters:
-		stats.append({"team":f.team,"element":element_name(f.team),"health":f.health,"mana":f.mana,"stamina":f.stamina,"actions":f.actions,"melee_hits":f.melee_hits,"charged_casts":f.charged_casts,"ragdolls":f.ragdoll_count,"recoveries":f.recoveries_count,"ragdoll_peak":f.ragdoll_peak,"freezes":f.freezes,"burns_applied":f.burns_applied,"dash_combo_hits":f.dash_combo_hits,"damage_dealt":f.damage_dealt})
+		stats.append({"team":f.team,"element":element_name(f.team),"health":f.health,"mana":f.mana,"stamina":f.stamina,"actions":f.actions,"melee_hits":f.melee_hits,"charged_casts":f.charged_casts,"ragdolls":f.ragdoll_count,"recoveries":f.recoveries_count,"ragdoll_peak":f.ragdoll_peak,"freezes":f.freezes,"burns_applied":f.burns_applied,"dash_combo_hits":f.dash_combo_hits,"damage_dealt":f.damage_dealt,"tactical_replans":f.tactics.replans})
 	var report:={"seconds":elapsed,"rounds":round_number,"wins":wins,"fighters":stats,"casts":casts,"hits":hits,"events":events,"audio":audio.played,"peak_effects":peak_effects,"fps":Engine.get_frames_per_second()}
 	var summary:=report.duplicate()
 	summary.erase("events")

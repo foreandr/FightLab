@@ -325,7 +325,10 @@ func start_recovery() -> void:
 	mode = "recover"
 	mode_time = 0
 	mode_length = 0.5
-	play("fight/guard")
+	play_recovery(flat_distance())
+
+func play_recovery(distance: float) -> void:
+	play("duel/walk_back",0.65) if distance<1.8 else play("fight/guard")
 
 func start_punch() -> void:
 	var index: int = MELEE_MOVES[melee_sequence % MELEE_MOVES.size()]
@@ -489,7 +492,7 @@ func tick(delta: float) -> void:
 				mode_time = mode_length
 		elif mode == "recover":
 			desired = -toward * 0.75 if distance < 1.8 else Vector3.ZERO
-			play("duel/walk_back", 0.65) if distance < 1.8 else play("fight/guard")
+			play_recovery(distance)
 		else:
 			melee_clock += delta * 1.25
 			if mode_time < 0.18 and distance > 0.79:
@@ -588,7 +591,7 @@ func tick(delta: float) -> void:
 			desired = desired.slide(outward)
 		desired -= outward * minf(3.0, (radius - arena_roam_radius()) * 2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
-	desired *= clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0) * movement_multiplier()
+	desired = locomotion_velocity(desired)*clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
 	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
 	drive_velocity.z = move_toward(drive_velocity.z, desired.z, delta * acceleration)
 	velocity.x = drive_velocity.x + knockback.x
@@ -646,6 +649,9 @@ func tick(delta: float) -> void:
 
 func movement_multiplier() -> float:
 	return 1.0
+
+func locomotion_velocity(desired: Vector3) -> Vector3:
+	return desired*movement_multiplier()
 
 func advance_animation(delta: float) -> void:
 	player.advance(delta)

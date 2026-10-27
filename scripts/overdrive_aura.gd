@@ -41,7 +41,7 @@ func _ready() -> void:
 	visible=false
 
 func step(delta: float) -> void:
-	var active: bool=is_instance_valid(fighter) and fighter.health>0 and fighter.haste_time>0
+	var active: bool=is_instance_valid(fighter) and fighter.health>0 and (fighter.haste_time>0 or fighter.flash_aura_time>0)
 	visible=active
 	if not active:
 		active_age=0
@@ -51,7 +51,7 @@ func step(delta: float) -> void:
 	active_age+=delta
 	spark_clock+=delta
 	global_position=fighter.bone_point("pelvis")+Vector3.UP*0.12
-	var strength:=minf(1,active_age/0.18)*minf(1,fighter.haste_time/0.45)
+	var strength:=minf(1,active_age/0.18)*minf(1,maxf(fighter.haste_time,fighter.flash_aura_time)/0.45)
 	mantle.set_shader_parameter("clock",clock)
 	mantle.set_shader_parameter("strength",strength)
 	scale=Vector3.ONE*(1.0+sin(clock*8)*0.035)

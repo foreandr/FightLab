@@ -1,5 +1,11 @@
 extends "res://scripts/duel_actor.gd"
 const Ragdoll = preload("res://scripts/combat_ragdoll.gd")
+const FLASH_STEP_SPEED := 34.0
+const OVERDRIVE_MOVE_SPEED := FLASH_STEP_SPEED*0.75
+const FLASH_CHARGE_TIME := 0.28
+const CombatTactics = preload("res://scripts/combat_tactics.gd")
+var tactics := CombatTactics.new()
+var flash_aura_time := 0.0
 var ragdoll: Node3D
 var burn_time := 0.0
 var burn_clock := 0.0
@@ -82,6 +88,8 @@ func reset_fighter(location: Vector3) -> void:
 		ragdoll.queue_free()
 		ragdoll = null
 	super.reset_fighter(location)
+	tactics.reset(self)
+	flash_aura_time=0
 	collision_layer = 128 << team
 	get_child(0).set_deferred("disabled", false)
 	burn_time = 0
@@ -113,6 +121,25 @@ func movement_multiplier() -> float:
 func arena_roam_radius() -> float:
 	return float(arena.Boundary.RADIUS)-2.0
 
+func locomotion_velocity(desired: Vector3) -> Vector3:
+	if tactics.banking and mode=="recover":
+		var away:=flat_direction(rival.position,position)
+		return away*(1.8 if flat_distance()<4.5 else 0.0)+Vector3(-away.z,0,away.x)*0.7
+	if team!=2 or haste_time<=0:
+		return super.locomotion_velocity(desired)
+	var speed:=minf(1,desired.length()/4.8)*OVERDRIVE_MOVE_SPEED*(0.6 if chill_time>0 else 1.0)
+	if mode=="chase":
+		speed=minf(speed,maxf(0,flat_distance()-0.75)*20)
+		if drive_velocity.length()>speed:
+			drive_velocity=drive_velocity.limit_length(speed)
+	return desired.normalized()*speed
+
+func play_recovery(distance: float) -> void:
+	if tactics.banking:
+		play("duel/walk_back" if distance<4.5 else "duel/strafe_left",0.9)
+	else:
+		super.play_recovery(distance)
+
 func choose_spell(air: bool) -> Dictionary:
 	var list: Array = arena.profile_spells(team)
 	var spec: Dictionary = list[spell_cursor % list.size()].duplicate(true)
@@ -122,12 +149,17 @@ func choose_spell(air: bool) -> Dictionary:
 func start_cast(air: bool) -> void:
 	air=air or not is_on_floor()
 	current_spell = choose_spell(air)
+	if current_spell.effect=="burst" and stamina<flash_stamina_requirement():
+		start_recovery()
+		return
 	if mana < arena.mana_cost(current_spell):
 		set_close_combat(true)
 		mode = "air" if air else "idle"
 		mode_time = 0
 		mode_length = 0.08
 		return
+	if current_spell.effect!="burst":
+		tactics.attack(self,current_spell.id)
 	charge_goal = 0
 	if current_spell.effect in ["orb", "slash", "ice_beam"] and not air:
 		charge_goal = (1.0 if (int(actions.get("cast",0))+team) % 3 == 0 else 0.0) if charge_requested < 0 else charge_requested
@@ -193,9 +225,11 @@ func advance_animation(delta: float) -> void:
 		player.seek(minf(cast_time, mode_length), true)
 	elif mode == "melee_charge":
 		player.seek(0.02, true)
+	elif mode=="burst_charge":
+		player.seek(0.15+minf(1,mode_time/FLASH_CHARGE_TIME)*0.3,true)
 	else:
 		if mode in ["run", "chase", "dash"]:
-			player.speed_scale = movement_multiplier()
+			player.speed_scale = clampf(Vector2(velocity.x,velocity.z).length()/7.0,0.7,3.5) if team==2 and haste_time>0 else movement_multiplier()
 		player.advance(delta)
 
 func select_action() -> void:
@@ -204,6 +238,8 @@ func select_action() -> void:
 		mode_time=0
 		return
 	if not is_instance_valid(rival) or rival.health <= 0:
+		return
+	if tactics.select(self):
 		return
 	if team == 2 and mana > 22 and haste_time < 0.2 and decision % 3 == 1:
 		spell_cursor = 0
@@ -215,7 +251,7 @@ func select_action() -> void:
 		decision += 1
 		start_cast(false)
 		return
-	if team == 2 and flat_distance() > 2.0 and stamina > 30 and mana > 10:
+	if team == 2 and flat_distance() > 2.0 and stamina > 30 and mana > 10 and tactics.avoid_flash<=0:
 		start_burst()
 		decision += 1
 		return
@@ -286,17 +322,20 @@ func start_punch() -> void:
 	begin_strike(moves[index])
 
 func begin_strike(spec: Array) -> void:
+	var linked_flash: bool=mode=="burst_dash"
 	var powered: bool=team==2 and haste_time>0
 	if not spend_stamina(float(spec[6])*(0.75 if powered else 1.0)):
 		start_recovery()
 		return
+	if not linked_flash:
+		tactics.attack(self,"melee")
 	melee_spec = spec
 	attack_kind = spec[0]
 	strike_damage = float(spec[5])*(1.35 if powered else 1.0)
 	strike_reach = spec[7]
 	strike_augmented=false
-	if spec[0] in ["front_kick","round_kick","knee"] and (mana>=5 or powered):
-		if not powered:
+	if spec[0] in ["front_kick","round_kick","knee"] and (mana>=5 or powered or linked_flash):
+		if not powered and not linked_flash:
 			spend_mana(5)
 		strike_augmented=true
 	mode = "punch"
@@ -325,21 +364,30 @@ func start_uppercut() -> void:
 	play("battle/uppercut")
 	count_action("charged_uppercut")
 
+func flash_stamina_requirement() -> float:
+	return 14+13.0*(0.75 if team==2 and haste_time>0 else 1.0)
+
 func start_burst(paid := false) -> void:
-	if stamina<26 or (not paid and mana<9):
+	if stamina<flash_stamina_requirement() or (not paid and mana<9):
 		return
 	if not paid:
 		spend_mana(9)
 	spend_stamina(14)
-	mode = "burst_dash"
+	mode = "burst_charge"
 	mode_time = 0
+	flash_aura_time=FLASH_CHARGE_TIME+0.2
+	current_spell={"hand":"both"}
+	did_release=false
+	charge_value=0
 	burst_direction = flat_direction(position, rival.position)
-	burst_left = clampf((flat_distance() - 0.9) / 17.0, 0.12, 0.48)
-	combo_speed = 17.0 * (0.6 if chill_time > 0 else 1.0)
+	combo_speed = FLASH_STEP_SPEED * (0.6 if chill_time > 0 else 1.0)
+	burst_left = clampf((flat_distance() - 0.8) / combo_speed, 0.06, 0.48)
 	clip = ""
-	play("duel/dash", 2.2)
-	count_action("forward_burst")
-	arena.audio.impact("dash", global_position, 0.7)
+	clip="spells/self_mend"
+	player.play(clip,0,1)
+	player.advance(0)
+	tactics.attack(self,"flash_step")
+	count_action("flash_charge")
 
 func tick(delta: float) -> void:
 	update_status(delta)
@@ -385,12 +433,30 @@ func tick(delta: float) -> void:
 	elif mode == "frozen":
 		mode = "idle"
 		mode_time = 0
-	if mode in ["burst_dash", "melee_charge"] and freeze_time <= 0:
+	if mode in ["burst_charge","burst_dash", "melee_charge"] and freeze_time <= 0:
 		impact_physics.restore(skeleton)
 		mode_time += delta
 		recover_resources(delta)
 		face_rival(delta)
-		if mode == "melee_charge":
+		if mode=="burst_charge":
+			charge_value=minf(1,mode_time/FLASH_CHARGE_TIME)
+			drive_velocity=drive_velocity.move_toward(Vector3.ZERO,delta*65)
+			velocity.x=drive_velocity.x+knockback.x
+			velocity.z=drive_velocity.z+knockback.z
+			velocity.y=-0.1 if is_on_floor() and position.y<0.15 and velocity.y<=0 else velocity.y-GRAVITY*delta
+			move_and_slide()
+			if mode_time>=FLASH_CHARGE_TIME:
+				mode="burst_dash"
+				mode_time=0
+				did_release=true
+				flash_aura_time=1.4
+				burst_direction=flat_direction(position,rival.position)
+				burst_left=clampf((flat_distance()-0.8)/combo_speed,0.06,0.48)
+				clip=""
+				play("duel/dash",2.8)
+				count_action("forward_burst")
+				arena.audio.impact("dash",global_position,0.7)
+		elif mode == "melee_charge":
 			melee_charge = minf(1, mode_time / 0.85)
 			charge_value=melee_charge
 			velocity.x = 0
@@ -402,16 +468,19 @@ func tick(delta: float) -> void:
 		else:
 			var before := position
 			var vertical:=velocity.y
-			velocity = burst_direction * combo_speed
+			var speed:=minf(combo_speed,maxf(0,flat_distance()-0.8)/delta)
+			velocity = burst_direction * speed
 			velocity.y = -0.1 if is_on_floor() and position.y<0.15 and vertical<=0 else vertical - GRAVITY * delta
 			move_and_slide()
 			position.y = maxf(0, position.y)
 			drive_velocity = burst_direction * combo_speed
 			distance_run += before.distance_to(position)
 			arena.speed_trail(self)
-			if flat_distance() < (1.1 if team==2 and haste_time>0 else 2.2) or mode_time > burst_left:
+			if flat_distance() < 0.95 or mode_time > burst_left:
 				combo_time = 0.48
-				start_punch()
+				melee_charge=0
+				melee_sequence+=1
+				begin_strike(["knee","battle/knee","calf_r",0.18,0.52,13.0,13.0,0.90])
 		advance_animation(delta)
 		impact_physics.step(delta)
 		impact_physics.apply(skeleton, is_on_floor(), global_basis)
@@ -464,6 +533,8 @@ func resolve_melee(delta: float) -> void:
 	melee_previous = limb
 
 func update_status(delta: float) -> void:
+	tactics.tick(self,delta)
+	flash_aura_time=maxf(0,flash_aura_time-delta)
 	wall_crash_cooldown=maxf(0,wall_crash_cooldown-delta)
 	if health<=0:
 		death_age+=delta

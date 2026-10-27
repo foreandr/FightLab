@@ -2,9 +2,9 @@
 
 Overdrive now lasts 14 seconds instead of 7, at the existing 18-mana cost. While
 powered, Storm's six-strike preference contains three knees, two punches and one
-front kick. Uppercuts remain available. His powered forward burst closes to
-1.1 m before the follow-up, and he pursues into knee range rather than repeatedly
-starting attacks from outside it.
+front kick. Uppercuts remain available. His forward burst now briefly charges,
+dashes at 34 m/s and automatically follows with a knee. Full-speed powered movement
+reaches 25.5 m/s; see the [Flash Step update](flash-freeze-tactics.md).
 
 The buff powers elemental leg augmentation without another mana payment. Powered
 strikes cost 25% less stamina and deal 35% more damage. The mantle reduces direct
