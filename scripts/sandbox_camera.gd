@@ -9,12 +9,16 @@ var distance := 8.0
 func take_control(camera: Camera3D,center: Vector3) -> void:
 	if manual:
 		return
+	capture_view(camera,camera.global_position.distance_to(center))
+
+func capture_view(camera: Camera3D,pivot_distance: float) -> void:
+	# Adopt the current viewing ray exactly; do not re-aim at a moving fighter.
 	manual=true
-	focus=center
-	var offset:=camera.global_position-focus
-	distance=clampf(offset.length(),1.2,65)
-	yaw=atan2(offset.x,offset.z)
-	pitch=clampf(asin(clampf(offset.normalized().y,-1,1)),0.05,1.4)
+	distance=clampf(pivot_distance,1.2,65)
+	var back:=camera.global_basis.z.normalized()
+	focus=camera.global_position-back*distance
+	yaw=atan2(back.x,back.z)
+	pitch=clampf(asin(clampf(back.y,-1,1)),0.05,1.4)
 
 func orbit(relative: Vector2) -> void:
 	yaw=wrapf(yaw-relative.x*0.006,-PI,PI)

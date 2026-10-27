@@ -54,7 +54,7 @@ func run() -> void:
 	check(Engine.time_scale<1,"T must toggle slow motion")
 	sandbox._unhandled_key_input(key(KEY_T))
 	sandbox._unhandled_key_input(key(KEY_F))
-	check(not rig.manual,"F must restore automatic fighter framing")
+	check(rig.manual,"F must frame once and leave the camera under manual control")
 	sandbox.distance_input.get_line_edit().grab_focus()
 	check(sandbox.camera_text_editing(),"Editing the distance must suppress camera movement")
 	sandbox.camera_input_enabled=true

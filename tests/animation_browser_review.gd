@@ -8,6 +8,12 @@ func run() -> void:
 	lab.camera_input_enabled=false
 	lab.set_process_unhandled_key_input(false)
 	await frames(60)
+	lab.inspection_camera.zoom(-2)
+	lab.inspection_camera.apply(lab.field.camera)
+	lab.distance_input.value=8
+	lab.select_category("Sprint")
+	await frames(120)
+	lab.distance_input.value=4.4
 	for pair in [["Motion","Dodges","Dodge Left"],["Motion","Acrobatics","Flip"],["Attack","Kick","Kick"],["Attack","Spell Throwing","Spell Throw"]]:
 		lab.select_group(pair[0])
 		lab.select_category(pair[1])

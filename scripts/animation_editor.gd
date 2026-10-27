@@ -123,7 +123,7 @@ func build_ui() -> void:
 	settings_row.add_theme_constant_override("separation",10)
 	ui.add_child(settings_row)
 	menu_label(settings_row,"Distance (m)",13)
-	for node in [distance_input,dash_direction_menu,block_menu,target_jump_toggle,weak_toggle,repeat_toggle]:node.reparent(settings_row)
+	for node in [distance_input,dash_direction_menu,block_menu]:node.reparent(settings_row)
 	var bottom:=panel(ui,Vector4(0,-124,0,0),true)
 	bottom.anchor_top=1
 	bottom.anchor_bottom=1
@@ -256,8 +256,6 @@ func run_setup() -> void:
 		browse_backdrop.hide()
 		field.show()
 		live_preview_sequence.reset()
-		field.camera.h_offset=0
-		field.camera.v_offset=0
 		layout_chain(false)
 	super.run_setup()
 
@@ -276,8 +274,6 @@ func reset_setup() -> void:
 		browser.hide()
 		browse_backdrop.hide()
 		field.show()
-		field.camera.h_offset=0
-		field.camera.v_offset=0
 		layout_chain(false)
 	elif browser.visible and not selected_entry.is_empty():
 		begin_live_preview()
@@ -308,7 +304,7 @@ func _physics_process(delta: float) -> void:
 	live_preview_age+=delta
 	if not live_preview_started and live_preview_age>=0.25:
 		live_preview_started=true
-		if target_jump_toggle.button_pressed:
+		if partner_jumps():
 			target.start_jump("flip")
 			target.air_momentum=Vector3.ZERO
 			partner_jumping=true
@@ -330,10 +326,10 @@ func _physics_process(delta: float) -> void:
 		live_preview_loops+=1
 
 func update_camera(delta: float) -> void:
+	if camera_initialized:return
 	if not is_instance_valid(browser) or not browser.visible:
 		super.update_camera(delta)
 		return
-	if inspection_camera.manual:return
 	var low:=Vector3(INF,INF,INF)
 	var high:=Vector3(-INF,-INF,-INF)
 	var points: Array[Vector3]=[]
@@ -342,22 +338,25 @@ func update_camera(delta: float) -> void:
 			points.append(point)
 			low=low.min(point)
 			high=high.max(point)
-	var center: Vector3=(low+high)*0.5
+	var center: Vector3=(low+high)*0.5+Vector3.UP*0.65
 	var back:=Vector3(0.15,0.36,1).normalized()
 	var right:=Vector3(1,0,-0.15).normalized()
 	var up:=back.cross(right).normalized()
-	var distance:=8.0
+	var distance:=12.0
 	var aspect: float=get_viewport().get_visible_rect().size.aspect()
 	var tangent:=tan(deg_to_rad(field.camera.fov*0.5))
 	for point in points:
 		var offset:=point-center
 		var fit:=maxf(absf(offset.dot(right))/(tangent*aspect*0.5),absf(offset.dot(up))/(tangent*0.4))
 		distance=maxf(distance,offset.dot(back)+fit+0.6)
-	field.camera.position=field.camera.position.lerp(center+back*distance,minf(1,delta*12))
-	field.camera.look_at(center)
-	# Project the fighters into the unobstructed arena to the right of the list.
-	field.camera.h_offset=-distance*tangent*aspect*0.40
-	field.camera.v_offset=-distance*tangent*0.12
+	# One initial composition. No tracking, interpolation, or per-cycle zoom.
+	var shift: Vector3=right*(-distance*tangent*aspect*0.40)
+	field.camera.position=center+back*distance+shift
+	field.camera.look_at(center+shift)
+	field.camera.h_offset=0
+	field.camera.v_offset=0
+	inspection_camera.capture_view(field.camera,distance)
+	camera_initialized=true
 
 func _process(delta: float) -> void:
 	super._process(delta)

@@ -18,7 +18,7 @@ func select_move(id: String) -> void:
 			return
 	check(false,"Missing menu move: "+id)
 func clear_options() -> void:
-	for toggle in [sandbox.jump_toggle,sandbox.target_jump_toggle,sandbox.charge_toggle,sandbox.weak_toggle,sandbox.repeat_toggle]:
+	for toggle in [sandbox.jump_toggle,sandbox.charge_toggle]:
 		toggle.set_pressed_no_signal(false)
 	sandbox.block_menu.select(0)
 	sandbox.settings_changed()
@@ -49,12 +49,6 @@ func run() -> void:
 	sandbox.settings_changed()
 	var blocked: Dictionary=await play_case()
 	check(blocked.blocks>0 and blocked.damage==0,"Partner block selection must absorb a real Fireball")
-	sandbox.block_menu.select(2)
-	sandbox.weak_toggle.set_pressed_no_signal(true)
-	sandbox.charge_toggle.set_pressed_no_signal(true)
-	sandbox.settings_changed()
-	var broken: Dictionary=await play_case()
-	check(broken.guard_breaks>0,"Weak guard plus charged Fireball must test a real guard break")
 	clear_options()
 	sandbox.jump_toggle.set_pressed_no_signal(true)
 	sandbox.settings_changed()
@@ -62,8 +56,7 @@ func run() -> void:
 	var airborne: Dictionary=await play_case()
 	check(airborne.seen.air and airborne.damage>0,"Caster jump toggle must perform a real airborne Fireball")
 	clear_options()
-	sandbox.target_jump_toggle.set_pressed_no_signal(true)
-	sandbox.block_menu.select(1)
+	sandbox.block_menu.select(4)
 	sandbox.settings_changed()
 	sandbox.run_setup()
 	await frames(60)
@@ -104,14 +97,13 @@ func run() -> void:
 	clear_options()
 	select_move("fireball_ground")
 	sandbox.distance_input.value=4.4
-	sandbox.repeat_toggle.set_pressed_no_signal(true)
 	sandbox.run_setup()
 	await frames(580)
-	check(sandbox.armed and sandbox.age<1 and not sandbox.finished,"Repeat must replay the same configuration, not advance the move menu")
+	check(sandbox.finished and sandbox.age>=9,"A configured chain must play once without a Repeat Setup option")
 	sandbox.reset_setup()
 	await frames(20)
-	check(not sandbox.armed and paused,"Reset must stop Repeat and wait for the next Run")
-	if failures.is_empty():print("PASS: configurable sandbox menu, all spells/actions, distance, real charge/block/guard break, both jumps, reset, pause and repeat")
+	check(not sandbox.armed and paused,"Reset must wait for the next Run")
+	if failures.is_empty():print("PASS: configurable sandbox menu, all spells/actions, distance, real charge/block, partner jump menu, reset, pause and one-shot playback")
 	paused=false
 	sandbox.queue_free()
 	await frames(3)

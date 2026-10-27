@@ -30,12 +30,15 @@ Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
 Throwing. Motion and Attack share one combined chain. **+ / −** edits chain
 length. Jump unlocks aerial moves; Land restores grounded choices. **Run chain**
 executes the physical test; **Browse** returns to the library. The bottom bar is
-Run, Reset, Slow, Browse and Home. Spacing, target behavior, Repeat and camera
-controls remain available.
+Run, Reset, Slow, Browse and Home. Partner behavior is one menu: no block,
+palm/braced shield, jump, or jump with a shield. Repeat Setup and Weaken Guard
+have been removed. Hover previews loop automatically; composed chains play once.
 
-In Create, R replays, X resets, Space pauses, T slows time and B opens Fight.
+In Create, R replays, X resets and T slows time.
 WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to
-reframe. **Home / Esc** returns to the menu. In Fight, Space slows time, R
+frame once. The camera stays where you place it through distance changes,
+animation selections, loops and Run/Reset; it never automatically follows or
+zooms toward the fighters. **Home / Esc** returns to the menu. In Fight, Space slows time, R
 restarts, M mutes, F2 opens Animations and Esc returns Home. Direct commands:
 `run.ps1 -Sandbox` (Animations), `-Spells`, `-Fight`, or `-Tour` for the retained
 [54-case review](docs/combat-showcase.md). See the [Create guide](docs/combat-sandbox.md).

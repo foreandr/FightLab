@@ -6,10 +6,7 @@ var move_menu: OptionButton
 var distance_input: SpinBox
 var block_menu: OptionButton
 var jump_toggle: CheckBox
-var target_jump_toggle: CheckBox
 var charge_toggle: CheckBox
-var weak_toggle: CheckBox
-var repeat_toggle: CheckBox
 var hint_label: Label
 var armed := false
 var configuring := true
@@ -20,6 +17,7 @@ var inspection_camera=preload("res://scripts/sandbox_camera.gd").new()
 var camera_input_enabled := true
 var camera_dragging := false
 var camera_mouse_origin := Vector2.ZERO
+var camera_initialized := false
 var sequence=preload("res://scripts/motion_sequence.gd").new()
 var chain_menu: Array[OptionButton]=[]
 var chain_panel: HBoxContainer
@@ -37,6 +35,7 @@ func _ready() -> void:
 	super._ready()
 	configuring=false
 	settings_changed()
+	update_camera(1)
 
 func build_ui() -> void:
 	if editor_section=="Animations":
@@ -88,7 +87,7 @@ func build_ui() -> void:
 	distance_input.custom_minimum_size=Vector2(100,32)
 	row.add_child(distance_input)
 	block_menu=OptionButton.new()
-	for text_ in ["Partner: No block","Partner: Palm shield","Partner: Brace shield"]:
+	for text_ in ["Partner: No block","Partner: Palm shield","Partner: Brace shield","Partner: Jump","Partner: Jump + palm shield","Partner: Jump + brace shield"]:
 		block_menu.add_item(text_)
 	row.add_child(block_menu)
 	chain_panel=HBoxContainer.new()
@@ -121,10 +120,7 @@ func build_ui() -> void:
 	dash_direction_menu.focus_mode=Control.FOCUS_NONE
 	options.add_child(dash_direction_menu)
 	jump_toggle=checkbox(options,"Caster jumps")
-	target_jump_toggle=checkbox(options,"Partner jumps")
 	charge_toggle=checkbox(options,"Charged cast")
-	weak_toggle=checkbox(options,"Weaken guard")
-	repeat_toggle=checkbox(options,"Repeat setup")
 	hint_label=menu_label(column,"",13)
 	detail_label=menu_label(column,"",13)
 	resources_label=menu_label(column,"",13)
@@ -149,10 +145,10 @@ func build_ui() -> void:
 	distance_input.value_changed.connect(func(_value):settings_changed())
 	block_menu.item_selected.connect(func(_index):settings_changed())
 	dash_direction_menu.item_selected.connect(func(_index):settings_changed())
-	for toggle in [jump_toggle,target_jump_toggle,charge_toggle,weak_toggle]:
+	for toggle in [jump_toggle,charge_toggle]:
 		toggle.toggled.connect(func(_value):settings_changed())
 	# Space belongs to pause; arrows belong to the menu when it has focus.
-	for node in [move_menu,block_menu,jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,repeat_toggle]:
+	for node in [move_menu,block_menu,jump_toggle,charge_toggle]:
 		node.focus_mode=Control.FOCUS_NONE
 
 func menu_label(parent: Node,text_: String,size: int) -> Label:
@@ -190,9 +186,6 @@ func settings_changed() -> void:
 	if not can_charge:
 		charge_toggle.set_pressed_no_signal(false)
 	charge_toggle.tooltip_text="Held charge is available for grounded Fireball, Cinder Slash and Freezing Ray. Jump casts are quick; Flash Step and uppercut include their own charge."
-	weak_toggle.disabled=block_menu.selected==0
-	if weak_toggle.disabled:
-		weak_toggle.set_pressed_no_signal(false)
 	hint_label.text="Spawn distance is center to center. "
 	if motion:
 		hint_label.text="Choose the first animation; + adds steps. Jump unlocks Flip / Twist. Land restores grounded moves."
@@ -201,7 +194,7 @@ func settings_changed() -> void:
 	elif jump_toggle.button_pressed:
 		hint_label.text+="Jump casts use the quick release; held charge is grounded."
 	else:
-		hint_label.text+="Settings reset the stage. Run plays once; Repeat replays the same setup."
+		hint_label.text+="Settings reset the fighters. Run plays the setup once."
 	configuring=false
 	reset_setup()
 
@@ -219,10 +212,17 @@ func configured_entry() -> Dictionary:
 		entry.duration=maxf(9,chosen_steps().size()*3.0+1)
 		entry.air=false
 		entry.sandbox_air=false
-	if block_menu.selected>0:
-		entry.block="palm" if block_menu.selected==1 else "brace"
-		entry.weak_guard=weak_toggle.button_pressed
+	var shield:=partner_shield_style()
+	if not shield.is_empty():entry.block=shield
 	return entry
+
+func partner_jumps() -> bool:
+	return block_menu.selected in [3,4,5]
+
+func partner_shield_style() -> String:
+	if block_menu.selected in [1,4]:return "palm"
+	if block_menu.selected in [2,5]:return "brace"
+	return ""
 
 func chosen_steps() -> Array[String]:
 	var steps: Array[String]=[]
@@ -331,7 +331,7 @@ func run_setup() -> void:
 	prepare_setup(true)
 
 func perform_case() -> void:
-	if target_jump_toggle.button_pressed:
+	if partner_jumps():
 		target.start_jump("flip")
 		target.air_momentum=Vector3.ZERO
 		partner_jumping=true
@@ -372,23 +372,22 @@ func _physics_process(delta: float) -> void:
 	result_label.text="%s  ·  Damage %.1f  ·  Blocks %d  ·  Guard breaks %d"%["Finished — replay or change settings" if finished else ("Paused" if get_tree().paused else "Running"),damage,absorbed,target.guard_breaks-marks.guard_breaks]
 	if catalog[0].kind=="sequence":
 		result_label.text+="  ·  "+("Grounded" if actor.is_on_floor() else "Airborne")+"  ·  "+sequence.status
-	if finished and repeat_toggle.button_pressed and not get_tree().paused:
-		run_setup()
 
 func show_resources() -> void:
 	resources_label.text="Caster: HP %d · Mana %d · Stamina %d · Armor %d   |   Partner: HP %d · Guard %d   |   Current distance %.1f m"%[ceili(actor.health),floori(actor.mana),floori(actor.stamina),ceili(actor.armor_hp),ceili(target.health),floori(target.guard_energy),Vector2(actor.position.x-target.position.x,actor.position.z-target.position.z).length()]
 
 func update_camera(delta: float) -> void:
-	if not inspection_camera.manual:
-		# Keep fast aerial rotations below the menu during their short ascent.
-		super.update_camera(delta*(3 if actor.mode in ["takeoff","air","air_trick"] else 1))
+	if camera_initialized:return
+	super.update_camera(1)
+	inspection_camera.capture_view(field.camera,field.camera.position.distance_to((actor.focus_position()+target.focus_position())*0.5+Vector3.UP))
+	camera_initialized=true
 
 func take_camera_control() -> void:
 	inspection_camera.take_control(field.camera,(actor.focus_position()+target.focus_position())*0.5+Vector3.UP*0.35)
 
 func reframe_camera() -> void:
 	stop_camera_drag()
-	inspection_camera.manual=false
+	camera_initialized=false
 	update_camera(1)
 
 func camera_text_editing() -> bool:

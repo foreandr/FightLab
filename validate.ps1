@@ -16,6 +16,7 @@ Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PS
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/combat_showcase_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/combat_sandbox_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/sandbox_camera_test.gd')
+Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/create_view_controls_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/motion_sequence_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/aerial_conditions_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/combo_editor_test.gd')
