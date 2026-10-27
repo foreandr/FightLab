@@ -29,6 +29,11 @@ var chain_steps: HBoxContainer
 var chain_scroll: ScrollContainer
 var remove_step_button: Button
 var chain_count: Label
+var play_button: Button
+var repeat_play_button: Button
+var repeat_playing := false
+var repeat_wait := 0.0
+var repeat_cycles := 0
 
 func _ready() -> void:
 	auto_advance=false
@@ -133,11 +138,12 @@ func build_ui() -> void:
 	actions.alignment=BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation",8)
 	footer.add_child(actions)
-	button(actions,"Run / Replay [R]",run_setup)
+	play_button=button(actions,"Play [R]",run_setup)
+	repeat_play_button=button(actions,"Repeat Play",toggle_repeat_play)
 	button(actions,"Reset [X]",reset_setup)
 	slow_button=button(actions,"Slow [T]",toggle_slow)
 	button(actions,"Home [Esc]",return_home)
-	result_label=menu_label(footer,"Ready — choose a move, then Run",15)
+	result_label=menu_label(footer,"Ready — choose a move, then Play",15)
 	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · F reframe · Shift faster",13)
 	move_menu.item_selected.connect(func(_index):settings_changed())
 	distance_input.value_changed.connect(func(_value):settings_changed())
@@ -192,7 +198,7 @@ func settings_changed() -> void:
 	elif jump_toggle.button_pressed:
 		hint_label.text+="Jump casts use the quick release; held charge is grounded."
 	else:
-		hint_label.text+="Settings reset the fighters. Run plays the setup once."
+		hint_label.text+="Settings reset the fighters. Play runs once; Repeat Play loops."
 	configuring=false
 	reset_setup()
 
@@ -257,6 +263,7 @@ func refresh_chain_options() -> void:
 		chain_remove_buttons.append(remove)
 	chain_count.text="Chain (%d)"%chain_data.size()
 	remove_step_button.disabled=chain_data.is_empty()
+	update_playback_buttons()
 
 func reveal_last_chain_step() -> void:
 	await get_tree().process_frame
@@ -297,13 +304,51 @@ func prepare_setup(run: bool) -> void:
 	detail_label.text="%.1f m apart  ·  %s  ·  %s"%[float(distance_input.value),"Caster jumps" if jump_toggle.button_pressed else "Grounded caster",block_menu.get_item_text(block_menu.selected)]
 	get_tree().paused=not run
 	show_resources()
-	result_label.text="Ready — Run plays this setup; Reset restores both fighters."
+	result_label.text="Ready — Play runs once; Repeat Play loops; Reset restores both fighters."
 	update_controls()
 
 func reset_setup() -> void:
+	stop_repeat_play()
 	prepare_setup(false)
 
 func run_setup() -> void:
+	stop_repeat_play()
+	prepare_setup(true)
+
+func update_playback_buttons() -> void:
+	var empty: bool=move_menu!=null and moves[move_menu.selected].kind=="sequence" and chain_data.is_empty()
+	if is_instance_valid(play_button):play_button.disabled=empty
+	if is_instance_valid(repeat_play_button):
+		repeat_play_button.disabled=empty
+		repeat_play_button.text="Stop Repeat" if repeat_playing else "Repeat Play"
+
+func stop_repeat_play() -> void:
+	repeat_playing=false
+	repeat_wait=0
+	update_playback_buttons()
+
+func toggle_repeat_play() -> void:
+	if repeat_playing:
+		reset_setup()
+		return
+	if moves[move_menu.selected].kind=="sequence" and chain_data.is_empty():return
+	run_setup()
+	repeat_playing=true
+	repeat_cycles=1
+	update_playback_buttons()
+
+func tick_repeat_play(delta: float) -> void:
+	if not repeat_playing or get_tree().paused:return
+	var complete: bool=finished or (catalog[0].kind=="sequence" and started and not sequence.active and actor.is_on_floor() and field.shots.is_empty() and field.channels.is_empty())
+	if not complete:
+		repeat_wait=0
+		return
+	# Give landing and impact a short readable pause before resetting the setup.
+	repeat_wait+=delta
+	if repeat_wait<0.75:return
+	repeat_wait=0
+	repeat_cycles+=1
+	if field.events.size()>4000:field.events=field.events.slice(-2000)
 	prepare_setup(true)
 
 func perform_case() -> void:
@@ -348,6 +393,8 @@ func _physics_process(delta: float) -> void:
 	result_label.text="%s  ·  Damage %.1f  ·  Blocks %d  ·  Guard breaks %d"%["Finished — replay or change settings" if finished else ("Paused" if get_tree().paused else "Running"),damage,absorbed,target.guard_breaks-marks.guard_breaks]
 	if catalog[0].kind=="sequence":
 		result_label.text+="  ·  "+("Grounded" if actor.is_on_floor() else "Airborne")+"  ·  "+sequence.status
+	if repeat_playing:result_label.text+="  ·  Repeat %d"%repeat_cycles
+	tick_repeat_play(delta)
 
 func show_resources() -> void:
 	resources_label.text="Caster: HP %d · Mana %d · Stamina %d · Armor %d   |   Partner: HP %d · Guard %d   |   Current distance %.1f m"%[ceili(actor.health),floori(actor.mana),floori(actor.stamina),ceili(actor.armor_hp),ceili(target.health),floori(target.guard_energy),Vector2(actor.position.x-target.position.x,actor.position.z-target.position.z).length()]

@@ -26,6 +26,7 @@ var motion_speed := 0.0
 var air_trick := ""
 const TWIST_DELAY := 0.12
 const TWIST_DURATION := 0.54
+const BACKFLIP_DURATION := 0.68
 var twist_age := -1.0
 var charge_goal := 0.0
 var charge_held := 0.0
@@ -479,7 +480,7 @@ func start_air_trick(kind: String) -> bool:
 	air_trick=kind
 	mode="air_trick"
 	mode_time=0
-	mode_length=0.34 if kind=="Flip" else TWIST_DELAY+TWIST_DURATION
+	mode_length=BACKFLIP_DURATION if kind=="Flip" else TWIST_DELAY+TWIST_DURATION
 	if kind=="Twist":twist_age=0
 	clip=""
 	var animation: String="duel/backflip" if kind=="Flip" else "duel/air"

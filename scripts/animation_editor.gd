@@ -136,7 +136,8 @@ func build_ui() -> void:
 	actions.alignment=BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation",8)
 	footer.add_child(actions)
-	button(actions,"Run chain [R]",run_setup)
+	play_button=button(actions,"Play [R]",run_setup)
+	repeat_play_button=button(actions,"Repeat Play",toggle_repeat_play)
 	button(actions,"Reset [X]",reset_setup)
 	slow_button=button(actions,"Slow [T]",toggle_slow)
 	button(actions,"Browse",browse_animations)
@@ -280,6 +281,7 @@ func run_setup() -> void:
 	super.run_setup()
 
 func browse_animations() -> void:
+	stop_repeat_play()
 	stop_camera_drag()
 	browser.show()
 	browse_backdrop.hide()

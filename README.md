@@ -37,11 +37,15 @@ an attack immediately after Twist to cast or strike during the turn, e.g.
 **Jump → Twist → Spell Throw → Land**. Flip can also lead straight into an
 airborne attack. Gravity continues throughout; Land waits for the real landing
 even when a long attack has already reached the ground. Land restores grounded
-motion choices. **Run chain**
-executes the physical test; **Browse** returns to the library. The bottom bar is
-Run, Reset, Slow, Browse and Home. Partner behavior is one menu: no block,
+motion choices. Backflip playback takes 0.68 seconds, half its previous rotation
+speed. **Play** executes the test once; **Repeat Play** automatically restores
+the setup and replays until **Stop Repeat**, Reset, Browse or a settings edit.
+Repeating preserves the camera and distance, lets projectiles finish, and pauses
+briefly after each performance. **Browse** returns to the library. The bottom bar is
+Play, Repeat Play, Reset, Slow, Browse and Home. Partner behavior is one menu: no block,
 palm/braced shield, jump, or jump with a shield. Repeat Setup and Weaken Guard
-have been removed. Hover previews loop automatically; composed chains play once.
+have been removed. Hover previews loop automatically; composed chains play once
+unless Repeat Play is enabled.
 
 In Create, R replays, X resets and T slows time.
 WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to

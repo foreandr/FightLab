@@ -26,10 +26,13 @@ func run() -> void:
 	lab.run_setup()
 	await frames(90)
 	lab.field.write_report()
+	lab.set_chain(["Jump","Flip","Land"])
+	lab.repeat_play_button.pressed.emit()
+	await frames(240)
+	lab.repeat_play_button.pressed.emit()
 	lab.set_chain(["Jump","Twist","Spell Throw","Land"])
-	for i in 3:
-		lab.run_setup()
-		await frames(90)
+	lab.play_button.pressed.emit()
+	await frames(90)
 	lab.browse_animations()
 	await frames(30)
 	paused=false
