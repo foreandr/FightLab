@@ -1,6 +1,6 @@
 extends Node3D
 
-# First playable combat sandbox. Uses Godot's built-in physics so it runs offline.
+# Hands-free NPC demo using Godot's built-in physics.
 # Visual meshes are temporary placeholders for licensed rigged characters.
 const MOVE_SPEED := 5.5
 const PUNCH_REACH := 2.15
@@ -18,20 +18,27 @@ var punch_cooldown := 0.0
 var facing := Vector3(0, 0, -1)
 var opponent_initial := Vector3(0, 1.1, -4)
 var hud: Label
+var demonstration_time := 0.0
+var hits := 0
+const ROUND_SECONDS := 10.0
 
 func _ready() -> void:
 	_build_world()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _physics_process(delta: float) -> void:
+	demonstration_time += delta
+	if demonstration_time >= ROUND_SECONDS:
+		_restart_round()
+
+	var toward := opponent.global_position - fighter.global_position
+	var horizontal := Vector3(toward.x, 0.0, toward.z)
+	var distance := horizontal.length()
 	var move := Vector3.ZERO
-	if Input.is_key_pressed(KEY_A): move.x -= 1.0
-	if Input.is_key_pressed(KEY_D): move.x += 1.0
-	if Input.is_key_pressed(KEY_W): move.z -= 1.0
-	if Input.is_key_pressed(KEY_S): move.z += 1.0
-	move = move.normalized()
-	if move.length_squared() > 0.01:
-		facing = move
+	if distance > 1.45 and distance < 16.0:
+		move = horizontal.normalized()
+	if distance > 0.05:
+		facing = horizontal.normalized()
 		fighter_visual.rotation.y = atan2(-facing.x, -facing.z)
 	fighter.velocity.x = move.x * MOVE_SPEED
 	fighter.velocity.z = move.z * MOVE_SPEED
@@ -42,33 +49,37 @@ func _physics_process(delta: float) -> void:
 	fighter.move_and_slide()
 
 	punch_cooldown = maxf(0.0, punch_cooldown - delta)
-	if Input.is_key_pressed(KEY_SPACE) and punch_cooldown <= 0.0:
+	if distance <= 1.95 and punch_cooldown <= 0.0:
 		punch_clock = PUNCH_DURATION
-		punch_cooldown = 0.55
+		punch_cooldown = 1.05
 		punch_connected = false
-
 	if punch_clock > 0.0:
 		punch_clock = maxf(0.0, punch_clock - delta)
 		var progress := 1.0 - punch_clock / PUNCH_DURATION
-		# Wind-up, extension, recovery. Replace with a licensed skeletal clip later.
-		var extension := sin(progress * PI)
-		shoulder.rotation.x = 1.25 * extension
+		shoulder.rotation.x = 1.25 * sin(progress * PI)
 		if progress > 0.25 and not punch_connected:
 			_try_punch()
 			punch_connected = true
 	else:
 		shoulder.rotation.x = 0.0
 
-	if Input.is_key_pressed(KEY_R):
-		opponent.freeze = true
-		opponent.linear_velocity = Vector3.ZERO
-		opponent.angular_velocity = Vector3.ZERO
-		opponent.global_position = opponent_initial
-		opponent.global_rotation = Vector3.ZERO
-		opponent.freeze = false
-
 	camera.global_position = camera.global_position.lerp(fighter.global_position + Vector3(0, 5.0, 9.0), clampf(delta * 5.0, 0.0, 1.0))
 	camera.look_at(fighter.global_position + Vector3(0, 1.1, -1.0), Vector3.UP)
+	hud.text = "FIGHTLAB | AUTOMATIC NPC PHYSICS DEMO | HITS: %d | RESET IN: %.1fs" % [hits, ROUND_SECONDS - demonstration_time]
+
+func _restart_round() -> void:
+	demonstration_time = 0.0
+	fighter.global_position = Vector3(0, 0.05, 2)
+	fighter.velocity = Vector3.ZERO
+	punch_clock = 0.0
+	punch_cooldown = 0.0
+	shoulder.rotation.x = 0.0
+	opponent.freeze = true
+	opponent.linear_velocity = Vector3.ZERO
+	opponent.angular_velocity = Vector3.ZERO
+	opponent.global_position = opponent_initial
+	opponent.global_rotation = Vector3.ZERO
+	opponent.freeze = false
 
 func _try_punch() -> void:
 	var toward := opponent.global_position - (fighter.global_position + Vector3.UP)
@@ -80,6 +91,7 @@ func _try_punch() -> void:
 		return
 	# The target is an actual RigidBody3D; Godot's physics solver handles the impulse.
 	opponent.apply_central_impulse(direction * PUNCH_IMPULSE + Vector3.UP * 2.2)
+	hits += 1
 
 func _build_world() -> void:
 	var environment := WorldEnvironment.new()
@@ -151,7 +163,7 @@ func _build_world() -> void:
 	var overlay := CanvasLayer.new()
 	add_child(overlay)
 	hud = Label.new()
-	hud.text = "FIGHTLAB  |  WASD move  |  SPACE punch  |  R reset opponent"
+	hud.text = "FIGHTLAB | AUTOMATIC NPC PHYSICS DEMO"
 	hud.position = Vector2(22, 20)
 	hud.add_theme_font_size_override("font_size", 18)
 	overlay.add_child(hud)
