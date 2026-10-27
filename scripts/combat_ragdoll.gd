@@ -14,6 +14,7 @@ var initial_velocity := Vector3.ZERO
 var initial_impulse := Vector3.ZERO
 var initial_point := Vector3.ZERO
 var land_sounded := false
+var previous_velocities := {}
 
 func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	fighter = owner_
@@ -114,10 +115,20 @@ func step(delta: float) -> bool:
 		fighter.skeleton.set_bone_pose_position(index, local.origin)
 		fighter.skeleton.set_bone_pose_rotation(index, local.basis.orthonormalized().get_rotation_quaternion())
 	fighter.velocity = bodies.pelvis.linear_velocity
+	var previous_average:=Vector3.ZERO
+	for body in bodies.values():
+		previous_average+=previous_velocities.get(body.get_instance_id(),body.linear_velocity)*body.mass/total_mass
 	for body in bodies.values():
 		for collider in body.get_colliding_bodies():
-			if collider.collision_layer & 1:
+			if collider.has_meta("arena_wall"):
+				var normal: Vector3=collider.get_meta("inward_normal")
+				var incoming: Vector3=previous_velocities.get(body.get_instance_id(),body.linear_velocity)
+				if -previous_average.dot(normal)>-incoming.dot(normal):
+					incoming=previous_average
+				fighter.wall_crash(body.global_position,normal,maxf(0,-incoming.dot(normal)),incoming)
+			elif collider.collision_layer & 1:
 				floor_contacts+=1
+		previous_velocities[body.get_instance_id()]=body.linear_velocity
 	if floor_contacts>0 and age>0.2 and not land_sounded:
 		land_sounded=true
 		fighter.arena.audio.impact("land",location(),0.85)

@@ -2,6 +2,7 @@ extends "res://scripts/duel_arena.gd"
 const BattleActor = preload("res://scripts/battle_actor.gd")
 const BattleVFX = preload("res://scripts/battle_vfx.gd")
 const CombatAudio = preload("res://scripts/combat_audio.gd")
+const Boundary = preload("res://scripts/arena_boundary.gd")
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
 	[{"id":"ice_armor","name":"Glacial Armor","effect":"armor","animation":"twin_push","hand":"both","release":1.0}, {"id":"ice_beam","name":"Freezing Ray","effect":"ice_beam","animation":"flame_channel","hand":"both","release":0.8}],
@@ -27,6 +28,7 @@ func _ready() -> void:
 		if arg.begins_with("--report-file="):
 			report_file = arg.trim_prefix("--report-file=")
 	build_grassland()
+	add_child(Boundary.new())
 	hud.get_parent().queue_free()
 	vfx = BattleVFX.new()
 	add_child(vfx)
@@ -161,7 +163,18 @@ func _physics_process(delta: float) -> void:
 	if round_active:
 		round_time += delta
 	for f in fighters:
+		var incoming: Vector3=f.velocity
+		if Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z).length()>incoming.length():
+			incoming=Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z)
 		f.tick(delta)
+		if not is_instance_valid(f.ragdoll) and f.health>0:
+			for i in f.get_slide_collision_count():
+				var contact: KinematicCollision3D=f.get_slide_collision(i)
+				if contact.get_collider().has_meta("arena_wall"):
+					var speed:=maxf(0,-incoming.dot(contact.get_normal()))
+					if speed>4.5 and (f.knockback.length()>1.5 or not f.is_on_floor() or speed>10):
+						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming)
+						break
 		f.update_targets()
 		max_radius = maxf(max_radius, Vector2(f.focus_position().x,f.focus_position().z).length())
 	for f in fighters:
@@ -280,6 +293,9 @@ func step_shots(delta: float) -> void:
 		var shot: Dictionary = shots[i]
 		var from: Vector3 = shot.node.position
 		var to: Vector3 = from+shot.velocity*delta
+		var ground := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from,to,1))
+		if not ground.is_empty():
+			to=ground.position
 		shot.age += delta
 		shot.trail += delta
 		var hit := false
@@ -314,7 +330,6 @@ func step_shots(delta: float) -> void:
 					apply_impact(shot.caster,victim,shot.spec,victim.contact_surface(result.collider,point),shot.velocity.normalized(),result.collider,shot.velocity*shot.mass)
 					hit=true
 					break
-		var ground := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from,to,1))
 		if not hit and not ground.is_empty():
 			impact_burst(ground.position,shot.caster.team,false)
 			hit=true
@@ -340,9 +355,9 @@ func step_channels(delta: float) -> void:
 			continue
 		var from:=fighter_hand(f,"both")
 		var end: Vector3=f.rival.bone_point("spine_03")
-		var query:=PhysicsRayQueryParameters3D.create(from,end+(end-from).normalized()*0.4,enemy_hurt_mask(f.team))
+		var query:=PhysicsRayQueryParameters3D.create(from,end+(end-from).normalized()*0.4,enemy_hurt_mask(f.team)|1)
 		query.collide_with_areas=true
-		query.collide_with_bodies=false
+		query.collide_with_bodies=true
 		var result:=get_world_3d().direct_space_state.intersect_ray(query)
 		var blocker: CharacterBody3D
 		for enemy in fighters:
@@ -358,7 +373,7 @@ func step_channels(delta: float) -> void:
 				item.tick=0.18
 		elif not result.is_empty():
 			end=result.position
-			if item.tick<=0 and result.collider.get_meta("fighter").health>0:
+			if item.tick<=0 and result.collider.has_meta("fighter") and result.collider.get_meta("fighter").health>0:
 				apply_impact(f,result.collider.get_meta("fighter"),item.spec,end,(end-from).normalized(),result.collider,(end-from).normalized()*35)
 				item.tick=0.18
 		var path:=[]

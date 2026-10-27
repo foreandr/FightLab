@@ -14,6 +14,7 @@ func run() -> void:
 	var bounded:=true
 	var synchronized:=true
 	var finite:=true
+	var contained:=true
 	var visible:=0
 	var samples:=0
 	var max_bodies:=0
@@ -24,10 +25,12 @@ func run() -> void:
 			bounded=bounded and f.health>=0 and f.health<=f.MAX_HEALTH and f.mana>=0 and f.mana<=f.MAX_MANA and f.stamina>=0 and f.stamina<=f.MAX_STAMINA and f.guard_energy>=0 and f.guard_energy<=f.MAX_GUARD
 			synchronized=synchronized and absf(field.health_bars[f.team].value-f.health)<0.011 and absf(field.mana_bars[f.team].value-f.mana)<0.011
 			finite=finite and f.focus_position().is_finite() and f.velocity.is_finite()
+			contained=contained and absf(f.focus_position().x)<10.75 and absf(f.focus_position().z)<10.75
 			if is_instance_valid(f.ragdoll):
 				for body in f.ragdoll.bodies.values():
 					max_body_speed=maxf(max_body_speed,body.linear_velocity.length())
 					finite=finite and body.global_position.is_finite() and body.linear_velocity.length()<65
+					contained=contained and absf(body.global_position.x)<10.75 and absf(body.global_position.z)<10.75
 			if field.elapsed>2 and f.health>0:
 				samples+=1
 				if field.camera.is_position_in_frustum(f.bone_point("Head")):
@@ -36,6 +39,7 @@ func run() -> void:
 			max_bodies=maxi(max_bodies,field.find_children("*","RigidBody3D",true,false).size())
 	check(bounded and synchronized,"All three health/resource pools must remain bounded and agree with their HUD")
 	check(finite,"Rigid-body and animation state must remain finite with bounded physical velocities")
+	check(contained,"All fighters and ragdoll parts must remain inside the finite arena")
 	print("RAGDOLL max body speed=",max_body_speed)
 	check(max_bodies<=33,"Ragdoll bodies must be cleaned up rather than accumulate across rounds")
 	var coverage:=float(visible)/maxi(1,samples)
@@ -58,7 +62,9 @@ func run() -> void:
 	field.write_report()
 	if failures.is_empty():
 		print("PASS: 180-second three-way combat, targeting, all kits, charge/status effects, physical combos, ragdoll recovery/cleanup, audio, rounds and camera")
+	field.audio.stop_all()
 	field.queue_free()
 	for i in 3:
 		await physics_frame
+	await create_timer(0.15).timeout
 	quit(0 if failures.is_empty() else 1)

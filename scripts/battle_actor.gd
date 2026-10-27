@@ -42,6 +42,8 @@ var strike_reach := 1.0
 var charge_requested := -1.0
 var death_age := INF
 var death_impulse := Vector3.ZERO
+var wall_crash_cooldown := 0.0
+var wall_crashes := 0
 
 func _ready() -> void:
 	var actual := team
@@ -92,6 +94,7 @@ func reset_fighter(location: Vector3) -> void:
 	mode_length=0.25+team*0.1
 	death_age=INF
 	death_impulse=Vector3.ZERO
+	wall_crash_cooldown=0
 
 func focus_position() -> Vector3:
 	return ragdoll.location() - Vector3.UP * 0.65 if is_instance_valid(ragdoll) else global_position
@@ -407,6 +410,7 @@ func resolve_melee(delta: float) -> void:
 	melee_previous = limb
 
 func update_status(delta: float) -> void:
+	wall_crash_cooldown=maxf(0,wall_crash_cooldown-delta)
 	if health<=0:
 		death_age+=delta
 	chill_time = maxf(0, chill_time - delta)
@@ -497,6 +501,34 @@ func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> v
 	mode="ragdoll"
 	arena.events.append({"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
 	arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
+
+func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -> void:
+	if wall_crash_cooldown>0 or speed<4.5:
+		return
+	wall_crash_cooldown=0.65
+	wall_crashes+=1
+	arena.events.append({"time":arena.elapsed,"event":"wall_crash","team":team,"speed":speed,"point":[point.x,point.y,point.z]})
+	arena.audio.impact("heavy",point,clampf(speed/9,0.5,1.3))
+	for i in 8:
+		arena.vfx.puff(point,"smoke_04",team,Vector2.ONE*0.65,normal*(0.4+i*0.12)+Vector3.UP*(0.2+i*0.05),0.45,Color(0.65,0.73,0.72,0.45),0.1)
+	if health<=0 or not arena.round_active:
+		return
+	var damage:=clampf((speed-4.0)*1.8,0,22)
+	var applied:=minf(health,damage)
+	health-=applied
+	damage_taken+=applied
+	stamina=maxf(0,stamina-damage*0.8)
+	minimum_stamina=minf(minimum_stamina,stamina)
+	stamina_delay=maxf(stamina_delay,0.65)
+	guard_energy=maxf(0,guard_energy-damage*0.6)
+	var attacker: CharacterBody3D=arena.fighters[last_attacker] if last_attacker>=0 else null
+	if is_instance_valid(attacker) and attacker!=self:
+		attacker.damage_dealt+=applied
+	if not is_instance_valid(ragdoll):
+		velocity=incoming.bounce(normal)*0.3+normal*0.5+Vector3.UP*1.2
+		start_ragdoll(-normal*speed*impact_physics.BODY_MASS,point)
+	if health<=0:
+		enter_death(attacker,-normal*speed*impact_physics.BODY_MASS,point)
 
 func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 	if is_instance_valid(ragdoll):
