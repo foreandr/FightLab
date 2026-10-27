@@ -4,7 +4,17 @@ extends "res://scripts/spell_actor.gd"
 const MAX_HEALTH := 160.0
 const GRAVITY := 22.0
 const CAST_SPEED := 1.65
-const PLAN := ["cast", "run", "jump_cast", "dash", "cast", "flip", "run", "air_dash", "cast"]
+const PLAN := ["cast", "strafe", "jump_cast", "retreat", "cast", "shield", "dash", "cast", "roll_back", "run", "air_dash", "cast", "dodge_back", "approach", "flip"]
+const MAX_GUARD := 44.0
+var guard_energy := MAX_GUARD
+var guard_cooldown := 0.0
+var guard_recovery := 0.0
+var guard_style := "palm"
+var shield_recoil := 0.0
+var absorbed_damage := 0.0
+var blocks := 0
+var guard_breaks := 0
+var strafe_sign := 1.0
 var arena: Node3D
 var rival: CharacterBody3D
 var health := MAX_HEALTH
@@ -60,6 +70,10 @@ func reset_fighter(location: Vector3) -> void:
 	air_momentum = Vector3.ZERO
 	model.position = Vector3.ZERO
 	health = MAX_HEALTH
+	guard_energy = MAX_GUARD
+	guard_cooldown = 0
+	guard_recovery = 0
+	shield_recoil = 0
 	mode = "idle"
 	mode_time = 0
 	mode_length = 0.25 + team * 0.4
@@ -134,7 +148,14 @@ func select_action() -> void:
 	decision += 1
 	if health < MAX_HEALTH * 0.35 and not healed_this_round:
 		choice = "cast"
-	if choice in ["jump_cast", "flip", "air_dash"]:
+	if choice == "shield":
+		if guard_cooldown <= 0 and guard_energy >= 16:
+			start_shield()
+		else:
+			start_cast(false)
+	elif choice in ["strafe", "retreat", "approach", "dodge_back", "roll_back"]:
+		start_footwork(choice)
+	elif choice in ["jump_cast", "flip", "air_dash"]:
 		start_jump(choice)
 	elif choice == "cast":
 		start_cast(false)
@@ -154,6 +175,68 @@ func select_action() -> void:
 		mode_length = rng.randf_range(0.7, 1.1)
 		count_action("run")
 
+func start_footwork(kind: String) -> void:
+	mode = kind
+	mode_time = 0
+	mode_length = {"strafe":1.15, "retreat":0.95, "approach":0.75, "dodge_back":0.40, "roll_back":0.72}[kind]
+	strafe_sign = 1.0 if decision % 2 == 0 else -1.0
+	clip = ""
+	count_action(kind)
+	if kind in ["dodge_back", "roll_back"]:
+		air_momentum = flat_direction(rival.position, position) * (7.8 if kind == "dodge_back" else 5.2)
+		play("duel/" + kind)
+
+func start_shield() -> void:
+	mode = "shield"
+	mode_time = 0
+	mode_length = 1.35
+	guard_style = "palm" if (actions.get("shield", 0) + team) % 2 == 0 else "brace"
+	shield_recoil = 0
+	clip = ""
+	play("duel/shield_raise_" + guard_style)
+	count_action("shield")
+
+func shield_active() -> bool:
+	return mode == "shield" and mode_time >= 0.16 and mode_time < mode_length - 0.16 and guard_energy > 0 and health > 0 and arena.round_active
+
+func shield_center() -> Vector3:
+	return global_position + Vector3.UP * 1.05 + global_basis.z * 0.52
+
+func shield_intersection(from: Vector3, to: Vector3, radius: float = 0.0) -> Dictionary:
+	if not shield_active():
+		return {}
+	var normal := global_basis.z
+	var center := shield_center()
+	var distance_from := (from - center).dot(normal)
+	var distance_to := (to - center).dot(normal)
+	if distance_from < -radius or distance_to > radius or distance_from <= distance_to:
+		return {}
+	var t := clampf((distance_from - radius) / maxf(0.0001, distance_from - distance_to), 0, 1)
+	var point := from.lerp(to, t)
+	var lateral := point - center - normal * (point - center).dot(normal)
+	return {"point":point} if lateral.length() <= 0.86 + radius else {}
+
+func absorb_magic(amount: float, incoming: Vector3, point: Vector3) -> float:
+	if not shield_active() or global_basis.z.dot(flat_direction(global_position, incoming)) < 0.42:
+		return 0.0
+	var absorbed := minf(guard_energy, amount)
+	guard_energy -= absorbed
+	absorbed_damage += absorbed
+	blocks += 1
+	guard_recovery = 1.6
+	shield_recoil = 0.28
+	clip = ""
+	play("duel/shield_hit_" + guard_style)
+	arena.shield_impact(self, point, guard_energy <= 0)
+	if guard_energy <= 0:
+		guard_breaks += 1
+		guard_cooldown = 4.5
+		mode = "hit"
+		mode_time = 0
+		mode_length = 0.48
+		play("ual2/Idle_Shield_Break", 1.6)
+	return absorbed
+
 func flat_direction(from: Vector3, to: Vector3) -> Vector3:
 	var direction := to - from
 	direction.y = 0
@@ -162,6 +245,11 @@ func flat_direction(from: Vector3, to: Vector3) -> Vector3:
 func tick(delta: float) -> void:
 	var pending_release := false
 	mode_time += delta
+	guard_cooldown = maxf(0, guard_cooldown - delta)
+	guard_recovery = maxf(0, guard_recovery - delta)
+	shield_recoil = maxf(0, shield_recoil - delta)
+	if mode != "shield" and guard_recovery <= 0:
+		guard_energy = minf(MAX_GUARD, guard_energy + delta * 8)
 	dodge_cooldown = maxf(0, dodge_cooldown - delta)
 	invulnerability = maxf(0, invulnerability - delta)
 	player.speed_scale = 1
@@ -173,16 +261,46 @@ func tick(delta: float) -> void:
 	elif not arena.round_active:
 		mode = "idle"
 		play("spells/idle")
-	if can_decide and mode in ["idle", "run"] and dodge_cooldown <= 0:
+	if can_decide and mode in ["idle", "run", "strafe", "retreat", "approach"] and dodge_cooldown <= 0:
 		var threat: int = arena.incoming_threat(self)
 		if threat >= 0 and threat != last_threat:
 			last_threat = threat
-			if rng.randf() < 0.35:
+			if rng.randf() < 0.70:
 				dodge_cooldown = 2.7
-				start_jump("flip")
+				if guard_cooldown <= 0 and guard_energy >= 18 and rng.randf() < 0.65:
+					start_shield()
+				else:
+					start_footwork("dodge_back" if rng.randf() < 0.5 else "roll_back")
 	if mode == "ko":
 		if clip != "ual1/Death01":
 			play("ual1/Death01", 1.3)
+	elif mode == "shield":
+		face_rival(delta)
+		if shield_recoil <= 0 and mode_time > 0.22:
+			play("duel/shield_lower_" + guard_style if mode_time >= mode_length - 0.24 else "duel/shield_hold_" + guard_style)
+		if mode_time >= mode_length:
+			guard_cooldown = 2.4
+			mode = "idle"
+			mode_time = 0
+			mode_length = 0.08
+	elif mode in ["strafe", "retreat", "approach", "dodge_back", "roll_back"]:
+		face_rival(delta)
+		var away := flat_direction(rival.position, position)
+		if mode == "strafe":
+			desired = Vector3(-away.z, 0, away.x) * strafe_sign * 1.8
+			var local := global_basis.inverse() * desired
+			play("duel/strafe_left" if local.x > 0 else "duel/strafe_right", 1.4)
+		elif mode in ["retreat", "approach"]:
+			desired = away * (1.65 if mode == "retreat" else -1.8)
+			play("duel/walk_back" if mode == "retreat" else "duel/walk_forward", 1.3)
+		else:
+			desired = air_momentum * sin(clampf(mode_time / mode_length, 0, 1) * PI)
+		if position.length() > 8.5 and desired.dot(position) > 0:
+			desired = desired.slide(position.normalized())
+		if mode_time >= mode_length:
+			mode = "idle"
+			mode_time = 0
+			mode_length = 0.10
 	elif mode == "takeoff":
 		if mode_time >= mode_length:
 			launch()

@@ -16,7 +16,7 @@ $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $moviePath = Join-Path $OutputDirectory 'gameplay.avi'
 $reportPath = Join-Path $OutputDirectory 'contacts.json'
-$arguments = @('--path', $projectRoot, '--resolution', '960x600', '--write-movie', $moviePath, '--fixed-fps', '30')
+$arguments = @('--path', $projectRoot, '--resolution', '1152x720', '--write-movie', $moviePath, '--fixed-fps', '30')
 if ($IsolateKicks) {
     $arguments += @('-s', 'res://tests/kick_review.gd')
 }

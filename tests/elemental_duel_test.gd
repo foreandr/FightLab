@@ -58,6 +58,10 @@ func run() -> void:
 		check(f.distance_run > 30, "Both fighters must run around the field")
 		for action in ["run", "dash", "flip", "land", "air_dash_burst"]:
 			check(f.actions.get(action, 0) > 0, "Missing dynamic action: " + action)
+		for action in ["shield", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
+			check(f.actions.get(action, 0) > 0, "Missing defensive footwork action: " + action)
+		check(f.blocks > 0 and f.absorbed_damage > 0, "Both fighters must absorb real incoming spells in autonomous combat")
+	check(field.vfx.peak <= field.vfx.LIMIT, "Texture effects must respect their hard particle limit")
 	# Same spacing and animations, but no hurtbox collision: no proximity damage.
 	field.clear_battle_effects()
 	field.round_active = true

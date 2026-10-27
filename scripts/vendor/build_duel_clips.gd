@@ -10,6 +10,8 @@ func _initialize() -> void:
 	var fight: AnimationLibrary = load("res://assets/combat/animations/fight_anims.res")
 	var spells: AnimationLibrary = load("res://assets/combat/animations/spells.res")
 	var lib := AnimationLibrary.new()
+	guard = sample(spells.get_animation("idle"), 0)
+	add_defense_clips(lib, fight, ual2)
 	lib.add_animation("run", extract_clip(ual1.get_animation("Sprint"), 0, 0.6666667, 0.6666667, true))
 	var dash_keys := []
 	for frame in 41:
@@ -53,6 +55,50 @@ func _initialize() -> void:
 	ResourceSaver.save(lib, "res://assets/combat/animations/duel.res")
 	model.free()
 	quit()
+
+func add_defense_clips(lib: AnimationLibrary, fight: AnimationLibrary, ual2: AnimationLibrary) -> void:
+	var walk := fight.get_animation("walk_guard")
+	lib.add_animation("walk_forward", extract_clip(walk, 0, walk.length, walk.length, true))
+	lib.add_animation("walk_back", extract_clip(walk, walk.length, 0, walk.length, true))
+	var roll := ual1.get_animation("Roll")
+	lib.add_animation("roll_back", extract_clip(roll, roll.length, 0, 0.72))
+	for sign_ in [-1, 1]:
+		var keys := []
+		for frame in 61:
+			var t := frame / 60.0
+			var pose := duplicate_pose(guard)
+			move_bone(pose, "pelvis", Vector3(0, -0.055 + absf(sin(t * TAU)) * 0.025, 0))
+			for side in ["l", "r"]:
+				var phase := fposmod(t + (0.5 if side == "r" else 0.0), 1.0)
+				var foot := global_origin(guard, "foot_" + side)
+				foot.x += sign_ * (lerpf(-0.24, 0.24, phase * 2) if phase < 0.5 else lerpf(0.24, -0.24, (phase - 0.5) * 2))
+				foot.y += maxf(0, sin(phase * TAU)) * 0.11
+				plant_foot(pose, side, foot)
+			keys.append([t, pose])
+		lib.add_animation("strafe_left" if sign_ > 0 else "strafe_right", linear_animation(keys, true))
+	for style in ["palm", "brace"]:
+		var held := duplicate_pose(guard)
+		move_bone(held, "pelvis", Vector3(0, -0.07, -0.03))
+		for side in ["l", "r"]:
+			var sign_ := 1.0 if side == "l" else -1.0
+			var target := Vector3(sign_ * 0.22, 1.38, 0.42)
+			if style == "palm":
+				target = Vector3(-0.10, 1.40, 0.63) if side == "r" else Vector3(0.27, 1.08, 0.17)
+			solve_ik(held, "upperarm_" + side, "lowerarm_" + side, "hand_" + side, target, Vector3(sign_, -0.2, 0.3))
+			plant_foot(held, side, global_origin(guard, "foot_" + side))
+		var recoil := duplicate_pose(held)
+		move_bone(recoil, "pelvis", Vector3(0, -0.045, -0.07))
+		rotate_bone(recoil, "spine_02", Vector3.RIGHT, -9)
+		lib.add_animation("shield_raise_" + style, make_animation([[0.0, guard], [0.22, held]], false))
+		lib.add_animation("shield_hold_" + style, make_animation([[0.0, held], [0.8, held]], true))
+		lib.add_animation("shield_hit_" + style, make_animation([[0.0, held], [0.08, recoil], [0.28, held]], false))
+		lib.add_animation("shield_lower_" + style, make_animation([[0.0, held], [0.24, guard]], false))
+	var dodge := duplicate_pose(guard)
+	move_bone(dodge, "pelvis", Vector3(0, -0.18, -0.05))
+	rotate_bone(dodge, "spine_02", Vector3.RIGHT, -15)
+	for side in ["l", "r"]:
+		plant_foot(dodge, side, global_origin(guard, "foot_" + side))
+	lib.add_animation("dodge_back", make_animation([[0.0, guard], [0.10, dodge], [0.26, dodge], [0.42, guard]], false))
 
 func extract_clip(source: Animation, from: float, to: float, length: float, loop := false) -> Animation:
 	var keys := []

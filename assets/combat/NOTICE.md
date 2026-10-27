@@ -57,3 +57,19 @@ To reproduce the six hook/kick clips with Godot 4.6:
 - Water surface/foam shader, droplet/splash effects, elemental clashes, health/round
   logic and camera are generated/implemented directly in FightLab. No new asset
   download, paid tool, service or runtime dependency is required.
+
+## Shields, footwork and textured effects
+
+- `vfx/*.png`: ten unchanged transparent PNG masks from **Kenney Particle Pack
+  1.1**, https://kenney.nl/assets/particle-pack, downloaded 2026-10-27 from the
+  official Kenney download. CC0. Original notice, including filter-template
+  contributors, is preserved in `licenses/Kenney-Particle-Pack-CC0.txt`.
+- `vfx/*.gdshader` and `scripts/elemental_vfx.gd`: FightLab's textured particle,
+  water/fire surface, tapered-ribbon and curved hex-shield rendering code.
+  The shader uses texture alpha as the mask to avoid multiplying down the pack's
+  already subdued grayscale artwork a second time. PNG files are unmodified.
+- `animations/duel.res` additionally includes CC BY 4.0 guarded walk adaptations
+  from the previously credited `walk_guard`, a reversed CC0 UAL1 `Roll`, and
+  original FightLab lateral footwork, backward dodge and two shield-gesture sets.
+  Quaternius UAL2 `Idle_Shield_Break` supplies guard-break recovery (CC0).
+  Existing MIT sampling, pose composition and two-bone IK helpers are reused.
