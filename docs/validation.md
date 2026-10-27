@@ -1,6 +1,6 @@
 # Validation — 2026-10-26
 
-Latest: [shields, footwork and textured effects](defense-vfx.md). Previous: [dynamic elemental duel](elemental-duel.md), [grassland spellcasting study](spell-study.md), [bilateral kicks](refinement.md). The notes below describe the first prototype.
+Latest: [mana, stamina and melee](resources-melee.md). Previous: [shields and effects](defense-vfx.md), [dynamic elemental duel](elemental-duel.md), [grassland study](spell-study.md), [bilateral kicks](refinement.md). The notes below describe the first prototype.
 
 Engine: Godot 4.6 stable, Compatibility renderer, Windows 11.
 GPU identified by the rendered application: AMD Radeon(TM) 610M.

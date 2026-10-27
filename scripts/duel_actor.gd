@@ -6,6 +6,28 @@ const GRAVITY := 22.0
 const CAST_SPEED := 1.65
 const PLAN := ["cast", "strafe", "jump_cast", "retreat", "cast", "shield", "dash", "cast", "roll_back", "run", "air_dash", "cast", "dodge_back", "approach", "flip"]
 const MAX_GUARD := 44.0
+const MAX_MANA := 100.0
+const MAX_STAMINA := 100.0
+const MELEE_MOVES := [0, 1, 3, 5] # Existing licensed left/right jabs, cross and hooks.
+var mana := MAX_MANA
+var stamina := MAX_STAMINA
+var mana_delay := 0.0
+var stamina_delay := 0.0
+var close_combat := false
+var catching_breath := false
+var mana_spent := 0.0
+var stamina_spent := 0.0
+var minimum_mana := MAX_MANA
+var minimum_stamina := MAX_STAMINA
+var melee_sequence := 0
+var melee_spec: Array = []
+var melee_clock := 0.0
+var melee_previous := Vector3.ZERO
+var melee_connected := false
+var melee_hits := 0
+var melee_damage := 0.0
+var melee_attempts := 0
+var tactic_changes := 0
 var guard_energy := MAX_GUARD
 var guard_cooldown := 0.0
 var guard_recovery := 0.0
@@ -70,6 +92,14 @@ func reset_fighter(location: Vector3) -> void:
 	air_momentum = Vector3.ZERO
 	model.position = Vector3.ZERO
 	health = MAX_HEALTH
+	mana = MAX_MANA
+	stamina = MAX_STAMINA
+	mana_delay = 0
+	stamina_delay = 0
+	close_combat = false
+	catching_breath = false
+	melee_spec = []
+	melee_connected = false
 	guard_energy = MAX_GUARD
 	guard_cooldown = 0
 	guard_recovery = 0
@@ -101,11 +131,20 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 func start_cast(air: bool) -> void:
+	current_spell = choose_spell(air)
+	if mana < arena.mana_cost(current_spell):
+		# A cheap bolt is preferable to an unaffordable heavy cast.
+		current_spell = arena.SPELLS[5]
+		if mana < arena.mana_cost(current_spell):
+			set_close_combat(true)
+			mode = "air" if air else "idle"
+			mode_time = 0
+			mode_length = 0.08
+			return
 	mode = "cast"
 	mode_time = 0
 	cast_time = 0
 	did_release = false
-	current_spell = choose_spell(air)
 	var animation: String = "duel/air_" + current_spell.id if air else "spells/" + current_spell.id
 	clip = ""
 	play(animation, CAST_SPEED)
@@ -115,6 +154,9 @@ func start_cast(air: bool) -> void:
 		air_casts += 1
 
 func start_jump(kind: String) -> void:
+	if not spend_stamina(22.0 if kind == "air_dash" else (16.0 if kind == "flip" else 12.0)):
+		start_recovery()
+		return
 	mode = "takeoff"
 	mode_time = 0
 	mode_length = 0.14
@@ -144,12 +186,41 @@ func launch() -> void:
 		start_cast(true)
 
 func select_action() -> void:
+	var distance := flat_distance()
+	if mana < 24:
+		set_close_combat(true)
+	if close_combat and mana >= 62:
+		set_close_combat(false)
+		start_footwork("retreat")
+		return
+	if stamina < 16 or (catching_breath and stamina < 40):
+		start_recovery()
+		return
+	catching_breath = false
+	if close_combat:
+		if distance > 1.03:
+			mode = "chase"
+			mode_time = 0
+			mode_length = 0.45
+			count_action("close_distance")
+		elif absf(position.y - rival.position.y) < 0.55 and rival.health > 0:
+			start_punch()
+		else:
+			start_footwork("strafe")
+		return
+	if distance < 1.15 and absf(position.y - rival.position.y) < 0.55:
+		if melee_sequence % 3 != 2:
+			start_punch()
+		else:
+			melee_sequence += 1
+			start_footwork("dodge_back")
+		return
 	var choice: String = PLAN[decision % PLAN.size()]
 	decision += 1
 	if health < MAX_HEALTH * 0.35 and not healed_this_round:
 		choice = "cast"
 	if choice == "shield":
-		if guard_cooldown <= 0 and guard_energy >= 16:
+		if guard_cooldown <= 0 and guard_energy >= 16 and mana >= 18:
 			start_shield()
 		else:
 			start_cast(false)
@@ -160,6 +231,9 @@ func select_action() -> void:
 	elif choice == "cast":
 		start_cast(false)
 	elif choice == "dash":
+		if not spend_stamina(14):
+			start_recovery()
+			return
 		mode = "dash"
 		mode_time = 0
 		mode_length = 0.24
@@ -176,6 +250,10 @@ func select_action() -> void:
 		count_action("run")
 
 func start_footwork(kind: String) -> void:
+	var cost: float = {"dodge_back":10.0, "roll_back":18.0}.get(kind, 0.0)
+	if cost > 0 and not spend_stamina(cost):
+		start_recovery()
+		return
 	mode = kind
 	mode_time = 0
 	mode_length = {"strafe":1.15, "retreat":0.95, "approach":0.75, "dodge_back":0.40, "roll_back":0.72}[kind]
@@ -187,6 +265,8 @@ func start_footwork(kind: String) -> void:
 		play("duel/" + kind)
 
 func start_shield() -> void:
+	if guard_cooldown > 0 or guard_energy < 8 or not spend_mana(8):
+		return
 	mode = "shield"
 	mode_time = 0
 	mode_length = 1.35
@@ -195,6 +275,114 @@ func start_shield() -> void:
 	clip = ""
 	play("duel/shield_raise_" + guard_style)
 	count_action("shield")
+
+func flat_distance() -> float:
+	return Vector2(position.x - rival.position.x, position.z - rival.position.z).length()
+
+func set_close_combat(value: bool) -> void:
+	if close_combat == value:
+		return
+	close_combat = value
+	tactic_changes += 1
+	arena.events.append({"time":arena.elapsed, "event":"tactic", "team":team, "tactic":"fists" if value else "magic", "mana":mana})
+
+func spend_mana(amount: float) -> bool:
+	if mana + 0.0001 < amount:
+		return false
+	mana = maxf(0, mana - amount)
+	mana_spent += amount
+	mana_delay = 1.7
+	minimum_mana = minf(minimum_mana, mana)
+	return true
+
+func spend_stamina(amount: float) -> bool:
+	if stamina + 0.0001 < amount:
+		return false
+	stamina = maxf(0, stamina - amount)
+	stamina_spent += amount
+	stamina_delay = 0.65
+	minimum_stamina = minf(minimum_stamina, stamina)
+	return true
+
+func start_recovery() -> void:
+	if not catching_breath:
+		count_action("recover_stamina")
+	catching_breath = true
+	mode = "recover"
+	mode_time = 0
+	mode_length = 0.5
+	play("fight/guard")
+
+func start_punch() -> void:
+	var index: int = MELEE_MOVES[melee_sequence % MELEE_MOVES.size()]
+	melee_sequence += 1
+	melee_spec = MOVES[index]
+	var cost := 8.0 if index == 0 else (11.0 if index == 1 else 13.0)
+	if not spend_stamina(cost):
+		start_recovery()
+		return
+	mode = "punch"
+	mode_time = 0
+	melee_clock = 0
+	melee_connected = false
+	melee_attempts += 1
+	clip = ""
+	play(melee_spec[1], 1.25)
+	mode_length = player.get_animation(melee_spec[1]).length / 1.25 + 0.10
+	melee_previous = bone_point(melee_spec[2])
+	count_action(melee_spec[0])
+
+func resolve_melee(delta: float) -> void:
+	if mode != "punch" or melee_spec.is_empty() or health <= 0 or not arena.round_active:
+		return
+	var hand := bone_point(melee_spec[2])
+	var movement := hand - melee_previous
+	if not melee_connected and melee_clock >= melee_spec[3] and melee_clock <= melee_spec[4] and movement.length() / delta > 1.0 and movement.dot(flat_direction(position, rival.position)) > 0.0005:
+		var shape := SphereShape3D.new()
+		shape.radius = 0.105
+		var query := PhysicsShapeQueryParameters3D.new()
+		query.shape = shape
+		query.collision_mask = 8 << (1 - team)
+		query.collide_with_areas = true
+		query.collide_with_bodies = false
+		var samples := maxi(1, ceili(movement.length() / 0.04))
+		for i in range(samples + 1):
+			var point := melee_previous.lerp(hand, float(i) / samples)
+			query.transform = Transform3D(Basis.IDENTITY, point)
+			var contacts := get_world_3d().direct_space_state.intersect_shape(query, 4)
+			if not contacts.is_empty():
+				var victim = contacts[0].collider.get_meta("fighter")
+				melee_connected = arena.apply_impact(self, victim, {"id":melee_spec[0], "effect":"melee", "damage":8.0 if melee_spec[0] == "left_jab" else 11.0}, point, flat_direction(position, victim.position))
+				if melee_connected:
+					break
+	melee_previous = hand
+
+func recover_resources(delta: float) -> void:
+	mana_delay = maxf(0, mana_delay - delta)
+	stamina_delay = maxf(0, stamina_delay - delta)
+	if not arena.round_active or health <= 0:
+		return
+	if mode == "shield":
+		var drain := minf(mana, delta * 3.0)
+		mana -= drain
+		mana_spent += drain
+		mana_delay = 1.7
+		minimum_mana = minf(minimum_mana, mana)
+		if mana <= 0:
+			mode = "idle"
+			mode_time = 0
+			mode_length = 0.15
+			guard_cooldown = 2.4
+	elif mana_delay <= 0 and mode not in ["cast", "takeoff"]:
+		mana = minf(MAX_MANA, mana + delta * 4.2)
+	if mode in ["run", "chase"]:
+		var drain := minf(stamina, delta * (8.0 if mode == "chase" else 6.0))
+		stamina -= drain
+		stamina_spent += drain
+		stamina_delay = 0.4
+		minimum_stamina = minf(minimum_stamina, stamina)
+	elif stamina_delay <= 0 and mode not in ["punch", "dash", "flip", "takeoff", "roll_back", "dodge_back"]:
+		stamina = minf(MAX_STAMINA, stamina + delta * (10.0 if mode in ["strafe", "approach", "retreat"] else 17.0))
 
 func shield_active() -> bool:
 	return mode == "shield" and mode_time >= 0.16 and mode_time < mode_length - 0.16 and guard_energy > 0 and health > 0 and arena.round_active
@@ -245,6 +433,7 @@ func flat_direction(from: Vector3, to: Vector3) -> Vector3:
 func tick(delta: float) -> void:
 	var pending_release := false
 	mode_time += delta
+	recover_resources(delta)
 	guard_cooldown = maxf(0, guard_cooldown - delta)
 	guard_recovery = maxf(0, guard_recovery - delta)
 	shield_recoil = maxf(0, shield_recoil - delta)
@@ -267,13 +456,33 @@ func tick(delta: float) -> void:
 			last_threat = threat
 			if rng.randf() < 0.70:
 				dodge_cooldown = 2.7
-				if guard_cooldown <= 0 and guard_energy >= 18 and rng.randf() < 0.65:
+				if guard_cooldown <= 0 and guard_energy >= 18 and mana >= 18 and rng.randf() < 0.65:
 					start_shield()
 				else:
 					start_footwork("dodge_back" if rng.randf() < 0.5 else "roll_back")
 	if mode == "ko":
 		if clip != "ual1/Death01":
 			play("ual1/Death01", 1.3)
+	elif mode in ["chase", "recover", "punch"]:
+		face_rival(delta)
+		var toward := flat_direction(position, rival.position)
+		var distance := flat_distance()
+		if mode == "chase":
+			desired = toward * (5.6 if stamina > 25 else 2.4) if distance > 0.91 else Vector3.ZERO
+			play("duel/run", 1.65 if stamina > 25 else 0.85)
+			if distance <= 1.03 or stamina < 12:
+				mode_time = mode_length
+		elif mode == "recover":
+			desired = -toward * 0.75 if distance < 1.8 else Vector3.ZERO
+			play("duel/walk_back", 0.65) if distance < 1.8 else play("fight/guard")
+		else:
+			melee_clock += delta * 1.25
+			if mode_time < 0.18 and distance > 0.79:
+				desired = toward * 0.9
+		if mode_time >= mode_length:
+			mode = "idle"
+			mode_time = 0
+			mode_length = 0.10
 	elif mode == "shield":
 		face_rival(delta)
 		if shield_recoil <= 0 and mode_time > 0.22:
@@ -363,6 +572,14 @@ func tick(delta: float) -> void:
 	if desired.length() > 0.2 and mode in ["run", "dash"]:
 		rotation.y = lerp_angle(rotation.y, atan2(desired.x, desired.z), minf(1, delta * 14))
 		play("duel/dash" if mode == "dash" else "duel/run", clampf(desired.length() / 3.1, 0.7, 3.5))
+	# Keep retreats and pursuits in the readable meadow instead of allowing one
+	# fighter to kite the other endlessly beyond the action camera's useful area.
+	var radius := Vector2(position.x, position.z).length()
+	if radius > 8.0 and mode in ["chase", "recover", "run", "dash", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
+		var outward := Vector3(position.x, 0, position.z).normalized()
+		if desired.dot(outward) > 0:
+			desired = desired.slide(outward)
+		desired -= outward * minf(3.0, (radius - 8.0) * 2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
 	velocity.x = move_toward(velocity.x, desired.x + knockback.x, delta * acceleration)
 	velocity.z = move_toward(velocity.z, desired.z + knockback.z, delta * acceleration)
@@ -374,8 +591,9 @@ func tick(delta: float) -> void:
 	var was_air := not is_on_floor()
 	move_and_slide()
 	# Stabilize tiny solver penetration at the known flat meadow surface.
-	if position.y < 0 and position.y > -0.12 and velocity.y <= 0:
+	if position.y < 0 and velocity.y <= 0:
 		position.y = 0
+		velocity.y = 0
 		apply_floor_snap()
 		position.y = maxf(0, position.y)
 	if is_on_floor() and was_air and mode in ["flip", "air", "cast", "hit"]:

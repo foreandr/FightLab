@@ -73,3 +73,11 @@ To reproduce the six hook/kick clips with Godot 4.6:
   original FightLab lateral footwork, backward dodge and two shield-gesture sets.
   Quaternius UAL2 `Idle_Shield_Break` supplies guard-break recovery (CC0).
   Existing MIT sampling, pose composition and two-bone IK helpers are reused.
+
+## Resource-driven fistfighting
+
+The elemental duel additionally reuses the already included Quaternius UAL1
+`Punch_Jab` / `Punch_Cross` clips (CC0) and FightLab `boxing/hook_l` / `hook_r`
+adaptations (CC BY 4.0; source and MIT helper credits above). No new asset is
+downloaded. These clips animate both characters' actual fists; swept physics
+queries, not distance checks, determine health damage.

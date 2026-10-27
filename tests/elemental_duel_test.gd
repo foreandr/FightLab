@@ -30,7 +30,9 @@ func run() -> void:
 		await physics_frame
 		for f in field.fighters:
 			health_valid = health_valid and f.health >= 0 and f.health <= f.MAX_HEALTH
+			health_valid = health_valid and f.mana >= 0 and f.mana <= f.MAX_MANA and f.stamina >= 0 and f.stamina <= f.MAX_STAMINA
 			bars_valid = bars_valid and absf(field.health_bars[f.team].value - f.health) < 0.01
+			bars_valid = bars_valid and absf(field.mana_bars[f.team].value - f.mana) < 0.01 and absf(field.stamina_bars[f.team].value - f.stamina) < 0.01
 			floor_valid = floor_valid and f.position.y > -0.04
 			if f.position.y < lowest_root:
 				lowest_root = f.position.y
@@ -61,6 +63,8 @@ func run() -> void:
 		for action in ["shield", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
 			check(f.actions.get(action, 0) > 0, "Missing defensive footwork action: " + action)
 		check(f.blocks > 0 and f.absorbed_damage > 0, "Both fighters must absorb real incoming spells in autonomous combat")
+		check(f.melee_attempts > 3 and f.melee_hits > 2 and f.melee_damage > 20, "Both fighters must physically fistfight")
+		check(f.minimum_mana < 24 and f.minimum_stamina < 16 and f.tactic_changes >= 2, "Mana/stamina depletion must cause tactical transitions")
 	check(field.vfx.peak <= field.vfx.LIMIT, "Texture effects must respect their hard particle limit")
 	# Same spacing and animations, but no hurtbox collision: no proximity damage.
 	field.clear_battle_effects()
@@ -84,6 +88,7 @@ func run() -> void:
 		attacker.mode_length = 999
 		attacker.current_spell = spec
 		attacker.did_release = true
+		attacker.mana = attacker.MAX_MANA
 		field.cast_magic(attacker, spec, false)
 		await frames(130)
 	check(attacker.health == attacker.MAX_HEALTH and victim.health == victim.MAX_HEALTH, "No spell may damage a fighter with disabled hurtbox collisions")

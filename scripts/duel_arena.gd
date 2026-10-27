@@ -29,6 +29,9 @@ var vfx: Node3D
 var shields: Array = []
 var guard_bars: Array = []
 var shield_hit_age := [2.0, 2.0]
+var mana_bars: Array = []
+var stamina_bars: Array = []
+var resource_labels: Array = []
 
 func _ready() -> void:
 	rng.seed = 715391
@@ -132,6 +135,8 @@ func _physics_process(delta: float) -> void:
 	for f in fighters:
 		f.update_targets()
 		max_radius = maxf(max_radius, Vector2(f.position.x, f.position.z).length())
+	for f in fighters:
+		f.resolve_melee(delta)
 	minimum_spacing = minf(minimum_spacing, fighters[0].position.distance_to(fighters[1].position))
 	for i in 2:
 		var f = fighters[i]
@@ -171,10 +176,13 @@ func fighter_hand(f: CharacterBody3D, hand: String) -> Vector3:
 func cast_magic(f: CharacterBody3D, spec: Dictionary, air: bool) -> void:
 	if not round_active or f.health <= 0:
 		return
+	if not f.spend_mana(mana_cost(spec)):
+		f.set_close_combat(true)
+		return
 	var key := "%s/%s" % [element_name(f.team), spec.id]
 	casts[key] = casts.get(key, 0) + 1
 	status = "%s  •  %s%s" % [element_name(f.team), "AERIAL " if air else "", spell_name(spec, f.team)]
-	events.append({"time":elapsed, "event":"cast", "team":f.team, "spell":spec.id, "airborne":air})
+	events.append({"time":elapsed, "event":"cast", "team":f.team, "spell":spec.id, "airborne":air, "mana":f.mana})
 	var color := element_color(f.team)
 	if spec.effect == "heal":
 		var restored: float = minf(22, f.MAX_HEALTH - f.health)
@@ -203,7 +211,12 @@ func cast_magic(f: CharacterBody3D, spec: Dictionary, air: bool) -> void:
 		spawn_projectile(f, spec, origin)
 
 func damage_for(spec: Dictionary) -> float:
+	if spec.effect == "melee":
+		return spec.damage
 	return {"orb":16.0, "spark":12.0, "slash":18.0, "cleave":22.0, "heavy":24.0, "spear":22.0, "ground":18.0, "nova":20.0, "beam":24.0}.get(spec.effect, 16.0)
+
+func mana_cost(spec: Dictionary) -> float:
+	return {"orb":14.0, "spark":10.0, "slash":16.0, "cleave":18.0, "heavy":22.0, "spear":20.0, "ground":18.0, "nova":28.0, "beam":26.0, "heal":24.0}.get(spec.effect, 14.0)
 
 func predictive_aim(f: CharacterBody3D, origin: Vector3, speed: float) -> Vector3:
 	var enemy: CharacterBody3D = f.rival
@@ -403,17 +416,26 @@ func step_channels(delta: float) -> void:
 
 func apply_impact(attacker: CharacterBody3D, victim: CharacterBody3D, spec: Dictionary, point: Vector3, direction: Vector3) -> bool:
 	var amount := damage_for(spec)
+	var health_before: float = victim.health
 	var absorbed: float = victim.absorb_magic(amount, point - direction * 2.0, point)
 	amount -= absorbed
 	if amount <= 0:
 		return true
 	if not victim.receive_magic(amount, direction, attacker):
 		return absorbed > 0
+	if spec.effect == "melee":
+		attacker.melee_hits += 1
+		attacker.melee_damage += health_before - victim.health
 	var key := "%s/%s" % [element_name(attacker.team), spec.id]
 	hits[key] = hits.get(key, 0) + 1
-	events.append({"time":elapsed, "event":"hit", "team":attacker.team, "victim":victim.team, "spell":spec.id, "health":victim.health})
+	events.append({"time":elapsed, "event":"hit", "kind":"melee" if spec.effect == "melee" else "spell", "team":attacker.team, "victim":victim.team, "spell":spec.id, "health":victim.health})
 	print("HIT t=%.2f " % elapsed, element_name(attacker.team), " ", spec.id, " health=", victim.health)
-	impact_burst(point, attacker.team, true)
+	if spec.effect == "melee":
+		status = "%s  •  %s" % [element_name(attacker.team), spec.id.replace("_", " ").to_upper()]
+		vfx.puff(point, "spark_05", attacker.team, Vector2.ONE * 0.36, Vector3.ZERO, 0.16, Color("fff3cf"), 0.3)
+		vfx.puff(point, "circle_03", attacker.team, Vector2.ONE * 0.18, Vector3.ZERO, 0.2, Color(1, 0.92, 0.72, 0.8), 1.2)
+	else:
+		impact_burst(point, attacker.team, true)
 	shake = maxf(shake, 0.10)
 	return true
 
@@ -486,15 +508,15 @@ func build_fight_ui() -> void:
 	layer.add_child(root)
 	var backdrop := ColorRect.new()
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	backdrop.offset_bottom = 116
+	backdrop.offset_bottom = 152
 	backdrop.color = Color(0.025, 0.05, 0.075, 0.7)
 	root.add_child(backdrop)
 	var row := HBoxContainer.new()
 	row.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	row.offset_left = 24
 	row.offset_right = -24
-	row.offset_top = 18
-	row.offset_bottom = 96
+	row.offset_top = 12
+	row.offset_bottom = 140
 	row.add_theme_constant_override("separation", 38)
 	root.add_child(row)
 	for i in 2:
@@ -505,6 +527,7 @@ func build_fight_ui() -> void:
 			round_label.add_theme_font_size_override("font_size", 18)
 			row.add_child(round_label)
 		var column := VBoxContainer.new()
+		column.add_theme_constant_override("separation", 2)
 		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(column)
 		var label := Label.new()
@@ -516,7 +539,7 @@ func build_fight_ui() -> void:
 		bar.max_value = fighters[i].MAX_HEALTH
 		bar.value = bar.max_value
 		bar.show_percentage = false
-		bar.custom_minimum_size = Vector2(0, 20)
+		bar.custom_minimum_size = Vector2(0, 17)
 		var background := StyleBoxFlat.new()
 		background.bg_color = Color("1b2a32")
 		var fill := StyleBoxFlat.new()
@@ -525,16 +548,13 @@ func build_fight_ui() -> void:
 		bar.add_theme_stylebox_override("fill", fill)
 		column.add_child(bar)
 		health_bars.append(bar)
-		var guard_bar := ProgressBar.new()
-		guard_bar.max_value = fighters[i].MAX_GUARD
-		guard_bar.show_percentage = false
-		guard_bar.custom_minimum_size = Vector2(0, 7)
-		var guard_fill := StyleBoxFlat.new()
-		guard_fill.bg_color = Color("c1e6f5")
-		guard_bar.add_theme_stylebox_override("fill", guard_fill)
-		guard_bar.add_theme_stylebox_override("background", background)
-		column.add_child(guard_bar)
-		guard_bars.append(guard_bar)
+		var mana_row := resource_meter(column, "MANA", Color("9c8cf0"), fighters[i].MAX_MANA)
+		var stamina_row := resource_meter(column, "STAMINA", Color("acd66c"), fighters[i].MAX_STAMINA)
+		var guard_row := resource_meter(column, "GUARD", Color("c1e6f5"), fighters[i].MAX_GUARD)
+		mana_bars.append(mana_row[0])
+		stamina_bars.append(stamina_row[0])
+		guard_bars.append(guard_row[0])
+		resource_labels.append([mana_row[1], stamina_row[1], guard_row[1]])
 	hud = Label.new()
 	hud.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	hud.offset_left = 24
@@ -544,7 +564,7 @@ func build_fight_ui() -> void:
 	root.add_child(hud)
 	subtitle = Label.new()
 	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	subtitle.offset_top = 125
+	subtitle.offset_top = 160
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 18)
 	subtitle.add_theme_color_override("font_shadow_color", Color.BLACK)
@@ -552,18 +572,55 @@ func build_fight_ui() -> void:
 	subtitle.add_theme_constant_override("shadow_offset_y", 1)
 	root.add_child(subtitle)
 
+func resource_meter(column: VBoxContainer, name_: String, color: Color, maximum: float) -> Array:
+	var row := HBoxContainer.new()
+	column.add_child(row)
+	var title := Label.new()
+	title.text = name_
+	title.custom_minimum_size.x = 66
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", color)
+	row.add_child(title)
+	var bar := ProgressBar.new()
+	bar.max_value = maximum
+	bar.step = 0.01
+	bar.value = maximum
+	bar.show_percentage = false
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.custom_minimum_size.y = 8
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = color
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color("1b2a32")
+	bar.add_theme_stylebox_override("fill", fill)
+	bar.add_theme_stylebox_override("background", background)
+	row.add_child(bar)
+	var number := Label.new()
+	number.custom_minimum_size.x = 28
+	number.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	number.add_theme_font_size_override("font_size", 11)
+	row.add_child(number)
+	return [bar, number]
+
 func update_fight_ui() -> void:
 	for i in 2:
 		health_bars[i].value = fighters[i].health
 		guard_bars[i].value = fighters[i].guard_energy
-		health_labels[i].text = "%s  %d / %d" % [element_name(i), ceili(fighters[i].health), fighters[i].MAX_HEALTH]
+		mana_bars[i].value = fighters[i].mana
+		stamina_bars[i].value = fighters[i].stamina
+		resource_labels[i][0].text = str(floori(fighters[i].mana))
+		resource_labels[i][1].text = str(floori(fighters[i].stamina))
+		resource_labels[i][2].text = str(floori(fighters[i].guard_energy))
+		var tactic := "RECOVER" if fighters[i].catching_breath else ("FISTS" if fighters[i].close_combat else "MAGIC")
+		health_labels[i].text = "%s  %d / %d  ·  %s" % [element_name(i), ceili(fighters[i].health), fighters[i].MAX_HEALTH, tactic]
 	round_label.text = "ROUND %d\n%d — %d" % [round_number, wins[0], wins[1]]
 	subtitle.text = status + ("  •  next round %.1f" % intermission if intermission > 0 else "")
 
 func write_report() -> void:
 	var stats: Array = []
 	for f in fighters:
-		stats.append({"team":f.team, "element":element_name(f.team), "health":f.health, "guard":f.guard_energy, "blocks":f.blocks, "absorbed_damage":f.absorbed_damage, "guard_breaks":f.guard_breaks, "actions":f.actions, "distance_run":f.distance_run, "max_height":f.max_height, "air_casts":f.air_casts, "hits":f.hits_scored, "damage_dealt":f.damage_dealt, "damage_taken":f.damage_taken, "knockouts":f.ko_count})
+		stats.append({"team":f.team, "element":element_name(f.team), "health":f.health, "mana":f.mana, "stamina":f.stamina, "minimum_mana":f.minimum_mana, "minimum_stamina":f.minimum_stamina, "mana_spent":f.mana_spent, "stamina_spent":f.stamina_spent, "melee_attempts":f.melee_attempts, "melee_hits":f.melee_hits, "melee_damage":f.melee_damage, "tactic_changes":f.tactic_changes, "guard":f.guard_energy, "blocks":f.blocks, "absorbed_damage":f.absorbed_damage, "guard_breaks":f.guard_breaks, "actions":f.actions, "distance_run":f.distance_run, "max_height":f.max_height, "air_casts":f.air_casts, "hits":f.hits_scored, "damage_dealt":f.damage_dealt, "damage_taken":f.damage_taken, "knockouts":f.ko_count})
 	var report := {"seconds":elapsed, "rounds":round_number, "wins":wins, "fighters":stats, "casts":casts, "hits":hits, "heals":heals, "clashes":clashes, "events":events, "minimum_spacing":minimum_spacing, "maximum_radius":max_radius, "peak_effects":peak_effects, "fps":Engine.get_frames_per_second(), "renderer":RenderingServer.get_video_adapter_name()}
 	var summary := report.duplicate()
 	summary.erase("events")

@@ -8,6 +8,8 @@ perform skeletal backflips, cast while airborne and react to actual spell hits.
 Each has a health bar; a knockout awards the round, followed by an automatic rematch.
 Both can raise directional energy shields, absorb spells, strafe, backpedal,
 quick-step backward and perform a backward ground roll while facing the rival.
+Mana, stamina and distance now drive their tactics: depleted casters close in
+with jabs, crosses and hooks, then make space for magic as their mana recovers.
 
 ## Launch
 
@@ -31,8 +33,15 @@ All required models, animations and third-party license notices are in Git.
   backward dodge and a reversed skeletal ground roll. Retreats are physical moves,
   so an incoming spell may still catch the fighter.
 - Two shield gestures (one palm and two-handed brace), block recoil, lowering and
-  guard-break recovery. The thin pale bar below health is guard energy. A forward
+  guard-break recovery. The pale GUARD bar shows shield energy. A forward
   shield consumes energy, allows rear/flank hits, breaks under pressure and recharges.
+- Purple MANA pays for released spells and shield creation/upkeep. Green STAMINA
+  pays for punches, sprints, jumps, dashes and rolls. Both recover over time, with
+  delays after spending. Exhausted fighters back off or hold guard to catch breath.
+- Low mana switches to closing distance and fistfighting; recovered mana switches
+  back to spacing for spells. Very close enemies can provoke melee even with mana.
+  Left/right jabs, crosses and hooks sweep the animated fist through real hurtboxes.
+  Missed, evaded or out-of-range punches do no damage. Retreats stay in the meadow.
 - Ground and airborne versions of the ten casting gestures, blended between states.
   Air casts keep bent legs; the chest aims up/down toward elevated opponents.
 - Physical CharacterBody3D movement, gravity, floor and body collision. Animated
@@ -53,7 +62,7 @@ All required models, animations and third-party license notices are in Git.
 
 This is a first dynamic combat prototype inspired by fast aerial arena fighters.
 It does not claim the animation polish, content or combat depth of commercial anime
-fighting games. There is no player control, melee combo system, active ragdoll or
+fighting games. There is no player control, grappling, active ragdoll or
 fluid simulation yet. Fire/water effects use lightweight textured particles and shaders.
 
 ## Checks and recorded debugging
@@ -73,11 +82,15 @@ Defense checks verify actual projectile interception, guard spending, damage
 overflow on break, rear bypass, recovery, physical footwork and bounded particles.
 Both rigs are also checked for lateral foot motion, roll inversion and distinct
 shield hand poses.
+Resource checks verify costs, delayed regeneration, stamina-gated actions,
+low-mana pursuit, returning to ranged spacing, real fist contacts/misses on both
+characters, resource/HUD bounds and pool resets between rounds.
 
 The video helper writes a native 30 FPS AVI and a JSON action/cast/hit timeline to
 ignored `builds/review-*`. Review consecutive frames around jump, flip, release,
 impact and landing timestamps. Encoding speed is not live gameplay performance.
-See [shield, footwork and VFX validation](docs/defense-vfx.md), or the earlier
+See [mana, stamina and melee validation](docs/resources-melee.md), or the earlier
+[shield, footwork and VFX validation](docs/defense-vfx.md) and
 [elemental-duel validation](docs/elemental-duel.md).
 
 After normal asset import, rebuild movement and aerial casting clips with:
