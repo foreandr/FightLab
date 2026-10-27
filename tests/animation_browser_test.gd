@@ -13,6 +13,11 @@ func run() -> void:
 	root.add_child(lab)
 	lab.camera_input_enabled=false
 	check(lab.browser.visible and paused,"Animations must open on the browser with paused playback")
+	check(lab.preview.arena_mesh_count>=40,"Create previews must automatically include the real colosseum geometry")
+	var source_meshes: Array=lab.field.get_node("Colosseum").find_children("*","MeshInstance3D",true,false)
+	check(lab.preview.arena_geometry.get_child(0).mesh==source_meshes[0].mesh,"Preview must reuse actual arena assets rather than an unrelated display stage")
+	for node in lab.find_children("*","Button",true,false):
+		check(node.text not in ["Pause [Space]","Run [Space]","Resume [Space]","Reframe [F]","Fight [B]","Battle [B]"],"Removed Create bottom controls must not remain")
 	check(lab.group_buttons.has_all(["Motion","Attack"]),"Top-level Motion and Attack controls are required")
 	lab.group_buttons.Attack.pressed.emit()
 	lab.category_buttons.Knee.pressed.emit()
@@ -26,6 +31,9 @@ func run() -> void:
 	# Hover must actually pose an isolated skinned rig, loop, and preserve the chain.
 	lab.set_chain(["Dash","Knee"])
 	var original: Array[String]=lab.chosen_steps()
+	lab.select_group("Motion")
+	lab.select_group("Attack")
+	check(lab.chosen_steps()==original,"Motion and Attack must continue sharing one chain")
 	var hp: float=lab.actor.health
 	var stamina: float=lab.actor.stamina
 	lab.select_group("Attack")

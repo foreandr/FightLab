@@ -10,9 +10,13 @@ still open Animations directly; `run.ps1 -Spells` opens Spells.
 
 Animations is the former combat sandbox. Its browser has **Motion** and
 **Attack** tabs at the top, categories on the left and a looping 3D character
-preview on the right. Hovering an animation changes only the preview. Clicking
+preview in the actual colosseum on the right. The preview automatically reuses
+the arena's sand, walls, gates, seats, lighting and sky instead of a display disk.
+Hovering an animation changes only the preview. Clicking
 adds it to the chain. Air-only actions can be previewed while grounded, but a
 valid Jump is required before adding them to the chain.
+Motion and Attack share the same combined chain; switching tabs preserves its
+order and selected animations.
 
 Motion categories: **Run, Sprint, Jump, Dash, Crouch, Block, Dodges, Acrobatics**.
 Attack categories: **Punch, Kick, Knee, Uppercut, Spell Throwing**. The initial
@@ -23,9 +27,11 @@ Create → Spells workspace.
 
 The preview samples an independent skinned model and does not run combat AI,
 spend resources, damage the target or edit the chain. It continues looping while
-the test scene is paused. Press **Run chain** to switch to the actual test arena;
+the test scene is paused. Press **Run chain** to execute the real physical test;
 **Browse**, Motion or Attack returns to the library and safely resets playback.
 Camera controls work in the test view. Preview framing is automatic.
+The Animations bottom bar contains Run, Reset, Slow, Browse and Home. The old
+Space, Reframe and Fight buttons have been removed from both Create workspaces.
 
 The chain starts with one blank (End) slot, ready for your own sequence. There
 are no preset buttons. The chain dropdowns also allow quick edits after adding

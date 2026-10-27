@@ -12,6 +12,8 @@ var camera: Camera3D
 var entry: Dictionary={}
 var clock := 0.0
 var loops := 0
+var arena_geometry: Node3D
+var arena_mesh_count := 0
 
 func setup(arena: Node3D) -> void:
 	var headless: bool=DisplayServer.get_name()=="headless"
@@ -30,32 +32,23 @@ func setup(arena: Node3D) -> void:
 	var stage:=Node3D.new()
 	parent.add_child(stage)
 	if not headless:
-		var world:=WorldEnvironment.new()
-		var env:=Environment.new()
-		env.background_mode=Environment.BG_COLOR
-		env.background_color=Color("101c2a")
-		env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
-		env.ambient_light_color=Color("c8dced")
-		env.ambient_light_energy=0.75
-		world.environment=env
-		stage.add_child(world)
-		var sun:=DirectionalLight3D.new()
-		sun.rotation_degrees=Vector3(-45,-25,0)
-		sun.light_energy=1.1
-		stage.add_child(sun)
-		var floor_:=MeshInstance3D.new()
-		var disk:=CylinderMesh.new()
-		disk.top_radius=3
-		disk.bottom_radius=3
-		disk.height=0.1
-		disk.radial_segments=48
-		floor_.mesh=disk
-		floor_.position.y=-0.06
-		var mat:=StandardMaterial3D.new()
-		mat.albedo_color=Color("284359")
-		mat.roughness=1
-		floor_.material_override=mat
-		stage.add_child(floor_)
+		for node in arena.get_children():
+			if node is WorldEnvironment or node is DirectionalLight3D:
+				var copy=node.duplicate()
+				if copy is DirectionalLight3D:copy.shadow_enabled=false
+				stage.add_child(copy)
+	# Reuse the actual arena meshes/materials, including its sand, gates, stands
+	# and upper walls. The preview stays independent of combat state and physics.
+	arena_geometry=Node3D.new()
+	arena_geometry.name="ColosseumPreview"
+	stage.add_child(arena_geometry)
+	for source in arena.get_node("Colosseum").find_children("*","MeshInstance3D",true,false):
+		var copy:=MeshInstance3D.new()
+		copy.mesh=source.mesh
+		copy.material_override=source.material_override
+		copy.transform=arena.global_transform.affine_inverse()*source.global_transform
+		arena_geometry.add_child(copy)
+		arena_mesh_count+=1
 	fighter=PreviewRig.new()
 	stage.add_child(fighter)
 	fighter.model=arena.fighters[0].model.duplicate()

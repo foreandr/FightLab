@@ -43,6 +43,11 @@ func run() -> void:
 	var spells=current_scene
 	check(spells.editor_section=="Spells" and spells.title_label.text.contains("SPELLS"),"Spells must open the focused spell testing workspace")
 	check(not spells.chain_panel.visible,"Spell workspace must not display the animation-chain builder")
+	for node in spells.find_children("*","Button",true,false):
+		check(node.text not in ["Pause [Space]","Run [Space]","Resume [Space]","Reframe [F]","Fight [B]"],"Spell Create must also omit the removed bottom controls")
+	spells.toggle_slow()
+	check(spells.slow_button.text=="Normal [T]","Slow control must still update without a Space button")
+	spells.toggle_slow()
 	for id in ["fireball_ground","cinder_slash_ground","freezing_ray_ground","armor_ground","overdrive_ground","flash_ground"]:
 		check(spells.moves.any(func(entry):return entry.id==id),"Spell workspace missing "+id)
 	spells._unhandled_key_input(escape())

@@ -140,11 +140,8 @@ func build_ui() -> void:
 	footer.add_child(actions)
 	button(actions,"Run chain [R]",run_setup)
 	button(actions,"Reset [X]",reset_setup)
-	pause_button=button(actions,"Pause [Space]",toggle_pause)
 	slow_button=button(actions,"Slow [T]",toggle_slow)
-	button(actions,"Reframe [F]",reframe_camera)
 	button(actions,"Browse",browse_animations)
-	button(actions,"Fight [B]",return_to_battle)
 	button(actions,"Home [Esc]",return_home)
 	result_label.reparent(footer)
 	resources_label.reparent(footer)
@@ -210,7 +207,7 @@ func select_category(category: String) -> void:
 func preview_animation(entry: Dictionary) -> void:
 	selected_entry=entry.duplicate()
 	preview_heading.text=entry.title
-	preview_note.text="Airborne preview · Jump is required in the chain" if entry.step in ["Flip","Twist"] else "Looping preview · Click to add to your chain"
+	preview_note.text="Arena preview · Jump is required in the chain" if entry.step in ["Flip","Twist"] else "Looping in the arena · Click to add to your chain"
 	preview.show_animation(entry)
 
 func add_library_animation(entry: Dictionary) -> void:

@@ -22,12 +22,14 @@ existing motion/animation editor, and **Create → Spells** opens focused castin
 and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
 
 Animations starts with **Motion / Attack** at the top. Choose a category on the
-left, hover an animation to loop its character preview on the right, and click
+left, hover an animation to loop its character preview in the colosseum on the right, and click
 to add it to your chain. Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
 Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
-Throwing. **+ / −** edits chain length. Jump unlocks aerial moves; Land restores
-grounded choices. **Run chain** switches to the arena; **Browse** returns to the
-library. Spacing, target behavior, Repeat and the existing camera controls remain.
+Throwing. Motion and Attack share one combined chain. **+ / −** edits chain
+length. Jump unlocks aerial moves; Land restores grounded choices. **Run chain**
+executes the physical test; **Browse** returns to the library. The bottom bar is
+Run, Reset, Slow, Browse and Home. Spacing, target behavior, Repeat and camera
+controls remain available.
 
 In Create, R replays, X resets, Space pauses, T slows time and B opens Fight.
 WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to

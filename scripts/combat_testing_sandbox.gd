@@ -141,10 +141,7 @@ func build_ui() -> void:
 	footer.add_child(actions)
 	button(actions,"Run / Replay [R]",run_setup)
 	button(actions,"Reset [X]",reset_setup)
-	pause_button=button(actions,"Pause [Space]",toggle_pause)
 	slow_button=button(actions,"Slow [T]",toggle_slow)
-	button(actions,"Reframe [F]",reframe_camera)
-	button(actions,"Fight [B]",return_to_battle)
 	button(actions,"Home [Esc]",return_home)
 	result_label=menu_label(footer,"Ready — choose a move, then Run",15)
 	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · F reframe · Shift faster",13)
@@ -451,10 +448,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func update_controls() -> void:
-	if pause_button==null:
-		return
-	pause_button.text="Pause [Space]" if not get_tree().paused else ("Run [Space]" if not armed else "Resume [Space]")
-	slow_button.text="Normal [T]" if Engine.time_scale<1 else "Slow [T]"
+	if pause_button!=null:
+		pause_button.text="Pause [Space]" if not get_tree().paused else ("Run [Space]" if not armed else "Resume [Space]")
+	if slow_button!=null:
+		slow_button.text="Normal [T]" if Engine.time_scale<1 else "Slow [T]"
 
 func toggle_pause() -> void:
 	if not armed:
