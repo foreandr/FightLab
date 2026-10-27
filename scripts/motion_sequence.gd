@@ -1,6 +1,6 @@
 extends RefCounted
 ## Completion-driven choreography. New primitives can be added without spell presets.
-const OPTIONS := ["End","Dash","Punch","Knee","Jump","Flip","Twist","Land"]
+const OPTIONS := ["End","Dash","Punch","Knee","Jump","Flip","Twist","Land","Run","Sprint","Crouch","Block","Brace Block","Dodge Back","Dodge Left","Dodge Right","Roll Back","Kick","Round Kick","Cross","Hook","Uppercut","Spell Throw","Slash Throw"]
 var steps: Array[String]=[]
 var index := -1
 var active := false
@@ -17,6 +17,9 @@ static func state_after(step: String,grounded: bool) -> bool:
 	if step=="Jump":return false
 	if step=="Land":return true
 	return grounded
+
+static func needs_mana(chosen: Array) -> bool:
+	return chosen.any(func(step):return step in ["Block","Brace Block","Spell Throw","Slash Throw"])
 
 func reset() -> void:
 	steps.clear()
@@ -49,14 +52,28 @@ func next_step(fighter: CharacterBody3D) -> void:
 		return
 	match step:
 		"Dash": accepted=fighter.start_motion_dash(direction)
-		"Punch","Knee":
-			accepted=fighter.stamina>= (13 if step=="Knee" else 8)
+		"Punch","Knee","Kick","Round Kick","Cross","Hook":
+			var move_index: int={"Punch":0,"Cross":1,"Kick":2,"Knee":3,"Hook":4,"Round Kick":5}[step]
+			accepted=fighter.stamina>=[8,11,15,13,12,17][move_index]
 			if accepted:
-				fighter.melee_sequence=3 if step=="Knee" else 0
+				fighter.melee_sequence=move_index
 				fighter.start_punch()
 		"Jump": accepted=fighter.start_motion_jump()
 		"Flip","Twist": accepted=fighter.start_air_trick(step)
 		"Land": pass # Gravity and the existing landing animation finish this step.
+		"Run","Sprint","Crouch","Block","Brace Block","Dodge Back","Dodge Left","Dodge Right","Roll Back": accepted=fighter.start_editor_motion(step)
+		"Uppercut":
+			accepted=fighter.stamina>=28
+			if accepted:fighter.start_uppercut()
+		"Spell Throw","Slash Throw":
+			var spell_index:=0 if step=="Spell Throw" else 1
+			var spec: Dictionary=fighter.arena.profile_spells(fighter.team)[spell_index]
+			accepted=fighter.mana>=fighter.arena.mana_cost(spec)
+			if accepted:
+				fighter.spell_cursor=spell_index
+				fighter.charge_requested=0
+				fighter.start_cast(false)
+				accepted=fighter.mode=="cast"
 		_: accepted=false
 	if not accepted:
 		active=false
@@ -80,7 +97,14 @@ func tick(fighter: CharacterBody3D,delta: float) -> void:
 	var complete: bool=false
 	match step:
 		"Dash": complete=fighter.mode!="motion_dash"
-		"Punch","Knee": complete=fighter.mode!="punch"
+		"Punch","Knee","Kick","Round Kick","Cross","Hook": complete=fighter.mode!="punch"
+		"Run","Sprint": complete=fighter.mode!="motion_dash"
+		"Crouch": complete=fighter.mode!="motion_pose"
+		"Block","Brace Block": complete=fighter.mode!="shield"
+		"Dodge Back","Dodge Left","Dodge Right": complete=fighter.mode!="dodge_back"
+		"Roll Back": complete=fighter.mode!="roll_back"
+		"Uppercut": complete=fighter.mode not in ["melee_charge","punch"]
+		"Spell Throw","Slash Throw": complete=fighter.mode!="cast"
 		"Jump":
 			var aerial_next: bool=index+1<steps.size() and steps[index+1] in ["Flip","Twist","Land"]
 			complete=not fighter.is_on_floor() and fighter.mode!="takeoff" if aerial_next else step_time>0.2 and fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]

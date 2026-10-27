@@ -362,6 +362,57 @@ func start_motion_jump() -> bool:
 	air_momentum=carry
 	return mode=="takeoff"
 
+func start_editor_motion(kind: String) -> bool:
+	if not is_on_floor() or health<=0 or freeze_time>0 or is_instance_valid(ragdoll):return false
+	if kind in ["Run","Sprint"]:
+		if not spend_stamina(6 if kind=="Run" else 10):return false
+		mode="motion_dash"
+		mode_time=0
+		mode_length=0.8
+		motion_direction=global_basis.z.normalized()
+		motion_speed=3.5 if kind=="Run" else 6.5
+		combo_speed=0
+		combo_time=0
+		clip=""
+		play("ual1/Jog_Fwd" if kind=="Run" else "duel/run",1.0 if kind=="Run" else 1.75)
+	elif kind=="Crouch":
+		mode="motion_pose"
+		mode_time=0
+		mode_length=0.9
+		clip=""
+		play("ual1/Crouch_Idle")
+	elif kind in ["Block","Brace Block"]:
+		start_shield()
+		if mode!="shield":return false
+		guard_style="palm" if kind=="Block" else "brace"
+		mode_length=1.0
+		clip=""
+		play("duel/shield_raise_"+guard_style)
+	else:
+		var cost:=18.0 if kind=="Roll Back" else 10.0
+		if stamina<cost:return false
+		start_footwork("roll_back" if kind=="Roll Back" else "dodge_back")
+		if kind in ["Dodge Left","Dodge Right"]:
+			air_momentum=global_basis.x*(7.8 if kind=="Dodge Left" else -7.8)
+			clip=""
+			play("duel/strafe_left" if kind=="Dodge Left" else "duel/strafe_right",3.0)
+	count_action("editor_"+kind.to_snake_case())
+	return true
+
+func tick_motion_pose(delta: float) -> void:
+	impact_physics.restore(skeleton)
+	mode_time+=delta
+	recover_resources(delta)
+	velocity=Vector3(0,-0.1 if is_on_floor() else velocity.y-GRAVITY*delta,0)
+	move_and_slide()
+	advance_animation(delta)
+	impact_physics.step(delta)
+	impact_physics.apply(skeleton,is_on_floor(),global_basis)
+	if mode_time>=mode_length:
+		mode="idle"
+		mode_time=0
+		mode_length=0.1
+
 func launch() -> void:
 	if jump_kind!="motion_jump":
 		super.launch()
@@ -394,6 +445,13 @@ func tick_motion_dash(delta: float) -> void:
 	distance_run+=before.distance_to(position)
 	combo_speed=maxf(combo_speed,maxf(0,(position-before).dot(motion_direction)/delta))
 	advance_animation(delta)
+	if clip=="ual1/Jog_Fwd":
+		var pelvis: int=bones["pelvis"]
+		var origin: Vector3=skeleton.get_bone_pose_position(pelvis)
+		var rest: Vector3=skeleton.get_bone_rest(pelvis).origin
+		origin.x=rest.x
+		origin.z=rest.z
+		skeleton.set_bone_pose_position(pelvis,origin)
 	impact_physics.step(delta)
 	impact_physics.apply(skeleton,is_on_floor(),global_basis)
 	if mode_time>=mode_length or speed<0.1 or get_slide_collision_count()>0 and before.distance_to(position)<0.001:
@@ -567,6 +625,9 @@ func tick(delta: float) -> void:
 		return
 	if mode=="air_trick" and freeze_time<=0:
 		tick_air_trick(delta)
+		return
+	if mode=="motion_pose" and freeze_time<=0:
+		tick_motion_pose(delta)
 		return
 	if mode in ["burst_charge","burst_dash", "melee_charge"] and freeze_time <= 0:
 		impact_physics.restore(skeleton)

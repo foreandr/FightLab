@@ -218,6 +218,7 @@ func configured_entry() -> Dictionary:
 	entry.air=jump_toggle.button_pressed and entry.kind=="spell"
 	entry.sandbox_air=jump_toggle.button_pressed and entry.kind!="spell"
 	if entry.kind=="sequence":
+		entry.plain=not sequence.needs_mana(chosen_steps())
 		entry.duration=maxf(9,chosen_steps().size()*3.0+1)
 		entry.air=false
 		entry.sandbox_air=false
@@ -354,7 +355,7 @@ func _physics_process(delta: float) -> void:
 		update_camera(delta)
 		return
 	if not get_tree().paused:
-		if catalog[0].kind=="sequence":
+		if catalog[0].kind=="sequence" and not sequence.needs_mana(chosen_steps()):
 			actor.mana=0 # Motion chains stay physical, including long chains.
 		sequence.tick(actor,delta)
 		if partner_jumping and not partner_air_ready and target.mode=="flip":

@@ -21,11 +21,13 @@ Fight opens the current three-way arena. **Create → Animations** opens the
 existing motion/animation editor, and **Create → Spells** opens focused casting
 and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
 
-Animations starts with a blank chain. Select your first action, use **+ / −** to
-add or remove steps, and choose from Dash, Punch, Knee, Jump, Flip, Twist and
-Land. Jump unlocks aerial moves; Land restores grounded choices. There is one
-dash speed and no preset buttons. Set spacing, target behavior and Repeat as
-needed. Run plays your configuration; Reset restores it and waits.
+Animations starts with **Motion / Attack** at the top. Choose a category on the
+left, hover an animation to loop its character preview on the right, and click
+to add it to your chain. Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
+Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
+Throwing. **+ / −** edits chain length. Jump unlocks aerial moves; Land restores
+grounded choices. **Run chain** switches to the arena; **Browse** returns to the
+library. Spacing, target behavior, Repeat and the existing camera controls remain.
 
 In Create, R replays, X resets, Space pauses, T slows time and B opens Fight.
 WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to

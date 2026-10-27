@@ -14,6 +14,8 @@ func key(code: Key) -> InputEventKey:
 func run() -> void:
 	var sandbox=load("res://scenes/combat_sandbox.tscn").instantiate()
 	root.add_child(sandbox)
+	sandbox.run_setup()
+	sandbox.reset_setup()
 	sandbox.camera_input_enabled=false
 	for i in 5:await physics_frame
 	check(paused,"Camera inspection must start with the sandbox ready and paused")

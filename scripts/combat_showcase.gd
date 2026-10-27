@@ -302,7 +302,7 @@ func build_ui() -> void:
 	result_label.add_theme_font_size_override("font_size",15)
 	column.add_child(result_label)
 
-func button(row: HBoxContainer,text_: String,callback: Callable) -> Button:
+func button(row: Container,text_: String,callback: Callable) -> Button:
 	var node:=Button.new()
 	node.text=text_
 	node.custom_minimum_size=Vector2(115,34)

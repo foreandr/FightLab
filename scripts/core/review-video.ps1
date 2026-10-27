@@ -15,6 +15,7 @@ param(
     [switch]$SandboxShowcase,
     [switch]$MotionShowcase,
     [switch]$HomeShowcase,
+    [switch]$AnimationBrowser,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -44,7 +45,8 @@ if ($CombatShowcase) { $arguments += @('-s', 'res://tests/combat_showcase_review
 if ($SandboxShowcase) { $arguments += @('-s', 'res://tests/combat_sandbox_review.gd') }
 if ($MotionShowcase) { $arguments += @('-s', 'res://tests/motion_sequence_review.gd') }
 if ($HomeShowcase) { $arguments += @('-s', 'res://tests/home_review.gd') }
-$standardBattle = -not ($IsolateKicks -or $FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase -or $ColosseumShowcase -or $OverdriveShowcase -or $FlashFreezeShowcase -or $CombatShowcase -or $SandboxShowcase -or $MotionShowcase -or $HomeShowcase)
+if ($AnimationBrowser) { $arguments += @('-s', 'res://tests/animation_browser_review.gd') }
+$standardBattle = -not ($IsolateKicks -or $FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase -or $ColosseumShowcase -or $OverdriveShowcase -or $FlashFreezeShowcase -or $CombatShowcase -or $SandboxShowcase -or $MotionShowcase -or $HomeShowcase -or $AnimationBrowser)
 if ($standardBattle) { $arguments += 'res://scenes/main.tscn' }
 $arguments += @('--', "--report-file=$reportPath")
 if ($CombatShowcase) { $arguments += "--showcase-report=$(Join-Path $OutputDirectory 'showcase-cases.json')" }

@@ -8,10 +8,28 @@ still open Animations directly; `run.ps1 -Spells` opens Spells.
 
 ## Animation chains
 
-Animations is the former combat sandbox. It starts with one blank (End) slot,
-ready for your own sequence. There are no preset buttons. Ordered dropdowns
-let you chain **Dash**, **Punch**, **Knee**, **Jump**, **Flip**, **Twist** and
-**Land**; **End** terminates the chain. The live result line
+Animations is the former combat sandbox. Its browser has **Motion** and
+**Attack** tabs at the top, categories on the left and a looping 3D character
+preview on the right. Hovering an animation changes only the preview. Clicking
+adds it to the chain. Air-only actions can be previewed while grounded, but a
+valid Jump is required before adding them to the chain.
+
+Motion categories: **Run, Sprint, Jump, Dash, Crouch, Block, Dodges, Acrobatics**.
+Attack categories: **Punch, Kick, Knee, Uppercut, Spell Throwing**. The initial
+library has 23 choices: left/right/round physical variants, palm/braced blocks,
+back/side dodges, backward roll, flips, twists and two Fire throwing animations
+(palm Fireball and Cinder Slash). Spell creation/testing remains a separate
+Create → Spells workspace.
+
+The preview samples an independent skinned model and does not run combat AI,
+spend resources, damage the target or edit the chain. It continues looping while
+the test scene is paused. Press **Run chain** to switch to the actual test arena;
+**Browse**, Motion or Attack returns to the library and safely resets playback.
+Camera controls work in the test view. Preview framing is automatic.
+
+The chain starts with one blank (End) slot, ready for your own sequence. There
+are no preset buttons. The chain dropdowns also allow quick edits after adding
+from the library. **End** terminates the chain. The live result line
 shows the active step, completion, or interruption. Hits, death, freeze and
 insufficient resources stop a sequence rather than skipping its requirements.
 
@@ -38,6 +56,14 @@ relaunch the fighter or hold them in the air. A late trick can land early; the
 next aerial move then stops with a condition message. Runtime state is displayed
 as Grounded/Airborne alongside the active step.
 
+Run and Sprint are physical movement steps at 3.5 and 6.5 m/s, using different
+gait rates. Crouch lowers the skeleton using the included crouch clip. Blocks
+activate the real shield; dodges move backward or sideways while facing the
+target. Kicks, knees, punches and uppercuts retain actual limb hit detection.
+Spell Throw and Slash Throw use the actual Fireball/Cinder Slash cast path.
+Chains containing a block or cast receive mana; purely physical chains stay
+unaugmented. All steps retain stamina/resource requirements and interruption.
+
 Dash direction has eight options relative to the fighter's facing. The dash
 moves at 12 m/s for 0.30 seconds and travels up to 3.6 metres. It respects body
 and wall collisions and stops short of the partner when heading toward them.
@@ -48,10 +74,10 @@ uses no mana, and does no contact damage by itself.
 Start around **4.4 m** apart for a forward dash into knee. The knee uses real
 animated-limb collision and retained dash momentum. A farther target can be missed. A plain Jump step jumps
 without automatically casting. Reset clears the sequence, while Repeat replays
-the same ordered setup. Spell chain steps remain for a later pass; individual
-spell tests are still in the Move menu.
+the same ordered setup. Further spell throwing variants can be added to the
+library later; individual kit tests remain available in Create → Spells.
 
-## Individual move testing
+## Individual spell testing and retained reviews
 
 1. Choose a move from the menu. All six current spells are included: Fireball,
    Cinder Slash, Freezing Ray, Glacial Armor, Overdrive and Flash Step. The menu
@@ -98,3 +124,7 @@ pause/reset and same-setup repeat tests. Record a representative menu review wit
 Use `-MotionShowcase` instead to record forward dash, dash-knee, backward dash, sideways dash and an aerial chain. Motion regression checks cover all eight
 dash directions, real contacts, shield blocks, misses, ordered
 four-step playback, jump, reset and interruption.
+Use `-AnimationBrowser` for a native recording of the categorized hover preview
+and transition into chain playback. Browser checks cover all categories and
+clips, looped skeletal motion, preview isolation, click-to-add, air gating, all
+23 actual actions, locomotion speed differences, crouch height and real shields.
