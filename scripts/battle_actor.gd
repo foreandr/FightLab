@@ -44,6 +44,10 @@ var death_age := INF
 var death_impulse := Vector3.ZERO
 var wall_crash_cooldown := 0.0
 var wall_crashes := 0
+const RECOVERY_BLEND := 0.45
+const RECOVERY_GATHER := 0.25
+var recovery_source := {}
+var recovery_target := {}
 
 func _ready() -> void:
 	var actual := team
@@ -69,6 +73,8 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	recovery_source.clear()
+	recovery_target.clear()
 	if is_instance_valid(ragdoll):
 		ragdoll.restore_pose()
 		ragdoll.queue_free()
@@ -319,12 +325,14 @@ func tick(delta: float) -> void:
 	if mode == "getup":
 		invulnerability=maxf(0,invulnerability-delta)
 		mode_time += delta
-		player.advance(delta)
+		advance_recovery(delta)
 		if mode_time >= mode_length:
 			mode = "idle"
 			mode_time = 0
 			collision_layer = 128 << team
 			get_child(0).set_deferred("disabled", false)
+			recovery_source.clear()
+			recovery_target.clear()
 		return
 	if freeze_time > 0:
 		mode = "frozen"
@@ -546,6 +554,11 @@ func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 
 func finish_ragdoll() -> void:
 	var location: Vector3 = ragdoll.location()
+	var world_pose: Array[Transform3D]=[]
+	for i in skeleton.get_bone_count():
+		world_pose.append(skeleton.global_transform*skeleton.get_bone_global_pose(i))
+	var lying_direction: Vector3=bone_point("Head")-bone_point("pelvis")
+	lying_direction.y=0
 	ragdoll_peak = maxf(ragdoll_peak, ragdoll.peak_height)
 	ragdoll.restore_pose()
 	ragdoll.queue_free()
@@ -558,9 +571,42 @@ func finish_ragdoll() -> void:
 	model.position = Vector3.ZERO
 	mode = "getup"
 	mode_time = 0
-	mode_length = 1.1
-	invulnerability = 0.85
-	clip = ""
-	play("ual2/LayToIdle", 1.5)
+	clip="ual2/LayToIdle"
+	player.play(clip,0,1.05)
+	player.advance(0)
+	var target_direction:=bone_point("Head")-bone_point("pelvis")
+	target_direction.y=0
+	if lying_direction.length()>0.15 and target_direction.length()>0.15:
+		rotation.y+=target_direction.signed_angle_to(lying_direction,Vector3.UP)
+	var pelvis_offset:=bone_point("pelvis")-global_position
+	position.x=clampf(location.x-pelvis_offset.x,-9.6,9.6)
+	position.z=clampf(location.z-pelvis_offset.z,-9.6,9.6)
+	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/1.05
+	invulnerability=mode_length
+	recovery_source.clear()
+	recovery_target.clear()
+	var inverse:=skeleton.global_transform.affine_inverse()
+	for i in skeleton.get_bone_count():
+		var parent:=skeleton.get_bone_parent(i)
+		var source: Transform3D=(inverse*world_pose[parent]).affine_inverse()*(inverse*world_pose[i]) if parent>=0 else inverse*world_pose[i]
+		recovery_source[i]=[source.origin,source.basis.orthonormalized().get_rotation_quaternion()]
+		recovery_target[i]=[skeleton.get_bone_pose_position(i),skeleton.get_bone_pose_rotation(i)]
+	apply_recovery_blend(0)
 	recoveries_count += 1
 	arena.events.append({"time":arena.elapsed,"event":"ragdoll_recovery","team":team})
+
+func advance_recovery(delta: float) -> void:
+	for i in recovery_target:
+		skeleton.set_bone_pose_position(i,recovery_target[i][0])
+		skeleton.set_bone_pose_rotation(i,recovery_target[i][1])
+	if mode_time>RECOVERY_GATHER:
+		player.advance(minf(delta,mode_time-RECOVERY_GATHER))
+	for i in recovery_target:
+		recovery_target[i]=[skeleton.get_bone_pose_position(i),skeleton.get_bone_pose_rotation(i)]
+	var weight:=smoothstep(0,RECOVERY_BLEND,mode_time)
+	apply_recovery_blend(weight)
+
+func apply_recovery_blend(weight: float) -> void:
+	for i in recovery_source:
+		skeleton.set_bone_pose_position(i,recovery_source[i][0].lerp(recovery_target[i][0],weight))
+		skeleton.set_bone_pose_rotation(i,recovery_source[i][1].slerp(recovery_target[i][1],weight))

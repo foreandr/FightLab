@@ -15,6 +15,7 @@ var initial_impulse := Vector3.ZERO
 var initial_point := Vector3.ZERO
 var land_sounded := false
 var previous_velocities := {}
+var settled_time := 0.0
 
 func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	fighter = owner_
@@ -116,6 +117,7 @@ func step(delta: float) -> bool:
 		fighter.skeleton.set_bone_pose_rotation(index, local.basis.orthonormalized().get_rotation_quaternion())
 	fighter.velocity = bodies.pelvis.linear_velocity
 	var previous_average:=Vector3.ZERO
+	var current_floor_contacts:=0
 	for body in bodies.values():
 		previous_average+=previous_velocities.get(body.get_instance_id(),body.linear_velocity)*body.mass/total_mass
 	for body in bodies.values():
@@ -128,16 +130,20 @@ func step(delta: float) -> bool:
 				fighter.wall_crash(body.global_position,normal,maxf(0,-incoming.dot(normal)),incoming)
 			elif collider.collision_layer & 1:
 				floor_contacts+=1
+				current_floor_contacts+=1
 		previous_velocities[body.get_instance_id()]=body.linear_velocity
 	if floor_contacts>0 and age>0.2 and not land_sounded:
 		land_sounded=true
 		fighter.arena.audio.impact("land",location(),0.85)
-	return age > 1.1 and bodies.pelvis.global_position.y < 1.4 and bodies.pelvis.linear_velocity.length() < 3.0 and floor_contacts > 0
+	var stable: bool=current_floor_contacts>0 and minf(bodies.pelvis.global_position.y,bodies.chest.global_position.y)<0.7 and bodies.pelvis.linear_velocity.length()<1.5 and bodies.chest.linear_velocity.length()<1.8 and bodies.chest.angular_velocity.length()<3.0
+	settled_time=settled_time+delta if stable else 0.0
+	return age>1.4 and settled_time>=0.35
 
 func location() -> Vector3:
 	return bodies.pelvis.global_position if bodies.has("pelvis") else fighter.global_position
 
 func add_impulse(impulse: Vector3,point: Vector3) -> void:
+	settled_time=0
 	if setup_phase<2:
 		initial_velocity=(initial_velocity+impulse/total_mass).limit_length(22)
 		initial_impulse+=impulse
