@@ -17,11 +17,12 @@ Set-Location C:\Users\forea\FightLab
 ```
 
 Space toggles slow motion, R restarts, M toggles sound and Esc exits.
-Press **F2** for the [54-case combat showcase](docs/combat-showcase.md), or
-double-click **Showcase.bat**. It pairs a performer with a passive target and
-labels every ground/jump cast, charged attack, shield test and movement example.
-In the showcase, arrows browse, R replays, Space pauses, S slows time and B
-returns to battle. On-screen buttons provide the same controls.
+Press **F2** for the [combat testing sandbox](docs/combat-sandbox.md), or
+double-click **Sandbox.bat** (Showcase.bat also opens it). Choose any spell or
+physical action, set the spawn distance, and choose jumping, blocking or charge
+options. Run plays your setup; Reset restores both fighters and waits. R replays,
+X resets, Space pauses, S slows time and B returns to battle.
+The **54-case tour** button opens the [automatic showcase](docs/combat-showcase.md).
 Both the full fight and review scenes use the actual combat/physics paths.
 This remains an AI combat prototype; player controls are not implemented.
 
@@ -83,6 +84,7 @@ guard and active statuses.
 .\scripts\core\review-video.ps1 -Seconds 70
 .\scripts\core\review-video.ps1 -FeatureShowcase
 .\scripts\core\review-video.ps1 -CombatShowcase
+.\scripts\core\review-video.ps1 -SandboxShowcase
 ```
 
 Validation includes a 180-second three-way fight, focused charge/status/ragdoll/

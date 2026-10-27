@@ -23,6 +23,7 @@ var results: Array[Dictionary]=[]
 var marks := {}
 var seen := {}
 var report_path := ""
+var camera_upper_allowance := 0.64
 
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS
@@ -219,7 +220,7 @@ func update_camera(delta: float) -> void:
 	var aspect: float=get_viewport().get_visible_rect().size.aspect()
 	for point in points:
 		var offset:=point-center
-		var allowance:=0.64 if offset.dot(up)>0 else 0.74
+		var allowance:=camera_upper_allowance if offset.dot(up)>0 else 0.74
 		var fit:=maxf(absf(offset.dot(right))/(tan(deg_to_rad(22.5))*aspect*0.88),absf(offset.dot(up))/(tan(deg_to_rad(22.5))*allowance))
 		distance=maxf(distance,offset.dot(back)+fit+0.8)
 	var goal:=center+back*distance
@@ -295,6 +296,7 @@ func build_ui() -> void:
 	slow_button=button(buttons,"Slow [S]",toggle_slow)
 	auto_button=button(buttons,"Auto: On [A]",toggle_auto)
 	button(buttons,"Battle [B]",return_to_battle)
+	button(buttons,"Sandbox",return_to_sandbox)
 	result_label=Label.new()
 	result_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	result_label.add_theme_font_size_override("font_size",15)
@@ -331,6 +333,12 @@ func return_to_battle() -> void:
 	Engine.time_scale=1
 	field.audio.stop_all()
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func return_to_sandbox() -> void:
+	get_tree().paused=false
+	Engine.time_scale=1
+	field.audio.stop_all()
+	get_tree().change_scene_to_file("res://scenes/combat_sandbox.tscn")
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:

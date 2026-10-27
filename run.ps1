@@ -1,4 +1,4 @@
-param([string]$GodotPath, [switch]$Editor, [switch]$Showcase)
+param([string]$GodotPath, [switch]$Editor, [switch]$Showcase, [switch]$Sandbox, [switch]$Tour)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/scripts/core/godot.ps1"
 try {
@@ -12,6 +12,7 @@ try {
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--editor','--path',$PSScriptRoot,'--import','--quit')
 $arguments = @('--path', $PSScriptRoot)
 if ($Editor) { $arguments += '--editor' }
-if ($Showcase) { $arguments += 'res://scenes/combat_showcase.tscn' }
+if ($Showcase -or $Sandbox) { $arguments += 'res://scenes/combat_sandbox.tscn' }
+elseif ($Tour) { $arguments += 'res://scenes/combat_showcase.tscn' }
 & $executable @arguments
 if ($LASTEXITCODE -ne 0) { throw "Godot exited with code $LASTEXITCODE" }
