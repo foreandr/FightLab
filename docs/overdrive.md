@@ -24,7 +24,7 @@ dash-to-knee contact. The full regression suite and 180-second combat check pass
 The native controlled recording shows casting, aura activation and real knee
 contacts against a stationary target; it is not a win-rate test.
 
-Three 180-second autonomous trials used fighter RNG offsets 0, 1777 and 3554.
+Before the later arena widening, three 180-second autonomous trials used fighter RNG offsets 0, 1777 and 3554.
 Before this change, completed wins were Fire 8, Ice 10, Storm 1. After tuning,
 they were Fire 7, Ice 8, Storm 4. Storm's action counts contained 86 knees and 41
 kicks across the updated trials, including time outside Overdrive. This is a small

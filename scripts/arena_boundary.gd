@@ -1,8 +1,8 @@
 extends Node3D
 ## Circular colosseum: architecture is baked into one colored mesh per sector.
-const RADIUS := 10.0
+const RADIUS := 15.0
 const HEIGHT := 18.0
-const SECTORS := 32
+const SECTORS := 40
 var sectors: Array[MeshInstance3D]=[]
 var vertices:=PackedVector3Array()
 var normals:=PackedVector3Array()
@@ -18,7 +18,7 @@ func _ready() -> void:
 	var floor_:=StaticBody3D.new()
 	floor_.name="ArenaFloor"
 	var shape:=BoxShape3D.new()
-	shape.size=Vector3(65,0.2,65)
+	shape.size=Vector3(75,0.2,75)
 	var collision:=CollisionShape3D.new()
 	collision.shape=shape
 	collision.position.y=-0.1
@@ -40,14 +40,14 @@ func _ready() -> void:
 				ring_block(10,11.1,course*0.58,course*0.58+0.56,start,start+half-0.003,stone.darkened(float((i+course+block)%4)*0.035))
 		ring_block(9.88,11.24,3.48,3.72,angle-half,angle+half,trim)
 		ring_block(9.9,11.15,0.03,0.27,angle-half,angle+half,stone.darkened(0.2))
-		if i%8==0:
+		if i%(SECTORS/4)==0:
 			gate(b)
 		for row in 12:
 			var radius:=11.3+row*0.73
 			var y:=3.72+row*0.34
 			var seat:=stone.lightened(0.035 if row%2==0 else 0.0)
 			if i%4==0:
-				var gap:=0.32/radius
+				var gap:=0.32/(radius+RADIUS-10.0)
 				ring_block(radius,radius+0.71,0,y,angle-half,angle-gap,seat)
 				ring_block(radius,radius+0.71,0,y,angle+gap,angle+half,seat)
 				ring_block(radius,radius+0.71,0,y-0.12,angle-gap,angle+gap,stone.darkened(0.22))
@@ -59,16 +59,16 @@ func _ready() -> void:
 		for level in 2:
 			var base:=7.55+level*3.85
 			for side in [-1,1]:
-				box(b*Vector3(side*2.125,base+1.05,22.3),Vector3(0.48,2.1,1.1),b,stone)
-				box(b*Vector3(side*2.125,base+2.12,22.3),Vector3(0.7,0.22,1.3),b,trim)
-			arch(b,Vector3(0,base+2.12,22.3),1.88,0.34,1.05,stone)
+				box(b*Vector3(side*2.125,base+1.05,RADIUS+12.3),Vector3(0.48,2.1,1.1),b,stone)
+				box(b*Vector3(side*2.125,base+2.12,RADIUS+12.3),Vector3(0.7,0.22,1.3),b,trim)
+			arch(b,Vector3(0,base+2.12,RADIUS+12.3),1.88,0.34,1.05,stone)
 			ring_block(21.65,23.05,base+3.52,base+3.82,angle-half,angle+half,trim)
 			ring_block(21.85,22.9,base-0.22,base,angle-half,angle+half,stone.darkened(0.15))
 		if i%4==2:
 			var banner: Color=[Color("913a2b"),Color("315d78"),Color("aa7b25")][(i/4)%3]
-			box(b*Vector3(0,9.05,21.63),Vector3(1.05,2.2,0.055),b,banner)
-			box(b*Vector3(0,9.05,21.59),Vector3(0.07,2.2,0.03),b,trim)
-			box(b*Vector3(0,10.2,21.6),Vector3(1.32,0.09,0.14),b,Color("766039"))
+			box(b*Vector3(0,9.05,RADIUS+11.63),Vector3(1.05,2.2,0.055),b,banner)
+			box(b*Vector3(0,9.05,RADIUS+11.59),Vector3(0.07,2.2,0.03),b,trim)
+			box(b*Vector3(0,10.2,RADIUS+11.6),Vector3(1.32,0.09,0.14),b,Color("766039"))
 		var mesh_:=ArrayMesh.new()
 		var arrays:=[]
 		arrays.resize(Mesh.ARRAY_MAX)
@@ -87,7 +87,7 @@ func _process(_delta: float) -> void:
 	if camera==null:
 		return
 	var direction:=Vector3(camera.global_basis.z.x,0,camera.global_basis.z.z).normalized()
-	var inside_bowl:=Vector2(camera.global_position.x,camera.global_position.z).length()<16.5
+	var inside_bowl:=Vector2(camera.global_position.x,camera.global_position.z).length()<RADIUS+6.5
 	for i in sectors.size():
 		var outward:=Vector3(sin(i*TAU/SECTORS),0,cos(i*TAU/SECTORS))
 		sectors[i].visible=inside_bowl or camera.global_position.y>17 or outward.dot(direction)<0.45
@@ -104,20 +104,20 @@ func build_collision(outward: Vector3,angle: float) -> void:
 	physics.bounce=0.16
 	wall.physics_material_override=physics
 	var shape:=BoxShape3D.new()
-	shape.size=Vector3(2*10.55*tan(PI/SECTORS)+0.08,HEIGHT,1.1)
+	shape.size=Vector3(2*(RADIUS+0.55)*tan(PI/SECTORS)+0.08,HEIGHT,1.1)
 	var collision:=CollisionShape3D.new()
 	collision.shape=shape
 	wall.add_child(collision)
 	add_child(wall)
-	wall.position=outward*10.55+Vector3.UP*(HEIGHT/2)
+	wall.position=outward*(RADIUS+0.55)+Vector3.UP*(HEIGHT/2)
 	wall.rotation.y=angle
 
 func build_upper_ward() -> void:
 	# The bowl's upper containment is visible, rather than an unexplained air wall.
 	var node:=MeshInstance3D.new()
 	var mesh_:=CylinderMesh.new()
-	mesh_.top_radius=10.01
-	mesh_.bottom_radius=10.01
+	mesh_.top_radius=RADIUS+0.01
+	mesh_.bottom_radius=RADIUS+0.01
 	mesh_.height=14.28
 	mesh_.radial_segments=64
 	mesh_.cap_top=false
@@ -139,36 +139,37 @@ func build_sand() -> void:
 	node.mesh=plane
 	node.position.y=-0.015
 	var shader:=Shader.new()
-	shader.code="shader_type spatial; varying vec3 p; void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.)).xyz;} void fragment(){float grain=fract(sin(dot(floor(p.xz*120.),vec2(12.9898,78.233)))*43758.5453); float wear=sin(p.x*.8+sin(p.z*.6))*sin(p.z*1.3)*.5+.5; float r=length(p.xz); float ring=1.-smoothstep(.018,.045,abs(r-9.25)); float circle=1.-smoothstep(.025,.05,abs(r-3.2)); ALBEDO=mix(vec3(.45,.32,.17),vec3(.69,.55,.35),wear*.38+grain*.2+.32); ALBEDO=mix(ALBEDO,vec3(.36,.25,.13),max(ring,circle)*.42); ROUGHNESS=1.;}"
+	shader.code="shader_type spatial; uniform float arena_radius=15.; varying vec3 p; void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.)).xyz;} void fragment(){float grain=fract(sin(dot(floor(p.xz*120.),vec2(12.9898,78.233)))*43758.5453); float wear=sin(p.x*.8+sin(p.z*.6))*sin(p.z*1.3)*.5+.5; float r=length(p.xz); float ring=1.-smoothstep(.018,.045,abs(r-(arena_radius-.75))); float circle=1.-smoothstep(.025,.05,abs(r-arena_radius*.32)); ALBEDO=mix(vec3(.45,.32,.17),vec3(.69,.55,.35),wear*.38+grain*.2+.32); ALBEDO=mix(ALBEDO,vec3(.36,.25,.13),max(ring,circle)*.42); ROUGHNESS=1.;}"
 	var material:=ShaderMaterial.new()
 	material.shader=shader
+	material.set_shader_parameter("arena_radius",RADIUS)
 	node.material_override=material
 	add_child(node)
 
 func gate(b: Basis) -> void:
 	var dark:=Color("24221e")
-	box(b*Vector3(0,1.05,9.96),Vector3(1.7,2.1,0.05),b,dark)
+	box(b*Vector3(0,1.05,RADIUS-0.04),Vector3(1.7,2.1,0.05),b,dark)
 	for j in 10:
 		var a:=j*PI/10
-		var c: Vector3=b*Vector3(0,2.05,9.92)
+		var c: Vector3=b*Vector3(0,2.05,RADIUS-0.08)
 		triangle(c,c+b*Vector3(cos(a)*0.86,sin(a)*0.86,0),c+b*Vector3(cos(a+PI/10)*0.86,sin(a+PI/10)*0.86,0),b*Vector3.FORWARD,dark)
-	arch(b,Vector3(0,2.05,9.89),1.02,0.28,0.22,trim)
+	arch(b,Vector3(0,2.05,RADIUS-0.11),1.02,0.28,0.22,trim)
 	for side in [-1,1]:
-		box(b*Vector3(side*1.02,1.0,9.89),Vector3(0.28,2.05,0.22),b,trim)
+		box(b*Vector3(side*1.02,1.0,RADIUS-0.11),Vector3(0.28,2.05,0.22),b,trim)
 	for x in [-0.65,-0.33,0.0,0.33,0.65]:
-		box(b*Vector3(x,1.32,9.84),Vector3(0.055,2.6,0.06),b,Color("565048"))
-	box(b*Vector3(0,1.12,9.8),Vector3(1.68,0.07,0.07),b,Color("74603b"))
+		box(b*Vector3(x,1.32,RADIUS-0.16),Vector3(0.055,2.6,0.06),b,Color("565048"))
+	box(b*Vector3(0,1.12,RADIUS-0.2),Vector3(1.68,0.07,0.07),b,Color("74603b"))
 
 func exterior_niche(b: Basis) -> void:
 	var dark:=Color("302b25")
-	box(b*Vector3(0,1.7,23.04),Vector3(2.5,3.4,0.05),b,dark)
+	box(b*Vector3(0,1.7,RADIUS+13.04),Vector3(2.5,3.4,0.05),b,dark)
 	for j in 12:
 		var a:=j*PI/12
-		var center: Vector3=b*Vector3(0,3.4,23.08)
+		var center: Vector3=b*Vector3(0,3.4,RADIUS+13.08)
 		triangle(center,center+b*Vector3(cos(a+PI/12)*1.25,sin(a+PI/12)*1.25,0),center+b*Vector3(cos(a)*1.25,sin(a)*1.25,0),b*Vector3.BACK,dark)
-	arch(b,Vector3(0,3.4,23.1),1.43,0.34,0.24,trim)
+	arch(b,Vector3(0,3.4,RADIUS+13.1),1.43,0.34,0.24,trim)
 	for side in [-1,1]:
-		box(b*Vector3(side*1.43,1.7,23.1),Vector3(0.34,3.4,0.24),b,trim)
+		box(b*Vector3(side*1.43,1.7,RADIUS+13.1),Vector3(0.34,3.4,0.24),b,trim)
 
 func arch(b: Basis,center: Vector3,radius: float,thickness: float,depth: float,color: Color) -> void:
 	for j in 11:
@@ -177,6 +178,8 @@ func arch(b: Basis,center: Vector3,radius: float,thickness: float,depth: float,c
 		box(b*at,Vector3(radius*PI/11+0.025,thickness,depth),b*Basis(Vector3.BACK,angle+PI/2),color.darkened((j%3)*0.025))
 
 func ring_block(inner: float,outer: float,bottom: float,top: float,start: float,end: float,color: Color) -> void:
+	inner+=RADIUS-10.0
+	outer+=RADIUS-10.0
 	var a:=Vector3(sin(start),0,cos(start))
 	var b:=Vector3(sin(end),0,cos(end))
 	var p: Array[Vector3]=[a*inner+Vector3.UP*bottom,b*inner+Vector3.UP*bottom,b*outer+Vector3.UP*bottom,a*outer+Vector3.UP*bottom,a*inner+Vector3.UP*top,b*inner+Vector3.UP*top,b*outer+Vector3.UP*top,a*outer+Vector3.UP*top]

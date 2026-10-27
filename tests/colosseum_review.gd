@@ -9,7 +9,7 @@ func run() -> void:
 	field=load("res://scenes/main.tscn").instantiate()
 	root.add_child(field)
 	field.review_camera=true
-	field.camera.position=Vector3(30,34,38)
+	field.camera.position=Vector3(38,40,48)
 	field.camera.fov=50
 	field.camera.look_at(Vector3(0,4,0))
 	field.hud.get_parent().visible=false

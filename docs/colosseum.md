@@ -5,15 +5,15 @@ grass courtyard. A sand fighting floor, ashlar retaining wall and four recessed
 portcullises sit inside twelve rising stone seating rows with radial stair
 aisles. Two stacked arcade levels, projecting cornices, exterior arched recesses
 and Fire/Ice/Storm-colored hanging standards form the outer building. The
-structure is about 46 m across, enclosing a 20 m diameter fighting floor.
+structure is about 56 m across, enclosing a 30 m diameter fighting floor.
 
-Architecture is baked into 32 sector meshes sharing one stone material. The
+Architecture is baked into 40 sector meshes sharing one stone material. The
 foreground architecture is cut away only when a low combat camera pulls outside
 the bowl; overhead views reveal the complete building. Warm daylight replaces
 the meadow lighting, and sand replaces grass and distant green hills. The saved
 duel and casting studies keep their earlier settings.
 
-Thirty-two overlapping collision segments provide a circular physical boundary.
+Forty overlapping collision segments provide a circular physical boundary.
 The existing crash damage, dust, audio, ragdoll bounce and death behavior remain.
 A faint golden ward above the retaining wall makes the upper 18 m containment
 visible during high launches; seating and arcades are scenery outside the active
@@ -34,3 +34,7 @@ overhead view followed by ordinary autonomous combat in the new setting.
 
 This is original procedural stylized architecture. It does not include a crowd,
 destructible stands or navigable spectator seating.
+
+The fighting floor was widened from 20 m to 30 m across: 50% more width and
+2.25 times the area. Starting separation, movement limits, wall fixtures and
+recovery bounds expand with it; the seating keeps its original row depth/height.

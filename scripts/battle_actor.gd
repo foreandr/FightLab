@@ -110,6 +110,9 @@ func focus_position() -> Vector3:
 func movement_multiplier() -> float:
 	return (1.45 if team == 2 else 1.0) * (1.35 if haste_time > 0 else 1.0) * (0.60 if chill_time > 0 else 1.0)
 
+func arena_roam_radius() -> float:
+	return float(arena.Boundary.RADIUS)-2.0
+
 func choose_spell(air: bool) -> Dictionary:
 	var list: Array = arena.profile_spells(team)
 	var spec: Dictionary = list[spell_cursor % list.size()].duplicate(true)
@@ -624,9 +627,9 @@ func finish_ragdoll() -> void:
 	if lying_direction.length()>0.15 and target_direction.length()>0.15:
 		rotation.y+=target_direction.signed_angle_to(lying_direction,Vector3.UP)
 	var pelvis_offset:=bone_point("pelvis")-global_position
-	position.x=clampf(location.x-pelvis_offset.x,-9.6,9.6)
-	position.z=clampf(location.z-pelvis_offset.z,-9.6,9.6)
-	var flat:=Vector2(position.x,position.z).limit_length(9.6)
+	position.x=location.x-pelvis_offset.x
+	position.z=location.z-pelvis_offset.z
+	var flat:=Vector2(position.x,position.z).limit_length(float(arena.Boundary.RADIUS)-0.4)
 	position.x=flat.x
 	position.z=flat.y
 	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/1.05

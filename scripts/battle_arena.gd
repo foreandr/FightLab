@@ -132,6 +132,8 @@ func begin_round() -> void:
 	intermission = 0
 	var positions := [Vector3(-3.464,0.02,-2),Vector3(3.464,0.02,-2),Vector3(0,0.02,4)]
 	for i in 3:
+		positions[i].x*=Boundary.RADIUS/10.0
+		positions[i].z*=Boundary.RADIUS/10.0
 		fighters[i].reset_fighter(positions[i])
 		fighters[i].rival = fighters[(i+1)%3]
 	status = "FIRE  ×  ICE  ×  STORM"

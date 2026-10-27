@@ -181,7 +181,7 @@ func start_jump(kind: String) -> void:
 	air_momentum = (away * 0.35 + side).normalized() * 4.2
 	if kind == "flip":
 		air_momentum = (away + side * 0.25).normalized() * 4.8
-	if position.length() > 6.0:
+	if position.length() > arena_roam_radius()*0.75:
 		air_momentum = flat_direction(position, Vector3.ZERO) * 4.2
 	clip = ""
 	play("duel/takeoff", 1.35)
@@ -254,7 +254,7 @@ func select_action() -> void:
 		var away := flat_direction(rival.position, position)
 		var side := Vector3(-away.z, 0, away.x) * (1 if decision % 2 == 0 else -1)
 		air_momentum = (side + away * 0.2).normalized() * 10.5
-		if position.length() > 6:
+		if position.length() > arena_roam_radius()*0.75:
 			air_momentum = flat_direction(position, Vector3.ZERO) * 10.5
 		count_action("dash")
 	else:
@@ -519,7 +519,7 @@ func tick(delta: float) -> void:
 			play("duel/walk_back" if mode == "retreat" else "duel/walk_forward", 1.3)
 		else:
 			desired = air_momentum * sin(clampf(mode_time / mode_length, 0, 1) * PI)
-		if position.length() > 8.5 and desired.dot(position) > 0:
+		if position.length() > arena_roam_radius()+0.5 and desired.dot(position) > 0:
 			desired = desired.slide(position.normalized())
 		if mode_time >= mode_length:
 			mode = "idle"
@@ -556,7 +556,7 @@ func tick(delta: float) -> void:
 		var distance := Vector2(position.x - rival.position.x, position.z - rival.position.z).length()
 		var side := Vector3(-away.z, 0, away.x) * (1 if team == 0 else -1)
 		desired = (side * 0.95 + away * (4.8 - distance) * 0.7).normalized() * 4.8
-		if position.length() > 6:
+		if position.length() > arena_roam_radius()*0.75:
 			desired = flat_direction(position, Vector3.ZERO) * 4.8
 		if mode_time >= mode_length:
 			mode = "idle"
@@ -582,11 +582,11 @@ func tick(delta: float) -> void:
 	# Keep retreats and pursuits in the readable meadow instead of allowing one
 	# fighter to kite the other endlessly beyond the action camera's useful area.
 	var radius := Vector2(position.x, position.z).length()
-	if radius > 8.0 and mode in ["chase", "recover", "run", "dash", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
+	if radius > arena_roam_radius() and mode in ["chase", "recover", "run", "dash", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
 		var outward := Vector3(position.x, 0, position.z).normalized()
 		if desired.dot(outward) > 0:
 			desired = desired.slide(outward)
-		desired -= outward * minf(3.0, (radius - 8.0) * 2.0)
+		desired -= outward * minf(3.0, (radius - arena_roam_radius()) * 2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
 	desired *= clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0) * movement_multiplier()
 	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
@@ -758,3 +758,6 @@ func nearest_hurtbox(point: Vector3) -> Area3D:
 			distance = d
 			best = area
 	return best
+
+func arena_roam_radius() -> float:
+	return 8.0

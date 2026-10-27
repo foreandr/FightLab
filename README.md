@@ -5,7 +5,7 @@ All three enemies manage mana, stamina, guard and distance, cast spells, and fig
 with punches, kicks and knees. The last survivor wins; another round starts automatically.
 
 The main arena is a circular sandstone [colosseum](docs/colosseum.md), with a sand
-floor, tiered seating, stacked arcades, gated entrances and physical wall slams.
+floor 30 metres across, tiered seating, stacked arcades, gated entrances and physical wall slams.
 
 ## Play
 

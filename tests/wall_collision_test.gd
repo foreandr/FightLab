@@ -27,11 +27,12 @@ func prepare() -> void:
 func run() -> void:
 	field=load("res://scenes/main.tscn").instantiate()
 	root.add_child(field)
+	var radius: float=field.Boundary.RADIUS
 	for dead in [false,true]:
 		for direction in [Vector3.RIGHT,Vector3.LEFT,Vector3.FORWARD,Vector3.BACK,Vector3(1,0,1).normalized(),Vector3(-1,0,1).normalized(),Vector3(1,0,-1).normalized(),Vector3(-1,0,-1).normalized()]:
 			await prepare()
 			var f=field.fighters[1]
-			f.position=direction*8.4+Vector3.UP*1.5
+			f.position=direction*(radius-1.6)+Vector3.UP*1.5
 			await frames(2)
 			f.health=0 if dead else f.MAX_HEALTH
 			f.velocity=direction*10+Vector3.UP*2
@@ -41,7 +42,7 @@ func run() -> void:
 				await physics_frame
 				if is_instance_valid(f.ragdoll):
 					for body in f.ragdoll.bodies.values():
-						check(Vector2(body.position.x,body.position.z).length()<10.65,"Ragdoll must remain inside the circular physical walls")
+						check(Vector2(body.position.x,body.position.z).length()<radius+0.65,"Ragdoll must remain inside the circular physical walls")
 			print("WALL dead=",dead," direction=",direction," crashes=",f.wall_crashes-before," health=",f.health)
 			check(f.wall_crashes>before,"Thrown bodies must generate a real wall crash on every boundary: "+str(direction))
 			if dead:
@@ -54,7 +55,7 @@ func run() -> void:
 	# A wall can finish a vulnerable fighter without replacing its existing body.
 	await prepare()
 	var fragile=field.fighters[1]
-	fragile.position=Vector3(8.4,1.5,0)
+	fragile.position=Vector3(radius-1.6,1.5,0)
 	await frames(2)
 	fragile.health=1
 	fragile.velocity=Vector3(10,2,0)
@@ -65,7 +66,7 @@ func run() -> void:
 	# A forced upright knockback must hit the wall and become a physical tumble.
 	await prepare()
 	var f=field.fighters[0]
-	f.position=Vector3(9.2,1.2,0)
+	f.position=Vector3(radius-0.8,1.2,0)
 	f.knockback=Vector3.RIGHT*12
 	f.velocity=Vector3.RIGHT*12
 	var before: int=f.wall_crashes
@@ -74,30 +75,30 @@ func run() -> void:
 	# Ordinary movement is stopped by a real collider, with no crash spam/damage.
 	await prepare()
 	f=field.fighters[0]
-	f.position=Vector3(9.3,0.02,0)
+	f.position=Vector3(radius-0.7,0.02,0)
 	for i in 60:
 		f.velocity=Vector3.RIGHT*3
 		f.move_and_slide()
 		await physics_frame
-	check(f.position.x<9.9 and f.health==f.MAX_HEALTH,"Walking into a wall must stop without crash damage")
+	check(f.position.x<radius-0.1 and f.health==f.MAX_HEALTH,"Walking into a wall must stop without crash damage")
 	# A projectile cannot travel through the boundary to a target outside it.
 	await prepare()
 	f=field.fighters[0]
 	var target=field.fighters[1]
-	f.position=Vector3(8,0.02,0)
-	target.position=Vector3(12,0.02,0)
+	f.position=Vector3(radius-2,0.02,0)
+	target.position=Vector3(radius+2,0.02,0)
 	f.rival=target
 	await frames(3)
 	var spell: Dictionary=field.KITS[0][0].duplicate(true)
 	spell.charge=0.0
-	field.spawn_projectile(f,spell,Vector3(9,1.1,0))
+	field.spawn_projectile(f,spell,Vector3(radius-1,1.1,0))
 	await frames(30)
 	check(field.shots.is_empty() and target.health==target.MAX_HEALTH,"Wall collision must stop a projectile before it hits a target beyond the arena")
 	await prepare()
 	f=field.fighters[1]
 	target=field.fighters[0]
-	f.position=Vector3(8,0.02,0)
-	target.position=Vector3(12,0.02,0)
+	f.position=Vector3(radius-2,0.02,0)
+	target.position=Vector3(radius+2,0.02,0)
 	f.rival=target
 	await frames(3)
 	f.mode="cast"

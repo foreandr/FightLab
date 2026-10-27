@@ -6,8 +6,8 @@ func frames(count: int) -> void:
 	for i in count:
 		await physics_frame
 		if is_instance_valid(field):
-			field.camera.position=Vector3(3.5,4.2,7.5)
-			field.camera.look_at(Vector3(8.1,1.3,0))
+			field.camera.position=Vector3(float(field.Boundary.RADIUS)-6.5,4.2,7.5)
+			field.camera.look_at(Vector3(float(field.Boundary.RADIUS)-1.9,1.3,0))
 func run() -> void:
 	field=load("res://scenes/main.tscn").instantiate()
 	root.add_child(field)
@@ -22,7 +22,7 @@ func run() -> void:
 		field.eliminated.clear()
 		for f in field.fighters:
 			f.brain_enabled=false
-			f.reset_fighter(Vector3(5,0.02,0) if f.team==0 else (Vector3(8.7,0.02,0) if f.team==1 else Vector3(-5,0.02,-5)))
+			f.reset_fighter(Vector3(float(field.Boundary.RADIUS)-5,0.02,0) if f.team==0 else (Vector3(float(field.Boundary.RADIUS)-1.3,0.02,0) if f.team==1 else Vector3(-5,0.02,-5)))
 			f.mode="review"
 			f.mode_length=999
 			f.invulnerability=0
