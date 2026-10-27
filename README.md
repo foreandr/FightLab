@@ -1,3 +1,7 @@
+## Use an existing fighting game instead
+
+Run `PlayExisting.bat` to download and launch [clintcan/3d-fighter](https://github.com/clintcan/3d-fighter) as an **independently maintained upstream project**. In the game select **Demo** to watch two computer fighters. It is a 3D fighting game with animation, gameplay, and AI already implemented; it is **not** UFC-quality physics-based ragdoll combat. This option does not replace or modify the upstream game's source code. The launcher clones it into ignored `external/3d-fighter/` and downloads official Godot 4.7 stable if necessary. A Vulkan-capable graphics driver is required. The upstream code is MIT-licensed; assets have their own licenses, see the upstream repository. On download, compatibility, or graphics errors, the launcher fails with an explicit message rather than silently launching our previous capsule prototype.
+
 # FightLab
 
 Infrastructure for a future 3D fighting game. First playable physics combat sandbox: WASD movement, SPACE punch, R to reset the physics opponent. Character meshes and punch pose are temporary placeholders; the physics knockback is real.
