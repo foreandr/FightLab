@@ -216,6 +216,12 @@ func select_action() -> void:
 		start_burst()
 		decision += 1
 		return
+	if team==2 and haste_time>0 and flat_distance()>1.03 and stamina>=18:
+		mode="chase"
+		mode_time=0
+		mode_length=0.3
+		count_action("close_distance")
+		return
 	if flat_distance() < 1.35 and stamina >= 18:
 		if melee_sequence % 5 == 4 and stamina >= 32:
 			start_uppercut()
@@ -264,6 +270,8 @@ func start_jump(kind: String) -> void:
 func start_punch() -> void:
 	melee_charge=0
 	var index := melee_sequence % 6
+	if team==2 and haste_time>0:
+		index=[3,0,3,1,3,2][melee_sequence%6]
 	melee_sequence += 1
 	var moves := [
 		["left_jab", "ual1/Punch_Jab", "hand_l", 0.12, 0.48, 8.0, 8.0, 1.0],
@@ -275,16 +283,18 @@ func start_punch() -> void:
 	begin_strike(moves[index])
 
 func begin_strike(spec: Array) -> void:
-	if not spend_stamina(spec[6]):
+	var powered: bool=team==2 and haste_time>0
+	if not spend_stamina(float(spec[6])*(0.75 if powered else 1.0)):
 		start_recovery()
 		return
 	melee_spec = spec
 	attack_kind = spec[0]
-	strike_damage = spec[5]
+	strike_damage = float(spec[5])*(1.35 if powered else 1.0)
 	strike_reach = spec[7]
 	strike_augmented=false
-	if spec[0] in ["front_kick","round_kick","knee"] and mana>=5:
-		spend_mana(5)
+	if spec[0] in ["front_kick","round_kick","knee"] and (mana>=5 or powered):
+		if not powered:
+			spend_mana(5)
 		strike_augmented=true
 	mode = "punch"
 	mode_time = 0
@@ -396,7 +406,7 @@ func tick(delta: float) -> void:
 			drive_velocity = burst_direction * combo_speed
 			distance_run += before.distance_to(position)
 			arena.speed_trail(self)
-			if flat_distance() < 2.2 or mode_time > burst_left:
+			if flat_distance() < (1.1 if team==2 and haste_time>0 else 2.2) or mode_time > burst_left:
 				combo_time = 0.48
 				start_punch()
 		advance_animation(delta)
@@ -499,6 +509,8 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 	if impulse.is_zero_approx():
 		impulse=direction.normalized()*amount*12.0
 	last_attacker = attacker.team
+	if team==2 and haste_time>0:
+		amount*=0.75
 	if armor_hp > 0:
 		var absorbed := minf(armor_hp, amount * 0.55)
 		armor_hp -= absorbed

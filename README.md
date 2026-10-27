@@ -29,6 +29,8 @@ This remains an AI combat prototype; player controls are not implemented.
 - **Storm:** overdrive increases sprint speed. A forward burst can flow into an
   actual contacting strike, carrying a short-lived momentum bonus into its damage
   and impact. The gold fighter is a distinct third opponent, not a teammate.
+  His [14-second Overdrive](docs/overdrive.md) adds a golden lightning mantle,
+  favors knees, improves melee power/endurance and reduces direct incoming damage.
 
 Quick projectile arm swings release faster. Ground casts can hold their gathering
 pose, growing charge before release. Charge increases damage and mana cost; fire

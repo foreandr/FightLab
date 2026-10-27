@@ -9,6 +9,7 @@ param(
     [switch]$RecoveryShowcase,
     [switch]$AirShowcase,
     [switch]$ColosseumShowcase,
+    [switch]$OverdriveShowcase,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -32,9 +33,10 @@ if ($WallShowcase) { $arguments += @('-s', 'res://tests/wall_review.gd') }
 if ($RecoveryShowcase) { $arguments += @('-s', 'res://tests/recovery_review.gd') }
 if ($AirShowcase) { $arguments += @('-s', 'res://tests/air_cast_review.gd') }
 if ($ColosseumShowcase) { $arguments += @('-s', 'res://tests/colosseum_review.gd') }
+if ($OverdriveShowcase) { $arguments += @('-s', 'res://tests/overdrive_review.gd') }
 $arguments += @('--', "--report-file=$reportPath")
-if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase -and -not $AirShowcase -and -not $ColosseumShowcase) { $arguments += "--duration=$Seconds" }
-if ($FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase -or $ColosseumShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
+if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase -and -not $AirShowcase -and -not $ColosseumShowcase -and -not $OverdriveShowcase) { $arguments += "--duration=$Seconds" }
+if ($FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase -or $ColosseumShowcase -or $OverdriveShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
 if ($Background -and $env:OS -eq 'Windows_NT') {
     $nativeArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
     $recording = Start-Process -FilePath $executable -ArgumentList $nativeArguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $OutputDirectory 'recording.log') -RedirectStandardError (Join-Path $OutputDirectory 'errors.log')

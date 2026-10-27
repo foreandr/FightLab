@@ -3,6 +3,8 @@ const BattleActor = preload("res://scripts/battle_actor.gd")
 const BattleVFX = preload("res://scripts/battle_vfx.gd")
 const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
+const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
+const OVERDRIVE_DURATION := 14.0
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
 	[{"id":"ice_armor","name":"Glacial Armor","effect":"armor","animation":"twin_push","hand":"both","release":1.0}, {"id":"ice_beam","name":"Freezing Ray","effect":"ice_beam","animation":"flame_channel","hand":"both","release":0.8}],
@@ -14,6 +16,7 @@ var eliminated := {}
 var target_timer := 0.0
 var beam_clashes := 0
 var ending := false
+var storm_aura: Node3D
 
 func _ready() -> void:
 	rng.seed = 715391
@@ -65,6 +68,9 @@ func _ready() -> void:
 		armor_meshes.append(pieces)
 	for f in fighters:
 		f.rival = fighters[(f.team+1)%3]
+	storm_aura=OverdriveAura.new()
+	storm_aura.fighter=fighters[2]
+	add_child(storm_aura)
 	build_fight_ui()
 	begin_round()
 
@@ -244,6 +250,7 @@ func _physics_process(delta: float) -> void:
 			if f.haste_time > 0:
 				vfx.puff(f.bone_point("calf_r"),"trace_02",2,Vector2(0.2,0.8),Vector3.UP,0.16,Color("fff1a3"),0.3)
 	step_shots(delta)
+	storm_aura.step(delta)
 	step_channels(delta)
 	step_particles(delta)
 	vfx.step(delta)
@@ -282,7 +289,7 @@ func cast_magic(f: CharacterBody3D, spec: Dictionary, _air: bool) -> void:
 		f.armor_hp = 50
 		audio.impact("ice",f.global_position,0.5)
 	elif spec.effect == "haste":
-		f.haste_time = 7
+		f.haste_time = OVERDRIVE_DURATION
 		audio.impact("dash",f.global_position,0.6)
 	elif spec.effect == "burst":
 		f.start_burst(true)
@@ -575,7 +582,7 @@ func update_fight_ui() -> void:
 		elif f.mode=="melee_charge": states.append("UPPERCUT %d%%"%int(f.melee_charge*100))
 		else: states.append("FISTS" if f.close_combat else "MAGIC")
 		if f.armor_hp>0: states.append("ARMOR %d"%int(f.armor_hp))
-		if f.haste_time>0: states.append("OVERDRIVE")
+		if f.haste_time>0: states.append("OVERDRIVE %ds"%ceili(f.haste_time))
 		if f.chill_time>0: states.append("SLOWED")
 		if f.burn_time>0: states.append("BURNING")
 		status_labels[i].text=" · ".join(states)
