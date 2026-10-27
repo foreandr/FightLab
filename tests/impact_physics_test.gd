@@ -58,7 +58,7 @@ func shoot(victim: Node3D, bone: String, from_right: bool, speed := 12.5) -> Dic
 	return victim.impact_physics.last_impact.duplicate(true)
 
 func run() -> void:
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/duel_study.tscn").instantiate()
 	root.add_child(field)
 	for team in 2:
 		var victim = field.fighters[team]

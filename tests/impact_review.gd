@@ -14,7 +14,7 @@ func picture(name_: String) -> void:
 		field.capture.call_deferred(name_ + ".png")
 
 func run() -> void:
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/duel_study.tscn").instantiate()
 	root.add_child(field)
 	field.review_camera = true
 	field.camera.position = Vector3(3.3, 2.2, 4.8)

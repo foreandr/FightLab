@@ -1,120 +1,96 @@
-# FightLab — Fire vs Water
+# FightLab — Fire × Ice × Storm
 
-An automatic **elemental arena fight** in Godot 4.6 stable, built for Windows 11
-and the Compatibility renderer on integrated graphics.
+An autonomous three-way arena fight in Godot 4.6, using the Compatibility renderer.
+All three enemies manage mana, stamina, guard and distance, cast spells, and fight
+with punches, kicks and knees. The last survivor wins; another round starts automatically.
 
-The male fighter uses fire. The female fighter uses water. Both run, leap, dash,
-perform skeletal backflips, cast while airborne and react to actual spell hits.
-Each has a health bar; a knockout awards the round, followed by an automatic rematch.
-Both can raise directional energy shields, absorb spells, strafe, backpedal,
-quick-step backward and perform a backward ground roll while facing the rival.
-Mana, stamina and distance now drive their tactics: depleted casters close in
-with jabs, crosses and hooks, then make space for magic as their mana recovers.
+## Play
 
-## Launch
-
-Double-click `C:\Users\forea\FightLab\Play.bat`, or run the current local files:
+Double-click `Play.bat`, or run:
 
 ```powershell
 Set-Location C:\Users\forea\FightLab
 .\run.ps1
 ```
 
-Both fighters are autonomous. Space toggles slow motion, R restarts and Esc quits.
-Godot 4.6 is found automatically, or supply `GODOT_PATH` / `-GodotPath`.
-All required models, animations and third-party license notices are in Git.
+Space toggles slow motion, R restarts, M toggles sound and Esc exits.
+Both the full fight and review scenes use the actual combat/physics paths.
+This remains an AI combat prototype; player controls are not implemented.
 
-## Combat and movement
+## Fighter kits
 
-- Reused Quaternius sprint, jump anticipation, tucked flight and landing motion.
-- A separate arms-back dash, real ballistic jumps (~3 m), lateral evasions,
-  short air-dash bursts and a complete skeletal somersault/backflip.
-- Facing-preserving sideways steps, guarded forward/backward walking, a quick
-  backward dodge and a reversed skeletal ground roll. Retreats are physical moves,
-  so an incoming spell may still catch the fighter.
-- Two shield gestures (one palm and two-handed brace), block recoil, lowering and
-  guard-break recovery. The pale GUARD bar shows shield energy. A forward
-  shield consumes energy, allows rear/flank hits, breaks under pressure and recharges.
-- Purple MANA pays for released spells and shield creation/upkeep. Green STAMINA
-  pays for punches, sprints, jumps, dashes and rolls. Both recover over time, with
-  delays after spending. Exhausted fighters back off or hold guard to catch breath.
-- Low mana switches to closing distance and fistfighting; recovered mana switches
-  back to spacing for spells. Very close enemies can provoke melee even with mana.
-  Left/right jabs, crosses and hooks sweep the animated fist through real hurtboxes.
-  Missed, evaded or out-of-range punches do no damage. Retreats stay in the meadow.
-- Ground and airborne versions of the ten casting gestures, blended between states.
-  Air casts keep bent legs; the chest aims up/down toward elevated opponents.
-- Physical CharacterBody3D movement, gravity, floor and body collision. Animated
-  head/torso hurtboxes follow the bones through flips and aerial casting.
-- Separate head, chest, pelvis, upper/lower arm and thigh/calf hurtboxes.
-  Contact point and momentum drive constrained spring-joint recoil: torso torque,
-  head/neck motion, struck-limb deflection, balance loss and physical root shove.
-  These dynamics blend over locomotion and casting rather than choosing one generic flinch.
-- Predictively aimed projectiles that can miss. Swept Godot shape queries decide
-  projectile hits; rays decide channels; expanding shapes decide area spells.
-- Firebolts, cleaves, lances, a channel and a nova for the man. The woman uses
-  reflective animated water orbs, darts, water lances, a torrent and ground surge,
-  with falling droplets and splashes rather than rising fire embers.
-- Opposing projectiles can collide into a steam clash. Impact flashes, expanding
-  rings and short motion trails emphasize connections without hiding the fighters.
-- Kenney CC0 flame/smoke/spark/slash textures, flowing tapered ribbons, animated
-  water surfaces, foam/spray, layered flame heads, smoke and textured impact bursts.
-  Hex-pattern curved shields light up with a ripple when a spell is absorbed.
-- Health, stagger, limited recovery spells, knockout scoring and automatic rounds.
-- A damped action camera orbits the fight and adjusts its distance for separation
-  and jumps. The HUD keeps fire/water identity, health and round score visible.
+- **Fire:** quick or held fireballs and severing arm-swipe projectiles. Connected
+  fire spells and augmented leg strikes apply a lasting burn.
+- **Ice:** temporary glacial armor mitigates incoming damage. The freezing beam
+  applies chill, reduces movement and can freeze an enemy; freeze expires.
+- **Storm:** overdrive increases sprint speed. A forward burst can flow into an
+  actual contacting strike, carrying a short-lived momentum bonus into its damage
+  and impact. The gold fighter is a distinct third opponent, not a teammate.
 
-This is a first dynamic combat prototype inspired by fast aerial arena fighters.
-It does not claim the animation polish, content or combat depth of commercial anime
-fighting games. There is no player control, grappling, active ragdoll or
-fluid simulation yet. Fire/water effects use lightweight textured particles and shaders.
+Quick projectile arm swings release faster. Ground casts can hold their gathering
+pose, growing charge before release. Charge increases damage and mana cost; fire
+projectiles also gain speed, size and effective mass. Charged beam grows stronger.
+A held cast can be interrupted. A spell that cannot be paid for does not fire.
 
-## Checks and recorded debugging
+All fighters have jabs, crosses, hooks, front/high kicks, knees and charged
+uppercuts. Mana can augment kicks/knees with elemental effects. Low mana drives
+close combat; low stamina forces recovery. Punch/kick/knee hits require a sweep
+of the real animated limb through an enemy hurtbox. Moving quickly can increase
+physical damage, but a missed dash or strike awards no proximity hit.
+
+## Physical response and ragdoll
+
+Head, chest, pelvis, arms and legs retain the contact-localized spring-joint
+feedback. Strong impacts instead switch to an eleven-body, ten-joint rigid-body
+ragdoll. The physical bodies collide with the ground and other fighters and drive
+the existing skin. A charged uppercut or overwhelming charged spell can shatter
+forward guard and launch an enemy upward. Living fighters settle and play a get-up;
+KO bodies remain down until the next round.
+
+The ragdoll uses positional joints with free angular motion, tuned damping and
+bounded initial velocities. It is a first pass, not a biomechanical joint-limit
+model or a polished motion-matched get-up. The smaller hit-response model remains
+active for ordinary blows.
+
+## Sound and presentation
+
+Original synthesized positional Foley covers fists, kicks/knees, heavy hits,
+shield blocks/shatters, ice, bursts and landings. Twelve reusable voices keep
+polyphony bounded. Video recordings include the actual audio mix.
+
+Fire/ice/storm colors, charge glow, frost armor, ice fragments, freezing mist,
+burning particles and motion trails identify the kits. The camera fits all living
+fighters and pulls back for launches. Three HUD panels show health, mana, stamina,
+guard and active statuses.
+
+## Checks and recording
 
 ```powershell
 .\validate.ps1
-.\scripts\core\review-video.ps1 -Seconds 55
+.\scripts\core\review-video.ps1 -Seconds 70
+.\scripts\core\review-video.ps1 -FeatureShowcase
 ```
 
-Validation runs 120 simulated seconds of the fight, checks both fighters' running,
-jumps/flips, air casts, damage, bounded health, HUD agreement, KOs/rematches,
-separation, camera coverage and effect cleanup. It disables all hurtboxes to reject
-proximity damage, moves a target out of a launched spell's path, and checks a real
-opposing-projectile clash. Movement sampling verifies sprint strides, an inverted
-skeletal flip and tucked legs on both character rigs.
-Defense checks verify actual projectile interception, guard spending, damage
-overflow on break, rear bypass, recovery, physical footwork and bounded particles.
-Both rigs are also checked for lateral foot motion, roll inversion and distinct
-shield hand poses.
-Resource checks verify costs, delayed regeneration, stamina-gated actions,
-low-mana pursuit, returning to ranged spacing, real fist contacts/misses on both
-characters, resource/HUD bounds and pool resets between rounds.
-Impact checks verify actual head/torso/leg projectile contacts on both rigs,
-mirrored side torque, speed-dependent momentum, leg support loss, shield impulse
-transfer, settling and matching dynamics at 30/60 FPS.
+Validation includes a 180-second three-way fight, focused charge/status/ragdoll/
+audio/melee checks and regressions against the saved two-fighter duel, casting
+study and skeletal animation samples. Review recordings write a native 30 FPS AVI
+with stereo audio and a JSON event timeline. Movie encoding speed is separate from
+live gameplay performance.
 
-The video helper writes a native 30 FPS AVI and a JSON action/cast/hit timeline to
-ignored `builds/review-*`. Review consecutive frames around jump, flip, release,
-impact and landing timestamps. Encoding speed is not live gameplay performance.
-See [localized impact physics](docs/impact-physics.md), or the earlier
-[mana, stamina and melee validation](docs/resources-melee.md),
-[shield, footwork and VFX validation](docs/defense-vfx.md) and
-[elemental-duel validation](docs/elemental-duel.md).
+Details: [triad combat validation](docs/triad-combat.md).
 
-After normal asset import, rebuild movement and aerial casting clips with:
+## Sources and saved scenes
+
+All required models, textures, animations and licenses are included for offline
+use. Quaternius characters/UAL motions are CC0; clothing and adapted choreography
+retain CC BY 4.0 credits; composition helpers retain MIT credits. Kenney effect
+textures are CC0. Sounds are original procedural synthesis. No proprietary anime
+or commercial game assets were extracted. See [asset notices](assets/combat/NOTICE.md).
+
+The previous duel is retained in `scenes/duel_study.tscn`, the stationary ten-cast
+study in `scenes/spell_study.tscn`, and striking in `scenes/sparring.tscn`.
+To rebuild the knee and uppercut clips after normal import:
 
 ```powershell
-.\tools\Godot_v4.6-stable_win64_console.exe --headless --path . -s res://scripts/vendor/build_duel_clips.gd
+.\tools\Godot_v4.6-stable_win64_console.exe --headless --path . -s res://scripts/vendor/build_battle_clips.gd
 ```
-
-## Sources and checkpoints
-
-Characters and base locomotion are **Quaternius CC0**. The flip choreography and
-clothing are **Clint Christopher Canada / 3D Fighter, CC BY 4.0**. Existing MIT
-skeletal composition helpers are reused. Full credits: [asset notices](assets/combat/NOTICE.md).
-Effect masks come from [Kenney Particle Pack](https://kenney.nl/assets/particle-pack),
-CC0; the ten selected textures and original license are included for offline use.
-No assets were extracted from Naruto, Jujutsu Kaisen, or proprietary games.
-
-The static ten-spell study remains in `scenes/spell_study.tscn`; earlier striking
-sparring remains in `scenes/sparring.tscn`. Their regression checks are retained.

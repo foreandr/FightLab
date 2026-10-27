@@ -529,15 +529,7 @@ func tick(delta: float) -> void:
 		if mode_time >= mode_length:
 			launch()
 	elif mode == "cast":
-		cast_time += delta * CAST_SPEED
-		face_rival(delta)
-		if not did_release and cast_time >= current_spell.release:
-			did_release = true
-			pending_release = true
-		if mode_time >= mode_length:
-			mode = "idle" if is_on_floor() else "air"
-			mode_time = 0
-			mode_length = 0.12
+		pending_release = tick_cast(delta)
 	elif mode == "hit":
 		if mode_time >= mode_length:
 			mode = "idle" if is_on_floor() else "air"
@@ -596,7 +588,7 @@ func tick(delta: float) -> void:
 			desired = desired.slide(outward)
 		desired -= outward * minf(3.0, (radius - 8.0) * 2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
-	desired *= clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
+	desired *= clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0) * movement_multiplier()
 	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
 	drive_velocity.z = move_toward(drive_velocity.z, desired.z, delta * acceleration)
 	velocity.x = drive_velocity.x + knockback.x
@@ -625,7 +617,7 @@ func tick(delta: float) -> void:
 			arena.movement_burst(self, true)
 	distance_run += Vector2(position.x - before.x, position.z - before.z).length()
 	max_height = maxf(max_height, position.y)
-	player.advance(delta)
+	advance_animation(delta)
 	if mode == "cast" and player.is_playing() and not current_spell.effect in ["heal", "ground", "nova"]:
 		# Add a bounded chest aim layer to the existing cast, rather than rotating
 		# the whole character when firing up at a jumper or down from the air.
@@ -651,6 +643,25 @@ func tick(delta: float) -> void:
 	if trail_clock > 0.065 and (mode in ["dash", "flip"] or (not is_on_floor() and velocity.length() > 7)):
 		trail_clock = 0
 		arena.speed_trail(self)
+
+func movement_multiplier() -> float:
+	return 1.0
+
+func advance_animation(delta: float) -> void:
+	player.advance(delta)
+
+func tick_cast(delta: float) -> bool:
+	cast_time += delta * CAST_SPEED
+	face_rival(delta)
+	var released := false
+	if not did_release and cast_time >= current_spell.release:
+		did_release = true
+		released = true
+	if mode_time >= mode_length:
+		mode = "idle" if is_on_floor() else "air"
+		mode_time = 0
+		mode_length = 0.12
+	return released
 
 func face_rival(delta: float) -> void:
 	if rival == null:

@@ -3,6 +3,7 @@ param(
     [string]$OutputDirectory,
     [int]$Seconds = 40,
     [switch]$IsolateKicks,
+    [switch]$FeatureShowcase,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -20,8 +21,10 @@ $arguments = @('--path', $projectRoot, '--resolution', '1152x720', '--write-movi
 if ($IsolateKicks) {
     $arguments += @('-s', 'res://tests/kick_review.gd')
 }
+if ($FeatureShowcase) { $arguments += @('-s', 'res://tests/battle_review.gd') }
 $arguments += @('--', "--report-file=$reportPath")
-if (-not $IsolateKicks) { $arguments += "--duration=$Seconds" }
+if (-not $IsolateKicks -and -not $FeatureShowcase) { $arguments += "--duration=$Seconds" }
+if ($FeatureShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
 if ($Background -and $env:OS -eq 'Windows_NT') {
     $nativeArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
     $recording = Start-Process -FilePath $executable -ArgumentList $nativeArguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $OutputDirectory 'recording.log') -RedirectStandardError (Join-Path $OutputDirectory 'errors.log')
@@ -31,6 +34,7 @@ if ($Background -and $env:OS -eq 'Windows_NT') {
     $code = $LASTEXITCODE
 }
 if ($code -ne 0) { throw "Video review failed (exit $code)." }
+if ($Background -and (Select-String -LiteralPath (Join-Path $OutputDirectory 'errors.log') -Pattern 'SCRIPT ERROR:|^ERROR:' -Quiet)) { throw 'The rendered review logged a runtime error.' }
 if (-not (Test-Path -LiteralPath $reportPath)) {
     throw 'Recording ended before its review completed; no contact timeline was produced.'
 }

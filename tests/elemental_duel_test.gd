@@ -16,7 +16,7 @@ func frames(count: int) -> void:
 
 func run() -> void:
 	root.size = Vector2i(1152, 720)
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/duel_study.tscn").instantiate()
 	root.add_child(field)
 	print("TEST VIEWPORT ", field.get_viewport().get_visible_rect().size)
 	var health_valid := true

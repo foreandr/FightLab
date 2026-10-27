@@ -26,7 +26,7 @@ func picture(name_: String) -> void:
 		field.capture.call_deferred(name_ + ".png")
 
 func run() -> void:
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/duel_study.tscn").instantiate()
 	root.add_child(field)
 	for team in 2:
 		for style in 2:

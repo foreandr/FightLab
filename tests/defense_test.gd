@@ -27,7 +27,7 @@ func prepare() -> void:
 	await frames(3)
 
 func run() -> void:
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/duel_study.tscn").instantiate()
 	root.add_child(field)
 	await prepare()
 	var attacker = field.fighters[0]

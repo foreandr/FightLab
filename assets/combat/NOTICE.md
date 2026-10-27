@@ -81,3 +81,18 @@ The elemental duel additionally reuses the already included Quaternius UAL1
 adaptations (CC BY 4.0; source and MIT helper credits above). No new asset is
 downloaded. These clips animate both characters' actual fists; swept physics
 queries, not distance checks, determine health damage.
+
+## Fire × Ice × Storm
+
+- `animations/battle.res`: normalized uppercut adapted from the existing licensed
+  Clint Christopher Canada `fight_anims.res` source, plus FightLab's authored knee
+  using the same Quaternius skeleton and existing MIT IK/foot-plant helpers.
+  These generated adaptations retain CC BY 4.0 credit. No new motion was downloaded.
+- `scripts/vendor/build_battle_clips.gd` composes the above clips with the previously
+  credited sampling/IK helpers and adds a forward-reaching uppercut extension.
+- The Storm fighter reuses the included Quaternius male base and existing outfit,
+  with a gold material variation. Fire and Ice use the existing male/female rigs.
+- `combat_audio.gd` produces original deterministic synthesized PCM impact sounds
+  at runtime. It contains no sampled third-party recordings or external downloads.
+- Ice materials, armor/freeze geometry, status effects, charge mechanics and the
+  jointed rigid-body ragdoll are FightLab code. Existing Kenney masks remain CC0.

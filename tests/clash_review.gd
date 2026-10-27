@@ -8,7 +8,7 @@ func frames(count: int) -> void:
 		await physics_frame
 
 func run() -> void:
-	var field := (load("res://scenes/main.tscn") as PackedScene).instantiate()
+	var field := (load("res://scenes/duel_study.tscn") as PackedScene).instantiate()
 	root.add_child(field)
 	field.warmup = 0
 	field.round_active = true

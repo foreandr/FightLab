@@ -1,6 +1,6 @@
 # Validation — 2026-10-26
 
-Latest: [localized impact physics](impact-physics.md). Previous: [mana, stamina and melee](resources-melee.md), [shields and effects](defense-vfx.md), [dynamic duel](elemental-duel.md), [grassland study](spell-study.md), [bilateral kicks](refinement.md). The notes below describe the first prototype.
+Latest: [Fire × Ice × Storm](triad-combat.md). Previous: [localized impacts](impact-physics.md), [mana/stamina and melee](resources-melee.md), [shields and effects](defense-vfx.md), [dynamic duel](elemental-duel.md), [grassland study](spell-study.md), [bilateral kicks](refinement.md). The notes below describe the first prototype.
 
 Engine: Godot 4.6 stable, Compatibility renderer, Windows 11.
 GPU identified by the rendered application: AMD Radeon(TM) 610M.
