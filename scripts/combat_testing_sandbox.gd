@@ -15,6 +15,10 @@ var configuring := true
 var pending_air_action := false
 var partner_jumping := false
 var partner_air_ready := false
+var inspection_camera=preload("res://scripts/sandbox_camera.gd").new()
+var camera_input_enabled := true
+var camera_dragging := false
+var camera_mouse_origin := Vector2.ZERO
 
 func _ready() -> void:
 	auto_advance=false
@@ -87,7 +91,7 @@ func build_ui() -> void:
 	var bottom:=PanelContainer.new()
 	bottom.add_theme_stylebox_override("panel",panel_style)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top=-80
+	bottom.offset_top=-100
 	ui.add_child(bottom)
 	var footer:=VBoxContainer.new()
 	bottom.add_child(footer)
@@ -98,10 +102,12 @@ func build_ui() -> void:
 	button(actions,"Run / Replay [R]",run_setup)
 	button(actions,"Reset [X]",reset_setup)
 	pause_button=button(actions,"Pause [Space]",toggle_pause)
-	slow_button=button(actions,"Slow [S]",toggle_slow)
+	slow_button=button(actions,"Slow [T]",toggle_slow)
+	button(actions,"Reframe [F]",reframe_camera)
 	button(actions,"54-case tour",open_tour)
 	button(actions,"Battle [B]",return_to_battle)
 	result_label=menu_label(footer,"Ready — choose a move, then Run",15)
+	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · F reframe · Shift faster",13)
 	move_menu.item_selected.connect(func(_index):settings_changed())
 	distance_input.value_changed.connect(func(_value):settings_changed())
 	block_menu.item_selected.connect(func(_index):settings_changed())
@@ -235,11 +241,75 @@ func _physics_process(delta: float) -> void:
 func show_resources() -> void:
 	resources_label.text="Caster: HP %d · Mana %d · Stamina %d · Armor %d   |   Partner: HP %d · Guard %d   |   Current distance %.1f m"%[ceili(actor.health),floori(actor.mana),floori(actor.stamina),ceili(actor.armor_hp),ceili(target.health),floori(target.guard_energy),Vector2(actor.position.x-target.position.x,actor.position.z-target.position.z).length()]
 
+func update_camera(delta: float) -> void:
+	if not inspection_camera.manual:
+		super.update_camera(delta)
+
+func take_camera_control() -> void:
+	inspection_camera.take_control(field.camera,(actor.focus_position()+target.focus_position())*0.5+Vector3.UP*0.35)
+
+func reframe_camera() -> void:
+	stop_camera_drag()
+	inspection_camera.manual=false
+	update_camera(1)
+
+func camera_text_editing() -> bool:
+	return get_viewport().gui_get_focus_owner() is LineEdit or move_menu.get_popup().visible or block_menu.get_popup().visible
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(field):
+		return
+	if camera_input_enabled and get_window().has_focus() and not camera_text_editing():
+		var direction:=Vector3(float(Input.is_physical_key_pressed(KEY_D))-float(Input.is_physical_key_pressed(KEY_A)),float(Input.is_physical_key_pressed(KEY_E))-float(Input.is_physical_key_pressed(KEY_Q)),float(Input.is_physical_key_pressed(KEY_W))-float(Input.is_physical_key_pressed(KEY_S)))
+		if direction.length_squared()>0:
+			take_camera_control()
+			inspection_camera.move(direction,delta/maxf(Engine.time_scale,0.01),Input.is_physical_key_pressed(KEY_SHIFT))
+	if inspection_camera.manual:
+		inspection_camera.apply(field.camera)
+
+func stop_camera_drag() -> void:
+	if camera_dragging:
+		camera_dragging=false
+		Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+		Input.warp_mouse(camera_mouse_origin)
+
+func _notification(what: int) -> void:
+	if what==NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		stop_camera_drag()
+
+func _input(event: InputEvent) -> void:
+	# Release even over a menu so the cursor can never remain captured.
+	if camera_dragging:
+		if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_MIDDLE and not event.pressed:
+			stop_camera_drag()
+			get_viewport().set_input_as_handled()
+		elif event is InputEventMouseMotion:
+			inspection_camera.orbit(event.relative)
+			get_viewport().set_input_as_handled()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not camera_input_enabled or not event is InputEventMouseButton or not event.pressed:
+		return
+	var focused:=get_viewport().gui_get_focus_owner()
+	if focused is LineEdit:
+		focused.release_focus()
+	if event.button_index==MOUSE_BUTTON_MIDDLE:
+		take_camera_control()
+		camera_mouse_origin=event.position
+		camera_dragging=true
+		Input.mouse_mode=Input.MOUSE_MODE_CAPTURED
+	elif event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+		take_camera_control()
+		inspection_camera.zoom(1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
 func update_controls() -> void:
 	if pause_button==null:
 		return
 	pause_button.text="Pause [Space]" if not get_tree().paused else ("Run [Space]" if not armed else "Resume [Space]")
-	slow_button.text="Normal [S]" if Engine.time_scale<1 else "Slow [S]"
+	slow_button.text="Normal [T]" if Engine.time_scale<1 else "Slow [T]"
 
 func toggle_pause() -> void:
 	if not armed:
@@ -260,7 +330,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_R,KEY_ENTER: run_setup()
 		KEY_X: reset_setup()
 		KEY_SPACE: toggle_pause()
-		KEY_S: toggle_slow()
+		KEY_T: toggle_slow()
+		KEY_F: reframe_camera()
 		KEY_B:
 			get_viewport().set_input_as_handled()
 			return_to_battle()
@@ -274,3 +345,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			field.finish_run()
 		_: return
 	get_viewport().set_input_as_handled()
+
+func _exit_tree() -> void:
+	stop_camera_drag()
+	super._exit_tree()

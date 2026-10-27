@@ -13,6 +13,7 @@ Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PS
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/flash_freeze_tactics_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/combat_showcase_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/combat_sandbox_test.gd')
+Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/sandbox_camera_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/battle_sim_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/elemental_duel_test.gd')
 Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--fixed-fps','60','-s','res://tests/defense_test.gd')

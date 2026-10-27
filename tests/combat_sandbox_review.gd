@@ -7,6 +7,7 @@ func run() -> void:
 	var sandbox=load("res://scenes/combat_sandbox.tscn").instantiate()
 	root.add_child(sandbox)
 	sandbox.set_process_unhandled_key_input(false)
+	sandbox.camera_input_enabled=false
 	await frames(30)
 	sandbox.run_setup()
 	await frames(120)
@@ -26,6 +27,13 @@ func run() -> void:
 	sandbox.run_setup()
 	await frames(180)
 	sandbox.reset_setup()
+	sandbox.take_camera_control()
+	for i in 60:
+		sandbox.inspection_camera.orbit(Vector2(1.5,0.15))
+		await process_frame
+	sandbox.inspection_camera.zoom(2)
+	await frames(30)
+	sandbox.reframe_camera()
 	await frames(30)
 	paused=false
 	sandbox.field.write_report()

@@ -29,7 +29,14 @@ scenario. A jumping partner can also hold a shield. Far-away punches can miss:
 the sandbox preserves real reach and collision checks. Suggested melee distance
 appears below the menu.
 
-Space pauses/resumes; S toggles 0.35× speed; M mutes; B returns to battle. The
+WASD moves the camera relative to its viewing direction; Q/E lowers/raises it.
+Hold middle mouse and drag to orbit, and scroll the wheel to zoom. Shift speeds
+up camera movement. These controls work while ready, paused or in slow motion.
+The camera retains your view across Run/Reset; **Reframe / F** restores automatic
+framing of both fighters. Mouse controls apply over the arena; typing in the
+distance field or scrolling a menu does not move the camera.
+
+Space pauses/resumes; T toggles 0.35× speed; M mutes; B returns to battle. The
 54-case tour button retains the guided cycle, with a Sandbox button to return.
 Existing saved sparring/duel scenes and the milestone tag are preserved.
 
