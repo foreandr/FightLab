@@ -43,3 +43,17 @@ To reproduce the six hook/kick clips with Godot 4.6:
   Rebuild with Godot 4.6 using `-s res://scripts/vendor/build_spell_clips.gd`.
 - Meadow geometry, grass blades, sky/ground settings and spell-effect meshes are
   generated directly by FightLab code. No additional asset or runtime dependency.
+
+## Dynamic elemental duel
+
+- `animations/duel.res`: composed movement/air-casting library, CC BY 4.0.
+  Sprint, takeoff, tucked jump and landing derive from Quaternius UAL1/UAL2 (CC0).
+  Backflip/somersault choreography derives from Clint Christopher Canada's
+  `fight_anims.res` / `build_flip_kick` (CC BY 4.0; retained source/license above).
+  FightLab normalizes motion in model space, adds a trailing-arm dash and combines
+  the original casting poses with compatible airborne lower-body motion.
+- `scripts/vendor/build_duel_clips.gd`: FightLab composition code reusing the MIT
+  skeleton sampling/IK helpers in the vendored baker. No proprietary game motion.
+- Water surface/foam shader, droplet/splash effects, elemental clashes, health/round
+  logic and camera are generated/implemented directly in FightLab. No new asset
+  download, paid tool, service or runtime dependency is required.

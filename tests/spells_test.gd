@@ -15,7 +15,7 @@ func frames(count: int) -> void:
 		await physics_frame
 
 func run() -> void:
-	field = load("res://scenes/main.tscn").instantiate()
+	field = load("res://scenes/spell_study.tscn").instantiate()
 	root.add_child(field)
 	var caster_start: Vector3 = field.caster.position
 	var target_start: Vector3 = field.target.position
