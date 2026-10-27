@@ -40,6 +40,8 @@ var strike_damage := 8.0
 var strike_cost := 8.0
 var strike_reach := 1.0
 var charge_requested := -1.0
+var death_age := INF
+var death_impulse := Vector3.ZERO
 
 func _ready() -> void:
 	var actual := team
@@ -88,6 +90,8 @@ func reset_fighter(location: Vector3) -> void:
 	last_hit_charge = 0
 	last_attacker=-1
 	mode_length=0.25+team*0.1
+	death_age=INF
+	death_impulse=Vector3.ZERO
 
 func focus_position() -> Vector3:
 	return ragdoll.location() - Vector3.UP * 0.65 if is_instance_valid(ragdoll) else global_position
@@ -403,6 +407,8 @@ func resolve_melee(delta: float) -> void:
 	melee_previous = limb
 
 func update_status(delta: float) -> void:
+	if health<=0:
+		death_age+=delta
 	chill_time = maxf(0, chill_time - delta)
 	freeze_time = maxf(0, freeze_time - delta)
 	freeze_immunity = maxf(0, freeze_immunity - delta)
@@ -423,9 +429,7 @@ func update_status(delta: float) -> void:
 				burn_source.damage_dealt += damage
 			arena.events.append({"time":arena.elapsed,"event":"burn_tick","victim":team,"damage":damage})
 			if health <= 0:
-				ko_count += 1
-				arena.finish_round(burn_source.team if is_instance_valid(burn_source) else -1)
-				start_ragdoll(Vector3.UP * 150, bone_point("pelvis"))
+				enter_death(burn_source,Vector3.ZERO,bone_point("pelvis"))
 
 func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 	if attacker.team == 0 and (spec.effect != "melee" or spec.get("augment",false)):
@@ -443,6 +447,12 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 			arena.events.append({"time":arena.elapsed,"event":"freeze","victim":team})
 
 func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
+	if health<=0 or invulnerability>0 or not arena.round_active:
+		return false
+	if not point.is_finite():
+		point=bone_point("spine_03")
+	if impulse.is_zero_approx():
+		impulse=direction.normalized()*amount*12.0
 	last_attacker = attacker.team
 	if armor_hp > 0:
 		var absorbed := minf(armor_hp, amount * 0.55)
@@ -457,16 +467,36 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 		damage_taken += applied
 		attacker.damage_dealt += applied
 		attacker.hits_scored += 1
-		ragdoll.bodies.pelvis.apply_central_impulse(impulse * 0.15)
+		ragdoll.add_impulse(impulse,point)
 		invulnerability = 0.18
 		if health <= 0:
-			ko_count += 1
-			arena.finish_round(attacker.team)
+			enter_death(attacker,impulse,point)
+		return true
+	if amount>=health:
+		var applied:=health
+		health=0
+		damage_taken+=applied
+		attacker.damage_dealt+=applied
+		attacker.hits_scored+=1
+		invulnerability=0.16
+		apply_physical_impact(point,impulse,zone,bone)
+		enter_death(attacker,impulse,point)
 		return true
 	var landed := super.receive_magic(amount, direction, attacker, point, zone, bone, impulse)
 	if landed and (impulse.length() >= 440 or (last_guard_shattered and impulse.length() >= 280) or last_hit_launch or health <= 0):
 		start_ragdoll(impulse, point)
 	return landed
+
+func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> void:
+	ko_count+=1
+	death_age=0
+	death_impulse=impulse
+	freeze_time=0
+	if not is_instance_valid(ragdoll):
+		start_ragdoll(impulse,point)
+	mode="ragdoll"
+	arena.events.append({"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
+	arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
 
 func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 	if is_instance_valid(ragdoll):

@@ -29,8 +29,9 @@ func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 		part("thigh_"+side, "thigh_"+side, "calf_"+side, 0.095, 8, ["thigh_"+side])
 		part("calf_"+side, "calf_"+side, "foot_"+side, 0.075, 5, ["calf_"+side, "foot_"+side, "ball_"+side])
 	var initial := fighter.velocity.limit_length(22)
-	var horizontal := Vector3(initial.x,0,initial.z).limit_length(6.0)
-	initial=horizontal+Vector3.UP*clampf(initial.y,-5,18)
+	var terminal: bool=fighter.health<=0
+	var horizontal := Vector3(initial.x,0,initial.z).limit_length(10.0 if terminal else 6.0)
+	initial=horizontal+Vector3.UP*clampf(initial.y,-18 if terminal else -5,18)
 	initial_velocity=initial
 	initial_impulse=impulse
 	initial_point=point
@@ -124,6 +125,22 @@ func step(delta: float) -> bool:
 
 func location() -> Vector3:
 	return bodies.pelvis.global_position if bodies.has("pelvis") else fighter.global_position
+
+func add_impulse(impulse: Vector3,point: Vector3) -> void:
+	if setup_phase<2:
+		initial_velocity=(initial_velocity+impulse/total_mass).limit_length(22)
+		initial_impulse+=impulse
+		initial_point=point
+		return
+	var center:=location()
+	var average:=Vector3.ZERO
+	for body in bodies.values():
+		average+=body.linear_velocity*body.mass/total_mass
+	var change: Vector3=(average+impulse/total_mass).limit_length(22)-average
+	var spin: Vector3=((point-center).cross(impulse)/12.0).limit_length(2.0)
+	for body in bodies.values():
+		body.apply_central_impulse((change+spin.cross(body.global_position-center))*body.mass)
+		body.apply_torque_impulse(body.get_inverse_inertia_tensor().inverse()*spin)
 
 func restore_pose() -> void:
 	for i in saved:

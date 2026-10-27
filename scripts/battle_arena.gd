@@ -421,7 +421,7 @@ func update_camera(delta: float) -> void:
 	var low:=Vector3(INF,INF,INF)
 	var high:=Vector3(-INF,-INF,-INF)
 	for f in fighters:
-		if f.health<=0 and round_active:
+		if f.health<=0 and round_active and f.death_age>1.4:
 			continue
 		var p: Vector3=f.focus_position()+Vector3.UP
 		low=low.min(p-Vector3.ONE*0.8)
@@ -431,7 +431,7 @@ func update_camera(delta: float) -> void:
 	var upward:=Vector3(0,1,-0.38).normalized()
 	var distance:=8.5
 	for f in fighters:
-		if f.health<=0 and round_active:
+		if f.health<=0 and round_active and f.death_age>1.4:
 			continue
 		for height in [0.0,1.9]:
 			var offset: Vector3=f.focus_position()+Vector3.UP*height-center

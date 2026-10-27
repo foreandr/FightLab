@@ -4,6 +4,7 @@ param(
     [int]$Seconds = 40,
     [switch]$IsolateKicks,
     [switch]$FeatureShowcase,
+    [switch]$DeathShowcase,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -22,9 +23,10 @@ if ($IsolateKicks) {
     $arguments += @('-s', 'res://tests/kick_review.gd')
 }
 if ($FeatureShowcase) { $arguments += @('-s', 'res://tests/battle_review.gd') }
+if ($DeathShowcase) { $arguments += @('-s', 'res://tests/death_review.gd') }
 $arguments += @('--', "--report-file=$reportPath")
-if (-not $IsolateKicks -and -not $FeatureShowcase) { $arguments += "--duration=$Seconds" }
-if ($FeatureShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
+if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase) { $arguments += "--duration=$Seconds" }
+if ($FeatureShowcase -or $DeathShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
 if ($Background -and $env:OS -eq 'Windows_NT') {
     $nativeArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
     $recording = Start-Process -FilePath $executable -ArgumentList $nativeArguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $OutputDirectory 'recording.log') -RedirectStandardError (Join-Path $OutputDirectory 'errors.log')
