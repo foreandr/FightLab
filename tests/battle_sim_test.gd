@@ -25,12 +25,12 @@ func run() -> void:
 			bounded=bounded and f.health>=0 and f.health<=f.MAX_HEALTH and f.mana>=0 and f.mana<=f.MAX_MANA and f.stamina>=0 and f.stamina<=f.MAX_STAMINA and f.guard_energy>=0 and f.guard_energy<=f.MAX_GUARD
 			synchronized=synchronized and absf(field.health_bars[f.team].value-f.health)<0.011 and absf(field.mana_bars[f.team].value-f.mana)<0.011
 			finite=finite and f.focus_position().is_finite() and f.velocity.is_finite()
-			contained=contained and absf(f.focus_position().x)<10.75 and absf(f.focus_position().z)<10.75
+			contained=contained and Vector2(f.focus_position().x,f.focus_position().z).length()<10.75
 			if is_instance_valid(f.ragdoll):
 				for body in f.ragdoll.bodies.values():
 					max_body_speed=maxf(max_body_speed,body.linear_velocity.length())
 					finite=finite and body.global_position.is_finite() and body.linear_velocity.length()<65
-					contained=contained and absf(body.global_position.x)<10.75 and absf(body.global_position.z)<10.75
+					contained=contained and Vector2(body.global_position.x,body.global_position.z).length()<10.75
 			if field.elapsed>2 and f.health>0:
 				samples+=1
 				if field.camera.is_position_in_frustum(f.bone_point("Head")):

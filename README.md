@@ -4,6 +4,9 @@ An autonomous three-way arena fight in Godot 4.6, using the Compatibility render
 All three enemies manage mana, stamina, guard and distance, cast spells, and fight
 with punches, kicks and knees. The last survivor wins; another round starts automatically.
 
+The main arena is a circular sandstone [colosseum](docs/colosseum.md), with a sand
+floor, tiered seating, stacked arcades, gated entrances and physical wall slams.
+
 ## Play
 
 Double-click `Play.bat`, or run:

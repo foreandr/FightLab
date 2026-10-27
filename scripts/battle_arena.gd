@@ -27,7 +27,7 @@ func _ready() -> void:
 			DirAccess.make_dir_recursive_absolute(capture_dir)
 		if arg.begins_with("--report-file="):
 			report_file = arg.trim_prefix("--report-file=")
-	build_grassland()
+	build_colosseum_stage()
 	add_child(Boundary.new())
 	hud.get_parent().queue_free()
 	vfx = BattleVFX.new()
@@ -67,6 +67,39 @@ func _ready() -> void:
 		f.rival = fighters[(f.team+1)%3]
 	build_fight_ui()
 	begin_round()
+
+func build_colosseum_stage() -> void:
+	var world:=WorldEnvironment.new()
+	var environment:=Environment.new()
+	var sky:=Sky.new()
+	var sky_material:=ProceduralSkyMaterial.new()
+	sky_material.sky_top_color=Color("50789c")
+	sky_material.sky_horizon_color=Color("ded1b6")
+	sky_material.ground_horizon_color=Color("b9a17b")
+	sky.sky_material=sky_material
+	environment.background_mode=Environment.BG_SKY
+	environment.sky=sky
+	environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
+	environment.ambient_light_color=Color("e7dcc8")
+	environment.ambient_light_energy=0.55
+	world.environment=environment
+	add_child(world)
+	var sun:=DirectionalLight3D.new()
+	sun.rotation_degrees=Vector3(-52,-32,0)
+	sun.light_color=Color("fff0d5")
+	sun.light_energy=0.95
+	sun.shadow_enabled=true
+	add_child(sun)
+	camera=Camera3D.new()
+	camera.position=Vector3(0,6,13)
+	camera.fov=48
+	add_child(camera)
+	camera.look_at(Vector3(0,1,0))
+	camera.current=true
+	var layer:=CanvasLayer.new()
+	add_child(layer)
+	hud=Label.new()
+	layer.add_child(hud)
 
 func element_color(team: int) -> Color:
 	return [Color("ff641b"),Color("8ee9ff"),Color("ffdb51")][clampi(team,0,2)]

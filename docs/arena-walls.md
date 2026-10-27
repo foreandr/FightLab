@@ -1,5 +1,8 @@
 # Finite courtyard and wall crashes
 
+The square courtyard described below has been superseded by the circular
+[colosseum](colosseum.md). Its crash mechanics remain in use.
+
 The main three-fighter meadow now has a 20 m square fighting area. Four static
 collision walls rise 18 m, with a stone base, pillars and translucent upper
 barriers so airborne fighting remains visible. The upper panels are solid to

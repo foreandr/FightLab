@@ -614,6 +614,9 @@ func finish_ragdoll() -> void:
 	var pelvis_offset:=bone_point("pelvis")-global_position
 	position.x=clampf(location.x-pelvis_offset.x,-9.6,9.6)
 	position.z=clampf(location.z-pelvis_offset.z,-9.6,9.6)
+	var flat:=Vector2(position.x,position.z).limit_length(9.6)
+	position.x=flat.x
+	position.z=flat.y
 	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/1.05
 	invulnerability=mode_length
 	recovery_source.clear()

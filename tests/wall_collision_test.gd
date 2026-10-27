@@ -28,7 +28,7 @@ func run() -> void:
 	field=load("res://scenes/main.tscn").instantiate()
 	root.add_child(field)
 	for dead in [false,true]:
-		for direction in [Vector3.RIGHT,Vector3.LEFT,Vector3.FORWARD,Vector3.BACK]:
+		for direction in [Vector3.RIGHT,Vector3.LEFT,Vector3.FORWARD,Vector3.BACK,Vector3(1,0,1).normalized(),Vector3(-1,0,1).normalized(),Vector3(1,0,-1).normalized(),Vector3(-1,0,-1).normalized()]:
 			await prepare()
 			var f=field.fighters[1]
 			f.position=direction*8.4+Vector3.UP*1.5
@@ -41,7 +41,7 @@ func run() -> void:
 				await physics_frame
 				if is_instance_valid(f.ragdoll):
 					for body in f.ragdoll.bodies.values():
-						check(absf(body.position.x)<10.65 and absf(body.position.z)<10.65,"Ragdoll must remain inside the physical walls")
+						check(Vector2(body.position.x,body.position.z).length()<10.65,"Ragdoll must remain inside the circular physical walls")
 			print("WALL dead=",dead," direction=",direction," crashes=",f.wall_crashes-before," health=",f.health)
 			check(f.wall_crashes>before,"Thrown bodies must generate a real wall crash on every boundary: "+str(direction))
 			if dead:
@@ -106,7 +106,7 @@ func run() -> void:
 	f.mode="review"
 	check(target.health==target.MAX_HEALTH and target.frost==0,"The ice beam must stop at the wall before damaging or freezing an outside target")
 	if failures.is_empty():
-		print("PASS: all four physical walls contain living/dead ragdolls, momentum crashes damage, upright knockback tumbles and ordinary movement stops safely")
+		print("PASS: circular walls contain living/dead ragdolls in eight directions, momentum crashes damage, upright knockback tumbles and ordinary movement stops safely")
 	field.audio.stop_all()
 	field.queue_free()
 	await frames(3)
