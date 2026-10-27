@@ -7,10 +7,27 @@ F2 in the normal battle. It starts ready and waits for you to run a test.
 
 The sandbox opens on **Motion / Combo Builder**. The **Dash only** and
 **Dash → Knee** buttons load the first two review setups. Four ordered dropdowns
-let you chain **Dash**, **Punch**, **Knee** and **Jump**; **End** terminates the
-chain. Each step waits for the preceding action to finish. The live result line
+let you chain **Dash**, **Punch**, **Knee**, **Jump**, **Flip**, **Twist** and
+**Land**; **End** terminates the chain. The live result line
 shows the active step, completion, or interruption. Hits, death, freeze and
 insufficient resources stop a sequence rather than skipping its requirements.
+
+Choices depend on the planned state at each slot. Grounded slots offer Dash,
+Punch, Knee and Jump. **Jump unlocks Flip, Twist and Land** in the following slot;
+**Land restores grounded choices** after it. Unavailable entries are disabled
+with a reason. Changing an earlier step clears incompatible later choices.
+The **Jump → Flip → Twist** preset fills all four slots with Jump, Flip, Twist,
+Land. Jump hands off after actual lift-off when followed by an aerial step;
+Land waits for floor contact and the landing recovery. A Jump with no aerial
+follow-up retains its original jump-and-land behavior.
+
+Playback checks actual grounding independently of menu predictions. Flip uses
+the existing tucked backflip clip at a short aerial cadence; Twist rotates the
+pelvis and its child bones through a full turn over the airborne pose. Both cost
+stamina, preserve horizontal momentum and keep normal gravity. They do not
+relaunch the fighter or hold them in the air. A late trick can land early; the
+next aerial move then stops with a condition message. Runtime state is displayed
+as Grounded/Airborne alongside the active step.
 
 Dash direction has eight options relative to the fighter's facing. A normal
 dash moves at 12 m/s for 0.30 seconds; Quick uses 20 m/s for 0.18 seconds. Both
@@ -23,8 +40,8 @@ Start around **4.4 m** apart for a forward dash into knee. The knee uses real
 animated-limb collision and retained dash momentum; quick dash can therefore
 produce a stronger hit. A farther target can be missed. A plain Jump step jumps
 without automatically casting. Reset clears the sequence, while Repeat replays
-the same ordered setup. Backflip/spin/spell chain steps are left for a later pass;
-the existing spell tests remain in the Move menu.
+the same ordered setup. Spell chain steps remain for a later pass; individual
+spell tests are still in the Move menu.
 
 ## Individual move testing
 

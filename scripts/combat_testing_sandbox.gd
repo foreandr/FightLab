@@ -99,6 +99,7 @@ func build_ui() -> void:
 		chain_menu.append(slot)
 	button(chain_panel,"Dash only",func():set_motion_preset(false))
 	button(chain_panel,"Dash → Knee",func():set_motion_preset(true))
+	button(chain_panel,"Jump → Flip → Twist",set_aerial_preset)
 	var options:=HBoxContainer.new()
 	options.alignment=BoxContainer.ALIGNMENT_CENTER
 	options.add_theme_constant_override("separation",12)
@@ -170,6 +171,7 @@ func settings_changed() -> void:
 	chain_panel.visible=motion
 	dash_direction_menu.visible=motion
 	quick_dash_toggle.visible=motion
+	refresh_chain_options()
 	jump_toggle.visible=not motion
 	charge_toggle.visible=not motion
 	camera_upper_allowance=0.30 if motion else 0.40
@@ -187,7 +189,7 @@ func settings_changed() -> void:
 		weak_toggle.set_pressed_no_signal(false)
 	hint_label.text="Spawn distance is center to center. "
 	if motion:
-		hint_label.text="Direction is relative to facing. Dash travels up to 3.6 m; start within 4.4 m for Dash → Knee. End stops the chain."
+		hint_label.text="Jump unlocks Flip / Twist. Land returns to ground moves. Each slot shows only moves valid for its planned state."
 	elif entry.kind in ["melee","uppercut"]:
 		hint_label.text+="Suggested melee distance: %.2f m. Distant strikes can miss."%float(entry.distance)
 	elif jump_toggle.button_pressed:
@@ -221,6 +223,27 @@ func chosen_steps() -> Array[String]:
 		if slot.selected==0:break
 		steps.append(sequence.OPTIONS[slot.selected])
 	return steps
+
+func refresh_chain_options() -> void:
+	var grounded:=true
+	var ended:=false
+	for slot in chain_menu:
+		slot.disabled=ended
+		slot.tooltip_text="After landing: ground moves" if grounded else "Airborne: Flip, Twist or Land"
+		for i in sequence.OPTIONS.size():
+			var allowed: bool=sequence.allowed_for_state(sequence.OPTIONS[i],grounded)
+			slot.set_item_disabled(i,not allowed)
+			slot.set_item_tooltip(i,"" if allowed else ("Requires airborne — add Jump first" if grounded else "Requires grounded — add Land first"))
+		if ended or not sequence.allowed_for_state(sequence.OPTIONS[slot.selected],grounded):
+			slot.select(0)
+		var step: String=sequence.OPTIONS[slot.selected]
+		if step=="End":ended=true
+		grounded=sequence.state_after(step,grounded)
+
+func set_aerial_preset() -> void:
+	move_menu.select(0)
+	for i in chain_menu.size():chain_menu[i].select([4,5,6,7][i])
+	settings_changed()
 
 func set_motion_preset(knee: bool) -> void:
 	move_menu.select(0)
@@ -300,7 +323,7 @@ func _physics_process(delta: float) -> void:
 	var absorbed: int=target.blocks-marks.blocks
 	result_label.text="%s  ·  Damage %.1f  ·  Blocks %d  ·  Guard breaks %d"%["Finished — replay or change settings" if finished else ("Paused" if get_tree().paused else "Running"),damage,absorbed,target.guard_breaks-marks.guard_breaks]
 	if catalog[0].kind=="sequence":
-		result_label.text+="  ·  "+sequence.status
+		result_label.text+="  ·  "+("Grounded" if actor.is_on_floor() else "Airborne")+"  ·  "+sequence.status
 	if finished and repeat_toggle.button_pressed and not get_tree().paused:
 		run_setup()
 
@@ -309,7 +332,8 @@ func show_resources() -> void:
 
 func update_camera(delta: float) -> void:
 	if not inspection_camera.manual:
-		super.update_camera(delta)
+		# Keep fast aerial rotations below the menu during their short ascent.
+		super.update_camera(delta*(3 if actor.mode in ["takeoff","air","air_trick"] else 1))
 
 func take_camera_control() -> void:
 	inspection_camera.take_control(field.camera,(actor.focus_position()+target.focus_position())*0.5+Vector3.UP*0.35)

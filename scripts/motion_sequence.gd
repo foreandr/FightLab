@@ -1,6 +1,6 @@
 extends RefCounted
 ## Completion-driven choreography. New primitives can be added without spell presets.
-const OPTIONS := ["End","Dash","Punch","Knee","Jump"]
+const OPTIONS := ["End","Dash","Punch","Knee","Jump","Flip","Twist","Land"]
 var steps: Array[String]=[]
 var index := -1
 var active := false
@@ -9,6 +9,15 @@ var step_time := 0.0
 var direction := 0
 var quick := false
 var history: Array[String]=[]
+
+static func allowed_for_state(step: String,grounded: bool) -> bool:
+	if step=="End":return true
+	return not grounded if step in ["Flip","Twist","Land"] else grounded
+
+static func state_after(step: String,grounded: bool) -> bool:
+	if step=="Jump":return false
+	if step=="Land":return true
+	return grounded
 
 func reset() -> void:
 	steps.clear()
@@ -36,6 +45,10 @@ func next_step(fighter: CharacterBody3D) -> void:
 	var step: String=steps[index]
 	status="Step %d / %d: %s"%[index+1,steps.size(),step]
 	var accepted:=true
+	if not allowed_for_state(step,fighter.is_on_floor()) and not (step=="Land" and fighter.mode=="land"):
+		active=false
+		status="Stopped: %s requires %s"%[step,"airborne" if step in ["Flip","Twist","Land"] else "grounded"]
+		return
 	match step:
 		"Dash": accepted=fighter.start_motion_dash(direction,quick)
 		"Punch","Knee":
@@ -44,6 +57,8 @@ func next_step(fighter: CharacterBody3D) -> void:
 				fighter.melee_sequence=3 if step=="Knee" else 0
 				fighter.start_punch()
 		"Jump": accepted=fighter.start_motion_jump()
+		"Flip","Twist": accepted=fighter.start_air_trick(step)
+		"Land": pass # Gravity and the existing landing animation finish this step.
 		_: accepted=false
 	if not accepted:
 		active=false
@@ -68,6 +83,10 @@ func tick(fighter: CharacterBody3D,delta: float) -> void:
 	match step:
 		"Dash": complete=fighter.mode!="motion_dash"
 		"Punch","Knee": complete=fighter.mode!="punch"
-		"Jump": complete=step_time>0.2 and fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]
+		"Jump":
+			var aerial_next: bool=index+1<steps.size() and steps[index+1] in ["Flip","Twist","Land"]
+			complete=not fighter.is_on_floor() and fighter.mode!="takeoff" if aerial_next else step_time>0.2 and fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]
+		"Flip","Twist": complete=fighter.mode!="air_trick"
+		"Land": complete=fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]
 	if complete:
 		next_step(fighter)

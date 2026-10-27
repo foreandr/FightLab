@@ -27,6 +27,8 @@ The **54-case tour** button opens the [automatic showcase](docs/combat-showcase.
 The sandbox starts on **Motion / Combo Builder**: choose **Dash only** or
 **Dash → Knee**, set one of eight dash directions and toggle Quick dash. Four
 ordered slots chain Dash, Punch, Knee and Jump through real combat actions.
+Jump unlocks aerial **Flip / Twist** choices; **Land** restores grounded moves.
+Use the **Jump → Flip → Twist** preset to review a complete aerial chain.
 Both the full fight and review scenes use the actual combat/physics paths.
 This remains an AI combat prototype; player controls are not implemented.
 

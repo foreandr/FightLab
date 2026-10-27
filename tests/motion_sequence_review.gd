@@ -28,6 +28,10 @@ func run() -> void:
 	lab.run_setup()
 	await frames(120)
 	lab.reset_setup()
+	lab.set_aerial_preset()
+	await frames(30)
+	lab.run_setup()
+	await frames(180)
 	paused=false
 	lab.field.write_report()
 	lab.field.finish_run()

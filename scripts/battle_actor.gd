@@ -23,6 +23,7 @@ var combo_time := 0.0
 var combo_speed := 0.0
 var motion_direction := Vector3.ZERO
 var motion_speed := 0.0
+var air_trick := ""
 var charge_goal := 0.0
 var charge_held := 0.0
 var charge_value := 0.0
@@ -113,6 +114,7 @@ func reset_fighter(location: Vector3) -> void:
 	combo_time = 0
 	motion_direction=Vector3.ZERO
 	motion_speed=0
+	air_trick=""
 	melee_charge = 0
 	last_guard_shattered = false
 	last_hit_charge = 0
@@ -403,6 +405,51 @@ func tick_motion_dash(delta: float) -> void:
 		velocity.x=0
 		velocity.z=0
 
+func start_air_trick(kind: String) -> bool:
+	if kind not in ["Flip","Twist"] or is_on_floor() or health<=0 or freeze_time>0 or is_instance_valid(ragdoll):
+		return false
+	if not spend_stamina(8 if kind=="Flip" else 6):
+		return false
+	air_trick=kind
+	mode="air_trick"
+	mode_time=0
+	mode_length=0.34 if kind=="Flip" else 0.28
+	clip=""
+	var animation: String="duel/backflip" if kind=="Flip" else "duel/air"
+	play(animation,player.get_animation(animation).length/mode_length)
+	count_action("air_"+kind.to_lower())
+	return true
+
+func tick_air_trick(delta: float) -> void:
+	impact_physics.restore(skeleton)
+	mode_time+=delta
+	recover_resources(delta)
+	velocity.x=air_momentum.x+knockback.x
+	velocity.z=air_momentum.z+knockback.z
+	velocity.y-=GRAVITY*delta
+	var before:=position
+	move_and_slide()
+	knockback*=exp(-delta)
+	distance_run+=before.distance_to(position)
+	max_height=maxf(max_height,position.y)
+	advance_animation(delta)
+	if air_trick=="Twist":
+		var pelvis: int=bones["pelvis"]
+		var rotation_: Quaternion=skeleton.get_bone_pose_rotation(pelvis)
+		skeleton.set_bone_pose_rotation(pelvis,Quaternion(Vector3.UP,TAU*clampf(mode_time/mode_length,0,1))*rotation_)
+	impact_physics.step(delta)
+	impact_physics.apply(skeleton,is_on_floor(),global_basis)
+	if is_on_floor() or mode_time>=mode_length:
+		mode="land" if is_on_floor() else "air"
+		mode_time=0
+		mode_length=0.24
+		clip=""
+		player.play("duel/land" if is_on_floor() else "duel/air",0)
+		player.advance(0)
+		if is_on_floor():
+			count_action("land")
+			arena.movement_burst(self,true)
+
 func begin_strike(spec: Array) -> void:
 	var linked_flash: bool=mode=="burst_dash"
 	var powered: bool=team==2 and haste_time>0
@@ -517,6 +564,9 @@ func tick(delta: float) -> void:
 		mode_time = 0
 	if mode=="motion_dash" and freeze_time<=0:
 		tick_motion_dash(delta)
+		return
+	if mode=="air_trick" and freeze_time<=0:
+		tick_air_trick(delta)
 		return
 	if mode in ["burst_charge","burst_dash", "melee_charge"] and freeze_time <= 0:
 		impact_physics.restore(skeleton)
