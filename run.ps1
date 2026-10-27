@@ -31,9 +31,16 @@ if (-not (Test-Path $assetOne) -or -not (Test-Path $assetTwo)) {
     }
 }
 if ((Test-Path $assetOne) -and (Test-Path $assetTwo)) {
-    Write-Host 'Importing character assets into Godot...'
-    & $executable --headless --editor --path $PSScriptRoot --import
-    if ($LASTEXITCODE -ne 0) { Write-Warning 'Godot asset import failed; proceeding with scene launch.' }
+    $importMarker = Join-Path $PSScriptRoot '.godot/fightlab-character-import-ok'
+    if (-not (Test-Path -LiteralPath $importMarker)) {
+        Write-Host 'Importing characters (bounded headless import)...'
+        & $executable --headless --editor --path $PSScriptRoot --import --quit-after 180
+        if ($LASTEXITCODE -eq 0) {
+            New-Item -ItemType File -Path $importMarker -Force | Out-Null
+        } else {
+            Write-Warning 'Godot import did not finish successfully; launching anyway.'
+        }
+    }
 }
 $arguments = @('--path', $PSScriptRoot)
 if ($Editor) { $arguments += '--editor' }
