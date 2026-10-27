@@ -11,11 +11,13 @@ var last_contact := "Closing distance"
 var hud: Label
 var camera: Camera3D
 var capture_dir := ""
+var report_file := ""
 var duration := 0.0
 var capture_count := 0
 var next_capture := 1.0
 var min_spacing := INF
 var contact_types := {}
+var contact_events: Array = []
 
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
@@ -24,6 +26,8 @@ func _ready() -> void:
 			DirAccess.make_dir_recursive_absolute(capture_dir)
 		if arg.begins_with("--duration="):
 			duration = float(arg.trim_prefix("--duration="))
+		if arg.begins_with("--report-file="):
+			report_file = arg.trim_prefix("--report-file=")
 	build_arena()
 	for i in 2:
 		var f = FighterScene.new()
@@ -60,6 +64,7 @@ func _physics_process(delta: float) -> void:
 func on_contact(kind: String, attacker: int, zone: String, speed: float, fell: bool) -> void:
 	contacts += 1
 	contact_types[kind] = contact_types.get(kind, 0) + 1
+	contact_events.append({"time": elapsed, "move": kind, "fighter": attacker, "zone": zone, "speed": speed, "knockdown": fell})
 	if "kick" in kind:
 		kicks += 1
 	else:
@@ -67,7 +72,7 @@ func on_contact(kind: String, attacker: int, zone: String, speed: float, fell: b
 	if fell:
 		knockdowns += 1
 	last_contact = "%s • %s → %s • %.1f m/s%s" % ["RED" if attacker == 0 else "BLUE", kind, zone, speed, " • DOWN" if fell else ""]
-	print("CONTACT ", last_contact)
+	print("CONTACT t=%.3f " % elapsed, last_contact)
 	if not capture_dir.is_empty() and contacts <= 12:
 		capture.call_deferred("contact_%02d_%s.png" % [contacts, kind])
 
@@ -76,10 +81,17 @@ func capture(filename: String) -> void:
 	get_viewport().get_texture().get_image().save_png(capture_dir.path_join(filename))
 
 func write_report() -> void:
-	var report := {"seconds": elapsed, "contacts": contacts, "punches": punches, "kicks": kicks, "knockdowns": knockdowns, "types": contact_types, "minimum_center_spacing": min_spacing, "fps": Engine.get_frames_per_second(), "renderer": RenderingServer.get_video_adapter_name()}
-	print("REPORT ", JSON.stringify(report))
-	if not capture_dir.is_empty():
-		var file := FileAccess.open(capture_dir.path_join("report.json"), FileAccess.WRITE)
+	var limbs: Array = []
+	for f in fighters:
+		limbs.append({"fighter": f.team, "attempted": f.attempted_by_limb, "landed": f.landed_by_limb})
+	var report := {"seconds": elapsed, "contacts": contacts, "punches": punches, "kicks": kicks, "knockdowns": knockdowns, "types": contact_types, "limbs": limbs, "events": contact_events, "minimum_center_spacing": min_spacing, "fps": Engine.get_frames_per_second(), "renderer": RenderingServer.get_video_adapter_name()}
+	var summary := report.duplicate()
+	summary.erase("events")
+	print("REPORT ", JSON.stringify(summary))
+	var destination := report_file if not report_file.is_empty() else capture_dir.path_join("report.json")
+	if not report_file.is_empty() or not capture_dir.is_empty():
+		DirAccess.make_dir_recursive_absolute(destination.get_base_dir())
+		var file := FileAccess.open(destination, FileAccess.WRITE)
 		file.store_string(JSON.stringify(report, "  "))
 
 func _unhandled_key_input(event: InputEvent) -> void:

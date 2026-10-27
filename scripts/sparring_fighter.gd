@@ -3,11 +3,14 @@ extends CharacterBody3D
 signal contact(kind: String, attacker: int, zone: String, speed: float, fell: bool)
 const BASE := "res://assets/combat/"
 const MOVES := [
-	["jab", "ual1/Punch_Jab", "hand_l", 0.12, 0.48, 0.86, 1.2],
-	["cross", "ual1/Punch_Cross", "hand_r", 0.16, 0.57, 0.81, 1.8],
-	["front_kick", "fight/front_kick", "foot_r", 0.12, 0.36, 1.17, 2.5],
-	["hook", "boxing/hook", "hand_r", 0.14, 0.34, 0.65, 1.7],
-	["high_kick", "fight/high_kick", "foot_r", 0.17, 0.42, 0.98, 2.8],
+	["left_jab", "ual1/Punch_Jab", "hand_l", 0.12, 0.48, 0.86, 1.2],
+	["right_cross", "ual1/Punch_Cross", "hand_r", 0.16, 0.57, 0.81, 1.8],
+	["right_front_kick", "boxing/front_kick_r", "ball_r", 0.25, 0.41, 1.05, 2.5],
+	["left_hook", "boxing/hook_l", "hand_l", 0.14, 0.34, 0.65, 1.7],
+	["left_high_kick", "boxing/high_kick_l", "ball_l", 0.33, 0.47, 0.94, 2.8],
+	["right_hook", "boxing/hook_r", "hand_r", 0.14, 0.34, 0.65, 1.7],
+	["left_front_kick", "boxing/front_kick_l", "ball_l", 0.25, 0.41, 1.10, 2.5],
+	["right_high_kick", "boxing/high_kick_r", "ball_r", 0.33, 0.47, 0.94, 2.8],
 ]
 var team := 0
 var opponent: CharacterBody3D
@@ -32,6 +35,8 @@ var rng := RandomNumberGenerator.new()
 var knock_velocity := Vector3.ZERO
 var bones := {}
 var paused_ai := false
+var attempted_by_limb := {}
+var landed_by_limb := {}
 
 func _ready() -> void:
 	collision_layer = 2
@@ -192,7 +197,10 @@ func step(delta: float) -> void:
 	model.position.y = maxf(0, -lowest)
 
 func start_move(index: int) -> void:
+	player.speed_scale = 1
 	move_index = index
+	var limb: String = MOVES[index][2]
+	attempted_by_limb[limb] = attempted_by_limb.get(limb, 0) + 1
 	move_time = 0
 	connected = false
 	play(MOVES[index][1])
@@ -215,7 +223,7 @@ func detect_contact(delta: float) -> void:
 	var outbound := displacement.dot(toward) > 0.001
 	if not connected and move_time >= move[3] and move_time <= move[4] and speed > 1.2 and outbound:
 		var shape := SphereShape3D.new()
-		shape.radius = 0.09 if "kick" not in move[0] else 0.105
+		shape.radius = 0.09 if "kick" not in move[0] else 0.075
 		var query := PhysicsShapeQueryParameters3D.new()
 		query.shape = shape
 		query.collision_mask = 4
@@ -237,6 +245,7 @@ func detect_contact(delta: float) -> void:
 					var fell: bool = victim.receive_hit(displacement.normalized(), speed, move[6], zone)
 					connected = true
 					landed += 1
+					landed_by_limb[move[2]] = landed_by_limb.get(move[2], 0) + 1
 					contact.emit(move[0], team, zone, speed, fell)
 					break
 	limb_previous = current

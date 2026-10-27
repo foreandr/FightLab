@@ -18,15 +18,19 @@ func frames(count: int) -> void:
 func run() -> void:
 	arena = load("res://scenes/main.tscn").instantiate()
 	root.add_child(arena)
-	await frames(5400)
+	await frames(10800)
 	check(arena.punches > 0 and arena.kicks > 0, "NPCs must land punches and kicks")
 	check(arena.fighters[0].landed > 0 and arena.fighters[1].landed > 0, "Both NPCs must land strikes")
 	check(arena.knockdowns > 0, "Accumulated contact must cause a knockdown")
 	check(arena.fighters[0].recoveries + arena.fighters[1].recoveries > 0, "Fallen fighters must recover and resume")
 	check(arena.min_spacing > 0.55, "Character centers must stay separated")
-	for kind in ["jab", "cross", "hook", "front_kick", "high_kick"]:
+	for move in arena.fighters[0].MOVES:
+		var kind: String = move[0]
 		check(arena.contact_types.get(kind, 0) > 0, "Missing contact type: " + kind)
 	for f in arena.fighters:
+		for limb in ["hand_l", "hand_r", "ball_l", "ball_r"]:
+			check(f.attempted_by_limb.get(limb, 0) > 0, "Each NPC must attack with " + limb)
+			check(f.landed_by_limb.get(limb, 0) > 0, "Each NPC must land with " + limb)
 		check(f.skeleton.get_bone_count() == 65, "Expected shared 65-bone skeleton")
 		check(f.clip != "ual1/A_TPose", "Fighters must never select T-pose")
 		f.paused_ai = true
@@ -42,7 +46,7 @@ func run() -> void:
 	arena.fighters[1].position = Vector3(0.4, 0, 0)
 	await frames(10)
 	var before: int = arena.contacts
-	for index in 5:
+	for index in arena.fighters[0].MOVES.size():
 		arena.fighters[0].start_move(index)
 		await frames(100)
 	check(arena.contacts == before, "Range alone must never cause a hit without collider contact")
@@ -53,11 +57,11 @@ func run() -> void:
 	arena.fighters[0].position.x = -2
 	arena.fighters[1].position.x = 2
 	await frames(10)
-	for index in 5:
+	for index in arena.fighters[0].MOVES.size():
 		arena.fighters[0].start_move(index)
 		await frames(100)
 	check(arena.contacts == before, "Every strike must whiff at long range")
 	arena.write_report()
 	if failures.is_empty():
-		print("PASS: autonomous exchanges, all five strikes, separation, knockdowns, collider-disabled and distant whiffs")
+		print("PASS: both hands and legs per NPC, all eight strikes, recovery, separation and collider-disabled/distant whiffs")
 	quit(0 if failures.is_empty() else 1)

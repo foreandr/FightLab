@@ -12,13 +12,15 @@ No upstream executable, network code, or runtime download is required.
 - `animations/UAL2_Standard.glb`: Quaternius Universal Animation Library 2,
   https://quaternius.itch.io/universal-animation-library-2 — CC0 1.0.
 - `animations/fight_anims.res`: Clint Christopher Canada, adapted from Quaternius
-  assets, CC BY 4.0. Used for guard, guarded walking and kicks.
+  assets, CC BY 4.0. Used for guard and guarded walking; the original kick choreography is adapted below.
 - `outfits/`: Clint Christopher Canada, clothing and trimmed body meshes derived
   from Quaternius, CC BY 4.0. FightLab uses different cloth colours and flat materials.
 - `scripts/vendor/build_sparring_clips.gd`: derived from Clint Christopher Canada's
   `tools/build_fight_animations.gd`, MIT. FightLab replaces the entry point and adds
-  a compact boxing hook using the existing skeletal IK and planted-foot helpers.
-- `animations/boxing.res`: FightLab's generated hook adaptation, CC BY 4.0.
+  compact left/right hooks and adapts front/high kicks for each leg. FightLab adds
+  ball-of-foot anchoring at dense samples, revised timing, weight shift and head-height
+  roundhouse approach paths using the existing skeletal IK/foot-plant helpers.
+- `animations/boxing.res`: FightLab's generated hook and kick adaptations, CC BY 4.0.
 
 These are authored skeletal clips. We do not assert that they are motion capture.
 Skeleton names, rest transforms and skin weights are compatible; the same 65-bone
@@ -28,5 +30,5 @@ License texts are in `licenses/`. CC0 legal text:
 https://creativecommons.org/publicdomain/zero/1.0/legalcode
 CC BY 4.0 legal text: https://creativecommons.org/licenses/by/4.0/legalcode
 
-To reproduce the hook with Godot 4.6:
+To reproduce the six hook/kick clips with Godot 4.6:
 `godot --headless --path . -s res://scripts/vendor/build_sparring_clips.gd`

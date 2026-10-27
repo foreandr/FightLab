@@ -1,27 +1,18 @@
 extends SceneTree
 ## Adapted from clintcan/3d-fighter, copyright 2026 Clint Christopher Canada, MIT.
-## See assets/combat/licenses/3d-fighter-MIT.txt. FightLab adds build_boxing_hook.
-## Bakes a compatible skeletal clip using upstream IK and foot planting helpers.
+## See assets/combat/licenses/3d-fighter-MIT.txt. FightLab adapts hooks and kicks.
+## Bakes bilateral skeletal clips with dense support-foot anchoring.
 ## Run: godot --headless --path . -s res://scripts/vendor/build_sparring_clips.gd
 ## Pose dictionaries hold bone-local [position, rotation]; +Z faces the opponent.
 
 const MODEL := "res://assets/characters/base/Superhero_Male_FullBody.gltf"
 const UAL1 := "res://assets/combat/animations/UAL1_Standard.glb"
-const UAL2 := "res://assets/combat/animations/UAL2_Standard.glb"
-const OUTPUT := "res://assets/combat/animations/fight_anims.res"
 const TRACK_PREFIX := "Armature/Skeleton3D:"
-const SAMPLE_FPS := 30.0
-
-const LOWER_BODY := ["root", "pelvis", "thigh_l", "calf_l", "foot_l", "ball_l", "ball_leaf_l",
-	"thigh_r", "calf_r", "foot_r", "ball_r", "ball_leaf_r"]
-const SPINE := ["spine_01", "spine_02", "spine_03"]
 
 var skeleton: Skeleton3D
 var ual1: AnimationLibrary
-var ual2: AnimationLibrary
 var guard: Dictionary
-var crouch: Dictionary
-var rear := "r" # side of the rear (kicking / power-punch) limbs, detected from the guard
+var rear := "r" # striking side; can be the lead leg in the unchanged guard
 var lead := "l"
 
 
@@ -29,10 +20,14 @@ func _initialize() -> void:
 	var model := (load(MODEL) as PackedScene).instantiate()
 	skeleton = model.find_child("Skeleton3D") as Skeleton3D
 	ual1 = load(UAL1)
-	ual2 = load(UAL2)
 	guard = sample(ual1.get_animation("Punch_Jab"), 0.0)
 	var lib := AnimationLibrary.new()
-	lib.add_animation("hook", build_boxing_hook())
+	for side in ["r", "l"]:
+		rear = side
+		lead = "l" if side == "r" else "r"
+		lib.add_animation("hook_" + side, build_boxing_hook())
+		lib.add_animation("front_kick_" + side, build_front_kick())
+		lib.add_animation("high_kick_" + side, build_high_kick())
 	ResourceSaver.save(lib, "res://assets/combat/animations/boxing.res")
 	model.free()
 	quit()
@@ -47,16 +42,18 @@ func build_boxing_hook() -> Animation:
 	var load_pose := duplicate_pose(guard)
 	hip_turn(load_pose, -12.0)
 	move_bone(load_pose, "pelvis", Vector3(0, -0.025, -0.015))
-	plant_both(load_pose, lf, rf)
-	var shoulder := global_origin(load_pose, "upperarm_r")
-	solve_ik(load_pose, "upperarm_r", "lowerarm_r", "hand_r", shoulder + Vector3(-0.22, -0.07, 0.28), Vector3(-1, 0.1, 0.1))
+	plant_foot(load_pose, "l", lf)
+	plant_foot(load_pose, "r", rf)
+	var shoulder := global_origin(load_pose, "upperarm_" + rear)
+	solve_ik(load_pose, "upperarm_" + rear, "lowerarm_" + rear, "hand_" + rear, shoulder + Vector3(rear_sign() * 0.22, -0.07, 0.28), Vector3(rear_sign(), 0.1, 0.1))
 	var strike := duplicate_pose(guard)
 	hip_turn(strike, 30.0)
 	move_bone(strike, "pelvis", Vector3(0, -0.015, 0.045))
-	plant_both(strike, lf, rf + Vector3(0, 0.025, 0))
-	shoulder = global_origin(strike, "upperarm_r")
-	solve_ik(strike, "upperarm_r", "lowerarm_r", "hand_r", Vector3(0.08, 1.40, 0.58), Vector3(-1, 0.2, 0.1))
-	shoulder_roll(strike, "r", 8.0)
+	plant_foot(strike, "l", lf)
+	plant_foot(strike, "r", rf)
+	shoulder = global_origin(strike, "upperarm_" + rear)
+	solve_ik(strike, "upperarm_" + rear, "lowerarm_" + rear, "hand_" + rear, Vector3(-rear_sign() * 0.08, 1.40, 0.58), Vector3(rear_sign(), 0.2, 0.1))
+	shoulder_roll(strike, rear, 8.0)
 	return make_animation([[0.0, guard], [0.14, load_pose], [0.28, strike], [0.34, strike], [0.68, guard]], false)
 
 # --- Clips -----------------------------------------------------------------------
@@ -219,4 +216,178 @@ func make_animation(keys: Array, loop: bool) -> Animation:
 		anim.track_set_interpolation_type(track, Animation.INTERPOLATION_CUBIC)
 		for key in keys:
 			anim.rotation_track_insert_key(track, key[0], key[1][i][1])
+	return anim
+
+
+func build_front_kick() -> Animation:
+	var s := rear_sign()
+	var lead_foot := global_origin(guard, "foot_" + lead)
+	var rear_foot := global_origin(guard, "foot_" + rear)
+
+	var load := duplicate_pose(guard)
+	move_bone(load, "pelvis", Vector3(-s * 0.03, -0.02, 0.025))
+	plant_foot(load, lead, lead_foot)
+	plant_foot(load, rear, rear_foot + Vector3(0, 0.03, 0))
+	point_foot(load, rear, Vector3(0, -0.6, 0.8)) # heel lifts as weight leaves the rear leg
+
+	var chamber := duplicate_pose(guard)
+	move_bone(chamber, "pelvis", Vector3(-s * 0.07, -0.035, 0.05))
+	hip_turn(chamber, 15.0)
+	lean(chamber, 8.0, 0.0)
+	plant_foot(chamber, lead, lead_foot)
+	var hip := global_origin(chamber, "thigh_" + rear)
+	solve_ik(chamber, "thigh_" + rear, "calf_" + rear, "foot_" + rear,
+		hip + Vector3(s * 0.02, -0.32, 0.28), Vector3(0, 0.4, 1))
+	point_foot(chamber, rear, Vector3(0, -0.7, 0.7))
+	swing_rear_arm(chamber, 0.18)
+
+	var strike := duplicate_pose(guard)
+	move_bone(strike, "pelvis", Vector3(-s * 0.08, -0.025, 0.10)) # hip thrust into the target
+	hip_turn(strike, 22.0)
+	lean(strike, 16.0, 0.0)
+	plant_foot(strike, lead, lead_foot)
+	pivot_support_foot(strike, 20.0, false)
+	hip = global_origin(strike, "thigh_" + rear)
+	solve_ik(strike, "thigh_" + rear, "calf_" + rear, "foot_" + rear,
+		Vector3(hip.x * 0.5, 1.08, hip.z + 0.82), Vector3(0, 1, 0.2))
+	point_foot(strike, rear, Vector3(0, 0.35, 0.94)) # sole to target, ball of the foot leads
+	swing_rear_arm(strike, 0.28)
+
+	var recoil := duplicate_pose(chamber)
+	move_bone(recoil, "pelvis", Vector3(0, 0, -0.02))
+
+	return make_planted_animation([[0.0, guard], [0.09, load], [0.20, chamber], [0.36, strike],
+		[0.39, strike], [0.54, recoil], [0.72, load], [0.90, guard]])
+
+
+## Roundhouse (mawashi-geri) to the head with the rear leg: weight shifts onto the lead
+## foot, the knee chambers out to the side, the hips turn over as the support heel pivots
+## toward the target, and the leg whips through with a pointed foot. The torso leans away
+## and the striking-side arm counterbalances while the other hand maintains guard.
+
+
+func build_high_kick() -> Animation:
+	var s := rear_sign()
+	var lead_foot := global_origin(guard, "foot_" + lead)
+	var rear_foot := global_origin(guard, "foot_" + rear)
+	var toward_support := Vector3(-s, 0, 0)
+
+	var load := duplicate_pose(guard)
+	move_bone(load, "pelvis", Vector3(0, -0.02, 0.05) + toward_support * 0.05)
+	hip_turn(load, 20.0)
+	plant_foot(load, lead, lead_foot)
+	plant_foot(load, rear, rear_foot + Vector3(0, 0.04, 0))
+	point_foot(load, rear, Vector3(0, -0.7, 0.7))
+	pivot_support_foot(load, 25.0, false)
+
+	var chamber := duplicate_pose(guard)
+	move_bone(chamber, "pelvis", Vector3(0, -0.06, 0.08) + toward_support * 0.07)
+	hip_turn(chamber, 60.0)
+	lean(chamber, 10.0, 8.0)
+	plant_foot(chamber, lead, lead_foot + Vector3(0, 0.015, 0))
+	pivot_support_foot(chamber, 60.0, true)
+	var hip := global_origin(chamber, "thigh_" + rear)
+	# Knee up and out to the side, lower leg folded back behind it.
+	solve_ik(chamber, "thigh_" + rear, "calf_" + rear, "foot_" + rear,
+		hip + Vector3(s * 0.42, 0.02, -0.02), Vector3(-s * 0.2, 0.3, 1))
+	point_foot(chamber, rear, Vector3(s * 0.6, -0.2, -0.6))
+	swing_rear_arm(chamber, 0.30)
+
+	var strike := duplicate_pose(guard)
+	move_bone(strike, "pelvis", Vector3(0, -0.07, 0.1) + toward_support * 0.09)
+	hip_turn(strike, 95.0)
+	lean(strike, 20.0, 18.0)
+	plant_foot(strike, lead, lead_foot + Vector3(0, 0.02, 0))
+	pivot_support_foot(strike, 115.0, true)
+	hip = global_origin(strike, "thigh_" + rear)
+	var target := Vector3(-s * 0.04, 1.43, 0.74)
+	solve_ik(strike, "thigh_" + rear, "calf_" + rear, "foot_" + rear, target, Vector3(0, 1, -0.3))
+	point_foot(strike, rear, (target - global_origin(strike, "calf_" + rear)).normalized() + Vector3(-s * 0.3, 0, 0))
+	swing_rear_arm(strike, 0.55)
+
+	# Raise outside the torso first; the strike then sweeps sideways at head height.
+	var outside := duplicate_pose(strike)
+	var outside_target := Vector3(s * 0.34, 1.43, 0.62)
+	solve_ik(outside, "thigh_" + rear, "calf_" + rear, "foot_" + rear, outside_target, Vector3(s * 0.2, 1, -0.3))
+	point_foot(outside, rear, (outside_target - global_origin(outside, "calf_" + rear)).normalized())
+	var follow := duplicate_pose(strike)
+	hip_turn(follow, 8.0)
+	var follow_target := Vector3(-s * 0.20, 1.43, 0.77)
+	solve_ik(follow, "thigh_" + rear, "calf_" + rear, "foot_" + rear, follow_target, Vector3(0, 1, -0.3))
+	point_foot(follow, rear, (follow_target - global_origin(follow, "calf_" + rear)).normalized())
+
+	var recoil := duplicate_pose(chamber)
+	hip_turn(recoil, -10.0)
+
+	return make_planted_animation([[0.0, guard], [0.10, load], [0.23, chamber], [0.33, outside],
+		[0.40, strike], [0.46, follow], [0.63, recoil], [0.83, load], [1.02, guard]])
+
+
+## Low kick from a crouch: sink onto the lead leg and shoot the rear leg out along the
+## canvas, foot flat and pointed, lead hand dropping toward the floor. Impact 0.18 s.
+
+
+func pivot_support_foot(pose: Dictionary, degrees: float, on_ball: bool) -> void:
+	var base := foot_direction(guard, lead)
+	var dir := base.rotated(Vector3.UP, deg_to_rad(degrees * -rear_sign()))
+	if on_ball:
+		dir.y -= 0.22 * Vector2(dir.x, dir.z).length()
+	point_foot(pose, lead, dir)
+
+
+## Turns the hips by `degrees` (positive brings the rear hip forward). Shoulders follow
+## about half way and the head stays on the target.
+
+
+func lean(pose: Dictionary, back_degrees: float, side_degrees: float) -> void:
+	rotate_bone(pose, "spine_01", Vector3.RIGHT, -back_degrees * 0.6)
+	rotate_bone(pose, "spine_02", Vector3.RIGHT, -back_degrees * 0.4)
+	rotate_bone(pose, "spine_01", Vector3(0, 0, 1), -rear_sign() * side_degrees)
+	rotate_bone(pose, "neck_01", Vector3.RIGHT, back_degrees * 0.4)
+
+
+## Rear arm swings down and back to counterbalance a kick (amount 0..1); lead arm keeps
+## the guard.
+
+
+func swing_rear_arm(pose: Dictionary, amount: float) -> void:
+	var s := rear_sign()
+	var upper := Vector3(s * 0.35, -0.2, 0.25).lerp(Vector3(s * 0.35, -0.85, -0.45), amount)
+	var lower := Vector3(0, 0.4, 0.6).lerp(Vector3(s * 0.1, -0.95, -0.15), amount)
+	aim(pose, "upperarm_" + rear, "lowerarm_" + rear, upper)
+	aim(pose, "lowerarm_" + rear, "hand_" + rear, lower)
+
+
+## Places a hand at `target` (model space), elbow bending back and out.
+
+
+## Bake dense poses, then solve the support leg at every sample. The ball of the
+## foot anchors the pivot; sparse cubic interpolation otherwise slides/lifts it.
+func make_planted_animation(keys: Array) -> Animation:
+	var baked := []
+	var anchor := global_origin(guard, "ball_" + lead)
+	var length: float = keys[-1][0]
+	var segment := 0
+	for frame in range(int(round(length * 60.0)) + 1):
+		var t := minf(frame / 60.0, length)
+		while segment < keys.size() - 2 and t > keys[segment + 1][0]:
+			segment += 1
+		var f := clampf((t - keys[segment][0]) / (keys[segment + 1][0] - keys[segment][0]), 0, 1)
+		f = f * f * (3 - 2 * f)
+		var pose := {}
+		for bone in skeleton.get_bone_count():
+			var from: Array = keys[segment][1][bone]
+			var to: Array = keys[segment + 1][1][bone]
+			pose[bone] = [(from[0] as Vector3).lerp(to[0], f), (from[1] as Quaternion).slerp(to[1], f)]
+		var direction := foot_direction(pose, lead)
+		for iteration in 2:
+			var ankle := global_origin(pose, "foot_" + lead)
+			var ball := global_origin(pose, "ball_" + lead)
+			plant_foot(pose, lead, ankle + anchor - ball)
+			point_foot(pose, lead, direction)
+		baked.append([t, pose])
+	baked[-1][0] = length
+	var anim := make_animation(baked, false)
+	for track in anim.get_track_count():
+		anim.track_set_interpolation_type(track, Animation.INTERPOLATION_LINEAR)
 	return anim

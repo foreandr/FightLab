@@ -25,8 +25,12 @@ external project checkout is needed. See [asset notices](assets/combat/NOTICE.md
 
 - Two distinct, clothed, anatomically proportioned humanoids on the same 65-bone rig.
 - Reused skeletal guard, guarded walk, jab, cross, front kick, high kick, hit,
-  knockdown and stand-up clips. A compact hook is composed using upstream's
-  skeletal animation baking and planted-foot helpers.
+  knockdown and stand-up clips. Both hands punch, both hands hook, and both legs
+  front-kick and high-kick. Each NPC uses all four limbs in autonomous exchanges.
+- Refined kicks reuse upstream's choreography and skeletal IK helpers: slower
+  chamber/recoil, weight shift, ball-of-foot contact, and high kicks that rise
+  outside the torso before sweeping at head height. Dense baked poses keep the
+  support ball of the foot planted through the pivot.
 - AnimationPlayer cross-fades between movement, strikes and recovery.
 - Godot CharacterBody3D floor and fighter collision, and bone-following head/torso
   Area3D hurtboxes. A fist/foot-sized sphere sweeps the actual animated limb path.
@@ -53,8 +57,11 @@ The original melee hook lunged too low; the adapted hook uses shorter range.
 .\validate.ps1
 ```
 
-This fails on Godot errors and tests 90 simulated seconds of autonomous fighting,
-all five strike types, both NPCs landing hits, separation and knockdowns. It also
+This fails on Godot errors and tests 180 simulated seconds of autonomous fighting,
+all eight strike types, both NPCs landing with each hand/foot, separation and knockdowns.
+It samples all four kicks on both rigs to bound support-foot drift, and runs an
+isolated contact review requiring front kicks to hit the body and high kicks the
+head, once each. It also
 disables hurtboxes at close range and tests every strike at long range: neither
 case may register a hit. Headless tests validate behavior; rendered inspection is
 also required for motion quality.
@@ -65,8 +72,20 @@ For a rendered 35-second sample with PNG frames, impact frames and a JSON report
 .\tools\Godot_v4.6-stable_win64_console.exe --path . --resolution 1280x800 -- --duration=35 --capture-dir=C:/path/to/captures
 ```
 
-The report includes actual renderer, FPS, contacts by move and minimum fighter
-spacing. Capture overhead affects performance. See [validation notes](docs/validation.md)
+For repeatable video debugging (Godot records AVI directly, with no extra tools):
+
+```powershell
+.\scripts\core\review-video.ps1 -IsolateKicks
+.\scripts\core\review-video.ps1 -Seconds 40
+```
+
+Each run saves a 30 FPS movie and `contacts.json` under `builds/review-*`.
+The isolated review shows both legs on both characters against a passive opponent;
+normal gameplay remains autonomous. Compare consecutive video frames around the
+contact timestamps: guard → weight shift → chamber → impact → recoil → guard.
+
+The JSON report includes contact timestamps, attempted/landed strikes per limb,
+actual renderer, FPS, contacts by move and minimum fighter spacing. Capture overhead affects performance. See [validation notes](docs/validation.md)
 for the latest observed results and remaining visual limitations.
 
 ## Reused systems and reproducibility
