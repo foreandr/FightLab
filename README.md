@@ -17,6 +17,11 @@ Set-Location C:\Users\forea\FightLab
 ```
 
 Space toggles slow motion, R restarts, M toggles sound and Esc exits.
+Press **F2** for the [54-case combat showcase](docs/combat-showcase.md), or
+double-click **Showcase.bat**. It pairs a performer with a passive target and
+labels every ground/jump cast, charged attack, shield test and movement example.
+In the showcase, arrows browse, R replays, Space pauses, S slows time and B
+returns to battle. On-screen buttons provide the same controls.
 Both the full fight and review scenes use the actual combat/physics paths.
 This remains an AI combat prototype; player controls are not implemented.
 
@@ -77,6 +82,7 @@ guard and active statuses.
 .\validate.ps1
 .\scripts\core\review-video.ps1 -Seconds 70
 .\scripts\core\review-video.ps1 -FeatureShowcase
+.\scripts\core\review-video.ps1 -CombatShowcase
 ```
 
 Validation includes a 180-second three-way fight, focused charge/status/ragdoll/
@@ -86,6 +92,9 @@ with stereo audio and a JSON event timeline. Movie encoding speed is separate fr
 live gameplay performance.
 
 Details: [triad combat validation](docs/triad-combat.md).
+
+The combat foundation before the showcase is preserved in the pushed
+[`milestone/combat-foundation-v1`](docs/milestones.md) Git tag.
 
 ## Sources and saved scenes
 

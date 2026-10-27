@@ -88,6 +88,12 @@ func reset_fighter(location: Vector3) -> void:
 		ragdoll.queue_free()
 		ragdoll = null
 	super.reset_fighter(location)
+	# A reset can interrupt the ragdoll/get-up blend. Clear untracked root/bone
+	# offsets before the idle clip, which only animates the pelvis position.
+	skeleton.reset_bone_poses()
+	clip="spells/idle"
+	player.play(clip,0,1)
+	player.advance(0)
 	tactics.reset(self)
 	flash_aura_time=0
 	collision_layer = 128 << team

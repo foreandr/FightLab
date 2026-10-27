@@ -48,6 +48,16 @@ func run() -> void:
 		check(f.mode=="getup" and f.player.current_animation_position<0.01,"The first quarter second must gather from the landing pose before rising")
 		await frames(150)
 		check(f.mode!="getup" and f.collision_layer==(128<<team),"Recovery must complete and restore the upright collider")
+		await prepare(team)
+		f.velocity=Vector3(3,4,0)
+		f.start_ragdoll(Vector3(300,200,0),f.bone_point("Head"))
+		await frames(6)
+		f.finish_ragdoll()
+		await frames(8)
+		f.reset_fighter(Vector3(0,0.02,0))
+		for bone in f.skeleton.get_bone_count():
+			if f.skeleton.get_bone_name(bone)!="pelvis":
+				check(f.skeleton.get_bone_pose_position(bone).distance_to(f.skeleton.get_bone_rest(bone).origin)<0.002,"Resetting mid-recovery must clear unanimated bone/root offsets")
 		# Actual simulation must require continuous stable contact before getting up.
 		await prepare(team)
 		f.velocity=Vector3(-2,5,1)
