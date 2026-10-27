@@ -1,0 +1,13 @@
+# Godot 4 generated cache and export credentials
+.godot/
+/export.cfg
+/export_credentials.cfg
+# Generated builds and local tools
+/builds/
+/tools/
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

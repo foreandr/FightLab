@@ -1,0 +1,24 @@
+name: Validate Godot
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned Godot 4.6 stable
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://github.com/godotengine/godot-builds/releases/download/4.6-stable
+          curl --fail --location "$base/Godot_v4.6-stable_linux.x86_64.zip" -o godot.zip
+          curl --fail --location "$base/SHA512-SUMS.txt" -o SHA512-SUMS.txt
+          grep ' Godot_v4.6-stable_linux.x86_64.zip$' SHA512-SUMS.txt | sed 's/Godot_v4.6-stable_linux.x86_64.zip/godot.zip/' | sha512sum --check --strict
+          mkdir -p tools
+          unzip -q godot.zip -d tools
+          chmod +x tools/Godot_v4.6-stable_linux.x86_64
+      - name: Validate import and startup
+        shell: pwsh
+        run: ./validate.ps1 -GodotPath ./tools/Godot_v4.6-stable_linux.x86_64

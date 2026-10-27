@@ -1,0 +1,7 @@
+param([string]$GodotPath)
+$ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/scripts/core/godot.ps1"
+$executable = Find-Godot $GodotPath
+Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--editor','--import')
+Invoke-GodotCheck -Executable $executable -Arguments @('--headless','--path',$PSScriptRoot,'--quit-after','60')
+Write-Host 'PASS: editor import and empty project startup.'
