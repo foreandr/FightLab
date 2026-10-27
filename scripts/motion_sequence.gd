@@ -8,9 +8,11 @@ var status := "Ready"
 var step_time := 0.0
 var direction := 0
 var history: Array[String]=[]
+const ATTACKS := ["Punch","Knee","Kick","Round Kick","Cross","Hook","Uppercut","Spell Throw","Slash Throw"]
 
 static func allowed_for_state(step: String,grounded: bool) -> bool:
 	if step=="End":return true
+	if step in ATTACKS:return true
 	return not grounded if step in ["Flip","Twist","Land"] else grounded
 
 static func state_after(step: String,grounded: bool) -> bool:
@@ -46,7 +48,8 @@ func next_step(fighter: CharacterBody3D) -> void:
 	var step: String=steps[index]
 	status="Step %d / %d: %s"%[index+1,steps.size(),step]
 	var accepted:=true
-	if not allowed_for_state(step,fighter.is_on_floor()) and not (step=="Land" and fighter.mode=="land"):
+	# A long airborne attack can naturally land before its queued Land marker.
+	if not allowed_for_state(step,fighter.is_on_floor()) and step!="Land":
 		active=false
 		status="Stopped: %s requires %s"%[step,"airborne" if step in ["Flip","Twist","Land"] else "grounded"]
 		return
@@ -106,9 +109,13 @@ func tick(fighter: CharacterBody3D,delta: float) -> void:
 		"Uppercut": complete=fighter.mode not in ["melee_charge","punch"]
 		"Spell Throw","Slash Throw": complete=fighter.mode!="cast"
 		"Jump":
-			var aerial_next: bool=index+1<steps.size() and steps[index+1] in ["Flip","Twist","Land"]
+			var aerial_next: bool=index+1<steps.size() and (steps[index+1] in ["Flip","Twist","Land"] or steps[index+1] in ATTACKS)
 			complete=not fighter.is_on_floor() and fighter.mode!="takeoff" if aerial_next else step_time>0.2 and fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]
-		"Flip","Twist": complete=fighter.mode!="air_trick"
+		"Flip": complete=fighter.mode!="air_trick"
+		"Twist":
+			# An attack in the following slot starts during the turn, not after it.
+			var attack_next: bool=index+1<steps.size() and steps[index+1] in ATTACKS
+			complete=fighter.mode!="air_trick" or (attack_next and fighter.twist_age>=fighter.TWIST_DELAY)
 		"Land": complete=fighter.is_on_floor() and fighter.mode not in ["takeoff","land"]
 	if complete:
 		next_step(fighter)

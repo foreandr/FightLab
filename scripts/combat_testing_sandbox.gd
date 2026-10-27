@@ -188,7 +188,7 @@ func settings_changed() -> void:
 	charge_toggle.tooltip_text="Held charge is available for grounded Fireball, Cinder Slash and Freezing Ray. Jump casts are quick; Flash Step and uppercut include their own charge."
 	hint_label.text="Spawn distance is center to center. "
 	if motion:
-		hint_label.text="Choose the first animation; + adds steps. Jump unlocks Flip / Twist. Land restores grounded moves."
+		hint_label.text="+ adds steps. Attacks work in the air. Place an attack after Twist to perform it during the turn."
 	elif entry.kind in ["melee","uppercut"]:
 		hint_label.text+="Suggested melee distance: %.2f m. Distant strikes can miss."%float(entry.distance)
 	elif jump_toggle.button_pressed:
@@ -236,7 +236,7 @@ func refresh_chain_options() -> void:
 	var ended:=false
 	for slot in chain_menu:
 		slot.disabled=ended
-		slot.tooltip_text="After landing: ground moves" if grounded else "Airborne: Flip, Twist or Land"
+		slot.tooltip_text="Grounded: motion or attack" if grounded else "Airborne: attacks, Flip, Twist or Land"
 		for i in sequence.OPTIONS.size():
 			var allowed: bool=sequence.allowed_for_state(sequence.OPTIONS[i],grounded)
 			slot.set_item_disabled(i,not allowed)

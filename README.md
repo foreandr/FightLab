@@ -28,7 +28,13 @@ model or display viewport. Click to add the action to your chain.
 Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
 Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
 Throwing. Motion and Attack share one combined chain. **+ / −** edits chain
-length. Jump unlocks aerial moves; Land restores grounded choices. **Run chain**
+length. Jump unlocks aerial moves; all nine attacks also work airborne. Twist
+has 0.12 seconds of anticipation followed by a slower 0.54-second turn. Place
+an attack immediately after Twist to cast or strike during the turn, e.g.
+**Jump → Twist → Spell Throw → Land**. Flip can also lead straight into an
+airborne attack. Gravity continues throughout; Land waits for the real landing
+even when a long attack has already reached the ground. Land restores grounded
+motion choices. **Run chain**
 executes the physical test; **Browse** returns to the library. The bottom bar is
 Run, Reset, Slow, Browse and Home. Partner behavior is one menu: no block,
 palm/braced shield, jump, or jump with a shield. Repeat Setup and Weaken Guard

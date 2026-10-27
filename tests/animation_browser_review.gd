@@ -23,6 +23,10 @@ func run() -> void:
 	lab.run_setup()
 	await frames(90)
 	lab.field.write_report()
+	lab.set_chain(["Jump","Twist","Spell Throw","Land"])
+	for i in 3:
+		lab.run_setup()
+		await frames(90)
 	lab.browse_animations()
 	await frames(30)
 	paused=false

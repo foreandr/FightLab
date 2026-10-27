@@ -24,6 +24,9 @@ var combo_speed := 0.0
 var motion_direction := Vector3.ZERO
 var motion_speed := 0.0
 var air_trick := ""
+const TWIST_DELAY := 0.12
+const TWIST_DURATION := 0.54
+var twist_age := -1.0
 var charge_goal := 0.0
 var charge_held := 0.0
 var charge_value := 0.0
@@ -115,6 +118,8 @@ func reset_fighter(location: Vector3) -> void:
 	motion_direction=Vector3.ZERO
 	motion_speed=0
 	air_trick=""
+	twist_age=-1
+	model.rotation.y=0
 	melee_charge = 0
 	last_guard_shattered = false
 	last_hit_charge = 0
@@ -243,6 +248,9 @@ func advance_animation(delta: float) -> void:
 		if mode in ["run", "chase", "dash"]:
 			player.speed_scale = clampf(Vector2(velocity.x,velocity.z).length()/7.0,0.7,3.5) if team==2 and haste_time>0 else movement_multiplier()
 		player.advance(delta)
+	# Turn the rig independently of its arm/leg clip. Casting and melee keep
+	# evaluating normally, including their actual limb hitboxes and emit points.
+	model.rotation.y=TAU*smoothstep(0.0,1.0,clampf((twist_age-TWIST_DELAY)/TWIST_DURATION,0,1)) if twist_age>=0 else 0.0
 
 func select_action() -> void:
 	if not is_on_floor():
@@ -471,7 +479,8 @@ func start_air_trick(kind: String) -> bool:
 	air_trick=kind
 	mode="air_trick"
 	mode_time=0
-	mode_length=0.34 if kind=="Flip" else 0.28
+	mode_length=0.34 if kind=="Flip" else TWIST_DELAY+TWIST_DURATION
+	if kind=="Twist":twist_age=0
 	clip=""
 	var animation: String="duel/backflip" if kind=="Flip" else "duel/air"
 	play(animation,player.get_animation(animation).length/mode_length)
@@ -491,10 +500,6 @@ func tick_air_trick(delta: float) -> void:
 	distance_run+=before.distance_to(position)
 	max_height=maxf(max_height,position.y)
 	advance_animation(delta)
-	if air_trick=="Twist":
-		var pelvis: int=bones["pelvis"]
-		var rotation_: Quaternion=skeleton.get_bone_pose_rotation(pelvis)
-		skeleton.set_bone_pose_rotation(pelvis,Quaternion(Vector3.UP,TAU*clampf(mode_time/mode_length,0,1))*rotation_)
 	impact_physics.step(delta)
 	impact_physics.apply(skeleton,is_on_floor(),global_basis)
 	if is_on_floor() or mode_time>=mode_length:
@@ -578,6 +583,15 @@ func start_burst(paid := false) -> void:
 
 func tick(delta: float) -> void:
 	update_status(delta)
+	if twist_age>=0:
+		if health<=0 or is_on_floor() or mode in ["hit","ragdoll","frozen","getup","ko"] or freeze_time>0:
+			twist_age=-1
+			model.rotation.y=0
+		else:
+			twist_age+=delta
+			if twist_age>=TWIST_DELAY+TWIST_DURATION:
+				twist_age=-1
+				model.rotation.y=0
 	# Airborne fighters must not treat another fighter's head as a landing platform.
 	if position.y>0.25 or velocity.y>0.2:
 		air_body_passthrough=true

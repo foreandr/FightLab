@@ -35,8 +35,7 @@ func run() -> void:
 		if lab.actor.mode=="air_trick":
 			observed[lab.actor.air_trick]=true
 			check(not lab.actor.is_on_floor(),"Air trick must execute only in actual flight")
-			var pelvis: int=lab.actor.bones["pelvis"]
-			if lab.actor.air_trick=="Twist" and absf(lab.actor.skeleton.get_bone_pose_rotation(pelvis).y)>0.3:rotated=true
+			if lab.actor.air_trick=="Twist" and absf(lab.actor.model.rotation.y)>0.3:rotated=true
 	check(observed.has("Flip") and observed.has("Twist") and rotated,"Preset must execute a visible backflip and a rotating body twist")
 	check(lab.sequence.history==["Jump","Flip","Twist","Land"] and lab.sequence.status=="Combo complete","Aerial preset must chain before landing, then complete its actual landing")
 	check(maximum_height>1 and maximum_height<3.5 and lab.actor.is_on_floor(),"Air tricks must keep gravity and land without an artificial relaunch or hover")
