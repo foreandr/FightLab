@@ -17,3 +17,5 @@ Thumbs.db
 
 # Independently maintained upstream fighting game checkout
 /external/
+
+/assets/humanoid/
