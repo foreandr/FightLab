@@ -7,6 +7,7 @@ param(
     [switch]$DeathShowcase,
     [switch]$WallShowcase,
     [switch]$RecoveryShowcase,
+    [switch]$AirShowcase,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -28,9 +29,10 @@ if ($FeatureShowcase) { $arguments += @('-s', 'res://tests/battle_review.gd') }
 if ($DeathShowcase) { $arguments += @('-s', 'res://tests/death_review.gd') }
 if ($WallShowcase) { $arguments += @('-s', 'res://tests/wall_review.gd') }
 if ($RecoveryShowcase) { $arguments += @('-s', 'res://tests/recovery_review.gd') }
+if ($AirShowcase) { $arguments += @('-s', 'res://tests/air_cast_review.gd') }
 $arguments += @('--', "--report-file=$reportPath")
-if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase) { $arguments += "--duration=$Seconds" }
-if ($FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
+if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase -and -not $AirShowcase) { $arguments += "--duration=$Seconds" }
+if ($FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
 if ($Background -and $env:OS -eq 'Windows_NT') {
     $nativeArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
     $recording = Start-Process -FilePath $executable -ArgumentList $nativeArguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $OutputDirectory 'recording.log') -RedirectStandardError (Join-Path $OutputDirectory 'errors.log')

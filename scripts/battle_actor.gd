@@ -48,6 +48,7 @@ const RECOVERY_BLEND := 0.45
 const RECOVERY_GATHER := 0.25
 var recovery_source := {}
 var recovery_target := {}
+var air_body_passthrough := false
 
 func _ready() -> void:
 	var actual := team
@@ -75,6 +76,7 @@ func _ready() -> void:
 func reset_fighter(location: Vector3) -> void:
 	recovery_source.clear()
 	recovery_target.clear()
+	air_body_passthrough=false
 	if is_instance_valid(ragdoll):
 		ragdoll.restore_pose()
 		ragdoll.queue_free()
@@ -115,6 +117,7 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 func start_cast(air: bool) -> void:
+	air=air or not is_on_floor()
 	current_spell = choose_spell(air)
 	if mana < arena.mana_cost(current_spell):
 		set_close_combat(true)
@@ -132,13 +135,18 @@ func start_cast(air: bool) -> void:
 	cast_phase = "windup"
 	beam_clock = 0
 	cast_rate = 2.9 if current_spell.effect in ["orb", "slash"] else 2.1
+	if air:
+		cast_rate=1.65
 	mode = "cast"
 	mode_time = 0
 	cast_time = 0
 	did_release = false
 	clip = ""
-	var animation: String = "duel/air_" + current_spell.animation if air else "spells/" + current_spell.animation
-	play(animation, 1.0)
+	var animation: String = "battle/air_" + current_spell.animation if air else "spells/" + current_spell.animation
+	# These clips are driven by seek; a timed crossfade never advances with seek.
+	clip=animation
+	player.play(animation,0,1.0)
+	player.advance(0)
 	mode_length = player.get_animation(animation).length
 	count_action("air_cast" if air else "cast")
 	if air:
@@ -188,6 +196,10 @@ func advance_animation(delta: float) -> void:
 		player.advance(delta)
 
 func select_action() -> void:
+	if not is_on_floor():
+		mode="air"
+		mode_time=0
+		return
 	if not is_instance_valid(rival) or rival.health <= 0:
 		return
 	if team == 2 and mana > 22 and haste_time < 0.2 and decision % 3 == 1:
@@ -241,6 +253,13 @@ func select_action() -> void:
 		start_footwork("roll_back")
 	else:
 		start_jump("air_dash" if choice == 7 else "flip")
+
+func start_jump(kind: String) -> void:
+	if not is_on_floor():
+		mode="air"
+		mode_time=0
+		return
+	super.start_jump(kind)
 
 func start_punch() -> void:
 	melee_charge=0
@@ -311,6 +330,17 @@ func start_burst(paid := false) -> void:
 
 func tick(delta: float) -> void:
 	update_status(delta)
+	# Airborne fighters must not treat another fighter's head as a landing platform.
+	if position.y>0.25 or velocity.y>0.2:
+		air_body_passthrough=true
+	elif air_body_passthrough:
+		var overlapping:=false
+		for other in arena.fighters:
+			if other!=self and Vector2(position.x-other.position.x,position.z-other.position.z).length()<0.65:
+				overlapping=true
+				break
+		air_body_passthrough=overlapping
+	collision_mask=1|1024 if air_body_passthrough else 1|128|256|512|1024
 	if is_instance_valid(ragdoll):
 		invulnerability=maxf(0,invulnerability-delta)
 		mode = "ragdoll"
@@ -352,12 +382,15 @@ func tick(delta: float) -> void:
 			charge_value=melee_charge
 			velocity.x = 0
 			velocity.z = 0
+			velocity.y=-0.1 if is_on_floor() and position.y<0.15 and velocity.y<=0 else velocity.y-GRAVITY*delta
+			move_and_slide()
 			if mode_time >= 0.85:
 				begin_strike(["uppercut", "battle/uppercut", "hand_r", 0.15, 0.52, 23.0, 0.0, 1.1])
 		else:
 			var before := position
+			var vertical:=velocity.y
 			velocity = burst_direction * combo_speed
-			velocity.y = -0.1 if is_on_floor() else velocity.y - GRAVITY * delta
+			velocity.y = -0.1 if is_on_floor() and position.y<0.15 and vertical<=0 else vertical - GRAVITY * delta
 			move_and_slide()
 			position.y = maxf(0, position.y)
 			drive_velocity = burst_direction * combo_speed
