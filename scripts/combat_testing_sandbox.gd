@@ -19,6 +19,11 @@ var inspection_camera=preload("res://scripts/sandbox_camera.gd").new()
 var camera_input_enabled := true
 var camera_dragging := false
 var camera_mouse_origin := Vector2.ZERO
+var sequence=preload("res://scripts/motion_sequence.gd").new()
+var chain_menu: Array[OptionButton]=[]
+var chain_panel: HBoxContainer
+var dash_direction_menu: OptionButton
+var quick_dash_toggle: CheckBox
 
 func _ready() -> void:
 	auto_advance=false
@@ -28,6 +33,7 @@ func _ready() -> void:
 	settings_changed()
 
 func build_ui() -> void:
+	moves.append({"id":"motion_chain","title":"Motion / Combo Builder","team":0,"kind":"sequence","group":"Motion","expect":"movement","distance":4.4,"plain":true})
 	var ids: Array[String]=["fireball_ground","cinder_slash_ground","freezing_ray_ground","armor_ground","overdrive_ground","flash_ground","melee_0","melee_1","melee_4","melee_2","melee_5","melee_3","uppercut","fire_kick","ice_knee","shield_palm","shield_brace","armor_fireball","armor_punch","overdrive_run","flash_overdrive","movement_run","movement_approach","movement_retreat","movement_strafe_left","movement_strafe_right","movement_dodge_back","movement_roll_back","movement_flip","death_fireball","death_punch"]
 	for id in ids:
 		for entry in Catalog.cases():
@@ -62,7 +68,7 @@ func build_ui() -> void:
 	move_menu.custom_minimum_size=Vector2(350,32)
 	for entry in moves:
 		var name_: String=entry.title.replace(" — Ground Cast","").replace(" — Unblocked","")
-		move_menu.add_item(["FIRE","ICE","STORM"][entry.team]+"  /  "+name_)
+		move_menu.add_item(name_ if entry.kind=="sequence" else ["FIRE","ICE","STORM"][entry.team]+"  /  "+name_)
 	row.add_child(move_menu)
 	menu_label(row,"Distance (m)",15)
 	distance_input=SpinBox.new()
@@ -76,10 +82,33 @@ func build_ui() -> void:
 	for text_ in ["Partner: No block","Partner: Palm shield","Partner: Brace shield"]:
 		block_menu.add_item(text_)
 	row.add_child(block_menu)
+	chain_panel=HBoxContainer.new()
+	chain_panel.alignment=BoxContainer.ALIGNMENT_CENTER
+	chain_panel.add_theme_constant_override("separation",6)
+	column.add_child(chain_panel)
+	menu_label(chain_panel,"Chain",14)
+	for i in 4:
+		if i>0:menu_label(chain_panel,"→",15)
+		var slot:=OptionButton.new()
+		slot.custom_minimum_size=Vector2(115,30)
+		for choice in sequence.OPTIONS:slot.add_item(choice)
+		slot.select(1 if i==0 else (3 if i==1 else 0))
+		slot.focus_mode=Control.FOCUS_NONE
+		slot.item_selected.connect(func(_index):settings_changed())
+		chain_panel.add_child(slot)
+		chain_menu.append(slot)
+	button(chain_panel,"Dash only",func():set_motion_preset(false))
+	button(chain_panel,"Dash → Knee",func():set_motion_preset(true))
 	var options:=HBoxContainer.new()
 	options.alignment=BoxContainer.ALIGNMENT_CENTER
 	options.add_theme_constant_override("separation",12)
 	column.add_child(options)
+	dash_direction_menu=OptionButton.new()
+	for text_ in ["Forward","Forward-right","Right","Back-right","Backward","Back-left","Left","Forward-left"]:
+		dash_direction_menu.add_item(text_)
+	dash_direction_menu.focus_mode=Control.FOCUS_NONE
+	options.add_child(dash_direction_menu)
+	quick_dash_toggle=checkbox(options,"Quick dash")
 	jump_toggle=checkbox(options,"Caster jumps")
 	target_jump_toggle=checkbox(options,"Partner jumps")
 	charge_toggle=checkbox(options,"Charged cast")
@@ -111,10 +140,11 @@ func build_ui() -> void:
 	move_menu.item_selected.connect(func(_index):settings_changed())
 	distance_input.value_changed.connect(func(_value):settings_changed())
 	block_menu.item_selected.connect(func(_index):settings_changed())
-	for toggle in [jump_toggle,target_jump_toggle,charge_toggle,weak_toggle]:
+	dash_direction_menu.item_selected.connect(func(_index):settings_changed())
+	for toggle in [jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,quick_dash_toggle]:
 		toggle.toggled.connect(func(_value):settings_changed())
 	# Space belongs to pause; arrows belong to the menu when it has focus.
-	for node in [move_menu,block_menu,jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,repeat_toggle]:
+	for node in [move_menu,block_menu,jump_toggle,target_jump_toggle,charge_toggle,weak_toggle,repeat_toggle,quick_dash_toggle]:
 		node.focus_mode=Control.FOCUS_NONE
 
 func menu_label(parent: Node,text_: String,size: int) -> Label:
@@ -136,6 +166,13 @@ func settings_changed() -> void:
 		return
 	configuring=true
 	var entry: Dictionary=moves[move_menu.selected]
+	var motion: bool=entry.kind=="sequence"
+	chain_panel.visible=motion
+	dash_direction_menu.visible=motion
+	quick_dash_toggle.visible=motion
+	jump_toggle.visible=not motion
+	charge_toggle.visible=not motion
+	camera_upper_allowance=0.30 if motion else 0.40
 	var can_jump: bool=entry.kind in ["spell","melee","uppercut","shield"]
 	jump_toggle.disabled=not can_jump
 	if not can_jump:
@@ -149,7 +186,9 @@ func settings_changed() -> void:
 	if weak_toggle.disabled:
 		weak_toggle.set_pressed_no_signal(false)
 	hint_label.text="Spawn distance is center to center. "
-	if entry.kind in ["melee","uppercut"]:
+	if motion:
+		hint_label.text="Direction is relative to facing. Dash travels up to 3.6 m; start within 4.4 m for Dash → Knee. End stops the chain."
+	elif entry.kind in ["melee","uppercut"]:
 		hint_label.text+="Suggested melee distance: %.2f m. Distant strikes can miss."%float(entry.distance)
 	elif jump_toggle.button_pressed:
 		hint_label.text+="Jump casts use the quick release; held charge is grounded."
@@ -167,12 +206,31 @@ func configured_entry() -> Dictionary:
 	entry.charged=charge_toggle.button_pressed
 	entry.air=jump_toggle.button_pressed and entry.kind=="spell"
 	entry.sandbox_air=jump_toggle.button_pressed and entry.kind!="spell"
+	if entry.kind=="sequence":
+		entry.duration=maxf(9,chosen_steps().size()*3.0+1)
+		entry.air=false
+		entry.sandbox_air=false
 	if block_menu.selected>0:
 		entry.block="palm" if block_menu.selected==1 else "brace"
 		entry.weak_guard=weak_toggle.button_pressed
 	return entry
 
+func chosen_steps() -> Array[String]:
+	var steps: Array[String]=[]
+	for slot in chain_menu:
+		if slot.selected==0:break
+		steps.append(sequence.OPTIONS[slot.selected])
+	return steps
+
+func set_motion_preset(knee: bool) -> void:
+	move_menu.select(0)
+	for i in chain_menu.size():
+		chain_menu[i].select(1 if i==0 else (3 if knee and i==1 else 0))
+	dash_direction_menu.select(0)
+	settings_changed()
+
 func prepare_setup(run: bool) -> void:
+	sequence.reset()
 	armed=run
 	pending_air_action=false
 	partner_jumping=false
@@ -206,6 +264,9 @@ func perform_case() -> void:
 		target.start_jump("flip")
 		target.air_momentum=Vector3.ZERO
 		partner_jumping=true
+	if catalog[0].kind=="sequence":
+		sequence.start(actor,chosen_steps(),dash_direction_menu.selected,quick_dash_toggle.button_pressed)
+		return
 	if catalog[0].get("sandbox_air",false):
 		actor.start_jump("flip")
 		actor.air_momentum=Vector3.ZERO
@@ -220,6 +281,9 @@ func _physics_process(delta: float) -> void:
 		update_camera(delta)
 		return
 	if not get_tree().paused:
+		if catalog[0].kind=="sequence":
+			actor.mana=0 # Motion chains stay physical, including long chains.
+		sequence.tick(actor,delta)
 		if partner_jumping and not partner_air_ready and target.mode=="flip":
 			partner_air_ready=true
 			target.mode="air"
@@ -235,6 +299,8 @@ func _physics_process(delta: float) -> void:
 	var damage: float=target.damage_taken-marks.damage
 	var absorbed: int=target.blocks-marks.blocks
 	result_label.text="%s  ·  Damage %.1f  ·  Blocks %d  ·  Guard breaks %d"%["Finished — replay or change settings" if finished else ("Paused" if get_tree().paused else "Running"),damage,absorbed,target.guard_breaks-marks.guard_breaks]
+	if catalog[0].kind=="sequence":
+		result_label.text+="  ·  "+sequence.status
 	if finished and repeat_toggle.button_pressed and not get_tree().paused:
 		run_setup()
 
@@ -254,7 +320,11 @@ func reframe_camera() -> void:
 	update_camera(1)
 
 func camera_text_editing() -> bool:
-	return get_viewport().gui_get_focus_owner() is LineEdit or move_menu.get_popup().visible or block_menu.get_popup().visible
+	if get_viewport().gui_get_focus_owner() is LineEdit or move_menu.get_popup().visible or block_menu.get_popup().visible or dash_direction_menu.get_popup().visible:
+		return true
+	for slot in chain_menu:
+		if slot.get_popup().visible:return true
+	return false
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(field):

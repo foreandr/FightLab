@@ -21,6 +21,8 @@ var burst_direction := Vector3.ZERO
 var burst_left := 0.0
 var combo_time := 0.0
 var combo_speed := 0.0
+var motion_direction := Vector3.ZERO
+var motion_speed := 0.0
 var charge_goal := 0.0
 var charge_held := 0.0
 var charge_value := 0.0
@@ -109,6 +111,8 @@ func reset_fighter(location: Vector3) -> void:
 	armor_hp = 0
 	haste_time = 0
 	combo_time = 0
+	motion_direction=Vector3.ZERO
+	motion_speed=0
 	melee_charge = 0
 	last_guard_shattered = false
 	last_hit_charge = 0
@@ -327,6 +331,78 @@ func start_punch() -> void:
 		["round_kick", "boxing/high_kick_l", "ball_l", 0.32, 0.52, 17.0, 17.0, 1.3]]
 	begin_strike(moves[index])
 
+func start_motion_dash(direction_index: int,quick: bool=false) -> bool:
+	if health<=0 or freeze_time>0 or is_instance_valid(ragdoll) or not is_on_floor():
+		return false
+	if not spend_stamina(18 if quick else 12):
+		return false
+	var angle:=float(posmod(direction_index,8))*PI/4
+	# Forward, forward-right, right, back-right, back, back-left, left, forward-left.
+	motion_direction=(global_basis.z*cos(angle)-global_basis.x*sin(angle)).normalized()
+	motion_speed=20.0 if quick else 12.0
+	mode="motion_dash"
+	mode_time=0
+	mode_length=0.18 if quick else 0.30
+	combo_speed=0
+	combo_time=0
+	clip=""
+	var animation: String="duel/dash" if direction_index in [0,1,7] else ("duel/dodge_back" if direction_index in [3,4,5] else ("duel/strafe_right" if direction_index==2 else "duel/strafe_left"))
+	play(animation,1.8 if quick else 1.35)
+	count_action("quick_motion_dash" if quick else "motion_dash")
+	arena.audio.impact("dash",global_position,0.5)
+	return true
+
+func start_motion_jump() -> bool:
+	if not is_on_floor() or stamina<12 or health<=0:
+		return false
+	var carry:=motion_direction*minf(6,combo_speed) if combo_time>0 else drive_velocity.limit_length(6)
+	start_jump("motion_jump")
+	air_momentum=carry
+	return mode=="takeoff"
+
+func launch() -> void:
+	if jump_kind!="motion_jump":
+		super.launch()
+		return
+	velocity.y=10.8
+	air_clock=0
+	mode="air"
+	mode_time=0
+	clip=""
+	play("duel/air")
+	arena.movement_burst(self,false)
+
+func tick_motion_dash(delta: float) -> void:
+	impact_physics.restore(skeleton)
+	mode_time+=delta
+	recover_resources(delta)
+	var speed:=motion_speed*(0.6 if chill_time>0 else 1.0)
+	speed=minf(speed,maxf(0,mode_length-mode_time+delta)*motion_speed/delta)
+	if is_instance_valid(rival):
+		var toward:=flat_direction(position,rival.position)
+		if motion_direction.dot(toward)>0.8:
+			speed=minf(speed,maxf(0,flat_distance()-0.78)/delta)
+	var before:=position
+	var vertical:=velocity.y
+	velocity=motion_direction*speed+knockback
+	velocity.y=-0.1 if is_on_floor() else vertical-GRAVITY*delta
+	move_and_slide()
+	drive_velocity=motion_direction*speed
+	knockback*=exp(-delta*4.2)
+	distance_run+=before.distance_to(position)
+	combo_speed=maxf(combo_speed,maxf(0,(position-before).dot(motion_direction)/delta))
+	advance_animation(delta)
+	impact_physics.step(delta)
+	impact_physics.apply(skeleton,is_on_floor(),global_basis)
+	if mode_time>=mode_length or speed<0.1 or get_slide_collision_count()>0 and before.distance_to(position)<0.001:
+		mode="idle" if is_on_floor() else "air"
+		mode_time=0
+		mode_length=0.1
+		combo_time=0.48
+		drive_velocity=Vector3.ZERO
+		velocity.x=0
+		velocity.z=0
+
 func begin_strike(spec: Array) -> void:
 	var linked_flash: bool=mode=="burst_dash"
 	var powered: bool=team==2 and haste_time>0
@@ -439,6 +515,9 @@ func tick(delta: float) -> void:
 	elif mode == "frozen":
 		mode = "idle"
 		mode_time = 0
+	if mode=="motion_dash" and freeze_time<=0:
+		tick_motion_dash(delta)
+		return
 	if mode in ["burst_charge","burst_dash", "melee_charge"] and freeze_time <= 0:
 		impact_physics.restore(skeleton)
 		mode_time += delta

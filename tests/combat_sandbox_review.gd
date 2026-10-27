@@ -6,6 +6,8 @@ func frames(count: int) -> void:
 func run() -> void:
 	var sandbox=load("res://scenes/combat_sandbox.tscn").instantiate()
 	root.add_child(sandbox)
+	sandbox.move_menu.select(1)
+	sandbox.settings_changed()
 	sandbox.set_process_unhandled_key_input(false)
 	sandbox.camera_input_enabled=false
 	await frames(30)

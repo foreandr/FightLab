@@ -1,0 +1,33 @@
+extends SceneTree
+func _initialize() -> void:call_deferred("run")
+func frames(count: int) -> void:
+	for i in count:await physics_frame
+func run() -> void:
+	var lab=load("res://scenes/combat_sandbox.tscn").instantiate()
+	root.add_child(lab)
+	lab.camera_input_enabled=false
+	lab.set_process_unhandled_key_input(false)
+	lab.set_motion_preset(false)
+	await frames(30)
+	lab.run_setup()
+	await frames(120)
+	lab.set_motion_preset(true)
+	lab.run_setup()
+	await frames(180)
+	lab.quick_dash_toggle.set_pressed_no_signal(true)
+	lab.settings_changed()
+	lab.run_setup()
+	await frames(180)
+	lab.set_motion_preset(false)
+	lab.dash_direction_menu.select(4)
+	lab.settings_changed()
+	lab.run_setup()
+	await frames(120)
+	lab.dash_direction_menu.select(2)
+	lab.settings_changed()
+	lab.run_setup()
+	await frames(120)
+	lab.reset_setup()
+	paused=false
+	lab.field.write_report()
+	lab.field.finish_run()

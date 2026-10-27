@@ -24,6 +24,9 @@ options. Run plays your setup; Reset restores both fighters and waits. R replays
 X resets, Space pauses, T slows time and B returns to battle. WASD moves the
 camera; hold middle mouse to rotate, use the wheel to zoom, and F to reframe.
 The **54-case tour** button opens the [automatic showcase](docs/combat-showcase.md).
+The sandbox starts on **Motion / Combo Builder**: choose **Dash only** or
+**Dash → Knee**, set one of eight dash directions and toggle Quick dash. Four
+ordered slots chain Dash, Punch, Knee and Jump through real combat actions.
 Both the full fight and review scenes use the actual combat/physics paths.
 This remains an AI combat prototype; player controls are not implemented.
 

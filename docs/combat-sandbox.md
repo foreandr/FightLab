@@ -3,10 +3,35 @@
 Double-click `Sandbox.bat` or `Showcase.bat`, run `.\run.ps1 -Sandbox`, or press
 F2 in the normal battle. It starts ready and waits for you to run a test.
 
+## Motion and combo testing
+
+The sandbox opens on **Motion / Combo Builder**. The **Dash only** and
+**Dash → Knee** buttons load the first two review setups. Four ordered dropdowns
+let you chain **Dash**, **Punch**, **Knee** and **Jump**; **End** terminates the
+chain. Each step waits for the preceding action to finish. The live result line
+shows the active step, completion, or interruption. Hits, death, freeze and
+insufficient resources stop a sequence rather than skipping its requirements.
+
+Dash direction has eight options relative to the fighter's facing. A normal
+dash moves at 12 m/s for 0.30 seconds; Quick uses 20 m/s for 0.18 seconds. Both
+travel up to 3.6 metres, respect body/wall collisions and stop short of the
+partner when heading toward them. Direction is fixed when the dash begins.
+Backward and sideways dashes retain facing during the dash. Dash spends stamina,
+uses no mana, and does no contact damage by itself.
+
+Start around **4.4 m** apart for a forward dash into knee. The knee uses real
+animated-limb collision and retained dash momentum; quick dash can therefore
+produce a stronger hit. A farther target can be missed. A plain Jump step jumps
+without automatically casting. Reset clears the sequence, while Repeat replays
+the same ordered setup. Backflip/spin/spell chain steps are left for a later pass;
+the existing spell tests remain in the Move menu.
+
+## Individual move testing
+
 1. Choose a move from the menu. All six current spells are included: Fireball,
    Cinder Slash, Freezing Ray, Glacial Armor, Overdrive and Flash Step. The menu
    also includes physical strikes, shields, movement, defensive impact tests,
-   powered combinations and lethal attacks (31 choices total).
+   powered combinations and lethal attacks (31 individual tests plus the combo builder).
 2. Enter a distance from 0.5 to 26 metres. This is the horizontal distance between
    fighter centers at spawn, not the gap between their bodies. The scene resets
    immediately to preview the new spacing.
@@ -44,3 +69,7 @@ Existing saved sparring/duel scenes and the milestone tag are preserved.
 projectile blocking and guard break, caster/partner jumps, airborne blocking,
 pause/reset and same-setup repeat tests. Record a representative menu review with
 `.\scripts\core\review-video.ps1 -SandboxShowcase`.
+Use `-MotionShowcase` instead to record forward dash, dash-knee, quick dash-knee,
+backward dash and sideways dash. Motion regression checks cover all sixteen
+direction/speed combinations, real contacts, shield blocks, misses, ordered
+four-step playback, jump, reset and interruption.

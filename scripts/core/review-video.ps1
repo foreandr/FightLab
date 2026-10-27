@@ -13,6 +13,7 @@ param(
     [switch]$FlashFreezeShowcase,
     [switch]$CombatShowcase,
     [switch]$SandboxShowcase,
+    [switch]$MotionShowcase,
     [switch]$Background
 )
 $ErrorActionPreference = 'Stop'
@@ -40,9 +41,10 @@ if ($OverdriveShowcase) { $arguments += @('-s', 'res://tests/overdrive_review.gd
 if ($FlashFreezeShowcase) { $arguments += @('-s', 'res://tests/flash_freeze_review.gd') }
 if ($CombatShowcase) { $arguments += @('-s', 'res://tests/combat_showcase_review.gd') }
 if ($SandboxShowcase) { $arguments += @('-s', 'res://tests/combat_sandbox_review.gd') }
+if ($MotionShowcase) { $arguments += @('-s', 'res://tests/motion_sequence_review.gd') }
 $arguments += @('--', "--report-file=$reportPath")
 if ($CombatShowcase) { $arguments += "--showcase-report=$(Join-Path $OutputDirectory 'showcase-cases.json')" }
-if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase -and -not $AirShowcase -and -not $ColosseumShowcase -and -not $OverdriveShowcase -and -not $FlashFreezeShowcase -and -not $CombatShowcase -and -not $SandboxShowcase) { $arguments += "--duration=$Seconds" }
+if (-not $IsolateKicks -and -not $FeatureShowcase -and -not $DeathShowcase -and -not $WallShowcase -and -not $RecoveryShowcase -and -not $AirShowcase -and -not $ColosseumShowcase -and -not $OverdriveShowcase -and -not $FlashFreezeShowcase -and -not $CombatShowcase -and -not $SandboxShowcase -and -not $MotionShowcase) { $arguments += "--duration=$Seconds" }
 if ($FeatureShowcase -or $DeathShowcase -or $WallShowcase -or $RecoveryShowcase -or $AirShowcase -or $ColosseumShowcase -or $OverdriveShowcase -or $FlashFreezeShowcase -or $CombatShowcase) { $arguments += "--duration=$([Math]::Max(40, $Seconds))" }
 if ($Background -and $env:OS -eq 'Windows_NT') {
     $nativeArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }

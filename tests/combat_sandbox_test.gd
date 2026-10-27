@@ -29,6 +29,7 @@ func play_case() -> Dictionary:
 func run() -> void:
 	sandbox=load("res://scenes/combat_sandbox.tscn").instantiate()
 	root.add_child(sandbox)
+	select_move("fireball_ground")
 	await frames(65)
 	check(not sandbox.started and not sandbox.armed and paused,"Sandbox must wait for Run instead of cycling attacks")
 	for node in sandbox.field.shields+sandbox.field.charges:
