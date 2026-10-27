@@ -6,6 +6,7 @@ var animation_list: VBoxContainer
 var category_heading: Label
 var preview_heading: Label
 var preview_note: Label
+var spell_details: Label
 var selection_status: Label
 var library_buttons: Dictionary={}
 var library_add_buttons: Dictionary={}
@@ -57,13 +58,13 @@ func build_ui() -> void:
 	tabs.position=Vector2(20,43)
 	tabs.add_theme_constant_override("separation",10)
 	header.add_child(tabs)
-	for group in ["Motion","Attack"]:
+	for group in ["Motion","Attack","Spells"]:
 		var tab:=button(tabs,group.to_upper(),func():select_group(group))
 		tab.custom_minimum_size=Vector2(160,34)
 		group_buttons[group]=tab
 	selection_status=menu_label(header,"Hover to preview · + adds to chain",14)
 	selection_status.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	selection_status.offset_left=-650
+	selection_status.offset_left=-620
 	selection_status.offset_right=-20
 	selection_status.offset_top=49
 	selection_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
@@ -111,6 +112,15 @@ func build_ui() -> void:
 	preview_panel.add_child(preview_column)
 	preview_heading=menu_label(preview_column,"Animation preview",20)
 	preview_note=menu_label(preview_column,"Looping preview · + adds to chain",13)
+	spell_details=Label.new()
+	spell_details.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	spell_details.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	spell_details.add_theme_font_size_override("font_size",17)
+	spell_details.add_theme_color_override("font_color",Color("e3edf6"))
+	spell_details.add_theme_constant_override("outline_size",5)
+	spell_details.add_theme_color_override("font_outline_color",Color("101925"))
+	preview_column.add_child(spell_details)
+	spell_details.hide()
 	chain_backdrop=panel(ui,Vector4(0,0,0,0),true)
 	chain_panel.reparent(ui)
 	chain_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -187,8 +197,20 @@ func select_category(category: String) -> void:
 	library_buttons.clear()
 	library_add_buttons.clear()
 	category_heading.text=category
+	if category=="Heals":
+		var empty:=Label.new()
+		empty.text="No healing spells yet. This spell type is ready for authoring."
+		empty.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		empty.add_theme_font_size_override("font_size",18)
+		animation_list.add_child(empty)
 	for name_ in category_buttons:
 		category_buttons[name_].modulate=Color("f2ce85") if name_==category else Color.WHITE
+	if category=="Heals":
+		selected_entry.clear()
+		live_preview_sequence.reset()
+		preview_heading.text="Heals"
+		preview_note.text="No healing spell implemented yet."
+		spell_details.hide()
 	for entry in Library.entries():
 		if entry.group!=selected_group or entry.category!=category:continue
 		var row:=HBoxContainer.new()
@@ -200,11 +222,13 @@ func select_category(category: String) -> void:
 		node.mouse_entered.connect(func():preview_animation(entry))
 		node.focus_entered.connect(func():preview_animation(entry))
 		node.tooltip_text="Hover or click to preview. Use + to add to the chain."
-		library_buttons[entry.step]=node
-		var add:=button(row,"+",func():add_library_animation(entry))
+		var key: String=entry.step if entry.kind!="spell_profile" else entry.id
+		library_buttons[key]=node
+		var action_text: String="Cast" if entry.kind=="spell_profile" else "+"
+		var add:=button(row,action_text,func():add_library_animation(entry))
 		add.custom_minimum_size=Vector2(38,42)
 		add.mouse_entered.connect(func():preview_animation(entry))
-		library_add_buttons[entry.step]=add
+		library_add_buttons[key]=add
 	refresh_library_add_buttons()
 	if not library_buttons.is_empty():
 		for entry in Library.entries():
@@ -219,16 +243,33 @@ func refresh_chain_options() -> void:
 func refresh_library_add_buttons() -> void:
 	for step in library_add_buttons:
 		var add: Button=library_add_buttons[step]
-		add.disabled=not can_append_animation(step)
-		add.tooltip_text="Add "+step+" to the chain" if not add.disabled else ("Chain is full" if chain_data.size()>=MAX_CHAIN_STEPS else ("Add Jump first" if step in ["Flip","Twist","Land"] else "Add Land before a grounded move"))
+		var spell_profile:=false
+		for spell in Library.SPELL_PROFILES:
+			if spell.id==step:spell_profile=true
+		if spell_profile:
+			add.disabled=false
+			add.tooltip_text="Preview this spell against the passive partner"
+		else:
+			add.disabled=not can_append_animation(str(step))
+			add.tooltip_text="Add "+str(step)+" to the chain" if not add.disabled else ("Chain is full" if chain_data.size()>=MAX_CHAIN_STEPS else ("Add Jump first" if step in ["Flip","Twist","Land"] else "Add Land before a grounded move"))
 
 func preview_animation(entry: Dictionary) -> void:
 	selected_entry=entry.duplicate()
 	preview_heading.text=entry.title
-	preview_note.text="Live arena - hover loops the real action"
+	var is_spell: bool=entry.kind=="spell_profile"
+	spell_details.visible=is_spell
+	if is_spell:
+		preview_note.text="SPELL · %s · %s"%["FIRE" if entry.team==0 else ("ICE" if entry.team==1 else "STORM"),entry.category.to_upper()]
+		spell_details.text="%s\n%s   ·   %d mana   ·   %s\n%s"%[entry.delivery,"No direct damage" if entry.damage==0 else str(entry.damage)+" damage per hit",int(entry.mana),entry.animation.replace("_"," ").capitalize(),entry.detail]
+	else:
+		preview_note.text="Live arena - hover loops the real action"
 	if is_instance_valid(actor):begin_live_preview()
 
 func add_library_animation(entry: Dictionary) -> void:
+	if entry.kind=="spell_profile":
+		selection_status.text="Testing "+entry.name
+		preview_spell(entry)
+		return
 	var steps:=chosen_steps()
 	if steps.size()>=MAX_CHAIN_STEPS:
 		selection_status.text="Chain is full"
@@ -242,6 +283,11 @@ func add_library_animation(entry: Dictionary) -> void:
 	set_chain(steps)
 	selection_status.text="Added: "+entry.title
 	reveal_last_chain_step()
+
+func preview_spell(entry: Dictionary) -> void:
+	selected_entry=entry.duplicate()
+	selection_status.text="Previewing %s against a passive target"%entry.name
+	preview_animation(entry)
 
 func layout_chain(browsing: bool) -> void:
 	if browsing:
@@ -302,6 +348,20 @@ func reset_setup() -> void:
 
 func begin_live_preview(reset_loops: bool=true) -> void:
 	if selected_entry.is_empty() or not is_instance_valid(actor):return
+	if selected_entry.kind=="spell_profile":
+		var spell_case: Dictionary={"id":"profile_"+selected_entry.id,"title":selected_entry.name,"team":selected_entry.team,"spell":selected_entry.slot,"kind":"spell","group":selected_entry.category,"distance":float(distance_input.value),"duration":5.5,"expect":"effect"}
+		catalog.assign([spell_case])
+		super.open_case(0)
+		title_label.text="CREATE · ANIMATIONS · SPELLS"
+		actor.spell_cursor=selected_entry.slot
+		live_preview_sequence.reset()
+		live_preview_steps.clear()
+		live_preview_age=0
+		live_preview_started=false
+		if reset_loops:live_preview_loops=0
+		field.show()
+		get_tree().paused=false
+		return
 	# Reset real fighters/effects without altering the user's composed chain.
 	super.reset_setup()
 	if field.events.size()>4000:field.events=field.events.slice(-2000)
@@ -323,15 +383,20 @@ func _physics_process(delta: float) -> void:
 		super._physics_process(delta)
 		return
 	if get_tree().paused:return
+	if selected_entry.is_empty():
+		update_camera(delta)
+		return
 	live_preview_age+=delta
 	if not live_preview_started and live_preview_age>=0.25:
 		live_preview_started=true
-		if partner_jumps():
+		if selected_entry.kind=="spell_profile":
+			super.perform_case()
+		elif partner_jumps():
 			target.start_jump("flip")
 			target.air_momentum=Vector3.ZERO
 			partner_jumping=true
-		live_preview_sequence.start(actor,live_preview_steps,dash_direction_menu.selected)
-	elif live_preview_started:
+		if selected_entry.kind!="spell_profile":live_preview_sequence.start(actor,live_preview_steps,dash_direction_menu.selected)
+	elif live_preview_started and selected_entry.kind!="spell_profile":
 		if not sequence.needs_mana(live_preview_steps):actor.mana=0
 		live_preview_sequence.tick(actor,delta)
 	if partner_jumping and not partner_air_ready and target.mode=="flip":
@@ -342,7 +407,9 @@ func _physics_process(delta: float) -> void:
 	update_camera(delta)
 	show_resources()
 	result_label.text="LIVE ARENA · %s · Damage %.1f · %s"%[selected_entry.title,target.damage_taken-marks.damage,live_preview_sequence.status]
-	var cycle: float={"Run":1.8,"Sprint":1.8,"Dash":1.5,"Crouch":1.8,"Block":2.0,"Brace Block":2.0,"Uppercut":5.0,"Spell Throw":3.5,"Slash Throw":3.5}.get(selected_entry.step,2.5)
+	if selected_entry.kind=="spell_profile":
+		result_label.text="SPELL TEST · %s · %s%s"%[selected_entry.name,"Released" if actor.did_release or actor.armor_hp>0 or actor.haste_time>0 else "Casting",(" · %d loops"%live_preview_loops) if live_preview_loops>0 else ""]
+	var cycle: float=5.5 if selected_entry.kind=="spell_profile" else {"Run":1.8,"Sprint":1.8,"Dash":1.5,"Crouch":1.8,"Block":2.0,"Brace Block":2.0,"Uppercut":5.0,"Spell Throw":3.5,"Slash Throw":3.5}.get(selected_entry.step,2.5)
 	if live_preview_age>=cycle:
 		begin_live_preview(false)
 		live_preview_loops+=1

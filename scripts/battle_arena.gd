@@ -5,6 +5,7 @@ const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
 const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
+const BattleFighterTag = preload("res://scripts/fighter_overhead_tag.gd")
 const OVERDRIVE_DURATION := 14.0
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
@@ -47,6 +48,7 @@ func _ready() -> void:
 		f.arena = self
 		add_child(f)
 		fighters.append(f)
+		BattleFighterTag.attach(f,element_name(i)+" FIGHTER")
 		var charge_node: MeshInstance3D = vfx.projectile(i, "orb", 0.10)
 		add_child(charge_node)
 		charge_node.visible = false

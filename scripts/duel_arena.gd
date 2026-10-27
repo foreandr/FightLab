@@ -2,6 +2,7 @@ extends "res://scripts/spell_arena.gd"
 ## Elemental arena combat composed from the meadow, spell VFX and licensed humanoids.
 const Fighter = preload("res://scripts/duel_actor.gd")
 const VFX = preload("res://scripts/elemental_vfx.gd")
+const FighterTag = preload("res://scripts/fighter_overhead_tag.gd")
 const WATER := Color(0.16, 0.67, 1.0)
 var fighters: Array = []
 var charges: Array = []
@@ -56,6 +57,7 @@ func _ready() -> void:
 		f.arena = self
 		add_child(f)
 		fighters.append(f)
+		FighterTag.attach(f,element_name(i)+" FIGHTER")
 		var light = vfx.projectile(i, "orb", 0.09)
 		add_child(light)
 		light.visible = false

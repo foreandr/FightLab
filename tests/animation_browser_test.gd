@@ -15,7 +15,7 @@ func run() -> void:
 	check(lab.browser.visible and lab.field.visible and not paused,"Animations must open directly on the live arena")
 	for node in lab.find_children("*","Button",true,false):
 		check(node.text not in ["Pause [Space]","Run [Space]","Resume [Space]","Reframe [F]","Fight [B]","Battle [B]"],"Removed Create bottom controls must not remain")
-	check(lab.group_buttons.has_all(["Motion","Attack"]),"Top-level Motion and Attack controls are required")
+	check(lab.group_buttons.has_all(["Motion","Attack","Spells"]),"Motion, Attack and Spells must be separate top-level categories")
 	lab.group_buttons.Attack.pressed.emit()
 	lab.category_buttons.Knee.pressed.emit()
 	check(lab.selected_group=="Attack" and lab.selected_category=="Knee","Actual tab and category buttons must navigate to the selected animations")
@@ -24,7 +24,11 @@ func run() -> void:
 		for category in lab.Library.GROUPS[group]:
 			check(lab.category_buttons.has(category),"Missing category: "+category)
 			lab.select_category(category)
-			check(not lab.library_buttons.is_empty(),"Category must contain usable animations: "+category)
+			if category=="Heals":
+				check(lab.library_buttons.is_empty() and lab.animation_list.get_child_count()>0,"Empty spell types must be clearly shown rather than inventing abilities")
+			else:check(not lab.library_buttons.is_empty(),"Category must contain usable animations or spells: "+category)
+	check(not lab.Library.GROUPS.Attack.has("Spell Throwing") and lab.category_buttons.has("Casting"),"Palm thrust and arm slash animations belong under Spells, outside physical attacks")
+	check(lab.Library.SPELL_PROFILES.size()==6,"The spell tab must present the existing six complete ability profiles")
 	# Hover drives the actual arena actor, never an isolated preview clone.
 	lab.set_chain(["Dash","Knee"])
 	var original: Array[String]=lab.chosen_steps()
@@ -66,6 +70,7 @@ func run() -> void:
 	# Every catalog clip must sample and every step must start/finish in real playback.
 	for entry in lab.Library.entries():
 		check(lab.actor.player.has_animation(entry.clip),"Missing preview clip: "+str(entry.clip))
+		if entry.kind=="spell_profile":continue
 		lab.preview_animation(entry)
 		await frames(50)
 		check(lab.live_preview_sequence.history.has(entry.step),"Every hover choice must start its actual arena action: "+str(entry.step))
@@ -87,7 +92,23 @@ func run() -> void:
 			check(lab.actor.bone_point("Head").y<1.5,"Crouch must lower the actual skeletal head")
 		lab.browse_animations()
 		check(lab.browser.visible and not paused and not lab.armed,"Browse must resume live arena preview without running the chain")
-	if failures.is_empty():print("PASS: Motion/Attack categories, automatic live arena previews and repeat, click-to-add, air gating and all 23 real animation actions")
+	lab.select_group("Spells")
+	lab.select_category("Projectiles")
+	check(lab.library_buttons.has_all(["fireball","cinder_slash"]),"Projectiles must list Fireball and Cinder Slash separately from their casting motions")
+	lab.library_add_buttons.fireball.pressed.emit()
+	await frames(100)
+	check(lab.actor.team==0 and lab.field.casts.has("FIRE/fireball"),"Fireball card must test the actual fire projectile on a passive target")
+	lab.select_category("Buffs")
+	await frames(100)
+	check(lab.library_buttons.has_all(["glacial_armor","overdrive"]),"Buffs must list real armor and haste spells")
+	check(lab.actor.team==1 and lab.actor.armor_hp==50,"Glacial Armor card must cast and produce its 50-point buff")
+	lab.select_category("Debuffs")
+	await frames(130)
+	check(lab.actor.team==1 and lab.field.casts.has("ICE/ice_beam"),"Freezing Ray must cast through the real ice kit")
+	lab.select_category("Heals")
+	await frames(15)
+	check(lab.selected_entry.is_empty() and lab.preview_note.text.contains("No healing spell"),"Empty healing category must not continue previewing a previous spell")
+	if failures.is_empty():print("PASS: Motion, Attack and Spells categories; animation chains; six categorized real spell previews; empty healing state; 23 animation actions and passive target casts")
 	paused=false
 	lab.queue_free()
 	await frames(3)

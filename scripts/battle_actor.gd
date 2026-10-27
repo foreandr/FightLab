@@ -133,6 +133,9 @@ func reset_fighter(location: Vector3) -> void:
 func focus_position() -> Vector3:
 	return ragdoll.location() - Vector3.UP * 0.65 if is_instance_valid(ragdoll) else global_position
 
+func overhead_tag_position() -> Vector3:
+	return ragdoll.location()+Vector3.UP*1.45 if is_instance_valid(ragdoll) else global_position+Vector3.UP*2.2
+
 func movement_multiplier() -> float:
 	return (1.45 if team == 2 else 1.0) * (1.35 if haste_time > 0 else 1.0) * (0.60 if chill_time > 0 else 1.0)
 

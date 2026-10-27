@@ -21,14 +21,15 @@ Fight opens the current three-way arena. **Create → Animations** opens the
 existing motion/animation editor, and **Create → Spells** opens focused casting
 and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
 
-Animations starts with **Motion / Attack** at the top. Choose a category on the
-left, and hover an animation to loop its actual action on the real arena fighter.
+Animations starts with **Motion / Attack / Spells** at the top. Choose a category
+on the left, and hover an animation to loop its actual action on the real arena fighter.
 The arena is live immediately on opening Create; there is no separate preview
 model or display viewport. Click an animation name to preview it; use the **+**
 beside that animation to append it to your chain.
-Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
-Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
-Throwing. Motion and Attack share one combined chain of named steps, with no
+Motion includes Run, Sprint, Jump, Dash, Crouch, Block, Dodges and Acrobatics;
+Attack includes Punch, Kick, Knee and Uppercut; Spells includes palm thrust and
+arm slash casting motions plus the Fire, Ice and Storm spell library.
+Motion, Attack and casting motions share one combined chain of named steps, with no
 animation dropdowns. **×** removes any step; **−** removes the last, including
 the final step when you want an empty chain. Long chains scroll horizontally.
 Jump unlocks aerial moves; all nine attacks also work airborne. Twist
@@ -46,6 +47,13 @@ Play, Repeat Play, Reset, Slow, Browse and Home. Partner behavior is one menu: n
 palm/braced shield, jump, or jump with a shield. Repeat Setup and Weaken Guard
 have been removed. Hover previews loop automatically; composed chains play once
 unless Repeat Play is enabled.
+
+Spells groups the current Fireball and Cinder Slash projectiles, Glacial Armor
+and Overdrive buffs, Freezing Ray debuff, and Flash Step effect. Each spell card
+shows its delivery, mana cost, and effect and casts against the arena's passive
+target. The Heals section is ready for new spells; none has been added yet.
+Fighters keep a floating name and current/maximum HP bar above them in both
+Create and Fight.
 
 In Create, R replays, X resets and T slows time.
 WASD moves the camera; hold middle mouse to rotate, scroll to zoom and F to

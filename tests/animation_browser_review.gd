@@ -17,7 +17,7 @@ func run() -> void:
 	lab.select_category("Sprint")
 	await frames(120)
 	lab.distance_input.value=4.4
-	for pair in [["Motion","Dodges","Dodge Left"],["Motion","Acrobatics","Flip"],["Attack","Kick","Kick"],["Attack","Spell Throwing","Spell Throw"]]:
+	for pair in [["Motion","Dodges","Dodge Left"],["Motion","Acrobatics","Flip"],["Attack","Kick","Kick"],["Spells","Casting","Spell Throw"]]:
 		lab.select_group(pair[0])
 		lab.select_category(pair[1])
 		lab.library_buttons[pair[2]].mouse_entered.emit()
@@ -32,6 +32,10 @@ func run() -> void:
 	lab.repeat_play_button.pressed.emit()
 	lab.set_chain(["Jump","Twist","Spell Throw","Land"])
 	lab.play_button.pressed.emit()
+	await frames(90)
+	lab.select_group("Spells")
+	lab.select_category("Projectiles")
+	lab.library_buttons.fireball.mouse_entered.emit()
 	await frames(90)
 	lab.browse_animations()
 	await frames(30)

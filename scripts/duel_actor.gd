@@ -73,6 +73,9 @@ var ko_count := 0
 var ground_spawn := Vector3.ZERO
 var trail_clock := 0.0
 
+func max_health_value() -> float:
+	return MAX_HEALTH
+
 func _ready() -> void:
 	super._ready()
 	player.add_animation_library("duel", load(BASE + "animations/duel.res"))
