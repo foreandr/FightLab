@@ -178,7 +178,6 @@ func _make_person(root: Node3D, tint: Color, is_player: bool) -> void:
 				root.add_child(character)
 				character.position.y = 0.0 if is_player else -1.0
 				character.rotation.y = 0.0 if is_player else PI
-				_tint_character(character, Color(0.25, 0.45, 0.75) if is_player else Color(0.75, 0.21, 0.17))
 				var player := _find_animation_player(character)
 				if player != null:
 					var names := player.get_animation_list()
@@ -247,12 +246,3 @@ func _find_animation_player(node: Node) -> AnimationPlayer:
 			return found
 	return null
 
-func _tint_character(node: Node, tint: Color) -> void:
-	if node is MeshInstance3D:
-		var mesh_node := node as MeshInstance3D
-		var material := StandardMaterial3D.new()
-		material.albedo_color = tint
-		material.roughness = 0.76
-		mesh_node.material_override = material
-	for child in node.get_children():
-		_tint_character(child, tint)
