@@ -169,6 +169,23 @@ func _build_world() -> void:
 	overlay.add_child(hud)
 
 func _make_person(root: Node3D, tint: Color, is_player: bool) -> void:
+	var asset_path := "res://assets/gobkit/fighter1.glb" if is_player else "res://assets/gobkit/fighter2.glb"
+	if ResourceLoader.exists(asset_path):
+		var packed := load(asset_path) as PackedScene
+		if packed != null:
+			var character := packed.instantiate() as Node3D
+			if character != null:
+				root.add_child(character)
+				character.position.y = 0.0 if is_player else -1.0
+				var player := _find_animation_player(character)
+				if player != null:
+					var names := player.get_animation_list()
+					if names.size() > 0:
+						player.play(names[0])
+				if is_player:
+					shoulder = Node3D.new()
+					root.add_child(shoulder)
+				return
 	_capsule_mesh(root, 0.38, 1.2, Vector3(0, 1.08 if is_player else 0, 0), tint)
 	_sphere_mesh(root, 0.27, Vector3(0, 1.92 if is_player else 0.83, 0), Color(0.91, 0.74, 0.58))
 	var limb_y := 1.38 if is_player else 0.30
@@ -218,3 +235,12 @@ func _capsule_mesh(root: Node, radius: float, height: float, location: Vector3, 
 	instance.material_override = _material(tint)
 	instance.position = location
 	root.add_child(instance)
+
+func _find_animation_player(node: Node) -> AnimationPlayer:
+	if node is AnimationPlayer:
+		return node as AnimationPlayer
+	for child in node.get_children():
+		var found := _find_animation_player(child)
+		if found != null:
+			return found
+	return null
