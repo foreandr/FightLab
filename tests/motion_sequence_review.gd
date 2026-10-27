@@ -32,6 +32,9 @@ func run() -> void:
 	await frames(30)
 	lab.run_setup()
 	await frames(180)
+	lab.add_chain_step()
+	lab.add_chain_step()
+	await frames(60)
 	paused=false
 	lab.field.write_report()
 	lab.field.finish_run()

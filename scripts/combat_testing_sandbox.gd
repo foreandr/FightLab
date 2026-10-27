@@ -24,6 +24,12 @@ var chain_menu: Array[OptionButton]=[]
 var chain_panel: HBoxContainer
 var dash_direction_menu: OptionButton
 var quick_dash_toggle: CheckBox
+const MAX_CHAIN_STEPS := 32
+var chain_steps: HBoxContainer
+var chain_scroll: ScrollContainer
+var add_step_button: Button
+var remove_step_button: Button
+var chain_count: Label
 
 func _ready() -> void:
 	auto_advance=false
@@ -86,17 +92,23 @@ func build_ui() -> void:
 	chain_panel.alignment=BoxContainer.ALIGNMENT_CENTER
 	chain_panel.add_theme_constant_override("separation",6)
 	column.add_child(chain_panel)
-	menu_label(chain_panel,"Chain",14)
-	for i in 4:
-		if i>0:menu_label(chain_panel,"→",15)
-		var slot:=OptionButton.new()
-		slot.custom_minimum_size=Vector2(115,30)
-		for choice in sequence.OPTIONS:slot.add_item(choice)
-		slot.select(1 if i==0 else (3 if i==1 else 0))
-		slot.focus_mode=Control.FOCUS_NONE
-		slot.item_selected.connect(func(_index):settings_changed())
-		chain_panel.add_child(slot)
-		chain_menu.append(slot)
+	chain_count=menu_label(chain_panel,"Chain",14)
+	add_step_button=button(chain_panel,"+",add_chain_step)
+	add_step_button.custom_minimum_size=Vector2(36,32)
+	add_step_button.tooltip_text="Add an animation to the end of the combo"
+	remove_step_button=button(chain_panel,"−",remove_chain_step)
+	remove_step_button.custom_minimum_size=Vector2(36,32)
+	remove_step_button.tooltip_text="Remove the last animation"
+	chain_scroll=ScrollContainer.new()
+	chain_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	chain_scroll.custom_minimum_size=Vector2(100,48)
+	chain_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	chain_panel.add_child(chain_scroll)
+	chain_steps=HBoxContainer.new()
+	chain_steps.add_theme_constant_override("separation",6)
+	chain_scroll.add_child(chain_steps)
+	append_chain_slot(1)
+	append_chain_slot(3)
 	button(chain_panel,"Dash only",func():set_motion_preset(false))
 	button(chain_panel,"Dash → Knee",func():set_motion_preset(true))
 	button(chain_panel,"Jump → Flip → Twist",set_aerial_preset)
@@ -239,14 +251,62 @@ func refresh_chain_options() -> void:
 		var step: String=sequence.OPTIONS[slot.selected]
 		if step=="End":ended=true
 		grounded=sequence.state_after(step,grounded)
+	chain_count.text="Chain (%d)"%chain_menu.size()
+	add_step_button.disabled=chosen_steps().size()>=MAX_CHAIN_STEPS
+	remove_step_button.disabled=chain_menu.size()<=1
+
+func append_chain_slot(choice: int=0) -> void:
+	var row:=HBoxContainer.new()
+	chain_steps.add_child(row)
+	if not chain_menu.is_empty():menu_label(row,"→",15)
+	var slot:=OptionButton.new()
+	slot.custom_minimum_size=Vector2(115,30)
+	for text_ in sequence.OPTIONS:slot.add_item(text_)
+	slot.select(choice)
+	slot.focus_mode=Control.FOCUS_NONE
+	slot.item_selected.connect(func(_index):settings_changed())
+	row.add_child(slot)
+	chain_menu.append(slot)
+
+func resize_chain(count: int) -> void:
+	count=clampi(count,1,MAX_CHAIN_STEPS)
+	while chain_menu.size()>count:
+		var slot: OptionButton=chain_menu.pop_back()
+		var row:=slot.get_parent()
+		chain_steps.remove_child(row)
+		row.queue_free()
+	while chain_menu.size()<count:append_chain_slot()
+
+func add_chain_step() -> void:
+	var steps:=chosen_steps()
+	if steps.size()>=MAX_CHAIN_STEPS:return
+	var grounded:=true
+	for step in steps:grounded=sequence.state_after(step,grounded)
+	# Replace unused End placeholders so + always creates an editable active step.
+	resize_chain(steps.size()+1)
+	chain_menu[-1].select(1 if grounded else 6)
+	settings_changed()
+	reveal_last_chain_step()
+
+func reveal_last_chain_step() -> void:
+	await get_tree().process_frame
+	if is_inside_tree() and not chain_menu.is_empty():
+		chain_scroll.ensure_control_visible(chain_menu[-1])
+
+func remove_chain_step() -> void:
+	if chain_menu.size()<=1:return
+	resize_chain(chain_menu.size()-1)
+	settings_changed()
 
 func set_aerial_preset() -> void:
 	move_menu.select(0)
+	resize_chain(4)
 	for i in chain_menu.size():chain_menu[i].select([4,5,6,7][i])
 	settings_changed()
 
 func set_motion_preset(knee: bool) -> void:
 	move_menu.select(0)
+	resize_chain(2 if knee else 1)
 	for i in chain_menu.size():
 		chain_menu[i].select(1 if i==0 else (3 if knee and i==1 else 0))
 	dash_direction_menu.select(0)

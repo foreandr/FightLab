@@ -6,11 +6,18 @@ F2 in the normal battle. It starts ready and waits for you to run a test.
 ## Motion and combo testing
 
 The sandbox opens on **Motion / Combo Builder**. The **Dash only** and
-**Dash → Knee** buttons load the first two review setups. Four ordered dropdowns
+**Dash → Knee** buttons load the first two review setups. Ordered dropdowns
 let you chain **Dash**, **Punch**, **Knee**, **Jump**, **Flip**, **Twist** and
 **Land**; **End** terminates the chain. The live result line
 shows the active step, completion, or interruption. Hits, death, freeze and
 insufficient resources stop a sequence rather than skipping its requirements.
+
+**+** appends an animation; **−** removes the last one. Existing steps are kept.
+The editor supports 1–32 slots and scrolls horizontally for long sequences.
+An appended step starts with a valid ground/air choice that you can change.
+Adding after End replaces the unused trailing slots with a usable next step.
+Editing resets playback to Ready. Presets resize the editor to their own length;
+minus is disabled when one slot remains.
 
 Choices depend on the planned state at each slot. Grounded slots offer Dash,
 Punch, Knee and Jump. **Jump unlocks Flip, Twist and Land** in the following slot;

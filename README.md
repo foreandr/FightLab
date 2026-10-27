@@ -25,8 +25,9 @@ X resets, Space pauses, T slows time and B returns to battle. WASD moves the
 camera; hold middle mouse to rotate, use the wheel to zoom, and F to reframe.
 The **54-case tour** button opens the [automatic showcase](docs/combat-showcase.md).
 The sandbox starts on **Motion / Combo Builder**: choose **Dash only** or
-**Dash → Knee**, set one of eight dash directions and toggle Quick dash. Four
+**Dash → Knee**, set one of eight dash directions and toggle Quick dash. The
 ordered slots chain Dash, Punch, Knee and Jump through real combat actions.
+Use **+ / −** to add or remove combo steps; long chains scroll horizontally.
 Jump unlocks aerial **Flip / Twist** choices; **Land** restores grounded moves.
 Use the **Jump → Flip → Twist** preset to review a complete aerial chain.
 Both the full fight and review scenes use the actual combat/physics paths.
