@@ -42,6 +42,27 @@ if ((Test-Path $assetOne) -and (Test-Path $assetTwo)) {
         }
     }
 }
+# Prefer rigged human character models over the temporary Gobkit monsters.
+$humanFile = Join-Path $PSScriptRoot 'assets/humanoid/night-striker.glb'
+if (-not (Test-Path -LiteralPath $humanFile)) {
+    try {
+        & "$PSScriptRoot/scripts/core/fetch-humanoid.ps1"
+    } catch {
+        Write-Warning "Optional humanoid download unavailable: $_"
+    }
+}
+if (Test-Path -LiteralPath $humanFile) {
+    # One bounded import for the new asset. Do not repeatedly hold launch in editor mode.
+    $humanMarker = Join-Path $PSScriptRoot '.godot/fightlab-humanoid-import-ok'
+    if (-not (Test-Path -LiteralPath $humanMarker)) {
+        & $executable --headless --editor --path $PSScriptRoot --import --quit-after 120
+        if ($LASTEXITCODE -eq 0) {
+            New-Item -ItemType File -Path $humanMarker -Force | Out-Null
+        } else {
+            Write-Warning 'Humanoid import failed; previous visuals will be used.'
+        }
+    }
+}
 $arguments = @('--path', $PSScriptRoot)
 if ($Editor) { $arguments += '--editor' }
 & $executable @arguments
