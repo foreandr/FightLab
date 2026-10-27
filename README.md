@@ -3,6 +3,8 @@
 Infrastructure for a future 3D fighting game. Currently an empty Node3D scene with no gameplay.
 Requires Git, PowerShell, and **Godot 4.6 stable**, standard GDScript edition. Uses Compatibility (OpenGL) for Windows 11 and AMD integrated graphics.
 
+To play and test on Windows, double-click **Play.bat**. It pulls the latest main branch, then launches the game directly. Close the game when finished. If updating fails, it stops and keeps the error visible. Local edits are never discarded. The current game is an empty window.
+
 Clone and begin a session in PowerShell:
 
 ```powershell
