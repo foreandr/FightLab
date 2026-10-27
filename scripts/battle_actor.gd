@@ -374,7 +374,7 @@ func resolve_melee(delta: float) -> void:
 	var movement := limb - melee_previous
 	if not melee_connected and melee_clock >= melee_spec[3] and melee_clock <= melee_spec[4] and movement.length() / delta > 0.8:
 		var shape := SphereShape3D.new()
-		shape.radius = 0.13 if attack_kind in ["knee", "front_kick", "round_kick"] else 0.105
+		shape.radius = 0.22 if attack_kind in ["knee", "front_kick", "round_kick"] else 0.105
 		var query := PhysicsShapeQueryParameters3D.new()
 		query.shape = shape
 		query.collision_mask = arena.enemy_hurt_mask(team)
