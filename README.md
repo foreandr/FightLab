@@ -22,8 +22,10 @@ existing motion/animation editor, and **Create → Spells** opens focused castin
 and impact tests. The legacy Sandbox.bat and Showcase.bat shortcuts now open Home too.
 
 Animations starts with **Motion / Attack** at the top. Choose a category on the
-left, hover an animation to loop its character preview in the colosseum on the right, and click
-to add it to your chain. Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
+left, and hover an animation to loop its actual action on the real arena fighter.
+The arena is live immediately on opening Create; there is no separate preview
+model or display viewport. Click to add the action to your chain.
+Motion includes Run, Sprint, Jump, Dash, Crouch, Block,
 Dodges and Acrobatics; Attack includes Punch, Kick, Knee, Uppercut and Spell
 Throwing. Motion and Attack share one combined chain. **+ / −** edits chain
 length. Jump unlocks aerial moves; Land restores grounded choices. **Run chain**

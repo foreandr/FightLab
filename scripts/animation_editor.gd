@@ -7,7 +7,6 @@ var category_heading: Label
 var preview_heading: Label
 var preview_note: Label
 var selection_status: Label
-var preview: Control
 var library_buttons: Dictionary={}
 var category_buttons: Dictionary={}
 var group_buttons: Dictionary={}
@@ -17,11 +16,18 @@ var selected_entry: Dictionary={}
 var settings_row: HBoxContainer
 var browse_backdrop: ColorRect
 var chain_backdrop: Panel
+var live_preview_sequence=preload("res://scripts/motion_sequence.gd").new()
+var live_preview_steps: Array[String]=[]
+var live_preview_age := 0.0
+var live_preview_started := false
+var live_preview_loops := 0
 
 func _ready() -> void:
 	super._ready()
-	field.hide()
+	field.show()
+	browse_backdrop.hide()
 	layout_chain(true)
+	begin_live_preview()
 
 func build_ui() -> void:
 	# Retain the proven playback controller and its controls, then give animation
@@ -64,12 +70,8 @@ func build_ui() -> void:
 	browser.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	browser.offset_top=90
 	browser.offset_bottom=-250
+	browser.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	ui.add_child(browser)
-	var backdrop:=ColorRect.new()
-	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	backdrop.color=Color("0b1420")
-	backdrop.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	browser.add_child(backdrop)
 	var categories:=panel(browser,Vector4(12,0,164,0))
 	categories.anchor_bottom=1
 	category_list=VBoxContainer.new()
@@ -98,8 +100,7 @@ func build_ui() -> void:
 	animation_list.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	animation_list.add_theme_constant_override("separation",8)
 	scroll.add_child(animation_list)
-	var preview_panel:=panel(browser,Vector4(462,0,-12,0),true)
-	preview_panel.anchor_bottom=1
+	var preview_panel:=panel(browser,Vector4(462,0,-12,62),true)
 	var preview_column:=VBoxContainer.new()
 	preview_column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	preview_column.offset_left=8
@@ -109,10 +110,6 @@ func build_ui() -> void:
 	preview_panel.add_child(preview_column)
 	preview_heading=menu_label(preview_column,"Animation preview",20)
 	preview_note=menu_label(preview_column,"Looping preview · Click an animation to add it",13)
-	preview=preload("res://scripts/animation_preview.gd").new()
-	preview.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	preview_column.add_child(preview)
-	preview.setup(field)
 	chain_backdrop=panel(ui,Vector4(0,0,0,0),true)
 	chain_panel.reparent(ui)
 	chain_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -145,7 +142,7 @@ func build_ui() -> void:
 	button(actions,"Home [Esc]",return_home)
 	result_label.reparent(footer)
 	resources_label.reparent(footer)
-	menu_label(footer,"Browse: hover previews, click adds · Test view: WASD / middle mouse / wheel camera controls",13)
+	menu_label(footer,"Hover previews live · Click adds · WASD / middle mouse / wheel camera controls",13)
 	populate_group("Motion")
 
 func panel(parent: Node,bounds: Vector4,wide:=false) -> Panel:
@@ -207,8 +204,8 @@ func select_category(category: String) -> void:
 func preview_animation(entry: Dictionary) -> void:
 	selected_entry=entry.duplicate()
 	preview_heading.text=entry.title
-	preview_note.text="Arena preview · Jump is required in the chain" if entry.step in ["Flip","Twist"] else "Looping in the arena · Click to add to your chain"
-	preview.show_animation(entry)
+	preview_note.text="Live arena - hover loops the real action"
+	if is_instance_valid(actor):begin_live_preview()
 
 func add_library_animation(entry: Dictionary) -> void:
 	var steps:=chosen_steps()
@@ -258,23 +255,112 @@ func run_setup() -> void:
 		browser.hide()
 		browse_backdrop.hide()
 		field.show()
+		live_preview_sequence.reset()
+		field.camera.h_offset=0
+		field.camera.v_offset=0
 		layout_chain(false)
 	super.run_setup()
 
 func browse_animations() -> void:
 	stop_camera_drag()
-	super.reset_setup()
-	field.hide()
 	browser.show()
-	browse_backdrop.show()
+	browse_backdrop.hide()
+	field.show()
 	layout_chain(true)
+	begin_live_preview()
+
+func reset_setup() -> void:
+	super.reset_setup()
+	if not is_instance_valid(browser):return
+	if move_menu.selected!=0:
+		browser.hide()
+		browse_backdrop.hide()
+		field.show()
+		field.camera.h_offset=0
+		field.camera.v_offset=0
+		layout_chain(false)
+	elif browser.visible and not selected_entry.is_empty():
+		begin_live_preview()
+
+func begin_live_preview(reset_loops: bool=true) -> void:
+	if selected_entry.is_empty() or not is_instance_valid(actor):return
+	# Reset real fighters/effects without altering the user's composed chain.
+	super.reset_setup()
+	if field.events.size()>4000:field.events=field.events.slice(-2000)
+	live_preview_steps.assign([selected_entry.step])
+	if selected_entry.step in ["Flip","Twist"]:
+		live_preview_steps.assign(["Jump",selected_entry.step,"Land"])
+	elif selected_entry.step=="Land":
+		live_preview_steps.assign(["Jump","Land"])
+	actor.mana=100 if sequence.needs_mana(live_preview_steps) else 0
+	live_preview_sequence.reset()
+	live_preview_age=0
+	live_preview_started=false
+	if reset_loops:live_preview_loops=0
+	field.show()
+	get_tree().paused=false
+
+func _physics_process(delta: float) -> void:
+	if not is_instance_valid(browser) or not browser.visible:
+		super._physics_process(delta)
+		return
+	if get_tree().paused:return
+	live_preview_age+=delta
+	if not live_preview_started and live_preview_age>=0.25:
+		live_preview_started=true
+		if target_jump_toggle.button_pressed:
+			target.start_jump("flip")
+			target.air_momentum=Vector3.ZERO
+			partner_jumping=true
+		live_preview_sequence.start(actor,live_preview_steps,dash_direction_menu.selected)
+	elif live_preview_started:
+		if not sequence.needs_mana(live_preview_steps):actor.mana=0
+		live_preview_sequence.tick(actor,delta)
+	if partner_jumping and not partner_air_ready and target.mode=="flip":
+		partner_air_ready=true
+		target.mode="air"
+		target.mode_time=0
+		if catalog[0].has("block"):set_shield(target,catalog[0].block,9.0)
+	update_camera(delta)
+	show_resources()
+	result_label.text="LIVE ARENA · %s · Damage %.1f · %s"%[selected_entry.title,target.damage_taken-marks.damage,live_preview_sequence.status]
+	var cycle: float={"Run":1.8,"Sprint":1.8,"Dash":1.5,"Crouch":1.8,"Block":2.0,"Brace Block":2.0,"Uppercut":5.0,"Spell Throw":3.5,"Slash Throw":3.5}.get(selected_entry.step,2.5)
+	if live_preview_age>=cycle:
+		begin_live_preview(false)
+		live_preview_loops+=1
+
+func update_camera(delta: float) -> void:
+	if not is_instance_valid(browser) or not browser.visible:
+		super.update_camera(delta)
+		return
+	if inspection_camera.manual:return
+	var low:=Vector3(INF,INF,INF)
+	var high:=Vector3(-INF,-INF,-INF)
+	var points: Array[Vector3]=[]
+	for f in [actor,target]:
+		for point in [f.focus_position(),f.bone_point("Head")+Vector3.UP*0.2,f.bone_point("foot_l"),f.bone_point("foot_r")]:
+			points.append(point)
+			low=low.min(point)
+			high=high.max(point)
+	var center: Vector3=(low+high)*0.5
+	var back:=Vector3(0.15,0.36,1).normalized()
+	var right:=Vector3(1,0,-0.15).normalized()
+	var up:=back.cross(right).normalized()
+	var distance:=8.0
+	var aspect: float=get_viewport().get_visible_rect().size.aspect()
+	var tangent:=tan(deg_to_rad(field.camera.fov*0.5))
+	for point in points:
+		var offset:=point-center
+		var fit:=maxf(absf(offset.dot(right))/(tangent*aspect*0.5),absf(offset.dot(up))/(tangent*0.4))
+		distance=maxf(distance,offset.dot(back)+fit+0.6)
+	field.camera.position=field.camera.position.lerp(center+back*distance,minf(1,delta*12))
+	field.camera.look_at(center)
+	# Project the fighters into the unobstructed arena to the right of the list.
+	field.camera.h_offset=-distance*tangent*aspect*0.40
+	field.camera.v_offset=-distance*tangent*0.12
 
 func _process(delta: float) -> void:
-	if is_instance_valid(browser) and browser.visible:
-		preview.tick(delta)
-	else:
-		super._process(delta)
+	super._process(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_instance_valid(browser) and browser.visible:return
 	super._unhandled_input(event)

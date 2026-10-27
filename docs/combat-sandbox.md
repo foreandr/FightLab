@@ -9,11 +9,12 @@ still open Animations directly; `run.ps1 -Spells` opens Spells.
 ## Animation chains
 
 Animations is the former combat sandbox. Its browser has **Motion** and
-**Attack** tabs at the top, categories on the left and a looping 3D character
-preview in the actual colosseum on the right. The preview automatically reuses
-the arena's sand, walls, gates, seats, lighting and sky instead of a display disk.
-Hovering an animation changes only the preview. Clicking
-adds it to the chain. Air-only actions can be previewed while grounded, but a
+**Attack** tabs at the top and categories overlaid on the actual live arena.
+The real fighters and arena are visible as soon as Create opens. Hovering starts
+the selected action on the real fighter and repeats it automatically. Movement,
+hits, knockback, blocks and spells use the normal combat/physics paths. There
+is no separate preview rig, copied stage or off-screen display viewport.
+Clicking adds the animation to the chain. Air-only actions can be previewed while grounded, but a
 valid Jump is required before adding them to the chain.
 Motion and Attack share the same combined chain; switching tabs preserves its
 order and selected animations.
@@ -25,11 +26,14 @@ back/side dodges, backward roll, flips, twists and two Fire throwing animations
 (palm Fireball and Cinder Slash). Spell creation/testing remains a separate
 Create → Spells workspace.
 
-The preview samples an independent skinned model and does not run combat AI,
-spend resources, damage the target or edit the chain. It continues looping while
-the test scene is paused. Press **Run chain** to execute the real physical test;
-**Browse**, Motion or Attack returns to the library and safely resets playback.
-Camera controls work in the test view. Preview framing is automatic.
+Hover playback uses a separate action queue without modifying the composed
+chain. It runs real actions, so stamina/mana can be spent and the passive partner
+can be hit. Fighters, effects and resources reset between preview cycles. Aerial
+previews automatically jump before the selected flip/twist and then land. The
+partner's configured distance, block and jump options still apply.
+Press **Run chain** to play your composed sequence; **Browse**, Motion or Attack
+returns to automatic live preview. Camera controls work directly in the live
+arena. Automatic framing keeps fighters clear of the library overlay.
 The Animations bottom bar contains Run, Reset, Slow, Browse and Home. The old
 Space, Reframe and Fight buttons have been removed from both Create workspaces.
 
@@ -130,7 +134,7 @@ pause/reset and same-setup repeat tests. Record a representative menu review wit
 Use `-MotionShowcase` instead to record forward dash, dash-knee, backward dash, sideways dash and an aerial chain. Motion regression checks cover all eight
 dash directions, real contacts, shield blocks, misses, ordered
 four-step playback, jump, reset and interruption.
-Use `-AnimationBrowser` for a native recording of the categorized hover preview
-and transition into chain playback. Browser checks cover all categories and
-clips, looped skeletal motion, preview isolation, click-to-add, air gating, all
+Use `-AnimationBrowser` for a native recording of categorized live arena hover
+actions and transition into chain playback. Browser checks cover all categories,
+real contacts during hover, automatic repetition, preserved chains, click-to-add, air gating, all
 23 actual actions, locomotion speed differences, crouch height and real shields.
