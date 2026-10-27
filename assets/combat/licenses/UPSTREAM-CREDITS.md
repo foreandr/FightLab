@@ -1,0 +1,106 @@
+# Asset Credits
+
+Every third-party asset must be listed here. CC-BY assets must also appear on the in-game credits screen.
+
+Third-party assets are CC0, except the Permanent Marker font that `tools/build_logo.py` letters the logo with (Apache 2.0; it stays in `tools/fonts/` and isn't part of the game). Assets made for this project are © Clint Christopher Canada under
+[CC BY 4.0](../LICENSE-ASSETS.md) (marked below); the code is MIT ([LICENSE](../LICENSE)).
+
+| Asset | Path | Author | Source URL | License |
+|-------|------|--------|------------|---------|
+| Universal Base Characters (Standard/free): Superhero Male & Female bodies, textures | `assets/characters/base/` | Quaternius | https://quaternius.itch.io/universal-base-characters | CC0 1.0 |
+| Universal Base Characters hairstyles & eyebrows (rigged to head bone) | `assets/characters/hair/` | Quaternius | https://quaternius.itch.io/universal-base-characters | CC0 1.0 |
+| Universal Animation Library (Standard/free), `UAL1_Standard.glb` | `assets/animations/` | Quaternius | https://quaternius.itch.io/universal-animation-library | CC0 1.0 |
+| Universal Animation Library 2 (Standard/free), `UAL2_Standard.glb` | `assets/animations/` | Quaternius | https://quaternius.itch.io/universal-animation-library-2 | CC0 1.0 |
+| Basement Boxing Ring HDRI (1k), used for ambient/reflection lighting only | `assets/stages/ring/basement_boxing_ring_1k.hdr` | Sergej Majboroda / Poly Haven | https://polyhaven.com/a/basement_boxing_ring | CC0 1.0 |
+| Terlenka fabric texture (ring canvas) | `assets/stages/ring/textures/terlenka_*` | Poly Haven | https://polyhaven.com/a/terlenka | CC0 1.0 |
+| Fabric Leather 02 texture (apron, corner pads, boots; Mira's sneakers at 2K with a greyscale weave map) | `assets/stages/ring/textures/fabric_leather_02_*`, `assets/characters/outfits/textures/detail/fabric_leather_02_*` | Poly Haven | https://polyhaven.com/a/fabric_leather_02 | CC0 1.0 |
+| Concrete Floor Worn 001 texture (arena floor) | `assets/stages/ring/textures/concrete_floor_worn_001_*` | Poly Haven | https://polyhaven.com/a/concrete_floor_worn_001 | CC0 1.0 |
+| Tatami Mat texture (dojo fighting area) | `assets/stages/dojo/textures/tatami_mat_*` | Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/tatami_mat | CC0 1.0 |
+| Hinoki Planks texture (dojo floor, bokken, shrine) | `assets/stages/dojo/textures/hinoki_planks_*` | Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/hinoki_planks | CC0 1.0 |
+| Japanese Cedar Planks texture (dojo wainscot, ceiling) | `assets/stages/dojo/textures/japanese_cedar_planks_*` | Charlotte Baglioni, Rico Cilliers / Poly Haven | https://polyhaven.com/a/japanese_cedar_planks | CC0 1.0 |
+| Dark Wood texture (dojo timber frame) | `assets/stages/dojo/textures/dark_wood_*` | Dario Barresi, Dimitrios Savva, Rico Cilliers / Poly Haven | https://polyhaven.com/a/dark_wood | CC0 1.0 |
+| Shanghai Bund HDRI (tonemapped JPG; skyline band cropped to `shanghai_bund_skyline.jpg`) | `assets/stages/rooftop/shanghai_bund_skyline.jpg` | Greg Zaal / Poly Haven | https://polyhaven.com/a/shanghai_bund | CC0 1.0 |
+| Belfast Sunset (Pure Sky) HDRI (2k; temple sky) | `assets/stages/temple/belfast_sunset_puresky_2k.hdr` | Greg Zaal, Dimitrios Savva, Jarod Guest / Poly Haven | https://polyhaven.com/a/belfast_sunset_puresky | CC0 1.0 |
+| Monastery Stone Floor texture (temple platform, paths) | `assets/stages/temple/textures/monastery_stone_floor_*` | Amal Kumar / Poly Haven | https://polyhaven.com/a/monastery_stone_floor | CC0 1.0 |
+| Japanese Stone Wall texture (temple platform, walls, lanterns) | `assets/stages/temple/textures/japanese_stone_wall_*` | Rico Cilliers, Charlotte Baglioni, Dario Barresi / Poly Haven | https://polyhaven.com/a/japanese_stone_wall | CC0 1.0 |
+| Gravel Floor 03 texture (temple raked gravel, Express track ballast) | `assets/stages/temple/textures/gravel_floor_03_*` | Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/gravel_floor_03 | CC0 1.0 |
+| Grey Roof Tiles texture (pagoda, hall, wall caps) | `assets/stages/temple/textures/grey_roof_tiles_*` | Rob Tuytel / Poly Haven | https://polyhaven.com/a/grey_roof_tiles | CC0 1.0 |
+| Kloofendal 48d Partly Cloudy (Pure Sky) HDRI (2k; beach sky) | `assets/stages/beach/kloofendal_48d_partly_cloudy_puresky_2k.hdr` | Greg Zaal, Jarod Guest / Poly Haven | https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky | CC0 1.0 |
+| Coast Sand 01 texture (beach sand) | `assets/stages/beach/textures/coast_sand_01_*` | Rob Tuytel / Poly Haven | https://polyhaven.com/a/coast_sand_01 | CC0 1.0 |
+| Palm Tree Bark texture (palm trunks) | `assets/stages/beach/textures/palm_tree_bark_*` | Dimitrios Savva, Rico Cilliers / Poly Haven | https://polyhaven.com/a/palm_tree_bark | CC0 1.0 |
+| Bamboo Wall texture (tiki bar, lifeguard tower) | `assets/stages/beach/textures/bamboo_wall_*` | Amal Kumar / Poly Haven | https://polyhaven.com/a/bamboo_wall | CC0 1.0 |
+| Thatch Roof Angled texture (tiki bar roof, umbrellas) | `assets/stages/beach/textures/thatch_roof_angled_*` | Rob Tuytel, Dimitrios Savva / Poly Haven | https://polyhaven.com/a/thatch_roof_angled | CC0 1.0 |
+| White Plaster 02 texture (dojo upper walls) | `assets/stages/dojo/textures/white_plaster_02_*` | Rob Tuytel / Poly Haven | https://polyhaven.com/a/white_plaster_02 | CC0 1.0 |
+| Ring stage geometry, crowd | `scenes/stages/ring.tscn`, `scripts/stages/crowd.gd` | Generated by `tools/build_ring_stage.gd` | — | CC BY 4.0 (project original) |
+| Dojo, Rooftop, Temple and Beach stage geometry, props, kneeling students | `scenes/stages/dojo.tscn`, `rooftop.tscn`, `temple.tscn`, `beach.tscn` | Generated by `tools/build_dojo_stage.gd`, `build_rooftop_stage.gd`, `build_temple_stage.gd`, `build_beach_stage.gd` | — | CC BY 4.0 (project original) |
+| Rooftop night-sky shader | `assets/stages/rooftop/night_skyline.gdshader` | Written for this project (samples the CC0 Shanghai Bund band) | — | CC BY 4.0 (project original) |
+| Beach ocean shader | `assets/stages/beach/ocean.gdshader` | Written for this project | — | CC BY 4.0 (project original) |
+| Jin body texture (darker skin, teal shorts) | `assets/characters/jin/T_Jin_Body.png` | Recoloured from the Quaternius `T_Superhero_Male_Dark.png` for this project | — | CC BY 4.0 (project original, from CC0 sources) |
+| Mira body texture (warm medium-brown skin) | `assets/characters/mira/T_Mira_Body.png` | Recoloured from the Quaternius `T_Superhero_Female_Dark_BaseColor.png` for this project | — | CC BY 4.0 (project original, from CC0 sources) |
+| Mira's bob hairstyle | `assets/characters/hair/Hair_Bob*` | Cut from the Quaternius `Hair_Long` by `tools/build_hair.gd` | — | CC BY 4.0 (project original, from CC0 sources) |
+| Skin pore detail normal map (procedural) | `assets/characters/detail/skin_pores_nor.png` | Generated for this project | — | CC BY 4.0 (project original) |
+| Title logo (brush lettering, dry-brush effects) | `assets/ui/logo.png` | Made by `tools/build_logo.py` from the Permanent Marker font | — | CC BY 4.0 (project original) |
+| Permanent Marker font (logo lettering only; not shipped with the game) | `tools/fonts/PermanentMarker-Regular.ttf` | Font Diner / Google Fonts | https://fonts.google.com/specimen/Permanent+Marker | Apache 2.0 (`tools/fonts/PermanentMarker-LICENSE.txt`) |
+| Stage-select thumbnails | `assets/ui/stages/` | Rendered by `tools/render_stage_thumbs.gd` | — | CC BY 4.0 (project original) |
+| Cotton Jersey texture (gi, dobok, tank top, hand wraps, belts, Mira's top; normal + roughness, 1K and 2K; the 2K diffuse as a greyscale weave map) | `assets/characters/outfits/textures/cotton_jersey_*`, `.../textures/detail/cotton_jersey_*` | colormass, Rico Cilliers / Poly Haven | https://polyhaven.com/a/cotton_jersey | CC0 1.0 |
+| Bi Stretch texture (singlet, sports top, shorts, Mira's track pants and trim; normal + roughness, 1K and 2K; the 2K diffuse as a greyscale weave map) | `assets/characters/outfits/textures/bi_stretch_*`, `.../textures/detail/bi_stretch_*` | colormass, Rico Cilliers / Poly Haven | https://polyhaven.com/a/bi_stretch | CC0 1.0 |
+| Denim Fabric 06 texture (Brutus's pants; normal + roughness, 1K and 2K; the 2K diffuse as a greyscale weave map) | `assets/characters/outfits/textures/denim_fabric_06_*`, `.../textures/detail/denim_fabric_06_*` | Greg Zaal, Rico Cilliers / Poly Haven | https://polyhaven.com/a/denim_fabric_06 | CC0 1.0 |
+| Fighter outfits (generated clothing meshes and trimmed bodies) | `assets/characters/outfits/*.res` | Generated by `tools/build_outfits.gd` from the Quaternius bodies | — | CC BY 4.0 (project original, from CC0 sources) |
+| Character portraits | `assets/ui/portraits/` | Rendered from the Quaternius models by `tools/render_portraits.gd` | — | CC BY 4.0 (project original, from CC0 sources) |
+| Impact Sounds (punches, plate blocks, soft falls, bell) | `assets/audio/sfx/impact*.ogg` | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 |
+| Interface Sounds (select, confirmation, back) | `assets/audio/sfx/select_*, confirmation_*, back_*` | Kenney | https://kenney.nl/assets/interface-sounds | CC0 1.0 |
+| Voiceover Pack: Fighter (announcer, incl. "combo", "prepare yourself", "game over") | `assets/audio/voice/*.ogg` | Kenney | https://kenney.nl/assets/voiceover-pack-fighter | CC0 1.0 |
+| Heavy Battle 2 (fight music) | `assets/audio/music/fight_heavy_battle_2.ogg` | MintoDog | https://opengameart.org/node/183145 | CC0 1.0 |
+| Space Battle (menu music) | `assets/audio/music/menu_space_battle.ogg` | MintoDog | https://opengameart.org/node/172812 | CC0 1.0 |
+| Determination - Anime Style Music (dojo music; loudness-matched) | `assets/audio/music/fight_dojo_determination.ogg` | HydroGene | https://opengameart.org/content/determination-anime-style-music | CC0 1.0 |
+| Boss_Koto (temple music; loudness-matched) | `assets/audio/music/fight_temple_boss_koto.ogg` | G_P | https://opengameart.org/content/bosskoto | CC0 1.0 |
+| Midnight Drive (rooftop music; loudness-matched) | `assets/audio/music/fight_rooftop_midnight_drive.ogg` | congusbongus | https://opengameart.org/content/midnight-drive | CC0 1.0 |
+| Funky House (beach music; loudness-matched) | `assets/audio/music/fight_beach_funky_house.ogg` | Of Far Different Nature | https://opengameart.org/content/funky-house | CC0 1.0 |
+| Jazzy Battle Theme (night market music; loudness-matched) | `assets/audio/music/fight_market_jazzy_battle.ogg` | MintoDog | https://opengameart.org/content/jazzy-battle-theme | CC0 1.0 |
+| Determined Pursuit (Express train stage music; loudness-matched) | `assets/audio/music/fight_train_determined_pursuit.ogg` | Emma_MA | https://opengameart.org/content/determined-pursuit-epic-orchestra-loop | CC0 1.0 |
+| Dragon Dance, loop version, from "Chinese Game Music" (Kowloon Courtyard music; loudness-matched) | `assets/audio/music/fight_courtyard_dragon_dance.ogg` | BiteMe Games | https://bitemegames.itch.io/chinese-game-music | CC0 1.0 |
+| AMB Rain Loop 1 (rooftop rain) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/rain.ogg` | kresiek-the-furry | https://opengameart.org/content/amb-rain-loop-1 | CC0 1.0 |
+| High traffic road sounds (distant traffic: rooftop, market) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/city_traffic.ogg` | ignasd | https://opengameart.org/content/high-traffic-road-sounds | CC0 1.0 |
+| Background voices (market chatter) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/market_chatter.ogg` | pauliuw | https://opengameart.org/content/background-voices | CC0 1.0 |
+| Crowd Shouting/Speaking Ambience (ring crowd) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/arena_crowd.ogg` | starninjas | https://opengameart.org/content/crowd-shoutingspeaking-ambience | CC0 1.0 |
+| Applause in a large hall or church (applause after a K.O.) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/crowd_cheer.ogg` | expl0it3r | https://opengameart.org/content/applause-in-a-large-hall-or-church | CC0 1.0 |
+| Beach Ocean Waves (beach waves; recorded by jasinski) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/waves.ogg` | qubodup | https://opengameart.org/content/beach-ocean-waves | CC0 1.0 |
+| Park ambiences: birds and wind (temple, dojo, beach) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/birds.ogg`, `wind.ogg` | thimras | https://opengameart.org/content/park-ambiences | CC0 1.0 |
+| Fire Crackling (market grills) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/fire_crackle.ogg` | antumdeluge | https://opengameart.org/content/fire-crackling | CC0 1.0 |
+| Solo Seagull Sound Effects (beach) (trimmed, looped with a crossfade, loudness-matched) | `assets/audio/ambience/seagull_*.ogg` | rango-mango | https://opengameart.org/content/solo-seagull-sound-effects | CC0 1.0 |
+| Group Ooh 1 & 2, Group Wow 1 & 2 (crowd reactions) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_ooh_1-2.ogg`, `crowd_wow_*.ogg` | CHallSmith | https://freesound.org/people/CHallSmith/packs/46348/ | CC0 1.0 |
+| Crowd Ooohs and Ahhhs in Excitement (crowd reactions) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_ooh_3-6.ogg` | noah0189 | https://freesound.org/people/noah0189/sounds/264499/ | CC0 1.0 |
+| Crowd aah, Crowd shock (crowd reactions) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_ooh_7-8.ogg`, `crowd_gasp_1.ogg` | anonymous (deleted Freesound account) | https://freesound.org/s/324896/, https://freesound.org/s/324898/ | CC0 1.0 |
+| CRWDReac_Crowd Gasping In Surprise, Voiced 02 (crowd reactions) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_gasp_2.ogg` | Shane Vincent (ShangusBurger) | https://freesound.org/people/ShangusBurger/sounds/764320/ | CC0 1.0 |
+| R27-20 Small Crowd Gasps (crowd reactions) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_gasp_3-4.ogg` | craigsmith | https://freesound.org/people/craigsmith/sounds/480774/ | CC0 1.0 |
+| Millerntor Stadium Crowd Reaction Excited 01 (crowd roars at a K.O.) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_roar_1-4.ogg` | Philipp Feit, Sound Of Sankt Pauli (itmightgetloud) | https://freesound.org/people/itmightgetloud/sounds/829453/ | CC0 1.0 |
+| 19 Football Crowd - Reaction To Goal (crowd roar at a K.O.) (cut from the Freesound preview, trimmed, faded, loudness-matched) | `assets/audio/ambience/crowd/crowd_roar_5.ogg` | D.jones | https://freesound.org/people/D.jones/sounds/528799/ | CC0 1.0 |
+| R07-27 Sporting Event with Steady Cheers (cheering that swells with the action; looped with a crossfade) (loudness-matched) | `assets/audio/ambience/crowd/crowd_cheering_loop.ogg` | craigsmith | https://freesound.org/people/craigsmith/sounds/486214/ | CC0 1.0 |
+| freight train pass fast short heavy rail track clacks (Express rumble) (cut from the Freesound preview, looped with a crossfade, loudness-matched) | `assets/audio/ambience/train_rumble.ogg` | kyles | https://freesound.org/people/kyles/sounds/455775/ | CC0 1.0 |
+| Train Track Joints Slow (Loop) (Express track clatter) (cut from the Freesound preview, looped with a crossfade, loudness-matched) | `assets/audio/ambience/train_clack.ogg` | KayleRustone | https://freesound.org/people/KayleRustone/sounds/474977/ | CC0 1.0 |
+| Train Pass By (the train passing the other way; trimmed, faded, loudness-matched) | `assets/audio/ambience/train_pass.ogg` | GreekIrish | https://freesound.org/people/GreekIrish/sounds/254778/ | CC0 1.0 |
+| Jet landing flyover (the courtyard's low jet; mono, faded, normalised, from the Freesound preview) | `assets/audio/ambience/jet_flyover.ogg` | tbaucom | https://freesound.org/people/tbaucom/sounds/648468/ | CC0 1.0 |
+| 121003 Pigeon flock fly away, wing flaps, Toronto (courtyard pigeons; trimmed, faded, from the Freesound preview) | `assets/audio/ambience/pigeons_takeoff_1.ogg` | TRP | https://freesound.org/people/TRP/sounds/616623/ | CC0 1.0 |
+| pigeon_take_off (courtyard pigeons; trimmed, faded, from the Freesound preview) | `assets/audio/ambience/pigeons_takeoff_2.ogg` | sinewave1kHz | https://freesound.org/people/sinewave1kHz/sounds/207387/ | CC0 1.0 |
+| RollerShutter_IT.wav (the corner store's shutter; a 4 s cut, faded, from the Freesound preview) | `assets/audio/ambience/shutter_roll.ogg` | uniuniversal | https://freesound.org/people/uniuniversal/sounds/617980/ | CC0 1.0 |
+| Dirty Tiles texture (courtyard floor) | `assets/stages/courtyard/textures/dirty_tiles_*` | Matterfield, Jenelle van Heerden / Poly Haven | https://polyhaven.com/a/dirty_tiles | CC0 1.0 |
+| Concrete Wall 006 texture (courtyard walls, lane) | `assets/stages/courtyard/textures/concrete_wall_006_*` | Dario Barresi, Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/concrete_wall_006 | CC0 1.0 |
+| Qwantani Dusk 2 (Pure Sky) HDRI (2k; night market sky) | `assets/stages/market/qwantani_dusk_2_puresky_2k.hdr` | Greg Zaal, Jarod Guest / Poly Haven | https://polyhaven.com/a/qwantani_dusk_2_puresky | CC0 1.0 |
+| Kloppenheim 06 (Pure Sky) HDRI (2k; Express train sky) | `assets/stages/train/kloppenheim_06_puresky_2k.hdr` | Greg Zaal, Jarod Guest / Poly Haven | https://polyhaven.com/a/kloppenheim_06_puresky | CC0 1.0 |
+| Aerial Grass Rock texture (Express fields) | `assets/stages/train/textures/aerial_grass_rock_*` | Rob Tuytel / Poly Haven | https://polyhaven.com/a/aerial_grass_rock | CC0 1.0 |
+| Asphalt 02 texture (market street) | `assets/stages/market/textures/asphalt_02_*` | Rob Tuytel / Poly Haven | https://polyhaven.com/a/asphalt_02 | CC0 1.0 |
+| Brick Pavement texture (market sidewalk) | `assets/stages/market/textures/brick_pavement_*` | Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/brick_pavement | CC0 1.0 |
+| Painted Plaster Wall texture (shophouses) | `assets/stages/market/textures/painted_plaster_wall_*` | Amal Kumar / Poly Haven | https://polyhaven.com/a/painted_plaster_wall | CC0 1.0 |
+| Rusty Corrugated Iron texture (shophouse roofs) | `assets/stages/market/textures/rusty_corrugated_iron_*` | Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/rusty_corrugated_iron | CC0 1.0 |
+| Wood Planks texture (stalls, electric poles) | `assets/stages/market/textures/wood_planks_*` | Amal Kumar / Poly Haven | https://polyhaven.com/a/wood_planks | CC0 1.0 |
+| Painted Metal Shutter texture (shop shutters, Express train roofs) | `assets/stages/market/textures/painted_metal_shutter_*` | Dario Barresi, Rico Cilliers, Charlotte Baglioni / Poly Haven | https://polyhaven.com/a/painted_metal_shutter | CC0 1.0 |
+| Male Grunt/Yelling sounds (Kenji, Brutus and Jin shouts; trimmed, normalized, Brutus pitched down) | `assets/audio/voice/fighters/kenji_*`, `brutus_*`, `jin_*` | HaelDB | https://opengameart.org/content/male-gruntyelling-sounds | CC0 1.0 (dual-licensed CC0 / OGA-BY 3.0; used under CC0) |
+| Female Hurt Grunts & Groans (Rhea shouts; Valka's are other takes pitched to 0.86, Mira's pitched to 1.07, Lian's are Valka's takes pitched to about 0.95) | `assets/audio/voice/fighters/rhea_*`, `valka_*`, `mira_*`, `lian_*` | AuraVoice (Nocturnal_Vanguard) | https://opengameart.org/content/female-hurt-grunts-groans | CC0 1.0 |
+| Swing whooshes | `assets/audio/sfx/swing_*.wav` | Synthesized for this project (filtered noise) | — | CC BY 4.0 (project original) |
+| Key art wallpaper & boot splash | `assets/ui/wallpaper.png`, `splash.png` | Rendered in-engine for this project (`tools/render_wallpaper.gd`) from the CC0 characters and rooftop stage | — | CC BY 4.0 (project original) |
+| Energy blast & super flash | `assets/audio/sfx/energy.wav`, `super.wav` | Synthesized for this project (sine sweeps + noise) | — | CC BY 4.0 (project original) |
+| `fight_anims.res` (guard, kicks, sweep, uppercut, blocks, ...) | `assets/animations/` | Generated by `tools/build_fight_animations.gd` from the UAL clips | — | CC BY 4.0 (project original, from CC0 sources) |
+
+Notes:
+- `Superhero_Male_FullBody.gltf` was edited to point to `T_Hair_1_Normal.png` / `T_Eye_Normal.png` (the shipped file referenced missing `*_png.png` names).
+- `T_Superhero_Male_Light.png` is the pack's `T_Superhero_Male_Ligh.png`, renamed.
