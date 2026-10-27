@@ -11,3 +11,6 @@
 Thumbs.db
 .vscode/
 .idea/
+
+# Downloaded optional CC0 character models (reproducible by launcher)
+/assets/gobkit/
