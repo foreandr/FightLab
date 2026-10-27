@@ -32,6 +32,7 @@ var shield_hit_age := [2.0, 2.0]
 var mana_bars: Array = []
 var stamina_bars: Array = []
 var resource_labels: Array = []
+var review_camera := false
 
 func _ready() -> void:
 	rng.seed = 715391
@@ -218,16 +219,17 @@ func damage_for(spec: Dictionary) -> float:
 func mana_cost(spec: Dictionary) -> float:
 	return {"orb":14.0, "spark":10.0, "slash":16.0, "cleave":18.0, "heavy":22.0, "spear":20.0, "ground":18.0, "nova":28.0, "beam":26.0, "heal":24.0}.get(spec.effect, 14.0)
 
-func predictive_aim(f: CharacterBody3D, origin: Vector3, speed: float) -> Vector3:
+func predictive_aim(f: CharacterBody3D, origin: Vector3, speed: float, target_bone := "spine_03") -> Vector3:
 	var enemy: CharacterBody3D = f.rival
-	var aim: Vector3 = enemy.bone_point("spine_03", Vector3(0, -0.08, 0))
+	var offset := Vector3(0, -0.08, 0) if target_bone == "spine_03" else Vector3.ZERO
+	var aim: Vector3 = enemy.bone_point(target_bone, offset)
 	var travel := origin.distance_to(aim) / speed
 	for i in 3:
 		var lead: Vector3 = enemy.velocity * travel
 		if not enemy.is_on_floor():
 			lead.y -= 0.5 * enemy.GRAVITY * travel * travel
-		aim = enemy.bone_point("spine_03", Vector3(0, -0.08, 0)) + lead
-		aim.y = maxf(0.85, aim.y)
+		aim = enemy.bone_point(target_bone, offset) + lead
+		aim.y = maxf(0.18 if target_bone.begins_with("calf_") else 0.85, aim.y)
 		travel = minf(0.9, origin.distance_to(aim) / speed)
 	return aim
 
@@ -240,7 +242,12 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 	var node: MeshInstance3D = vfx.projectile(f.team, spec.effect, radius)
 	add_child(node)
 	node.position = origin
-	var aim := predictive_aim(f, origin, speed)
+	var target_bone := "spine_03"
+	if spec.effect == "ground":
+		target_bone = "calf_l" if shot_serial % 2 == 0 else "calf_r"
+	elif spec.effect == "spear":
+		target_bone = "Head"
+	var aim := predictive_aim(f, origin, speed, target_bone)
 	var velocity_ := (aim - origin).normalized() * speed
 	node.look_at(camera.global_position if spec.effect in ["slash", "cleave"] else origin + velocity_)
 	if spec.effect == "cleave":
@@ -248,7 +255,8 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 	if spec.effect == "spear":
 		node.scale = Vector3(0.60, 0.60, 3.6)
 	shot_serial += 1
-	shots.append({"id":shot_serial, "node":node, "velocity":velocity_, "caster":f, "age":0.0, "trail":0.0, "spec":spec, "radius":radius})
+	var mass: float = {"spark":8.0, "orb":13.0, "heavy":24.0, "spear":14.0, "slash":11.0, "cleave":17.0, "ground":15.0}.get(spec.effect, 13.0)
+	shots.append({"id":shot_serial, "node":node, "velocity":velocity_, "mass":mass, "caster":f, "age":0.0, "trail":0.0, "spec":spec, "radius":radius})
 
 func incoming_threat(f: CharacterBody3D) -> int:
 	for shot in shots:
@@ -315,7 +323,7 @@ func step_shots(delta: float) -> void:
 		var victim: CharacterBody3D = fighters[1 - shot.caster.team]
 		var shield_contact: Dictionary = victim.shield_intersection(from, to, shot.radius)
 		if not shield_contact.is_empty():
-			apply_impact(shot.caster, victim, shot.spec, shield_contact.point, shot.velocity.normalized())
+			apply_impact(shot.caster, victim, shot.spec, shield_contact.point, shot.velocity.normalized(), null, shot.velocity * shot.mass)
 			hit = true
 		var samples := maxi(1, ceili(from.distance_to(to) / 0.07))
 		for sample in range(samples + 1):
@@ -326,7 +334,7 @@ func step_shots(delta: float) -> void:
 			var result := get_world_3d().direct_space_state.intersect_shape(query, 4)
 			if not result.is_empty():
 				var target_ = result[0].collider.get_meta("fighter")
-				apply_impact(shot.caster, target_, shot.spec, point, shot.velocity.normalized())
+				apply_impact(shot.caster, target_, shot.spec, target_.contact_surface(result[0].collider, point), shot.velocity.normalized(), result[0].collider, shot.velocity * shot.mass)
 				hit = true
 				break
 		var ground_hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to, 1))
@@ -354,20 +362,22 @@ func step_pulses(delta: float) -> void:
 			if item.caster.team == 1:
 				var shape := CylinderShape3D.new()
 				shape.radius = radius
-				shape.height = 1.6
+				shape.height = 0.65
 				query.shape = shape
 			else:
 				var shape := SphereShape3D.new()
 				shape.radius = radius
 				query.shape = shape
-			query.transform = Transform3D(Basis.IDENTITY, item.node.position + Vector3.UP * 0.7)
+			query.transform = Transform3D(Basis.IDENTITY, item.node.position + Vector3.UP * (0.35 if item.caster.team == 1 else 0.7))
 			query.collision_mask = 8 << (1 - item.caster.team)
 			query.collide_with_bodies = false
 			query.collide_with_areas = true
-			var result := get_world_3d().direct_space_state.intersect_shape(query, 1)
+			var result := get_world_3d().direct_space_state.intersect_shape(query, 16)
 			if not result.is_empty():
-				var victim = result[0].collider.get_meta("fighter")
-				item.hit = apply_impact(item.caster, victim, item.spec, victim.bone_point("spine_03"), (victim.position - item.node.position).normalized())
+				var area := closest_hit_area(result, item.node.position)
+				var victim = area.get_meta("fighter")
+				var contact: Vector3 = victim.contact_surface(area, item.node.position)
+				item.hit = apply_impact(item.caster, victim, item.spec, contact, (contact - item.node.position).normalized(), area)
 		if item.trail > 0.11:
 			item.trail = 0
 			for segment in 8:
@@ -401,7 +411,7 @@ func step_channels(delta: float) -> void:
 		elif not result.is_empty():
 			end = result.position
 			if not item.hit:
-				item.hit = apply_impact(f, result.collider.get_meta("fighter"), item.spec, end, (end - from).normalized())
+				item.hit = apply_impact(f, result.collider.get_meta("fighter"), item.spec, end, (end - from).normalized(), result.collider)
 		var direction := end - from
 		var path := []
 		for segment in 12:
@@ -414,27 +424,49 @@ func step_channels(delta: float) -> void:
 				var at := from.lerp(end, segment / 7.0)
 				vfx.puff(at, "flame_01" if f.team == 0 else "smoke_04", f.team, Vector2(0.45, 0.55), direction.normalized() * 1.5, 0.18, Color(element_color(f.team).lightened(0.25), 0.8), 0.1, 5)
 
-func apply_impact(attacker: CharacterBody3D, victim: CharacterBody3D, spec: Dictionary, point: Vector3, direction: Vector3) -> bool:
+func closest_hit_area(results: Array, point: Vector3) -> Area3D:
+	var best: Area3D
+	var distance := INF
+	for result in results:
+		var area: Area3D = result.collider
+		var f = area.get_meta("fighter")
+		var d: float = f.contact_surface(area, point).distance_to(point)
+		if d < distance:
+			distance = d
+			best = area
+	return best
+
+func apply_impact(attacker: CharacterBody3D, victim: CharacterBody3D, spec: Dictionary, point: Vector3, direction: Vector3, hit_area: Area3D = null, incoming_impulse := Vector3.ZERO) -> bool:
 	var amount := damage_for(spec)
 	var health_before: float = victim.health
+	var area: Area3D = hit_area if hit_area != null else victim.nearest_hurtbox(point)
+	var zone: String = area.get_meta("zone", "chest")
+	var bone: String = area.get_meta("bone", "spine_03")
+	var power: float = {"beam":240.0, "nova":260.0, "melee":70.0}.get(spec.effect, 180.0)
+	var impulse: Vector3 = incoming_impulse if not incoming_impulse.is_zero_approx() else direction.normalized() * power
+	impulse = impulse.limit_length(650)
 	var absorbed: float = victim.absorb_magic(amount, point - direction * 2.0, point)
+	if absorbed > 0:
+		victim.apply_physical_impact(point, impulse * (absorbed / amount) * 0.16, "shield", "lowerarm_r")
+	impulse *= (amount - absorbed) / amount
 	amount -= absorbed
 	if amount <= 0:
 		return true
-	if not victim.receive_magic(amount, direction, attacker):
+	if not victim.receive_magic(amount, direction, attacker, point, zone, bone, impulse):
 		return absorbed > 0
 	if spec.effect == "melee":
 		attacker.melee_hits += 1
 		attacker.melee_damage += health_before - victim.health
 	var key := "%s/%s" % [element_name(attacker.team), spec.id]
 	hits[key] = hits.get(key, 0) + 1
-	events.append({"time":elapsed, "event":"hit", "kind":"melee" if spec.effect == "melee" else "spell", "team":attacker.team, "victim":victim.team, "spell":spec.id, "health":victim.health})
+	events.append({"time":elapsed, "event":"hit", "kind":"melee" if spec.effect == "melee" else "spell", "team":attacker.team, "victim":victim.team, "spell":spec.id, "health":victim.health, "zone":zone, "bone":bone, "point":[point.x, point.y, point.z], "impulse":[impulse.x, impulse.y, impulse.z]})
 	print("HIT t=%.2f " % elapsed, element_name(attacker.team), " ", spec.id, " health=", victim.health)
 	if spec.effect == "melee":
 		status = "%s  •  %s" % [element_name(attacker.team), spec.id.replace("_", " ").to_upper()]
 		vfx.puff(point, "spark_05", attacker.team, Vector2.ONE * 0.36, Vector3.ZERO, 0.16, Color("fff3cf"), 0.3)
 		vfx.puff(point, "circle_03", attacker.team, Vector2.ONE * 0.18, Vector3.ZERO, 0.2, Color(1, 0.92, 0.72, 0.8), 1.2)
 	else:
+		status = "%s  •  %s  •  %s" % [element_name(attacker.team), spell_name(spec, attacker.team), zone.replace("_", " ").to_upper()]
 		impact_burst(point, attacker.team, true)
 	shake = maxf(shake, 0.10)
 	return true
@@ -482,6 +514,8 @@ func speed_trail(f: CharacterBody3D) -> void:
 	particles.append({"node":node, "velocity":Vector3.ZERO, "age":0.0, "life":0.16, "scale":node.scale})
 
 func update_camera(delta: float) -> void:
+	if review_camera:
+		return
 	var center: Vector3 = (fighters[0].position + fighters[1].position) * 0.5 + Vector3.UP * 1.0
 	var spread: float = fighters[0].position.distance_to(fighters[1].position)
 	var distance := 7.1 + maxf(0, spread - 4.0) * 0.7
@@ -620,7 +654,7 @@ func update_fight_ui() -> void:
 func write_report() -> void:
 	var stats: Array = []
 	for f in fighters:
-		stats.append({"team":f.team, "element":element_name(f.team), "health":f.health, "mana":f.mana, "stamina":f.stamina, "minimum_mana":f.minimum_mana, "minimum_stamina":f.minimum_stamina, "mana_spent":f.mana_spent, "stamina_spent":f.stamina_spent, "melee_attempts":f.melee_attempts, "melee_hits":f.melee_hits, "melee_damage":f.melee_damage, "tactic_changes":f.tactic_changes, "guard":f.guard_energy, "blocks":f.blocks, "absorbed_damage":f.absorbed_damage, "guard_breaks":f.guard_breaks, "actions":f.actions, "distance_run":f.distance_run, "max_height":f.max_height, "air_casts":f.air_casts, "hits":f.hits_scored, "damage_dealt":f.damage_dealt, "damage_taken":f.damage_taken, "knockouts":f.ko_count})
+		stats.append({"team":f.team, "element":element_name(f.team), "health":f.health, "impact_zones":f.impact_physics.by_zone, "physical_impacts":f.impact_physics.impacts, "peak_joint_angle":f.impact_physics.peak_angle, "mana":f.mana, "stamina":f.stamina, "minimum_mana":f.minimum_mana, "minimum_stamina":f.minimum_stamina, "mana_spent":f.mana_spent, "stamina_spent":f.stamina_spent, "melee_attempts":f.melee_attempts, "melee_hits":f.melee_hits, "melee_damage":f.melee_damage, "tactic_changes":f.tactic_changes, "guard":f.guard_energy, "blocks":f.blocks, "absorbed_damage":f.absorbed_damage, "guard_breaks":f.guard_breaks, "actions":f.actions, "distance_run":f.distance_run, "max_height":f.max_height, "air_casts":f.air_casts, "hits":f.hits_scored, "damage_dealt":f.damage_dealt, "damage_taken":f.damage_taken, "knockouts":f.ko_count})
 	var report := {"seconds":elapsed, "rounds":round_number, "wins":wins, "fighters":stats, "casts":casts, "hits":hits, "heals":heals, "clashes":clashes, "events":events, "minimum_spacing":minimum_spacing, "maximum_radius":max_radius, "peak_effects":peak_effects, "fps":Engine.get_frames_per_second(), "renderer":RenderingServer.get_video_adapter_name()}
 	var summary := report.duplicate()
 	summary.erase("events")

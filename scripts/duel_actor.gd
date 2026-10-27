@@ -8,6 +8,10 @@ const PLAN := ["cast", "strafe", "jump_cast", "retreat", "cast", "shield", "dash
 const MAX_GUARD := 44.0
 const MAX_MANA := 100.0
 const MAX_STAMINA := 100.0
+const ImpactPhysics = preload("res://scripts/impact_physics.gd")
+var impact_physics := ImpactPhysics.new()
+var limb_targets: Array = []
+var drive_velocity := Vector3.ZERO
 const MELEE_MOVES := [0, 1, 3, 5] # Existing licensed left/right jabs, cross and hooks.
 var mana := MAX_MANA
 var stamina := MAX_STAMINA
@@ -76,6 +80,14 @@ func _ready() -> void:
 	collision_mask = 1 | (2 << (1 - team))
 	for item in targets:
 		item[0].collision_layer = 8 << team
+		item[0].set_meta("bone", item[1])
+		if item[1] != "Head":
+			item[0].set_meta("zone", "chest" if item[1] == "spine_03" else "pelvis")
+	for side in ["l", "r"]:
+		add_limb_target("upperarm_" + side, "lowerarm_" + side, 0.085, "arm_" + side)
+		add_limb_target("lowerarm_" + side, "hand_" + side, 0.070, "arm_" + side)
+		add_limb_target("thigh_" + side, "calf_" + side, 0.105, "leg_" + side)
+		add_limb_target("calf_" + side, "foot_" + side, 0.080, "leg_" + side)
 	decision = team * 3
 	spell_cursor = team * 4
 	mode_length = 0.25 + team * 0.4
@@ -85,10 +97,12 @@ func count_action(name_: String) -> void:
 	arena.events.append({"time":arena.elapsed, "event":"action", "team":team, "action":name_})
 
 func reset_fighter(location: Vector3) -> void:
+	impact_physics.reset(skeleton)
 	position = location
 	ground_spawn = location
 	velocity = Vector3.ZERO
 	knockback = Vector3.ZERO
+	drive_velocity = Vector3.ZERO
 	air_momentum = Vector3.ZERO
 	model.position = Vector3.ZERO
 	health = MAX_HEALTH
@@ -352,7 +366,7 @@ func resolve_melee(delta: float) -> void:
 			var contacts := get_world_3d().direct_space_state.intersect_shape(query, 4)
 			if not contacts.is_empty():
 				var victim = contacts[0].collider.get_meta("fighter")
-				melee_connected = arena.apply_impact(self, victim, {"id":melee_spec[0], "effect":"melee", "damage":8.0 if melee_spec[0] == "left_jab" else 11.0}, point, flat_direction(position, victim.position))
+				melee_connected = arena.apply_impact(self, victim, {"id":melee_spec[0], "effect":"melee", "damage":8.0 if melee_spec[0] == "left_jab" else 11.0}, point, flat_direction(position, victim.position), contacts[0].collider, (movement / delta * 8.0).limit_length(120))
 				if melee_connected:
 					break
 	melee_previous = hand
@@ -431,6 +445,7 @@ func flat_direction(from: Vector3, to: Vector3) -> Vector3:
 	return direction.normalized()
 
 func tick(delta: float) -> void:
+	impact_physics.restore(skeleton)
 	var pending_release := false
 	mode_time += delta
 	recover_resources(delta)
@@ -581,9 +596,12 @@ func tick(delta: float) -> void:
 			desired = desired.slide(outward)
 		desired -= outward * minf(3.0, (radius - 8.0) * 2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
-	velocity.x = move_toward(velocity.x, desired.x + knockback.x, delta * acceleration)
-	velocity.z = move_toward(velocity.z, desired.z + knockback.z, delta * acceleration)
-	knockback = knockback.move_toward(Vector3.ZERO, delta * 7)
+	desired *= clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
+	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
+	drive_velocity.z = move_toward(drive_velocity.z, desired.z, delta * acceleration)
+	velocity.x = drive_velocity.x + knockback.x
+	velocity.z = drive_velocity.z + knockback.z
+	knockback *= exp(-delta * (4.2 if is_on_floor() else 1.0))
 	if is_on_floor() and velocity.y <= 0 and mode != "takeoff":
 		velocity.y = -0.1
 	else:
@@ -619,6 +637,8 @@ func tick(delta: float) -> void:
 		var basis_ := skeleton.get_bone_global_pose(spine).basis
 		var aimed := Basis(Quaternion(Vector3.RIGHT, -pitch * 0.85)) * basis_
 		skeleton.set_bone_pose_rotation(spine, (parent_basis.inverse() * aimed).get_rotation_quaternion())
+	impact_physics.step(delta)
+	impact_physics.apply(skeleton, is_on_floor(), global_basis)
 	var lowest := INF
 	for bone in ["foot_l", "foot_r", "ball_l", "ball_r"]:
 		var i: int = bones[bone]
@@ -638,7 +658,7 @@ func face_rival(delta: float) -> void:
 	var direction := flat_direction(position, rival.position)
 	rotation.y = lerp_angle(rotation.y, atan2(direction.x, direction.z), minf(1, delta * 18))
 
-func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D) -> bool:
+func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
 	if health <= 0 or invulnerability > 0 or not arena.round_active:
 		return false
 	var applied := minf(health, amount)
@@ -647,7 +667,9 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D)
 	attacker.damage_dealt += applied
 	attacker.hits_scored += 1
 	invulnerability = 0.16
-	knockback = Vector3(direction.x, 0, direction.z).normalized() * 2.5
+	if not point.is_finite():
+		point = bone_point("spine_03")
+	apply_physical_impact(point, impulse if not impulse.is_zero_approx() else direction.normalized() * amount * 12.0, zone, bone)
 	if health <= 0:
 		mode = "ko"
 		ko_count += 1
@@ -657,7 +679,71 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D)
 	else:
 		mode = "hit"
 		mode_time = 0
-		mode_length = 0.22
+		mode_length = clampf(0.16 + impact_physics.support_loss * 0.12, 0.18, 0.40)
 		clip = ""
-		play("ual1/Hit_Chest", 1.5)
+		play("fight/guard")
 	return true
+
+func apply_physical_impact(point: Vector3, impulse: Vector3, zone: String, bone: String) -> void:
+	impact_physics.hit(skeleton, point, impulse, zone, bone, is_on_floor(), global_basis)
+	var change := impulse / impact_physics.BODY_MASS
+	knockback = (knockback + Vector3(change.x, 0, change.z)).limit_length(6.0)
+	velocity += change
+	if not is_on_floor():
+		air_momentum = (air_momentum + Vector3(change.x, 0, change.z) * 0.55).limit_length(9)
+	elif change.y > 0.5:
+		air_momentum = Vector3(velocity.x, 0, velocity.z)
+	if zone.begins_with("leg"):
+		stamina = maxf(0, stamina - minf(9.0, impulse.length() / 35.0))
+		minimum_stamina = minf(minimum_stamina, stamina)
+		stamina_delay = 0.65
+
+func add_limb_target(from_bone: String, to_bone: String, radius: float, zone: String) -> void:
+	var area := Area3D.new()
+	area.collision_layer = 8 << team
+	area.collision_mask = 0
+	area.monitoring = false
+	area.set_meta("fighter", self)
+	area.set_meta("zone", zone)
+	area.set_meta("bone", from_bone)
+	var collision := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = radius
+	shape.height = radius * 2 + 0.15
+	collision.shape = shape
+	area.add_child(collision)
+	add_child(area)
+	targets.append([area, from_bone, Vector3.ZERO])
+	limb_targets.append([area, from_bone, to_bone, radius])
+
+func update_targets() -> void:
+	super.update_targets()
+	for item in limb_targets:
+		var from := bone_point(item[1])
+		var to := bone_point(item[2])
+		var length_ := from.distance_to(to)
+		var shape: CapsuleShape3D = item[0].get_child(0).shape
+		shape.height = maxf(item[3] * 2, length_ + item[3])
+		item[0].global_position = (from + to) * 0.5
+		item[0].global_basis = Basis(Quaternion(Vector3.UP, (to - from).normalized())) if length_ > 0.001 else Basis.IDENTITY
+		item[0].force_update_transform()
+
+func contact_surface(area: Area3D, source: Vector3) -> Vector3:
+	var shape: CapsuleShape3D = area.get_child(0).shape
+	var half := maxf(0, shape.height * 0.5 - shape.radius)
+	var axis := area.global_basis.y.normalized()
+	var center := area.global_position
+	var closest := center + axis * clampf((source - center).dot(axis), -half, half)
+	var direction := (source - closest).normalized()
+	return closest + direction * shape.radius
+
+func nearest_hurtbox(point: Vector3) -> Area3D:
+	var best: Area3D
+	var distance := INF
+	for item in targets:
+		var area: Area3D = item[0]
+		var d := contact_surface(area, point).distance_to(point)
+		if d < distance:
+			distance = d
+			best = area
+	return best

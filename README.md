@@ -46,6 +46,10 @@ All required models, animations and third-party license notices are in Git.
   Air casts keep bent legs; the chest aims up/down toward elevated opponents.
 - Physical CharacterBody3D movement, gravity, floor and body collision. Animated
   head/torso hurtboxes follow the bones through flips and aerial casting.
+- Separate head, chest, pelvis, upper/lower arm and thigh/calf hurtboxes.
+  Contact point and momentum drive constrained spring-joint recoil: torso torque,
+  head/neck motion, struck-limb deflection, balance loss and physical root shove.
+  These dynamics blend over locomotion and casting rather than choosing one generic flinch.
 - Predictively aimed projectiles that can miss. Swept Godot shape queries decide
   projectile hits; rays decide channels; expanding shapes decide area spells.
 - Firebolts, cleaves, lances, a channel and a nova for the man. The woman uses
@@ -85,11 +89,15 @@ shield hand poses.
 Resource checks verify costs, delayed regeneration, stamina-gated actions,
 low-mana pursuit, returning to ranged spacing, real fist contacts/misses on both
 characters, resource/HUD bounds and pool resets between rounds.
+Impact checks verify actual head/torso/leg projectile contacts on both rigs,
+mirrored side torque, speed-dependent momentum, leg support loss, shield impulse
+transfer, settling and matching dynamics at 30/60 FPS.
 
 The video helper writes a native 30 FPS AVI and a JSON action/cast/hit timeline to
 ignored `builds/review-*`. Review consecutive frames around jump, flip, release,
 impact and landing timestamps. Encoding speed is not live gameplay performance.
-See [mana, stamina and melee validation](docs/resources-melee.md), or the earlier
+See [localized impact physics](docs/impact-physics.md), or the earlier
+[mana, stamina and melee validation](docs/resources-melee.md),
 [shield, footwork and VFX validation](docs/defense-vfx.md) and
 [elemental-duel validation](docs/elemental-duel.md).
 

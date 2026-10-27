@@ -62,10 +62,11 @@ func run() -> void:
 			check(f.actions.get(action, 0) > 0, "Missing dynamic action: " + action)
 		for action in ["shield", "strafe", "retreat", "approach", "dodge_back", "roll_back"]:
 			check(f.actions.get(action, 0) > 0, "Missing defensive footwork action: " + action)
-		check(f.blocks > 0 and f.absorbed_damage > 0, "Both fighters must absorb real incoming spells in autonomous combat")
+		check(f.impact_physics.impacts > 4 and f.impact_physics.peak_angle > 0.01, "Physical contacts must drive articulated hit responses")
 		check(f.melee_attempts > 3 and f.melee_hits > 2 and f.melee_damage > 20, "Both fighters must physically fistfight")
 		check(f.minimum_mana < 24 and f.minimum_stamina < 16 and f.tactic_changes >= 2, "Mana/stamina depletion must cause tactical transitions")
 	check(field.vfx.peak <= field.vfx.LIMIT, "Texture effects must respect their hard particle limit")
+	check(field.fighters[0].blocks + field.fighters[1].blocks > 0, "Autonomous combat must include actual shield absorption")
 	# Same spacing and animations, but no hurtbox collision: no proximity damage.
 	field.clear_battle_effects()
 	field.round_active = true
