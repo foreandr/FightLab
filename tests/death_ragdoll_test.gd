@@ -69,6 +69,43 @@ func run() -> void:
 		await kill_with_projectile(body,direction,40.0)
 		await frames(3)
 		check(average_velocity(body.ragdoll).dot(direction)>7.0,"A strong lethal impulse must retain more momentum than a living stagger")
+	# Real animated fists use the same lethal-impact path as projectiles.
+	for team in 3:
+		for move in [0,1,4,6]:
+			var attacker=field.fighters[team]
+			var target=field.fighters[(team+1)%3]
+			for distance in [0.60 if move in [1,4] else 0.78]:
+				await prepare((team+1)%3)
+				attacker.position=Vector3(-distance/2,0.02,0)
+				target.position=Vector3(distance/2,0.02,0)
+				attacker.rival=target
+				target.rival=attacker
+				attacker.rotation.y=PI/2
+				target.rotation.y=-PI/2
+				await frames(6)
+				target.health=1
+				if move==6:
+					attacker.start_uppercut()
+				else:
+					attacker.melee_sequence=move
+					attacker.start_punch()
+				for i in 110:
+					await physics_frame
+					if target.health<=0:
+						break
+				if attacker.melee_connected:
+					print("LETHAL FIST team=%d move=%d distance=%.2f"%[team,move,distance])
+					break
+			check(attacker.melee_connected and target.health==0 and is_instance_valid(target.ragdoll),"An animated killing punch must physically contact and ragdoll: team %d move %d"%[team,move])
+			if not is_instance_valid(target.ragdoll):
+				continue
+			check(target.clip!="ual1/Death01" and not target.death_impulse.is_zero_approx(),"Killing fists must preserve the contact impulse without a canned death clip")
+			await frames(3)
+			if move==6:
+				check(average_velocity(target.ragdoll).y>4,"A lethal charged uppercut must launch the physical corpse upward")
+			var recoveries: int=target.recoveries_count
+			await frames(100)
+			check(is_instance_valid(target.ragdoll) and target.recoveries_count==recoveries,"A fighter killed by a punch must stay down")
 	# Finishing an already airborne ragdoll must preserve it and transmit the hit.
 	await prepare(1)
 	var victim=field.fighters[1]
@@ -92,8 +129,9 @@ func run() -> void:
 	await frames(3)
 	check(average_velocity(victim.ragdoll).y<=0,"A burn collapse must fall under gravity")
 	if failures.is_empty():
-		print("PASS: lethal projectile ragdolls in six directions on all fighters, no death clip/get-up, airborne finishers and burn collapse")
+		print("PASS: lethal projectiles in six directions and animated jabs/crosses/hooks/charged uppercuts on all fighters, no death clip/get-up, airborne finishers and burn collapse")
 	field.audio.stop_all()
 	field.queue_free()
 	await frames(3)
+	await create_timer(0.15).timeout
 	quit(0 if failures.is_empty() else 1)
