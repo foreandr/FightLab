@@ -1,4 +1,5 @@
 extends "res://scripts/spell_actor.gd"
+var last_logged_locomotion_state := ""
 ## Autonomous elemental fighter. Root movement uses CharacterBody3D physics;
 ## sprint, tucked flight, casting and flips all deform the licensed skeleton.
 const MAX_HEALTH := 160.0
@@ -26,6 +27,7 @@ var minimum_stamina := MAX_STAMINA
 var melee_sequence := 0
 var melee_spec: Array = []
 var melee_clock := 0.0
+var melee_clock_rate := 1.25
 var melee_previous := Vector3.ZERO
 var melee_connected := false
 var melee_hits := 0
@@ -45,6 +47,9 @@ var arena: Node3D
 var rival: CharacterBody3D
 var health := MAX_HEALTH
 var brain_enabled := true
+var player_controlled := false
+var story_block_held := false
+var story_block_time := 0.0
 var mode := "idle"
 var mode_time := 0.0
 var mode_length := 0.3
@@ -125,12 +130,13 @@ func reset_fighter(location: Vector3) -> void:
 	mode_time = 0
 	mode_length = 0.25 + team * 0.4
 	current_spell = {}
+	story_block_held = false
+	story_block_time = 0.0
 	healed_this_round = false
 	invulnerability = 0.4
 	player.speed_scale = 1
 	clip = ""
-	play("spells/idle")
-	player.advance(0)
+	play("ual1/Idle")
 	rotation.y = PI / 2 if team == 0 else -PI / 2
 
 func choose_spell(air: bool) -> Dictionary:
@@ -199,10 +205,17 @@ func launch() -> void:
 		mode_time = 0
 		clip = ""
 		play("duel/backflip")
+	elif jump_kind == "jump":
+		mode = "air"
+		mode_time = 0
+		clip = ""
+		play("duel/air")
 	else:
 		start_cast(true)
 
 func select_action() -> void:
+	if arena.story_mode and not close_combat:
+		set_close_combat(true)
 	var distance := flat_distance()
 	if mana < 24:
 		set_close_combat(true)
@@ -282,16 +295,27 @@ func start_footwork(kind: String) -> void:
 		play("duel/" + kind)
 
 func start_shield() -> void:
-	if guard_cooldown > 0 or guard_energy < 8 or not spend_mana(8):
+	if guard_cooldown > 0 or guard_energy < 8:
+		return
+	if arena.story_mode:
+		if not spend_stamina(7.0):return
+	elif not spend_mana(8):
 		return
 	mode = "shield"
 	mode_time = 0
 	mode_length = 1.35
-	guard_style = "palm" if (actions.get("shield", 0) + team) % 2 == 0 else "brace"
+	guard_style = "brace" if arena.story_mode else ("palm" if (actions.get("shield", 0) + team) % 2 == 0 else "brace")
 	shield_recoil = 0
 	clip = ""
 	play("duel/shield_raise_" + guard_style)
 	count_action("shield")
+
+func start_block_recoil(duration:float=0.30) -> void:
+	mode="block_recoil"
+	mode_time=0.0
+	mode_length=duration
+	clip=""
+	play("duel/shield_hit_brace",1.25)
 
 func flat_distance() -> float:
 	return Vector2(position.x - rival.position.x, position.z - rival.position.z).length()
@@ -383,20 +407,37 @@ func recover_resources(delta: float) -> void:
 	if not arena.round_active or health <= 0:
 		return
 	if mode == "shield":
-		var drain := minf(mana, delta * 3.0)
-		mana -= drain
-		mana_spent += drain
-		mana_delay = 1.7
-		minimum_mana = minf(minimum_mana, mana)
-		if mana <= 0:
+		if arena.story_mode:
+			var drain := minf(stamina, delta * 2.0)
+			stamina -= drain
+			stamina_spent += drain
+			stamina_delay = 0.65
+			minimum_stamina = minf(minimum_stamina, stamina)
+		else:
+			var drain := minf(mana, delta * 3.0)
+			mana -= drain
+			mana_spent += drain
+			mana_delay = 1.7
+			minimum_mana = minf(minimum_mana, mana)
+		if (arena.story_mode and stamina <= 0) or (not arena.story_mode and mana <= 0):
 			mode = "idle"
 			mode_time = 0
 			mode_length = 0.15
 			guard_cooldown = 2.4
+	elif story_block_held and arena.story_mode and player_controlled:
+		var drain := minf(stamina, delta * 2.0)
+		stamina -= drain
+		stamina_spent += drain
+		stamina_delay = 0.65
+		minimum_stamina = minf(minimum_stamina, stamina)
+		if stamina <= 0:
+			story_block_held = false
+			story_block_time = 0.0
 	elif mana_delay <= 0 and mode not in ["cast", "takeoff"]:
 		mana = minf(MAX_MANA, mana + delta * 4.2)
-	if mode in ["run", "chase"]:
-		var drain := minf(stamina, delta * (8.0 if mode == "chase" else 6.0))
+	var sprinting:=mode=="run" and _player_sprint_active()
+	if mode=="chase" or (mode=="run" and (not player_controlled or sprinting)):
+		var drain := minf(stamina, delta * (8.0 if mode == "chase" else (12.0 if sprinting else 6.0)))
 		stamina -= drain
 		stamina_spent += drain
 		stamina_delay = 0.4
@@ -404,7 +445,12 @@ func recover_resources(delta: float) -> void:
 	elif stamina_delay <= 0 and mode not in ["punch", "dash", "flip", "takeoff", "roll_back", "dodge_back"]:
 		stamina = minf(MAX_STAMINA, stamina + delta * (10.0 if mode in ["strafe", "approach", "retreat"] else 17.0))
 
+func _player_sprint_active() -> bool:
+	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and stamina>0
+
 func shield_active() -> bool:
+	if arena.story_mode and player_controlled and story_block_held:
+		return story_block_time >= 0.16 and guard_energy > 0 and health > 0 and arena.round_active
 	return mode == "shield" and mode_time >= 0.16 and mode_time < mode_length - 0.16 and guard_energy > 0 and health > 0 and arena.round_active
 
 func shield_center() -> Vector3:
@@ -425,7 +471,7 @@ func shield_intersection(from: Vector3, to: Vector3, radius: float = 0.0) -> Dic
 	return {"point":point} if lateral.length() <= 0.86 + radius else {}
 
 func absorb_magic(amount: float, incoming: Vector3, point: Vector3) -> float:
-	if not shield_active() or global_basis.z.dot(flat_direction(global_position, incoming)) < 0.42:
+	if not shield_active() or (not arena.story_mode and global_basis.z.dot(flat_direction(global_position, incoming)) < 0.42):
 		return 0.0
 	var absorbed := minf(guard_energy, amount)
 	guard_energy -= absorbed
@@ -455,6 +501,7 @@ func tick(delta: float) -> void:
 	var pending_release := false
 	mode_time += delta
 	recover_resources(delta)
+	if arena.story_mode and player_controlled and story_block_held:story_block_time += delta
 	guard_cooldown = maxf(0, guard_cooldown - delta)
 	guard_recovery = maxf(0, guard_recovery - delta)
 	shield_recoil = maxf(0, shield_recoil - delta)
@@ -468,9 +515,9 @@ func tick(delta: float) -> void:
 	var can_decide: bool = brain_enabled and arena.round_active
 	if health <= 0:
 		mode = "ko"
-	elif not arena.round_active:
+	elif not arena.round_active and not (arena.has_method("is_post_fight_freeplay") and arena.is_post_fight_freeplay()):
 		mode = "idle"
-		play("spells/idle")
+		play("ual1/Idle")
 	if can_decide and mode in ["idle", "run", "strafe", "retreat", "approach"] and dodge_cooldown <= 0:
 		var threat: int = arena.incoming_threat(self)
 		if threat >= 0 and threat != last_threat:
@@ -497,7 +544,7 @@ func tick(delta: float) -> void:
 			desired = -toward * 0.75 if distance < 1.8 else Vector3.ZERO
 			play_recovery(distance)
 		else:
-			melee_clock += delta * 1.25
+			melee_clock += delta * melee_clock_rate
 			if mode_time < 0.18 and distance > 0.79:
 				desired = toward * 0.9
 		if mode_time >= mode_length:
@@ -506,6 +553,8 @@ func tick(delta: float) -> void:
 			mode_length = 0.10
 	elif mode == "shield":
 		face_rival(delta)
+		if player_controlled and arena.story_mode and story_block_held:
+			mode_length = maxf(mode_length, mode_time + 0.34)
 		if shield_recoil <= 0 and mode_time > 0.22:
 			play("duel/shield_lower_" + guard_style if mode_time >= mode_length - 0.24 else "duel/shield_hold_" + guard_style)
 		if mode_time >= mode_length:
@@ -513,6 +562,14 @@ func tick(delta: float) -> void:
 			mode = "idle"
 			mode_time = 0
 			mode_length = 0.08
+	elif mode == "block_recoil":
+		if rival!=null:face_rival(delta)
+		if player_controlled:
+			desired=_player_move_direction()*(8.2 if _player_sprint_active() else 4.8)
+		if mode_time>=mode_length:
+			mode="run" if player_controlled and not desired.is_zero_approx() else "idle"
+			mode_time=0.0
+			mode_length=0.08
 	elif mode in ["strafe", "retreat", "approach", "dodge_back", "roll_back"]:
 		face_rival(delta)
 		var away := flat_direction(rival.position, position)
@@ -558,21 +615,37 @@ func tick(delta: float) -> void:
 			mode_time = 0
 			mode_length = 0.08
 	elif mode == "run":
-		var away := flat_direction(rival.position, position)
-		var distance := Vector2(position.x - rival.position.x, position.z - rival.position.z).length()
-		var side := Vector3(-away.z, 0, away.x) * (1 if team == 0 else -1)
-		desired = (side * 0.95 + away * (4.8 - distance) * 0.7).normalized() * 4.8
-		if position.length() > arena_roam_radius()*0.75:
-			desired = flat_direction(position, Vector3.ZERO) * 4.8
-		if mode_time >= mode_length:
-			mode = "idle"
-			mode_time = 0
-			mode_length = 0.06
+		if player_controlled:
+			desired = _player_move_direction() * (8.2 if _player_sprint_active() else 4.8)
+			if desired.is_zero_approx():
+				mode = "idle"
+				mode_time = 0
+				play("ual1/Idle")
+		else:
+			var away := flat_direction(rival.position, position)
+			var distance := Vector2(position.x - rival.position.x, position.z - rival.position.z).length()
+			var side := Vector3(-away.z, 0, away.x) * (1 if team == 0 else -1)
+			desired = (side * 0.95 + away * (4.8 - distance) * 0.7).normalized() * 4.8
+			if position.length() > arena_roam_radius()*0.75:
+				desired = flat_direction(position, Vector3.ZERO) * 4.8
+			if mode_time >= mode_length:
+				mode = "idle"
+				mode_time = 0
+				mode_length = 0.06
 	elif mode == "idle":
-		play("spells/idle")
-		face_rival(delta)
-		if can_decide and mode_time >= mode_length:
+		if player_controlled:
+			desired = _player_move_direction() * (8.2 if _player_sprint_active() else 4.8)
+			if not desired.is_zero_approx():
+				mode = "run"
+				mode_time = 0
+			else:
+				play("ual1/Idle")
+				face_rival(delta)
+		elif can_decide and mode_time >= mode_length:
 			select_action()
+		else:
+			play("ual1/Idle")
+			face_rival(delta)
 	if not is_on_floor() and mode != "takeoff":
 		air_clock += delta
 		desired = air_momentum
@@ -583,8 +656,55 @@ func tick(delta: float) -> void:
 		if air_dash_used and air_clock > 0.46:
 			air_momentum = air_momentum.move_toward(Vector3.ZERO, delta * 12)
 	if desired.length() > 0.2 and mode in ["run", "dash"]:
-		rotation.y = lerp_angle(rotation.y, atan2(desired.x, desired.z), minf(1, delta * 14))
-		play("duel/dash" if mode == "dash" else "duel/run", clampf(desired.length() / 3.1, 0.7, 3.5))
+		var facing:=desired
+		var turn_character:=true
+		if arena.story_mode and player_controlled:
+			if is_instance_valid(arena.camera_focus_target):
+				facing=flat_direction(global_position,arena.camera_focus_target.global_position)
+			else:
+				# The camera heading defines the character's forward axis. MMB orbit
+				# therefore turns the character and WASD remains camera-relative.
+				if is_instance_valid(arena.camera):
+					facing=-arena.camera.global_basis.z
+					facing.y=0
+					facing=facing.normalized()
+		if turn_character:rotation.y = lerp_angle(rotation.y, atan2(facing.x, facing.z), minf(1, delta * 14))
+		if mode=="dash":
+			play("duel/dash",clampf(desired.length()/3.1,0.7,3.5))
+		else:
+			var controls:=_player_move_axes() if player_controlled else Vector2.ZERO
+			var local_motion:=global_basis.inverse()*desired
+			if player_controlled and controls.length()>0.05:local_motion=Vector3(controls.x,0,controls.y)
+			var direction_clip:="duel/run"
+			var animation_speed:=clampf(desired.length()/3.1,0.7,3.5)
+			var direction_name:="forward"
+			var strafe_side:=""
+			if local_motion.z>absf(local_motion.x)*0.42:
+				direction_clip="duel/walk_back";direction_name="back" if absf(local_motion.x)<0.3 else ("back_right" if local_motion.x>0 else "back_left")
+				if absf(local_motion.x)>=0.3:direction_clip="duel/walk_back"
+			elif local_motion.z < -absf(local_motion.x)*0.42:
+				direction_name="forward_right" if local_motion.x>0.3 else ("forward_left" if local_motion.x< -0.3 else "forward")
+				# Jog on ordinary movement and switch to the distinct sprint cycle
+				# while Shift is held. Diagonals use the same forward locomotion gait.
+				if player_controlled and arena.story_mode:
+					var sprinting_now:=_player_sprint_active()
+					direction_clip="duel/run" if sprinting_now else "ual1/Jog_Fwd"
+					animation_speed=2.2 if sprinting_now else 1.25
+				elif absf(local_motion.x)>0.3:
+					direction_clip="duel/run"
+			elif local_motion.x>0:
+				direction_clip="duel/strafe_right";direction_name="right";strafe_side="right"
+			else:
+				direction_clip="duel/strafe_left";direction_name="left";strafe_side="left"
+			if absf(local_motion.z)<0.2:direction_name="right" if local_motion.x>0 else "left"
+			if not player_controlled:direction_clip="duel/run"
+			play(direction_clip,animation_speed)
+			if player_controlled and arena.story_mode:
+				if has_method("update_story_strafe_hands"):call("update_story_strafe_hands",strafe_side)
+				var locomotion_state:=direction_name+ ("_sprint" if _player_sprint_active() else "_run")
+				if locomotion_state!=last_logged_locomotion_state:
+					last_logged_locomotion_state=locomotion_state
+					GameDiagnostics.log_event("player_locomotion_direction",{"direction":direction_name,"sprinting":_player_sprint_active()})
 	# Keep retreats and pursuits in the readable meadow instead of allowing one
 	# fighter to kite the other endlessly beyond the action camera's useful area.
 	var radius := Vector2(position.x, position.z).length()
@@ -656,6 +776,36 @@ func movement_multiplier() -> float:
 func locomotion_velocity(desired: Vector3) -> Vector3:
 	return desired*movement_multiplier()
 
+func _player_move_direction() -> Vector3:
+	var input_direction:=_player_move_axes()
+	if arena.story_mode and player_controlled:
+		var forward:Vector3=-arena.camera.global_basis.z if is_instance_valid(arena.camera) else global_basis.z
+		forward.y=0
+		forward=forward.normalized()
+		var right:Vector3=arena.camera.global_basis.x if is_instance_valid(arena.camera) else -global_basis.x
+		right.y=0
+		right=right.normalized()
+		return (right*input_direction.x+forward*(-input_direction.y)).normalized()
+	return Vector3(input_direction.x,0,input_direction.y).normalized()
+
+func _player_move_axes() -> Vector2:
+	var input_direction := Vector2.ZERO
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		input_direction.x -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		input_direction.x += 1.0
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		input_direction.y -= 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		input_direction.y += 1.0
+	for device in Input.get_connected_joypads():
+		var stick := Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y))
+		if stick.length() > 0.18:
+			input_direction.x += stick.x
+			input_direction.y += stick.y
+			break
+	return input_direction.limit_length(1.0)
+
 func advance_animation(delta: float) -> void:
 	player.advance(delta)
 
@@ -673,6 +823,11 @@ func tick_cast(delta: float) -> bool:
 	return released
 
 func face_rival(delta: float) -> void:
+	if arena.story_mode and player_controlled:
+		if not is_instance_valid(arena.camera_focus_target):return
+		var focused_direction := flat_direction(global_position, arena.camera_focus_target.global_position)
+		rotation.y = lerp_angle(rotation.y, atan2(focused_direction.x, focused_direction.z), minf(1, delta * 18))
+		return
 	if rival == null:
 		return
 	var direction := flat_direction(position, rival.position)

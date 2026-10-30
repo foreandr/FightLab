@@ -9,6 +9,8 @@
 config_version=5
 
 [application]
+config/custom_user_dir_name="Godot/app_userdata/FightLab"
+config/use_custom_user_dir=true
 
 config/name="FightLab"
 run/main_scene="res://scenes/home.tscn"
@@ -16,13 +18,26 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 
 [display]
 
-window/size/viewport_width=1152
+window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/mode=3
-window/size/borderless=true
+window/size/mode=0
+window/size/borderless=false
 window/stretch/mode="canvas_items"
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="user://logs/godot.log"
+file_logging/max_log_files=10
+settings/gdscript/always_track_call_stacks=true
+
+[autoload]
+
+KeyboardAccess="*res://scripts/keyboard_access.gd"
+GameDiagnostics="*res://scripts/game_diagnostics.gd"
+BotRuntime="*res://scripts/bot_runtime.gd"

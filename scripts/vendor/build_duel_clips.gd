@@ -81,7 +81,7 @@ func add_defense_clips(lib: AnimationLibrary, fight: AnimationLibrary, ual2: Ani
 		move_bone(held, "pelvis", Vector3(0, -0.07, -0.03))
 		for side in ["l", "r"]:
 			var sign_ := 1.0 if side == "l" else -1.0
-			var target := Vector3(sign_ * 0.22, 1.38, 0.42)
+			var target := Vector3(-sign_ * 0.16, 1.30 if side == "l" else 1.47, 0.48)
 			if style == "palm":
 				target = Vector3(-0.10, 1.40, 0.63) if side == "r" else Vector3(0.27, 1.08, 0.17)
 			solve_ik(held, "upperarm_" + side, "lowerarm_" + side, "hand_" + side, target, Vector3(sign_, -0.2, 0.3))

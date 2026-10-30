@@ -11,3 +11,5 @@
 - Keep all required project assets in the repository.
 - Do not introduce external dependencies without justification.
 - Do not implement gameplay until explicitly instructed.
+- Every interactive feature must have a keyboard route, including editors and review tools. Keep keyboard focus enabled and expose actions through the internal scripting interface.
+- Prefer BotRuntime ui.list, ui.activate, input.tap, and input.key for testing. Avoid desktop mouse automation when an internal or keyboard route exists.

@@ -39,6 +39,7 @@ func _ready() -> void:
 		if arg.begins_with("--showcase-report="):
 			report_path=arg.trim_prefix("--showcase-report=")
 	field=load("res://scenes/main.tscn").instantiate()
+	field.creation_bot_profiles=creation_bot_outfits()
 	field.process_mode=Node.PROCESS_MODE_PAUSABLE
 	add_child(field)
 	field.duration=0
@@ -51,6 +52,9 @@ func _ready() -> void:
 	field.camera.fov=45
 	build_ui()
 	open_case(0)
+
+func creation_bot_outfits() -> Array[Dictionary]:
+	return []
 
 func open_case(index: int) -> void:
 	get_tree().paused=false
@@ -332,7 +336,7 @@ func return_to_battle() -> void:
 	get_tree().paused=false
 	Engine.time_scale=1
 	field.audio.stop_all()
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://scenes/fight.tscn")
 
 func return_to_sandbox() -> void:
 	get_tree().paused=false

@@ -1,47 +1,65 @@
 extends RefCounted
 const GROUPS := {
-	"Motion":["Run","Sprint","Jump","Dash","Crouch","Block","Dodges","Acrobatics"],
-	"Attack":["Punch","Kick","Knee","Uppercut"],
-	"Spells":["Casting","Projectiles","Buffs","Debuffs","Effects","Heals"]
+	"Motion":["Idle","Run","Sprint","Jump","Land","Dash","Crouch","Acrobatics"],
+	"Attack":["Punch","Kick","Block","Dodges"]
 }
-const SPELL_PROFILES := [
-	{"id":"fireball","team":0,"slot":0,"name":"Fireball","category":"Projectiles","effect":"orb","delivery":"Homing projectile","mana":14,"damage":18,"animation":"palm_fireball","detail":"Fast fire projectile. A hit applies a lingering burn; holding the cast increases its damage and size."},
-	{"id":"cinder_slash","team":0,"slot":1,"name":"Cinder Slash","category":"Projectiles","effect":"slash","delivery":"Crescent projectile","mana":12,"damage":16,"animation":"cleaving_flick","detail":"A fast slashing wave from an arm sweep. Hits can ignite the target."},
-	{"id":"glacial_armor","team":1,"slot":0,"name":"Glacial Armor","category":"Buffs","effect":"armor","delivery":"Self buff","mana":20,"damage":0,"animation":"twin_push","detail":"Adds 50 points of ice armor for 6.5 seconds."},
-	{"id":"overdrive","team":2,"slot":0,"name":"Overdrive","category":"Buffs","effect":"haste","delivery":"Self buff","mana":18,"damage":0,"animation":"self_mend","detail":"Boosts Storm movement and close-combat attacks for 14 seconds."},
-	{"id":"freezing_ray","team":1,"slot":1,"name":"Freezing Ray","category":"Debuffs","effect":"ice_beam","delivery":"Sustained beam","mana":22,"damage":4.5,"animation":"flame_channel","detail":"Continuous ice beam that damages, chills, slows, and freezes on repeated hits."},
-	{"id":"flash_step","team":2,"slot":1,"name":"Flash Step","category":"Effects","effect":"burst","delivery":"Charged dash + knee","mana":9,"damage":13,"animation":"palm_fireball","detail":"Brief charge, lightning-fast forward dash, then an impact knee."}
-]
 static func entries() -> Array[Dictionary]:
 	var result: Array[Dictionary]=[
+		item("Motion","Idle","Idle","Idle","spells/idle"),
 		item("Motion","Run","Run","Run","ual1/Jog_Fwd"),
 		item("Motion","Sprint","Sprint","Sprint","duel/run"),
 		item("Motion","Jump","Jump","Jump","duel/air","jump"),
-		item("Motion","Jump","Land","Land","duel/land"),
+		item("Motion","Land","Land","Land","duel/land"),
 		item("Motion","Dash","Dash","Dash","duel/dash"),
 		item("Motion","Crouch","Crouch","Crouch","ual1/Crouch_Idle"),
-		item("Motion","Block","Palm block","Block","duel/shield_hold_palm","block"),
-		item("Motion","Block","Braced block","Brace Block","duel/shield_hold_brace","block"),
-		item("Motion","Dodges","Dodge backward","Dodge Back","duel/dodge_back"),
-		item("Motion","Dodges","Dodge left","Dodge Left","duel/strafe_left"),
-		item("Motion","Dodges","Dodge right","Dodge Right","duel/strafe_right"),
-		item("Motion","Dodges","Roll backward","Roll Back","duel/roll_back"),
+		item("Attack","Block","Palm block","Block","duel/shield_hold_palm","block"),
+		item("Attack","Block","Braced block","Brace Block","duel/shield_hold_brace","block"),
+		item("Attack","Dodges","Dodge backward","Dodge Back","duel/dodge_back"),
+		item("Attack","Dodges","Dodge left","Dodge Left","duel/strafe_left"),
+		item("Attack","Dodges","Dodge right","Dodge Right","duel/strafe_right"),
+		item("Attack","Dodges","Roll backward","Roll Back","duel/roll_back"),
 		item("Motion","Acrobatics","Backflip · airborne","Flip","duel/backflip","air"),
 		item("Motion","Acrobatics","Twist · airborne","Twist","duel/air","twist"),
-		item("Attack","Punch","Left jab","Punch","ual1/Punch_Jab"),
-		item("Attack","Punch","Right cross","Cross","ual1/Punch_Cross"),
-		item("Attack","Punch","Left hook","Hook","boxing/hook_l"),
-		item("Attack","Kick","Front kick","Kick","boxing/front_kick_r"),
-		item("Attack","Kick","Roundhouse kick","Round Kick","boxing/high_kick_l"),
-		item("Attack","Knee","Knee","Knee","battle/knee"),
-		item("Attack","Uppercut","Charged uppercut","Uppercut","battle/uppercut"),
-		item("Spells","Casting","Palm thrust","Spell Throw","spells/palm_fireball"),
-		item("Spells","Casting","Arm slash","Slash Throw","spells/cleaving_flick")
+		attack("Punch","Left jab","Punch","ual1/Punch_Jab","hand_l"),
+		attack("Punch","Right jab","Punch","ual1/Punch_Jab","hand_r",true),
+		attack("Punch","Right cross","Cross","ual1/Punch_Cross","hand_r"),
+		attack("Punch","Left cross","Cross","ual1/Punch_Cross","hand_l",true),
+		attack("Punch","Left hook","Hook","boxing/hook_l","hand_l"),
+		attack("Punch","Right hook","Hook","boxing/hook_r","hand_r"),
+		attack("Kick","Right front kick","Kick","boxing/front_kick_r","ball_r"),
+		attack("Kick","Left front kick","Kick","boxing/front_kick_l","ball_l"),
+		attack("Kick","Left roundhouse","Round Kick","boxing/high_kick_l","ball_l"),
+		attack("Kick","Right roundhouse","Round Kick","boxing/high_kick_r","ball_r"),
+		attack("Knee","Right knee","Knee","battle/knee","calf_r"),
+		attack("Knee","Left knee","Knee","battle/knee","calf_l",true),
+		attack("Elbow","Right elbow","Elbow","editor_attacks/elbow","lowerarm_r"),
+		attack("Elbow","Left elbow","Elbow","editor_attacks/elbow","lowerarm_l",true),
+		attack("Uppercut","Right uppercut","Uppercut","battle/uppercut","hand_r"),
+		attack("Uppercut","Left uppercut","Uppercut","battle/uppercut","hand_l",true),
+		attack("Sweep","Right sweep","Sweep","fight/sweep","ball_r"),
+		attack("Sweep","Left sweep","Sweep","fight/sweep","ball_l",true),
+		attack("Punch","Right sky palm","Sky Palm","editor_attacks/sky_palm","hand_r"),
+		attack("Punch","Left sky palm","Sky Palm","editor_attacks/sky_palm","hand_l",true),
+		attack("Punch","Right ground punch","Ground Punch","editor_attacks/ground_punch","hand_r"),
+		attack("Punch","Left ground punch","Ground Punch","editor_attacks/ground_punch","hand_l",true),
+		attack("Kick","Right ground stomp","Stomp","editor_attacks/stomp","ball_r"),
+		attack("Kick","Left ground stomp","Stomp","editor_attacks/stomp","ball_l",true),
+		attack("Slash","Right body slash","Body Slash","editor_attacks/body_slash","hand_r"),
+		attack("Slash","Left body slash","Body Slash","editor_attacks/body_slash","hand_l",true),
+		attack("Punch","Default Spell Cast","Palm Cast","editor_attacks/default_spell_cast","hand_r")
 	]
-	for spell in SPELL_PROFILES:
-		var entry:=item("Spells",spell.category,spell.name,"spell_"+spell.id,"spells/"+spell.animation,"spell_profile")
-		entry.merge(spell,true)
-		result.append(entry)
 	return result
 static func item(group: String,category: String,title: String,step: String,clip: String,kind: String="ground") -> Dictionary:
+	if group=="Attack":category=category_for(category)
 	return {"group":group,"category":category,"title":title,"step":step,"clip":clip,"kind":kind}
+
+static func category_for(category:String) -> String:
+	if category in ["Uppercut","Elbow","Slash"]:return "Punch"
+	if category in ["Sweep","Knee"]:return "Kick"
+	return category
+
+static func attack(category:String,title:String,step:String,clip:String,bone:String,mirrored:=false) -> Dictionary:
+	var entry:=item("Attack",category,title,step,clip)
+	entry["attack_bone"]=bone
+	entry["mirrored"]=mirrored
+	return entry

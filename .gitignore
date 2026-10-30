@@ -19,3 +19,7 @@ Thumbs.db
 /external/
 
 /assets/humanoid/
+
+# Local downloaded clothing archive and development scratch files
+/assets/characters/wardrobe/library/
+/work/

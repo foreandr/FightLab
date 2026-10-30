@@ -2,6 +2,7 @@ extends CharacterBody3D
 ## Compatible Quaternius skeletal clips; Godot physics queries decide every contact.
 signal contact(kind: String, attacker: int, zone: String, speed: float, fell: bool)
 const BASE := "res://assets/combat/"
+const StoryCharacter := preload("res://scripts/story_character.gd")
 const MOVES := [
 	["left_jab", "ual1/Punch_Jab", "hand_l", 0.12, 0.48, 0.86, 1.2],
 	["right_cross", "ual1/Punch_Cross", "hand_r", 0.16, 0.57, 0.81, 1.8],
@@ -13,6 +14,7 @@ const MOVES := [
 	["right_high_kick", "boxing/high_kick_r", "ball_r", 0.33, 0.47, 0.94, 2.8],
 ]
 var team := 0
+var story_profile: Dictionary = {}
 var opponent: CharacterBody3D
 var model: Node3D
 var skeleton: Skeleton3D
@@ -52,23 +54,47 @@ func _ready() -> void:
 	rng.seed = 2147 + team * 7919
 	cooldown = 0.5 + team * 0.7
 	var gender := "Male" if team == 0 else "Female"
-	model = (load("res://assets/characters/base/Superhero_%s_FullBody.gltf" % gender) as PackedScene).instantiate()
-	add_child(model)
-	skeleton = model.find_child("Skeleton3D")
+	if story_profile.is_empty():
+		model = (load("res://assets/characters/base/Superhero_%s_FullBody.gltf" % gender) as PackedScene).instantiate()
+		add_child(model)
+		skeleton = model.find_child("Skeleton3D")
+	else:
+		var custom_look: StoryCharacter = StoryCharacter.new()
+		var fight_profile := story_profile.duplicate(true)
+		fight_profile["rotation"] = 0.0
+		custom_look.set_profile(fight_profile)
+		model = custom_look
+		add_child(model)
+		custom_look.set_process(false)
+		skeleton = custom_look.skeleton
 	for i in skeleton.get_bone_count():
 		bones[skeleton.get_bone_name(i)] = i
-	customize(gender)
-	attach_hair("Hair_Buzzed" if team == 0 else "Hair_Buns")
-	attach_hair("Eyebrows_Regular" if team == 0 else "Eyebrows_Female")
-	player = AnimationPlayer.new()
-	model.add_child(player)
-	player.add_animation_library("ual1", load(BASE + "animations/UAL1_Standard.glb"))
+	if story_profile.is_empty():
+		customize(gender)
+		attach_hair("Hair_Buzzed" if team == 0 else "Hair_Buns")
+		attach_hair("Eyebrows_Regular" if team == 0 else "Eyebrows_Female")
+		player = AnimationPlayer.new()
+		model.add_child(player)
+	else:
+		# Give the fight rig its own animator rooted at the actual skinned GLTF.
+		# The creator preview animator is already manually evaluated and can leave
+		# imported fight clips unbound when reused after the scene transition.
+		var custom_look: StoryCharacter = model as StoryCharacter
+		var rig: Node3D = custom_look.model
+		if is_instance_valid(custom_look.animator):
+			custom_look.animator.stop()
+			custom_look.animator.get_parent().remove_child(custom_look.animator)
+			custom_look.animator.free()
+		player = AnimationPlayer.new()
+		rig.add_child(player)
+		player.root_node = NodePath("..")
+	if not player.has_animation_library("ual1"):
+		player.add_animation_library("ual1", load(BASE + "animations/UAL1_Standard.glb"))
 	player.add_animation_library("ual2", load(BASE + "animations/UAL2_Standard.glb"))
 	player.add_animation_library("fight", load(BASE + "animations/fight_anims.res"))
 	player.add_animation_library("boxing", load(BASE + "animations/boxing.res"))
 	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	play("fight/guard")
-	player.advance(0)
 	for spec in [["Head", Vector3(0, 0.09, 0.015), 0.135, 0.28, "head"], ["spine_03", Vector3(0, -0.09, 0), 0.20, 0.51, "body"], ["pelvis", Vector3(0, -0.03, 0), 0.19, 0.32, "body"]]:
 		var area := Area3D.new()
 		area.collision_layer = 4

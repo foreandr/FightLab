@@ -8,7 +8,12 @@ Third-party assets are CC0, except the Permanent Marker font that `tools/build_l
 | Asset | Path | Author | Source URL | License |
 |-------|------|--------|------------|---------|
 | Universal Base Characters (Standard/free): Superhero Male & Female bodies, textures | `assets/characters/base/` | Quaternius | https://quaternius.itch.io/universal-base-characters | CC0 1.0 |
-| Universal Base Characters hairstyles & eyebrows (rigged to head bone) | `assets/characters/hair/` | Quaternius | https://quaternius.itch.io/universal-base-characters | CC0 1.0 |
+| Universal Base Characters hairstyles & eyebrows (rigged to head bone; includes Short, Buns, Long and Side part) | `assets/combat/hair/` | Quaternius | https://quaternius.itch.io/universal-base-characters | CC0 1.0 |
+| Modular Character Outfits – Fantasy (standard/free modular peasant and ranger clothing) | `assets/characters/wardrobe/quaternius_fantasy/` | Quaternius | https://quaternius.com/packs/modularcharacteroutfitsfantasy.html | CC0 1.0 |
+| Cloth surgical face mask wearable mesh (separated from the downloaded display scene) | `assets/characters/wardrobe/external/cloth_face_mask_wearable.glb` | Grab3D | https://grab3d.com/models/props/face-mask/ | CC0 1.0 |
+| SM – Anon Mask (recolored as a rogue mask) | `assets/characters/wardrobe/external/rogue_mask_scott_marshall.glb` | Scott Marshall | https://poly.pizza/m/2_N0mh67_Xu | CC BY 3.0 |
+| Completionist Cape | `assets/characters/wardrobe/external/completionist_cape_julien_savoie.glb` | Julien Savoie | https://poly.pizza/m/4bSdFtCi1Xp | CC BY 3.0 |
+| Backpack | `assets/characters/wardrobe/external/backpack_quaternius.glb` | Quaternius | https://poly.pizza/m/vF7TuXCPDH | CC0 1.0 |
 | Universal Animation Library (Standard/free), `UAL1_Standard.glb` | `assets/animations/` | Quaternius | https://quaternius.itch.io/universal-animation-library | CC0 1.0 |
 | Universal Animation Library 2 (Standard/free), `UAL2_Standard.glb` | `assets/animations/` | Quaternius | https://quaternius.itch.io/universal-animation-library-2 | CC0 1.0 |
 | Basement Boxing Ring HDRI (1k), used for ambient/reflection lighting only | `assets/stages/ring/basement_boxing_ring_1k.hdr` | Sergej Majboroda / Poly Haven | https://polyhaven.com/a/basement_boxing_ring | CC0 1.0 |
@@ -104,3 +109,11 @@ Third-party assets are CC0, except the Permanent Marker font that `tools/build_l
 Notes:
 - `Superhero_Male_FullBody.gltf` was edited to point to `T_Hair_1_Normal.png` / `T_Eye_Normal.png` (the shipped file referenced missing `*_png.png` names).
 - `T_Superhero_Male_Light.png` is the pack's `T_Superhero_Male_Ligh.png`, renamed.
+
+## Clothing Pavlov bulk collection
+
+The 96 imported wearable models in `assets/characters/wardrobe/pavlov_imports/` retain their original colours and are fitted to FightLab skeletons. Full per-model creator, licence and source attribution is in [Clothing Pavlov credits](../../characters/wardrobe/pavlov_imports/CREDITS.md). CC BY 3.0 models are modified by resizing, attachment alignment and, for shirts, character skin weights. Eight additional fantasy garment review styles use the downloaded Quaternius Peasant/Ranger alternate textures (CC0 1.0).
+
+## Expanded Clothing Pavlov library
+
+Downloaded model sources, author/licence attribution, duplicate handling and mesh conversions are documented in [Expanded clothing library credits](../../characters/wardrobe/library/CREDITS.md). Per-model source URLs and geometry hashes are retained in the library catalogs. Downloaded research garments preserve their original PLY meshes; the PVM representation and runtime bone weights are conversion/fitting changes.

@@ -20,6 +20,8 @@ var camera_mouse_origin := Vector2.ZERO
 var camera_initialized := false
 var sequence=preload("res://scripts/motion_sequence.gd").new()
 var chain_data: Array[String]=[]
+var chain_profiles:Array[Dictionary]=[]
+var chain_settings_path := "user://animation_chain.cfg"
 var chain_chips: Array[Control]=[]
 var chain_remove_buttons: Array[Button]=[]
 var chain_panel: HBoxContainer
@@ -35,8 +37,14 @@ var repeat_playing := false
 var repeat_wait := 0.0
 var repeat_cycles := 0
 
+func creation_bot_outfits() -> Array[Dictionary]:
+	var profiles: Array[Dictionary] = []
+	for index in 3: profiles.append(preload("res://scripts/creation_bot_outfit.gd").profile(index))
+	return profiles
+
 func _ready() -> void:
 	auto_advance=false
+	load_chain_state()
 	camera_upper_allowance=0.40
 	super._ready()
 	configuring=false
@@ -100,7 +108,7 @@ func build_ui() -> void:
 	chain_panel.alignment=BoxContainer.ALIGNMENT_CENTER
 	chain_panel.add_theme_constant_override("separation",6)
 	column.add_child(chain_panel)
-	chain_count=menu_label(chain_panel,"Chain",14)
+	chain_count=menu_label(chain_panel,"Animation Chain",14)
 	remove_step_button=button(chain_panel,"−",remove_chain_step)
 	remove_step_button.custom_minimum_size=Vector2(36,32)
 	remove_step_button.tooltip_text="Remove the last animation"
@@ -239,11 +247,15 @@ func can_append_animation(step: String) -> bool:
 func refresh_chain_options() -> void:
 	var grounded:=true
 	var valid_steps: Array[String]=[]
+	var valid_profiles:Array[Dictionary]=[]
 	for step in chain_data:
 		if step=="End" or not sequence.OPTIONS.has(step) or not sequence.allowed_for_state(step,grounded):break
+		var slot:=valid_steps.size()
+		valid_profiles.append(chain_profiles[slot].duplicate(true) if slot<chain_profiles.size() else {})
 		valid_steps.append(step)
 		grounded=sequence.state_after(step,grounded)
 	chain_data=valid_steps
+	chain_profiles=valid_profiles
 	for child in chain_steps.get_children():
 		chain_steps.remove_child(child)
 		child.queue_free()
@@ -255,13 +267,14 @@ func refresh_chain_options() -> void:
 		if i>0:menu_label(chain_steps,"→",15)
 		var chip:=HBoxContainer.new()
 		chain_steps.add_child(chip)
-		menu_label(chip,"%d. %s"%[i+1,chain_data[i]],15)
+		var animation_name:String=str(chain_profiles[i].get("title",chain_data[i]))
+		menu_label(chip,"%d. %s"%[i+1,animation_name],15)
 		var remove:=button(chip,"×",func():remove_chain_step(i))
 		remove.custom_minimum_size=Vector2(30,30)
-		remove.tooltip_text="Remove "+chain_data[i]
+		remove.tooltip_text="Remove "+animation_name
 		chain_chips.append(chip)
 		chain_remove_buttons.append(remove)
-	chain_count.text="Chain (%d)"%chain_data.size()
+	chain_count.text="Animation Chain (%d)"%chain_data.size()
 	remove_step_button.disabled=chain_data.is_empty()
 	update_playback_buttons()
 
@@ -275,13 +288,72 @@ func remove_chain_step(index: int=-1) -> void:
 	if index<0:index=chain_data.size()-1
 	if index>=chain_data.size():return
 	chain_data.remove_at(index)
+	if index<chain_profiles.size():chain_profiles.remove_at(index)
 	settings_changed()
+	save_chain_state()
 
-func set_chain(steps: Array) -> void:
+func set_chain(steps: Array,profiles:Array=[]) -> void:
 	move_menu.select(0)
+	var selected_steps:Array=steps.slice(0,MAX_CHAIN_STEPS)
+	var selected_profiles:Array=profiles.duplicate(true)
 	chain_data.clear()
-	for step in steps.slice(0,MAX_CHAIN_STEPS):chain_data.append(str(step))
+	chain_profiles.clear()
+	for i in selected_steps.size():
+		if not sequence.OPTIONS.has(str(selected_steps[i])):continue
+		chain_data.append(str(selected_steps[i]))
+		chain_profiles.append(selected_profiles[i] if i<selected_profiles.size() and selected_profiles[i] is Dictionary else {})
 	settings_changed()
+	save_chain_state()
+
+func save_chain_state() -> void:
+	if editor_section!="Animations" or chain_settings_path.is_empty():return
+	var config:=ConfigFile.new()
+	config.set_value("chain","version",3)
+	config.set_value("chain","steps",chain_data)
+	config.set_value("chain","animations",chain_profiles)
+	config.save(chain_settings_path)
+
+func load_chain_state() -> void:
+	if editor_section!="Animations" or chain_settings_path.is_empty():return
+	var config:=ConfigFile.new()
+	if config.load(chain_settings_path)!=OK:
+		seed_default_chain()
+		return
+	var version:int=int(config.get_value("chain","version",1))
+	var steps=config.get_value("chain","steps",[])
+	var profiles=config.get_value("chain","animations",[])
+	if not steps is Array or not profiles is Array:return
+	chain_data.clear()
+	chain_profiles.clear()
+	for i in mini(steps.size(),MAX_CHAIN_STEPS):
+		if not sequence.OPTIONS.has(str(steps[i])):continue
+		chain_data.append(str(steps[i]))
+		chain_profiles.append(profiles[i].duplicate(true) if i<profiles.size() and profiles[i] is Dictionary else {})
+	# Replace the old one-step starter example once, while preserving any chain
+	# the player has already built.
+	if version<2 and chain_data==["Idle"]:
+		seed_default_chain()
+	elif version<3 and chain_data.size()==3 and chain_profiles.all(func(profile):return profile.is_empty()):
+		append_default_chain_steps(2)
+		save_chain_state()
+	elif version<3:
+		save_chain_state()
+
+func seed_default_chain() -> void:
+	chain_data.clear()
+	chain_profiles.clear()
+	append_default_chain_steps(5)
+	save_chain_state()
+
+func append_default_chain_steps(count:int) -> void:
+	var pool:Array[String]=["Run","Dash","Punch","Block","Crouch","Cross","Hook","Kick","Elbow"]
+	for existing in chain_data:pool.erase(existing)
+	var rng:=RandomNumberGenerator.new()
+	rng.randomize()
+	for _i in mini(count,pool.size()):
+		var step:String=pool.pop_at(rng.randi_range(0,pool.size()-1))
+		chain_data.append(step)
+		chain_profiles.append({})
 
 func prepare_setup(run: bool) -> void:
 	sequence.reset()
@@ -357,7 +429,7 @@ func perform_case() -> void:
 		target.air_momentum=Vector3.ZERO
 		partner_jumping=true
 	if catalog[0].kind=="sequence":
-		sequence.start(actor,chosen_steps(),dash_direction_menu.selected)
+		sequence.start(actor,chosen_steps(),dash_direction_menu.selected,chain_profiles)
 		return
 	if catalog[0].get("sandbox_air",false):
 		actor.start_jump("flip")
@@ -421,13 +493,16 @@ func camera_text_editing() -> bool:
 func _process(delta: float) -> void:
 	if not is_instance_valid(field):
 		return
-	if camera_input_enabled and get_window().has_focus() and not camera_text_editing():
+	if camera_input_enabled and camera_keyboard_enabled() and get_window().has_focus() and not camera_text_editing():
 		var direction:=Vector3(float(Input.is_physical_key_pressed(KEY_D))-float(Input.is_physical_key_pressed(KEY_A)),float(Input.is_physical_key_pressed(KEY_E))-float(Input.is_physical_key_pressed(KEY_Q)),float(Input.is_physical_key_pressed(KEY_W))-float(Input.is_physical_key_pressed(KEY_S)))
 		if direction.length_squared()>0:
 			take_camera_control()
 			inspection_camera.move(direction,delta/maxf(Engine.time_scale,0.01),Input.is_physical_key_pressed(KEY_SHIFT))
 	if inspection_camera.manual:
 		inspection_camera.apply(field.camera)
+
+func camera_keyboard_enabled() -> bool:
+	return true
 
 func stop_camera_drag() -> void:
 	if camera_dragging:
@@ -439,7 +514,22 @@ func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		stop_camera_drag()
 
+func release_camera_text_focus(event: InputEvent) -> void:
+	var focused:=get_viewport().gui_get_focus_owner()
+	if not focused is LineEdit:return
+	if event is InputEventMouseButton and event.pressed:
+		# Panels consume clicks before _unhandled_input, so handle focus here.
+		# Include the spinner arrows in the field's interactive area.
+		var field_control:Control=focused.get_parent() if focused.get_parent() is SpinBox else focused
+		if not field_control.get_global_rect().has_point(event.position):
+			if field_control is SpinBox:field_control.apply()
+			focused.release_focus()
+	elif event is InputEventKey and event.pressed and event.keycode in [KEY_ENTER,KEY_KP_ENTER,KEY_ESCAPE]:
+		# Let the field submit/revert first, then return the keyboard to the camera.
+		focused.release_focus.call_deferred()
+
 func _input(event: InputEvent) -> void:
+	release_camera_text_focus(event)
 	# Release even over a menu so the cursor can never remain captured.
 	if camera_dragging:
 		if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_MIDDLE and not event.pressed:
@@ -496,6 +586,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	match event.keycode:
+		KEY_LEFT,KEY_RIGHT,KEY_UP,KEY_DOWN:
+			take_camera_control()
+			inspection_camera.orbit(Vector2(-15 if event.keycode==KEY_LEFT else (15 if event.keycode==KEY_RIGHT else 0),-15 if event.keycode==KEY_UP else (15 if event.keycode==KEY_DOWN else 0)))
+			inspection_camera.apply(field.camera)
+		KEY_PAGEUP,KEY_PAGEDOWN:
+			take_camera_control()
+			inspection_camera.zoom(1 if event.keycode==KEY_PAGEUP else -1)
+			inspection_camera.apply(field.camera)
 		KEY_R,KEY_ENTER: run_setup()
 		KEY_X: reset_setup()
 		KEY_SPACE: toggle_pause()

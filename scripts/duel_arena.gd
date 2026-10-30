@@ -34,6 +34,8 @@ var mana_bars: Array = []
 var stamina_bars: Array = []
 var resource_labels: Array = []
 var review_camera := false
+var story_mode := false
+var story_profile: Dictionary = {}
 
 func _ready() -> void:
 	rng.seed = 715391
@@ -55,9 +57,14 @@ func _ready() -> void:
 		var f = Fighter.new()
 		f.team = i
 		f.arena = self
+		if story_mode and i == 0:
+			f.story_profile = story_profile.duplicate(true)
+			f.player_controlled = true
+			f.brain_enabled = false
 		add_child(f)
 		fighters.append(f)
-		FighterTag.attach(f,element_name(i)+" FIGHTER")
+		var fighter_name := str(story_profile.get("name", "YOU")) if story_mode and i == 0 else ("OPPONENT" if story_mode else element_name(i)+" FIGHTER")
+		FighterTag.attach(f, fighter_name)
 		var light = vfx.projectile(i, "orb", 0.09)
 		add_child(light)
 		light.visible = false

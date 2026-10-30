@@ -47,3 +47,6 @@ func step() -> void:
 		piece[0].global_position=(a+b)*0.5
 		piece[0].global_basis=Basis(Quaternion(Vector3.UP,axis.normalized()))
 		piece[0].scale=Vector3(1,maxf(0.15,axis.length()+0.08),1)
+
+func _process(_delta:float) -> void:
+	step()

@@ -1,0 +1,2394 @@
+[
+	{
+		"author": "Michael Fuchs",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 141248.0,
+		"file": "fBVNVcL33fk.glb",
+		"id": "poly_fBVNVcL33fk",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Adventurers Hat · Michael Fuchs",
+		"original_name": "Adventurers Hat · Michael Fuchs",
+		"slot": "wardrobe_hat",
+		"source": "Michael Fuchs · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1960.0,
+		"url": "https://poly.pizza/m/fBVNVcL33fk",
+		"value": "Pavlov:poly_fBVNVcL33fk"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sunglasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 140768.0,
+		"file": "0Wsi-ygmiIX.glb",
+		"id": "poly_0Wsi-ygmiIX",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Aviator sunglasses · Poly by Google",
+		"original_name": "Aviator sunglasses · Poly by Google",
+		"slot": "wardrobe_mask",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 6884.0,
+		"url": "https://poly.pizza/m/0Wsi-ygmiIX",
+		"value": "Pavlov:poly_0Wsi-ygmiIX"
+	},
+	{
+		"author": "Quaternius",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 99444.0,
+		"file": "2g9Jm7kvIU.glb",
+		"id": "poly_2g9Jm7kvIU",
+		"kind": "backpack",
+		"license": "CC0 1.0",
+		"name": "Backpack · Quaternius",
+		"original_name": "Backpack · Quaternius",
+		"slot": "wardrobe_back",
+		"source": "Quaternius · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1748.0,
+		"url": "https://poly.pizza/m/2g9Jm7kvIU",
+		"value": "Pavlov:poly_2g9Jm7kvIU"
+	},
+	{
+		"author": "Alex Safayan",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 103844.0,
+		"file": "5UQVd1Agl11.glb",
+		"id": "poly_5UQVd1Agl11",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack · Alex Safayan",
+		"original_name": "Backpack · Alex Safayan",
+		"slot": "wardrobe_back",
+		"source": "Alex Safayan · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1404.0,
+		"url": "https://poly.pizza/m/5UQVd1Agl11",
+		"value": "Pavlov:poly_5UQVd1Agl11"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 17960.0,
+		"file": "cJFKpOZzl8s.glb",
+		"id": "poly_cJFKpOZzl8s",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack · jeremy",
+		"original_name": "Backpack · jeremy",
+		"slot": "wardrobe_back",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 304.0,
+		"url": "https://poly.pizza/m/cJFKpOZzl8s",
+		"value": "Pavlov:poly_cJFKpOZzl8s"
+	},
+	{
+		"author": "Emmett “TawpShelf” Baber",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 66972.0,
+		"file": "ems9KHrB_4x.glb",
+		"id": "poly_ems9KHrB_4x",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack · Emmett “TawpShelf” Baber",
+		"original_name": "Backpack · Emmett “TawpShelf” Baber",
+		"slot": "wardrobe_back",
+		"source": "Emmett “TawpShelf” Baber · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 730.0,
+		"url": "https://poly.pizza/m/ems9KHrB_4x",
+		"value": "Pavlov:poly_ems9KHrB_4x"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 67720.0,
+		"file": "N2wKlicUau.glb",
+		"id": "poly_N2wKlicUau",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack · J-Toastie",
+		"original_name": "Backpack · J-Toastie",
+		"slot": "wardrobe_back",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 894.0,
+		"url": "https://poly.pizza/m/N2wKlicUau",
+		"value": "Pavlov:poly_N2wKlicUau"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 54280.0,
+		"file": "uRRsiIZKHG.glb",
+		"id": "poly_uRRsiIZKHG",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack · J-Toastie (1)",
+		"original_name": "Backpack · J-Toastie",
+		"slot": "wardrobe_back",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 746.0,
+		"url": "https://poly.pizza/m/uRRsiIZKHG",
+		"value": "Pavlov:poly_uRRsiIZKHG"
+	},
+	{
+		"author": "Don Carson",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 212024.0,
+		"file": "aVCjXvxs6sP.glb",
+		"id": "poly_aVCjXvxs6sP",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Backpack & Flashlight · Don Carson",
+		"original_name": "Backpack & Flashlight · Don Carson",
+		"slot": "wardrobe_back",
+		"source": "Don Carson · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2818.0,
+		"url": "https://poly.pizza/m/aVCjXvxs6sP",
+		"value": "Pavlov:poly_aVCjXvxs6sP"
+	},
+	{
+		"author": "Republic Clone",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 3468.0,
+		"file": "9xm5jS34YV8.glb",
+		"id": "poly_9xm5jS34YV8",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "bamboo hat · Republic Clone",
+		"original_name": "bamboo hat · Republic Clone",
+		"slot": "wardrobe_hat",
+		"source": "Republic Clone · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 22.0,
+		"url": "https://poly.pizza/m/9xm5jS34YV8",
+		"value": "Pavlov:poly_9xm5jS34YV8"
+	},
+	{
+		"author": "Jarlan Perez",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 21588.0,
+		"file": "2uKEHjO_QL0.glb",
+		"id": "poly_2uKEHjO_QL0",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Baseball Cap · Jarlan Perez",
+		"original_name": "Baseball Cap · Jarlan Perez",
+		"slot": "wardrobe_hat",
+		"source": "Jarlan Perez · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 372.0,
+		"url": "https://poly.pizza/m/2uKEHjO_QL0",
+		"value": "Pavlov:poly_2uKEHjO_QL0"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 10176.0,
+		"file": "aaC5GgcWEhM.glb",
+		"id": "poly_aaC5GgcWEhM",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Baseball cap · Poly by Google",
+		"original_name": "Baseball cap · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 416.0,
+		"url": "https://poly.pizza/m/aaC5GgcWEhM",
+		"value": "Pavlov:poly_aaC5GgcWEhM"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 19364.0,
+		"file": "dzfCdDABuiQ.glb",
+		"id": "poly_dzfCdDABuiQ",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Baseball cap · jeremy",
+		"original_name": "Baseball cap · jeremy",
+		"slot": "wardrobe_hat",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 292.0,
+		"url": "https://poly.pizza/m/dzfCdDABuiQ",
+		"value": "Pavlov:poly_dzfCdDABuiQ"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "boots",
+		"body_part_hints": [
+			"boots"
+		],
+		"body_part_keywords": [
+			"boots"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 12448.0,
+		"file": "7HbqG8RwRcA.glb",
+		"id": "poly_7HbqG8RwRcA",
+		"kind": "boots",
+		"license": "CC-BY 3.0",
+		"name": "Boots · Poly by Google",
+		"original_name": "Boots · Poly by Google",
+		"slot": "wardrobe_boots",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 154.0,
+		"url": "https://poly.pizza/m/7HbqG8RwRcA",
+		"value": "Pavlov:poly_7HbqG8RwRcA"
+	},
+	{
+		"author": "Isa Lousberg",
+		"body_part": "boots",
+		"body_part_hints": [
+			"boots"
+		],
+		"body_part_keywords": [
+			"boots"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 46420.0,
+		"file": "7XCvej7wZU.glb",
+		"id": "poly_7XCvej7wZU",
+		"kind": "boots",
+		"license": "CC0 1.0",
+		"name": "Boots · Isa Lousberg",
+		"original_name": "Boots · Isa Lousberg",
+		"slot": "wardrobe_boots",
+		"source": "Isa Lousberg · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 644.0,
+		"url": "https://poly.pizza/m/7XCvej7wZU",
+		"value": "Pavlov:poly_7XCvej7wZU"
+	},
+	{
+		"author": "Michael Fuchs",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 101384.0,
+		"file": "7V3WmCnNaUo.glb",
+		"id": "poly_7V3WmCnNaUo",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Cap · Michael Fuchs",
+		"original_name": "Cap · Michael Fuchs",
+		"slot": "wardrobe_hat",
+		"source": "Michael Fuchs · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1388.0,
+		"url": "https://poly.pizza/m/7V3WmCnNaUo",
+		"value": "Pavlov:poly_7V3WmCnNaUo"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 32916.0,
+		"file": "aWxhfEnYwl.glb",
+		"id": "poly_aWxhfEnYwl",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Cap · J-Toastie",
+		"original_name": "Cap · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 418.0,
+		"url": "https://poly.pizza/m/aWxhfEnYwl",
+		"value": "Pavlov:poly_aWxhfEnYwl"
+	},
+	{
+		"author": "MiniPoly",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 228080.0,
+		"file": "xgvwyFDSAM.glb",
+		"id": "poly_xgvwyFDSAM",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Christmas Cap · MiniPoly",
+		"original_name": "Christmas Cap · MiniPoly",
+		"slot": "wardrobe_hat",
+		"source": "MiniPoly · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 3240.0,
+		"url": "https://poly.pizza/m/xgvwyFDSAM",
+		"value": "Pavlov:poly_xgvwyFDSAM"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"mask"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39788.0,
+		"file": "6VYnWsnVeh.glb",
+		"id": "poly_6VYnWsnVeh",
+		"kind": "mask",
+		"license": "CC-BY 3.0",
+		"name": "Clown Mask · J-Toastie",
+		"original_name": "Clown Mask · J-Toastie",
+		"slot": "wardrobe_mask",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 536.0,
+		"url": "https://poly.pizza/m/6VYnWsnVeh",
+		"value": "Pavlov:poly_6VYnWsnVeh"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 15636.0,
+		"file": "aWzUlZtGLC0.glb",
+		"id": "poly_aWzUlZtGLC0",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Cowboy hat · Poly by Google",
+		"original_name": "Cowboy hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1075.0,
+		"url": "https://poly.pizza/m/aWzUlZtGLC0",
+		"value": "Pavlov:poly_aWzUlZtGLC0"
+	},
+	{
+		"author": "Tipatat Chennavasin",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 21368.0,
+		"file": "fOEalpDIavB.glb",
+		"id": "poly_fOEalpDIavB",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Cowboy hat · Tipatat Chennavasin",
+		"original_name": "Cowboy hat · Tipatat Chennavasin",
+		"slot": "wardrobe_hat",
+		"source": "Tipatat Chennavasin · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 180.0,
+		"url": "https://poly.pizza/m/fOEalpDIavB",
+		"value": "Pavlov:poly_fOEalpDIavB"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 27808.0,
+		"file": "jcXfae4GiZ.glb",
+		"id": "poly_jcXfae4GiZ",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Cowboy Hat · J-Toastie",
+		"original_name": "Cowboy Hat · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 390.0,
+		"url": "https://poly.pizza/m/jcXfae4GiZ",
+		"value": "Pavlov:poly_jcXfae4GiZ"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"crown"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 66808.0,
+		"file": "0seQ0mn72s5.glb",
+		"id": "poly_0seQ0mn72s5",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Crown · Poly by Google",
+		"original_name": "Crown · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 3120.0,
+		"url": "https://poly.pizza/m/0seQ0mn72s5",
+		"value": "Pavlov:poly_0seQ0mn72s5"
+	},
+	{
+		"author": "Potential Synergy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"crown"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 5172.0,
+		"file": "3uTiBmJOhB0.glb",
+		"id": "poly_3uTiBmJOhB0",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "crown · Potential Synergy",
+		"original_name": "crown · Potential Synergy",
+		"slot": "wardrobe_hat",
+		"source": "Potential Synergy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 44.0,
+		"url": "https://poly.pizza/m/3uTiBmJOhB0",
+		"value": "Pavlov:poly_3uTiBmJOhB0"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"crown"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 215520.0,
+		"file": "aIW687xg5M4.glb",
+		"id": "poly_aIW687xg5M4",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Crown · Poly by Google (1)",
+		"original_name": "Crown · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 7980.0,
+		"url": "https://poly.pizza/m/aIW687xg5M4",
+		"value": "Pavlov:poly_aIW687xg5M4"
+	},
+	{
+		"author": "Quaternius",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"crown"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 47620.0,
+		"file": "i0PZVuVlYv.glb",
+		"id": "poly_i0PZVuVlYv",
+		"kind": "hat",
+		"license": "CC0 1.0",
+		"name": "Crown · Quaternius",
+		"original_name": "Crown · Quaternius",
+		"slot": "wardrobe_hat",
+		"source": "Quaternius · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 840.0,
+		"url": "https://poly.pizza/m/i0PZVuVlYv",
+		"value": "Pavlov:poly_i0PZVuVlYv"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"helmet"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 1772088.0,
+		"file": "8Htf9hrbXkE.glb",
+		"id": "poly_8Htf9hrbXkE",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Football helmet · Poly by Google",
+		"original_name": "Football helmet · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 28639.0,
+		"url": "https://poly.pizza/m/8Htf9hrbXkE",
+		"value": "Pavlov:poly_8Htf9hrbXkE"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"helmet"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 30780.0,
+		"file": "dCmNk08B6gs.glb",
+		"id": "poly_dCmNk08B6gs",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Football helmet · Poly by Google (1)",
+		"original_name": "Football helmet · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1044.0,
+		"url": "https://poly.pizza/m/dCmNk08B6gs",
+		"value": "Pavlov:poly_dCmNk08B6gs"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 72924.0,
+		"file": "vIhmiBqBtr.glb",
+		"id": "poly_vIhmiBqBtr",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Fox Hat · J-Toastie",
+		"original_name": "Fox Hat · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 982.0,
+		"url": "https://poly.pizza/m/vIhmiBqBtr",
+		"value": "Pavlov:poly_vIhmiBqBtr"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 18956.0,
+		"file": "IBL2UX2eOZ.glb",
+		"id": "poly_IBL2UX2eOZ",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Frog Hat · J-Toastie",
+		"original_name": "Frog Hat · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 228.0,
+		"url": "https://poly.pizza/m/IBL2UX2eOZ",
+		"value": "Pavlov:poly_IBL2UX2eOZ"
+	},
+	{
+		"author": "Cody Stricker",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"mask"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 25524.0,
+		"file": "365iY3sq4A2.glb",
+		"id": "poly_365iY3sq4A2",
+		"kind": "mask",
+		"license": "CC-BY 3.0",
+		"name": "Gas Mask · Cody Stricker",
+		"original_name": "Gas Mask · Cody Stricker",
+		"slot": "wardrobe_mask",
+		"source": "Cody Stricker · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 300.0,
+		"url": "https://poly.pizza/m/365iY3sq4A2",
+		"value": "Pavlov:poly_365iY3sq4A2"
+	},
+	{
+		"author": "Marisha",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"mask"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 173612.0,
+		"file": "7dNxPcg8HyL.glb",
+		"id": "poly_7dNxPcg8HyL",
+		"kind": "mask",
+		"license": "CC-BY 3.0",
+		"name": "gas mask · Marisha",
+		"original_name": "gas mask · Marisha",
+		"slot": "wardrobe_mask",
+		"source": "Marisha · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2210.0,
+		"url": "https://poly.pizza/m/7dNxPcg8HyL",
+		"value": "Pavlov:poly_7dNxPcg8HyL"
+	},
+	{
+		"author": "Michael Fuchs",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 709104.0,
+		"file": "14ZGcuiRJ9d.glb",
+		"id": "poly_14ZGcuiRJ9d",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Glasses · Michael Fuchs",
+		"original_name": "Glasses · Michael Fuchs",
+		"slot": "wardrobe_mask",
+		"source": "Michael Fuchs · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 10040.0,
+		"url": "https://poly.pizza/m/14ZGcuiRJ9d",
+		"value": "Pavlov:poly_14ZGcuiRJ9d"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 42768.0,
+		"file": "1TJPsi4VIT.glb",
+		"id": "poly_1TJPsi4VIT",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1040.0,
+		"url": "https://poly.pizza/m/1TJPsi4VIT",
+		"value": "Pavlov:poly_1TJPsi4VIT"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 38372.0,
+		"file": "3jamofoetY.glb",
+		"id": "poly_3jamofoetY",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (1)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 992.0,
+		"url": "https://poly.pizza/m/3jamofoetY",
+		"value": "Pavlov:poly_3jamofoetY"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 48220.0,
+		"file": "7NZp449iJq.glb",
+		"id": "poly_7NZp449iJq",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (2)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1000.0,
+		"url": "https://poly.pizza/m/7NZp449iJq",
+		"value": "Pavlov:poly_7NZp449iJq"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 19168.0,
+		"file": "9i5mmOwt7cu.glb",
+		"id": "poly_9i5mmOwt7cu",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Glasses · jeremy",
+		"original_name": "Glasses · jeremy",
+		"slot": "wardrobe_mask",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 352.0,
+		"url": "https://poly.pizza/m/9i5mmOwt7cu",
+		"value": "Pavlov:poly_9i5mmOwt7cu"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 42240.0,
+		"file": "9SQY3Gsq2s.glb",
+		"id": "poly_9SQY3Gsq2s",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (3)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 984.0,
+		"url": "https://poly.pizza/m/9SQY3Gsq2s",
+		"value": "Pavlov:poly_9SQY3Gsq2s"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39796.0,
+		"file": "9xOJlCsQzX.glb",
+		"id": "poly_9xOJlCsQzX",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (4)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 952.0,
+		"url": "https://poly.pizza/m/9xOJlCsQzX",
+		"value": "Pavlov:poly_9xOJlCsQzX"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 29116.0,
+		"file": "crbuIoq2dO.glb",
+		"id": "poly_crbuIoq2dO",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (5)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 586.0,
+		"url": "https://poly.pizza/m/crbuIoq2dO",
+		"value": "Pavlov:poly_crbuIoq2dO"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 46380.0,
+		"file": "DBEk0SMQCt.glb",
+		"id": "poly_DBEk0SMQCt",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (6)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1020.0,
+		"url": "https://poly.pizza/m/DBEk0SMQCt",
+		"value": "Pavlov:poly_DBEk0SMQCt"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 40124.0,
+		"file": "Dz9SyIEq7w.glb",
+		"id": "poly_Dz9SyIEq7w",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (7)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 888.0,
+		"url": "https://poly.pizza/m/Dz9SyIEq7w",
+		"value": "Pavlov:poly_Dz9SyIEq7w"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 41692.0,
+		"file": "fNEK0SGJ6D.glb",
+		"id": "poly_fNEK0SGJ6D",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (8)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1000.0,
+		"url": "https://poly.pizza/m/fNEK0SGJ6D",
+		"value": "Pavlov:poly_fNEK0SGJ6D"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 45564.0,
+		"file": "j3xPyO1mvt.glb",
+		"id": "poly_j3xPyO1mvt",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (9)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 992.0,
+		"url": "https://poly.pizza/m/j3xPyO1mvt",
+		"value": "Pavlov:poly_j3xPyO1mvt"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 40108.0,
+		"file": "j3zHqDAnzH.glb",
+		"id": "poly_j3zHqDAnzH",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (10)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 882.0,
+		"url": "https://poly.pizza/m/j3zHqDAnzH",
+		"value": "Pavlov:poly_j3zHqDAnzH"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 49780.0,
+		"file": "LYEp20yfFh.glb",
+		"id": "poly_LYEp20yfFh",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (11)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1066.0,
+		"url": "https://poly.pizza/m/LYEp20yfFh",
+		"value": "Pavlov:poly_LYEp20yfFh"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39016.0,
+		"file": "oc8MPJuSud.glb",
+		"id": "poly_oc8MPJuSud",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (12)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 928.0,
+		"url": "https://poly.pizza/m/oc8MPJuSud",
+		"value": "Pavlov:poly_oc8MPJuSud"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 36748.0,
+		"file": "oQtjZCNFoo.glb",
+		"id": "poly_oQtjZCNFoo",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (13)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 892.0,
+		"url": "https://poly.pizza/m/oQtjZCNFoo",
+		"value": "Pavlov:poly_oQtjZCNFoo"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39448.0,
+		"file": "p5QgQxkMBE.glb",
+		"id": "poly_p5QgQxkMBE",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (14)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 904.0,
+		"url": "https://poly.pizza/m/p5QgQxkMBE",
+		"value": "Pavlov:poly_p5QgQxkMBE"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39320.0,
+		"file": "SyNFHIhIDd.glb",
+		"id": "poly_SyNFHIhIDd",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (15)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 904.0,
+		"url": "https://poly.pizza/m/SyNFHIhIDd",
+		"value": "Pavlov:poly_SyNFHIhIDd"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 38212.0,
+		"file": "WoYlUvyUAb.glb",
+		"id": "poly_WoYlUvyUAb",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (16)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 868.0,
+		"url": "https://poly.pizza/m/WoYlUvyUAb",
+		"value": "Pavlov:poly_WoYlUvyUAb"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 44380.0,
+		"file": "XLysBbtilu.glb",
+		"id": "poly_XLysBbtilu",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (17)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1096.0,
+		"url": "https://poly.pizza/m/XLysBbtilu",
+		"value": "Pavlov:poly_XLysBbtilu"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 42944.0,
+		"file": "YchMXfQNU0.glb",
+		"id": "poly_YchMXfQNU0",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (18)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 888.0,
+		"url": "https://poly.pizza/m/YchMXfQNU0",
+		"value": "Pavlov:poly_YchMXfQNU0"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 42880.0,
+		"file": "yYdsPoULg1.glb",
+		"id": "poly_yYdsPoULg1",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Glasses · iPoly3D (19)",
+		"original_name": "Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 948.0,
+		"url": "https://poly.pizza/m/yYdsPoULg1",
+		"value": "Pavlov:poly_yYdsPoULg1"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"cap"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 9264.0,
+		"file": "4v0sRFH6PN9.glb",
+		"id": "poly_4v0sRFH6PN9",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Graduation cap · Poly by Google",
+		"original_name": "Graduation cap · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 112.0,
+		"url": "https://poly.pizza/m/4v0sRFH6PN9",
+		"value": "Pavlov:poly_4v0sRFH6PN9"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 54072.0,
+		"file": "9AMKar2NlkX.glb",
+		"id": "poly_9AMKar2NlkX",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Hard hat · Poly by Google",
+		"original_name": "Hard hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 738.0,
+		"url": "https://poly.pizza/m/9AMKar2NlkX",
+		"value": "Pavlov:poly_9AMKar2NlkX"
+	},
+	{
+		"author": "joney_lol",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 26644.0,
+		"file": "ccKTHG1Mpd.glb",
+		"id": "poly_ccKTHG1Mpd",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Hard hat · joney_lol",
+		"original_name": "Hard hat · joney_lol",
+		"slot": "wardrobe_hat",
+		"source": "joney_lol · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 680.0,
+		"url": "https://poly.pizza/m/ccKTHG1Mpd",
+		"value": "Pavlov:poly_ccKTHG1Mpd"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "misc",
+		"body_part_hints": [],
+		"body_part_keywords": [],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "unknown",
+		"bytes": 347468.0,
+		"file": "cyjbHPC6QAM.glb",
+		"id": "poly_cyjbHPC6QAM",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Hardhat · Poly by Google",
+		"original_name": "Hardhat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 17564.0,
+		"url": "https://poly.pizza/m/cyjbHPC6QAM",
+		"value": "Pavlov:poly_cyjbHPC6QAM"
+	},
+	{
+		"author": "Minh Nguyen Tri",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 35432.0,
+		"file": "1S4IsNU6R28.glb",
+		"id": "poly_1S4IsNU6R28",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "hat · Minh Nguyen Tri",
+		"original_name": "hat · Minh Nguyen Tri",
+		"slot": "wardrobe_hat",
+		"source": "Minh Nguyen Tri · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 424.0,
+		"url": "https://poly.pizza/m/1S4IsNU6R28",
+		"value": "Pavlov:poly_1S4IsNU6R28"
+	},
+	{
+		"author": "Cael Wood",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 8040.0,
+		"file": "2Givq4Q3YTH.glb",
+		"id": "poly_2Givq4Q3YTH",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Hat · Cael Wood",
+		"original_name": "Hat · Cael Wood",
+		"slot": "wardrobe_hat",
+		"source": "Cael Wood · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 80.0,
+		"url": "https://poly.pizza/m/2Givq4Q3YTH",
+		"value": "Pavlov:poly_2Givq4Q3YTH"
+	},
+	{
+		"author": "Minh Nguyen Tri",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 20724.0,
+		"file": "4Tdb1s3-kug.glb",
+		"id": "poly_4Tdb1s3-kug",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "hat · Minh Nguyen Tri (1)",
+		"original_name": "hat · Minh Nguyen Tri",
+		"slot": "wardrobe_hat",
+		"source": "Minh Nguyen Tri · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 228.0,
+		"url": "https://poly.pizza/m/4Tdb1s3-kug",
+		"value": "Pavlov:poly_4Tdb1s3-kug"
+	},
+	{
+		"author": "Minh Nguyen Tri",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 25656.0,
+		"file": "8FHt9iCkDtG.glb",
+		"id": "poly_8FHt9iCkDtG",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "hat · Minh Nguyen Tri (2)",
+		"original_name": "hat · Minh Nguyen Tri",
+		"slot": "wardrobe_hat",
+		"source": "Minh Nguyen Tri · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 264.0,
+		"url": "https://poly.pizza/m/8FHt9iCkDtG",
+		"value": "Pavlov:poly_8FHt9iCkDtG"
+	},
+	{
+		"author": "Minh Nguyen Tri",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 35432.0,
+		"file": "d_AsyX_R-S3.glb",
+		"id": "poly_d_AsyX_R-S3",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "hat · Minh Nguyen Tri (3)",
+		"original_name": "hat · Minh Nguyen Tri",
+		"slot": "wardrobe_hat",
+		"source": "Minh Nguyen Tri · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 424.0,
+		"url": "https://poly.pizza/m/d_AsyX_R-S3",
+		"value": "Pavlov:poly_d_AsyX_R-S3"
+	},
+	{
+		"author": "hat_my_guy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 75336.0,
+		"file": "lNN3PlrjSa.glb",
+		"id": "poly_lNN3PlrjSa",
+		"kind": "hat",
+		"license": "CC0 1.0",
+		"name": "Hat Stylised · hat_my_guy",
+		"original_name": "Hat Stylised · hat_my_guy",
+		"slot": "wardrobe_hat",
+		"source": "hat_my_guy · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1084.0,
+		"url": "https://poly.pizza/m/lNN3PlrjSa",
+		"value": "Pavlov:poly_lNN3PlrjSa"
+	},
+	{
+		"author": "Jair Trejo",
+		"body_part": "misc",
+		"body_part_hints": [],
+		"body_part_keywords": [],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "unknown",
+		"bytes": 119200.0,
+		"file": "f31GqHEqz6N.glb",
+		"id": "poly_f31GqHEqz6N",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Hats · Jair Trejo",
+		"original_name": "Hats · Jair Trejo",
+		"slot": "wardrobe_hat",
+		"source": "Jair Trejo · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 1470.0,
+		"url": "https://poly.pizza/m/f31GqHEqz6N",
+		"value": "Pavlov:poly_f31GqHEqz6N"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 26180.0,
+		"file": "6B6ijFF01X.glb",
+		"id": "poly_6B6ijFF01X",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Heart Glasses · J-Toastie",
+		"original_name": "Heart Glasses · J-Toastie",
+		"slot": "wardrobe_mask",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 425.0,
+		"url": "https://poly.pizza/m/6B6ijFF01X",
+		"value": "Pavlov:poly_6B6ijFF01X"
+	},
+	{
+		"author": "CreativeTechLab",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"helmet"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 26096.0,
+		"file": "uSCGe4LD2v.glb",
+		"id": "poly_uSCGe4LD2v",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Helmet · CreativeTechLab",
+		"original_name": "Helmet · CreativeTechLab",
+		"slot": "wardrobe_hat",
+		"source": "CreativeTechLab · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 328.0,
+		"url": "https://poly.pizza/m/uSCGe4LD2v",
+		"value": "Pavlov:poly_uSCGe4LD2v"
+	},
+	{
+		"author": "Voxel_dev",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 189888.0,
+		"file": "pVuHdEBRUs.glb",
+		"id": "poly_pVuHdEBRUs",
+		"kind": "backpack",
+		"license": "CC0 1.0",
+		"name": "Hiking Backpack · Voxel_dev",
+		"original_name": "Hiking Backpack · Voxel_dev",
+		"slot": "wardrobe_back",
+		"source": "Voxel_dev · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2871.0,
+		"url": "https://poly.pizza/m/pVuHdEBRUs",
+		"value": "Pavlov:poly_pVuHdEBRUs"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"mask"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 26200.0,
+		"file": "RqJn2J53Sd.glb",
+		"id": "poly_RqJn2J53Sd",
+		"kind": "mask",
+		"license": "CC-BY 3.0",
+		"name": "Mask · J-Toastie",
+		"original_name": "Mask · J-Toastie",
+		"slot": "wardrobe_mask",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 392.0,
+		"url": "https://poly.pizza/m/RqJn2J53Sd",
+		"value": "Pavlov:poly_RqJn2J53Sd"
+	},
+	{
+		"author": "Emmett “TawpShelf” Baber",
+		"body_part": "back",
+		"body_part_hints": [
+			"back"
+		],
+		"body_part_keywords": [
+			"backpack"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 65736.0,
+		"file": "26m92LMKK4e.glb",
+		"id": "poly_26m92LMKK4e",
+		"kind": "backpack",
+		"license": "CC-BY 3.0",
+		"name": "Open Backpack · Emmett “TawpShelf” Baber",
+		"original_name": "Open Backpack · Emmett “TawpShelf” Baber",
+		"slot": "wardrobe_back",
+		"source": "Emmett “TawpShelf” Baber · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 714.0,
+		"url": "https://poly.pizza/m/26m92LMKK4e",
+		"value": "Pavlov:poly_26m92LMKK4e"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 39932.0,
+		"file": "tPrk0HHagr.glb",
+		"id": "poly_tPrk0HHagr",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Party Glasses · iPoly3D",
+		"original_name": "Party Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 856.0,
+		"url": "https://poly.pizza/m/tPrk0HHagr",
+		"value": "Pavlov:poly_tPrk0HHagr"
+	},
+	{
+		"author": "Minh Nguyen Tri",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 44244.0,
+		"file": "6sSj3ws927b.glb",
+		"id": "poly_6sSj3ws927b",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Pirate Hat · Minh Nguyen Tri",
+		"original_name": "Pirate Hat · Minh Nguyen Tri",
+		"slot": "wardrobe_hat",
+		"source": "Minh Nguyen Tri · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 548.0,
+		"url": "https://poly.pizza/m/6sSj3ws927b",
+		"value": "Pavlov:poly_6sSj3ws927b"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 15276.0,
+		"file": "73a4yE7VyqD.glb",
+		"id": "poly_73a4yE7VyqD",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Pirate hat · Poly by Google",
+		"original_name": "Pirate hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 504.0,
+		"url": "https://poly.pizza/m/73a4yE7VyqD",
+		"value": "Pavlov:poly_73a4yE7VyqD"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 923748.0,
+		"file": "9QEds6cYAy6.glb",
+		"id": "poly_9QEds6cYAy6",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Pirate hat · Poly by Google (1)",
+		"original_name": "Pirate hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 584.0,
+		"url": "https://poly.pizza/m/9QEds6cYAy6",
+		"value": "Pavlov:poly_9QEds6cYAy6"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"glasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 27312.0,
+		"file": "VQuqLwtyTa.glb",
+		"id": "poly_VQuqLwtyTa",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Pixel Glasses · iPoly3D",
+		"original_name": "Pixel Glasses · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 558.0,
+		"url": "https://poly.pizza/m/VQuqLwtyTa",
+		"value": "Pavlov:poly_VQuqLwtyTa"
+	},
+	{
+		"author": "TRASH - TANUKI",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sunglasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 62172.0,
+		"file": "8blN2D2T1Hk.glb",
+		"id": "poly_8blN2D2T1Hk",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Pixel Sunglasses · TRASH - TANUKI",
+		"original_name": "Pixel Sunglasses · TRASH - TANUKI",
+		"slot": "wardrobe_mask",
+		"source": "TRASH - TANUKI · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 492.0,
+		"url": "https://poly.pizza/m/8blN2D2T1Hk",
+		"value": "Pavlov:poly_8blN2D2T1Hk"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 15556.0,
+		"file": "7DkwsO3vro.glb",
+		"id": "poly_7DkwsO3vro",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Pizza Hat · J-Toastie",
+		"original_name": "Pizza Hat · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 196.0,
+		"url": "https://poly.pizza/m/7DkwsO3vro",
+		"value": "Pavlov:poly_7DkwsO3vro"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 36708.0,
+		"file": "0vAOG_PcdNb.glb",
+		"id": "poly_0vAOG_PcdNb",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Propeller hat · jeremy",
+		"original_name": "Propeller hat · jeremy",
+		"slot": "wardrobe_hat",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 608.0,
+		"url": "https://poly.pizza/m/0vAOG_PcdNb",
+		"value": "Pavlov:poly_0vAOG_PcdNb"
+	},
+	{
+		"author": "Joe Dorman",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 27932.0,
+		"file": "3QKT0IHKALm.glb",
+		"id": "poly_3QKT0IHKALm",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Santa Hat · Joe Dorman",
+		"original_name": "Santa Hat · Joe Dorman",
+		"slot": "wardrobe_hat",
+		"source": "Joe Dorman · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 326.0,
+		"url": "https://poly.pizza/m/3QKT0IHKALm",
+		"value": "Pavlov:poly_3QKT0IHKALm"
+	},
+	{
+		"author": "Casey Tumbers",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 21700.0,
+		"file": "46Bl5Ook_xw.glb",
+		"id": "poly_46Bl5Ook_xw",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Security Hat · Casey Tumbers",
+		"original_name": "Security Hat · Casey Tumbers",
+		"slot": "wardrobe_hat",
+		"source": "Casey Tumbers · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 228.0,
+		"url": "https://poly.pizza/m/46Bl5Ook_xw",
+		"value": "Pavlov:poly_46Bl5Ook_xw"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 1452480.0,
+		"file": "ayNYjI4jcW4.glb",
+		"id": "poly_ayNYjI4jcW4",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Sheriff Hat · Poly by Google",
+		"original_name": "Sheriff Hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 588.0,
+		"url": "https://poly.pizza/m/ayNYjI4jcW4",
+		"value": "Pavlov:poly_ayNYjI4jcW4"
+	},
+	{
+		"author": "iPoly3D",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"goggles"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 27856.0,
+		"file": "4YCjSY3U6H.glb",
+		"id": "poly_4YCjSY3U6H",
+		"kind": "glasses",
+		"license": "CC0 1.0",
+		"name": "Ski Goggles · iPoly3D",
+		"original_name": "Ski Goggles · iPoly3D",
+		"slot": "wardrobe_mask",
+		"source": "iPoly3D · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 636.0,
+		"url": "https://poly.pizza/m/4YCjSY3U6H",
+		"value": "Pavlov:poly_4YCjSY3U6H"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sombrero"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 342556.0,
+		"file": "7fGDqHvHap1.glb",
+		"id": "poly_7fGDqHvHap1",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Sombrero · Poly by Google",
+		"original_name": "Sombrero · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 7637.0,
+		"url": "https://poly.pizza/m/7fGDqHvHap1",
+		"value": "Pavlov:poly_7fGDqHvHap1"
+	},
+	{
+		"author": "hat_my_guy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sombrero"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 186244.0,
+		"file": "CxDnECpFJH.glb",
+		"id": "poly_CxDnECpFJH",
+		"kind": "hat",
+		"license": "CC0 1.0",
+		"name": "Sombrero · hat_my_guy",
+		"original_name": "Sombrero · hat_my_guy",
+		"slot": "wardrobe_hat",
+		"source": "hat_my_guy · CC0 1.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2344.0,
+		"url": "https://poly.pizza/m/CxDnECpFJH",
+		"value": "Pavlov:poly_CxDnECpFJH"
+	},
+	{
+		"author": "Alan Zimmerman",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"helmet"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 206128.0,
+		"file": "bk4CUUfyN1.glb",
+		"id": "poly_bk4CUUfyN1",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Space Helmet - Model 1b · Alan Zimmerman",
+		"original_name": "Space Helmet - Model 1b · Alan Zimmerman",
+		"slot": "wardrobe_hat",
+		"source": "Alan Zimmerman · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2638.0,
+		"url": "https://poly.pizza/m/bk4CUUfyN1",
+		"value": "Pavlov:poly_bk4CUUfyN1"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sunglasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 28748.0,
+		"file": "dCm3NXrMtSr.glb",
+		"id": "poly_dCm3NXrMtSr",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Sunglasses · jeremy",
+		"original_name": "Sunglasses · jeremy",
+		"slot": "wardrobe_mask",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 520.0,
+		"url": "https://poly.pizza/m/dCm3NXrMtSr",
+		"value": "Pavlov:poly_dCm3NXrMtSr"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"sunglasses"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 28392.0,
+		"file": "jfVp7cW8E5.glb",
+		"id": "poly_jfVp7cW8E5",
+		"kind": "glasses",
+		"license": "CC-BY 3.0",
+		"name": "Sunglasses · J-Toastie",
+		"original_name": "Sunglasses · J-Toastie",
+		"slot": "wardrobe_mask",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 382.0,
+		"url": "https://poly.pizza/m/jfVp7cW8E5",
+		"value": "Pavlov:poly_jfVp7cW8E5"
+	},
+	{
+		"author": "Nour",
+		"body_part": "torso",
+		"body_part_hints": [
+			"torso"
+		],
+		"body_part_keywords": [
+			"shirt"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 152704.0,
+		"file": "oZOt671DyI.glb",
+		"id": "poly_oZOt671DyI",
+		"kind": "shirt",
+		"license": "CC-BY 3.0",
+		"name": "T Shirt · Nour",
+		"original_name": "T Shirt · Nour",
+		"slot": "wardrobe_shirt",
+		"source": "Nour · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 5312.0,
+		"url": "https://poly.pizza/m/oZOt671DyI",
+		"value": "Pavlov:poly_oZOt671DyI"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "torso",
+		"body_part_hints": [
+			"torso"
+		],
+		"body_part_keywords": [
+			"shirt"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 182156.0,
+		"file": "bdOMzzh-fSl.glb",
+		"id": "poly_bdOMzzh-fSl",
+		"kind": "shirt",
+		"license": "CC-BY 3.0",
+		"name": "T-shirt · Poly by Google",
+		"original_name": "T-shirt · Poly by Google",
+		"slot": "wardrobe_shirt",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2261.0,
+		"url": "https://poly.pizza/m/bdOMzzh-fSl",
+		"value": "Pavlov:poly_bdOMzzh-fSl"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 8264.0,
+		"file": "1PP65IsuNwv.glb",
+		"id": "poly_1PP65IsuNwv",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Top hat · Poly by Google",
+		"original_name": "Top hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 240.0,
+		"url": "https://poly.pizza/m/1PP65IsuNwv",
+		"value": "Pavlov:poly_1PP65IsuNwv"
+	},
+	{
+		"author": "Jarlan Perez",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 15428.0,
+		"file": "cKVNEpmNy36.glb",
+		"id": "poly_cKVNEpmNy36",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Top Hat · Jarlan Perez",
+		"original_name": "Top Hat · Jarlan Perez",
+		"slot": "wardrobe_hat",
+		"source": "Jarlan Perez · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 424.0,
+		"url": "https://poly.pizza/m/cKVNEpmNy36",
+		"value": "Pavlov:poly_cKVNEpmNy36"
+	},
+	{
+		"author": "jeremy",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 16648.0,
+		"file": "e5kV1Y_cZJt.glb",
+		"id": "poly_e5kV1Y_cZJt",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Top hat · jeremy",
+		"original_name": "Top hat · jeremy",
+		"slot": "wardrobe_hat",
+		"source": "jeremy · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 284.0,
+		"url": "https://poly.pizza/m/e5kV1Y_cZJt",
+		"value": "Pavlov:poly_e5kV1Y_cZJt"
+	},
+	{
+		"author": "Olivia Wynn",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 13312.0,
+		"file": "5D_ieYZ0HUp.glb",
+		"id": "poly_5D_ieYZ0HUp",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Top Hat / Magician's Hat · Olivia Wynn",
+		"original_name": "Top Hat / Magician's Hat · Olivia Wynn",
+		"slot": "wardrobe_hat",
+		"source": "Olivia Wynn · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 156.0,
+		"url": "https://poly.pizza/m/5D_ieYZ0HUp",
+		"value": "Pavlov:poly_5D_ieYZ0HUp"
+	},
+	{
+		"author": "Michael Fuchs",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"helmet"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 190448.0,
+		"file": "apPuLbVJ4N5.glb",
+		"id": "poly_apPuLbVJ4N5",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Viking Helmet · Michael Fuchs",
+		"original_name": "Viking Helmet · Michael Fuchs",
+		"slot": "wardrobe_hat",
+		"source": "Michael Fuchs · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 2488.0,
+		"url": "https://poly.pizza/m/apPuLbVJ4N5",
+		"value": "Pavlov:poly_apPuLbVJ4N5"
+	},
+	{
+		"author": "J-Toastie",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 38076.0,
+		"file": "fy1Elzr3nl.glb",
+		"id": "poly_fy1Elzr3nl",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Witch Hat · J-Toastie",
+		"original_name": "Witch Hat · J-Toastie",
+		"slot": "wardrobe_hat",
+		"source": "J-Toastie · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 465.0,
+		"url": "https://poly.pizza/m/fy1Elzr3nl",
+		"value": "Pavlov:poly_fy1Elzr3nl"
+	},
+	{
+		"author": "Poly by Google",
+		"body_part": "head",
+		"body_part_hints": [
+			"head"
+		],
+		"body_part_keywords": [
+			"hat"
+		],
+		"body_part_metadata_version": 1.0,
+		"body_part_source": "title_keywords",
+		"bytes": 17360.0,
+		"file": "7VVumyY7L_u.glb",
+		"id": "poly_7VVumyY7L_u",
+		"kind": "hat",
+		"license": "CC-BY 3.0",
+		"name": "Wizard hat · Poly by Google",
+		"original_name": "Wizard hat · Poly by Google",
+		"slot": "wardrobe_hat",
+		"source": "Poly by Google · CC-BY 3.0 · Poly Pizza",
+		"success": true,
+		"triangles": 768.0,
+		"url": "https://poly.pizza/m/7VVumyY7L_u",
+		"value": "Pavlov:poly_7VVumyY7L_u"
+	}
+]
