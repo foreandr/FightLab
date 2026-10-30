@@ -99,6 +99,7 @@ var timeline_visible_library_indices:Array[int]=[]
 var timeline_tracks: VBoxContainer
 var timeline_clip_scroll: ScrollContainer
 var timeline_scrubber: Control
+var timeline_scrub_unit:CharacterBody3D
 var timeline_time_label: Label
 var timeline_priority: OptionButton
 var timeline_length_input: SpinBox
@@ -2129,7 +2130,14 @@ func _on_timeline_scrubbed(value:float) -> void:
 	clear_jump_tails(focused_unit)
 	timeline_playhead=clampf(value,0.0,timeline_duration)
 	if is_instance_valid(timeline_time_label):timeline_time_label.text="%.2f s"%value
-	if not timeline_playing:_apply_timeline_at(value,true)
+	if not timeline_playing:
+		row_preview_unit=null
+		timeline_scrub_unit=focused_unit
+		# Scrubbing is a direct seek, including backwards, rather than a live transition.
+		_apply_timeline_at(maxf(0.0,minf(timeline_playhead,timeline_duration-0.00001)),true)
+		if is_instance_valid(timeline_scrub_unit):
+			for bone in mini(actor.skeleton.get_bone_count(),timeline_scrub_unit.skeleton.get_bone_count()):
+				timeline_scrub_unit.skeleton.set_bone_pose(bone,actor.skeleton.get_bone_pose(bone))
 	_update_timeline_ruler()
 	_update_timeline_clip_highlights()
 
@@ -2146,6 +2154,7 @@ func _update_timeline_clip_highlights() -> void:
 			clip_button.modulate=Color("ffe07a") if is_active else Color.WHITE
 
 func play_timeline() -> void:
+	timeline_scrub_unit=null
 	clear_jump_tails(focused_unit,true)
 	if playtest.active:
 		var required:=0.0
@@ -2182,6 +2191,7 @@ func play_timeline() -> void:
 	_apply_timeline_at(timeline_playhead,true)
 
 func stop_timeline() -> void:
+	timeline_scrub_unit=null
 	if timeline_playing:_continue_jump_after_timeline()
 	row_preview_unit=null
 	timeline_playing=false
@@ -4809,9 +4819,9 @@ func _process(delta: float) -> void:
 		return
 	if not timeline_playing and selected_group!="Spells" and is_instance_valid(field):
 		for fighter in field.fighters:
-			if fighter.mode in ["idle","review"]:preload("res://scripts/editor_rig_pose.gd").idle(fighter,idle_preview_elapsed)
+			if fighter!=timeline_scrub_unit and fighter.mode in ["idle","review"]:preload("res://scripts/editor_rig_pose.gd").idle(fighter,idle_preview_elapsed)
 	for unit in added_units:
-		if is_instance_valid(unit) and not unit.has_meta("editor_jump_tail") and unit!=row_preview_unit and not (timeline_playing and unit==focused_unit) and not (playtest.active and unit==focused_unit and playtest.moving):_set_unit_idle_target(unit,idle_preview_elapsed)
+		if is_instance_valid(unit) and not unit.has_meta("editor_jump_tail") and unit!=row_preview_unit and unit!=timeline_scrub_unit and not (timeline_playing and unit==focused_unit) and not (playtest.active and unit==focused_unit and playtest.moving):_set_unit_idle_target(unit,idle_preview_elapsed)
 	super._process(delta)
 	if is_instance_valid(row_preview_unit) and is_instance_valid(actor):
 		var previous_elapsed:=row_preview_elapsed

@@ -55,7 +55,7 @@ func build_demo() -> void:
 	var flip_resource:=bake("hang_backflip",FLIP_DURATION,func(time:float):return sample_flip(time))
 	var swing_resource:=bake("melee_hook_to_right_slash",ATTACK_DURATION,func(time:float):return sample_swing(time))
 	var flip_entry:=derived_entry(flip_source,"Delayed backflip · inverted hold",flip_resource,"Motion","Acrobatics","Flip",[Credits.source(flip_source)],"retimed to hold inversion and unwind slowly; Melee Hook hip and counterbalance motion")
-	flip_entry.provenance=Credits.derive([Credits.source(flip_source),Credits.source(hook_source),Credits.source(slash_source)],"animation",flip_entry.title,Credits.creator_name(),"retimed inverted backflip with hook-to-slash body dynamics")
+	flip_entry.provenance=Credits.derive([flip_entry.provenance,Credits.source(hook_source),Credits.source(slash_source)],"animation",flip_entry.title,Credits.creator_name(),"retimed inverted backflip with hook-to-slash body dynamics")
 	var torso_entry:=derived_entry(hook_source,"Melee Hook → slash · torso",swing_resource,"Motion","Pose layers","Pose",[Credits.source(hook_source),Credits.source(slash_source)],"Melee Hook torso swing blended into right body slash")
 	var arm_entry:=derived_entry(slash_source,"Melee Hook → fast RIGHT slash",swing_resource,"Attack","Punch","Body Slash",[Credits.source(hook_source),Credits.source(slash_source)],"right-hand Melee Hook windup blended into accelerated right body slash")
 	arm_entry.attack_bone="hand_r"
@@ -112,7 +112,7 @@ func build_demo() -> void:
 	if "--verify-only" in OS.get_cmdline_user_args():
 		print("INVERTED HOOK SLASH VERIFIED: ",inverted_fraction*100,"% of flip inverted; exact Melee Hook; impact inverted; 4 clips; landing complete; no spells")
 		quit();return
-	var name_:="Inverted Melee Hook Right Slash"
+	var name_:=demo_name()
 	var existing:Array=[]
 	for saved in workspace.timeline_library:existing.append(str(saved.get("name","")))
 	name_=preload("res://scripts/animation_store_library.gd").unique_name(name_,existing)
@@ -137,6 +137,9 @@ func frame_camera() -> void:
 	workspace.field.camera.v_offset=0.5
 	workspace.camera_initialized=true
 	workspace.inspection_camera.capture_view(workspace.field.camera,7.5)
+
+func demo_name() -> String:
+	return "Inverted Melee Hook Right Slash"
 
 func sample_source(entry:Dictionary,progress:float) -> Dictionary:
 	workspace._sample_row_animation(entry,clampf(progress,0,0.99999)*float(workspace._animation_timeline_duration(entry)))
