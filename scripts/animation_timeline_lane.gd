@@ -12,8 +12,7 @@ func _process(_delta:float) -> void:
 	var highlighted:=active and get_global_rect().has_point(get_global_mouse_position())
 	if highlighted==drop_highlight:return
 	drop_highlight=highlighted
-	var label:=get_parent().get_child(0) as Label
-	if label!=null:label.add_theme_color_override("font_color",Color("98703d") if highlighted else Color("382c1c"))
+	get_parent().get_child(0).modulate=Color("e3b84f") if highlighted else Color.WHITE
 	queue_redraw()
 
 func _can_drop_data(_at_position:Vector2,data:Variant) -> bool:
@@ -22,7 +21,7 @@ func _can_drop_data(_at_position:Vector2,data:Variant) -> bool:
 
 func _drop_data(at_position:Vector2,data:Variant) -> void:
 	if editor==null:return
-	if str(data.type)=="fightlab_animation_clip":editor.add_timeline_clip(data.entry,track_id,at_position.x/editor.TIMELINE_PIXELS_PER_SECOND)
+	if str(data.type)=="fightlab_animation_clip":editor.add_timeline_clip(data.entry,track_id,at_position.x/editor.TIMELINE_PIXELS_PER_SECOND,int(get_meta("timeline_row_id",-1)))
 
 func _draw() -> void:
 	if drop_highlight:

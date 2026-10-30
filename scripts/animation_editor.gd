@@ -102,6 +102,7 @@ var timeline_scrubber: Control
 var timeline_scrub_unit:CharacterBody3D
 var timeline_time_label: Label
 var timeline_priority: OptionButton
+var timeline_rows:Array[Dictionary]=[]
 var timeline_length_input: SpinBox
 var timeline_motion_panel:PanelContainer
 var timeline_motion_name:Label
@@ -1202,6 +1203,8 @@ func build_timeline(parent:Control) -> void:
 	timeline_priority.custom_minimum_size.x=54
 	timeline_priority.item_selected.connect(_timeline_priority_changed)
 	top.add_child(timeline_priority)
+	priority_label.hide()
+	timeline_priority.hide()
 	timeline_motion_panel=PanelContainer.new()
 	timeline_motion_panel.visible=false
 	var motion_style:=StyleBoxFlat.new()
@@ -1337,8 +1340,73 @@ func seed_timeline() -> void:
 		sample["id"]=timeline_serial
 		timeline_clips.append(sample)
 
+func _sync_timeline_rows() -> void:
+	if timeline_rows.is_empty():
+		for track in TIMELINE_TRACKS:timeline_rows.append({"id":timeline_rows.size()+1,"track":track,"priority":3})
+	var occupied:Dictionary={}
+	for clip in timeline_clips:
+		var chosen:Dictionary={}
+		for row in timeline_rows:
+			if int(row.id)==int(clip.get("timeline_row_id",-1)) and str(row.track)==str(clip.track):chosen=row;break
+		if not chosen.is_empty():
+			for other in occupied.get(int(chosen.id),[]):
+				if float(clip.start)<float(other.start)+float(other.duration) and float(other.start)<float(clip.start)+float(clip.duration):chosen={};break
+		if chosen.is_empty():
+			for row in timeline_rows:
+				if str(row.track)!=str(clip.track):continue
+				var used:Array=occupied.get(int(row.id),[])
+				if not used.is_empty() and int(row.priority)!=int(clip.get("priority",3)):continue
+				var overlaps:=false
+				for other in used:
+					if float(clip.start)<float(other.start)+float(other.duration) and float(other.start)<float(clip.start)+float(clip.duration):overlaps=true
+				if not overlaps:chosen=row;break
+		if chosen.is_empty():
+			var serial:=0
+			for row in timeline_rows:serial=maxi(serial,int(row.id))
+			chosen={"id":serial+1,"track":str(clip.track),"priority":int(clip.get("priority",3))}
+			var insertion:=timeline_rows.size()
+			for index in timeline_rows.size():
+				if str(timeline_rows[index].track)==str(clip.track):insertion=index+1
+			timeline_rows.insert(insertion,chosen)
+		if not occupied.has(int(chosen.id)):occupied[int(chosen.id)]=[]
+		if occupied[int(chosen.id)].is_empty():chosen.priority=int(clip.get("priority",3))
+		occupied[int(chosen.id)].append(clip)
+		clip.timeline_row_id=int(chosen.id)
+		clip.priority=int(chosen.priority)
+
+func add_timeline_row(after_id:int) -> void:
+	_record_timeline_undo()
+	var serial:=0
+	for row in timeline_rows:serial=maxi(serial,int(row.id))
+	for index in timeline_rows.size():
+		var row:Dictionary=timeline_rows[index]
+		if int(row.id)==after_id:
+			timeline_rows.insert(index+1,{"id":serial+1,"track":row.track,"priority":mini(99,int(row.priority)+1)})
+			break
+	_rebuild_timeline_tracks()
+	save_timeline()
+
+func remove_timeline_row(id:int) -> void:
+	_record_timeline_undo()
+	for index in range(timeline_clips.size()-1,-1,-1):
+		if int(timeline_clips[index].get("timeline_row_id",-1))==id:timeline_clips.remove_at(index)
+	for index in range(timeline_rows.size()-1,-1,-1):
+		if int(timeline_rows[index].id)==id:timeline_rows.remove_at(index)
+	_rebuild_timeline_tracks()
+	save_timeline()
+
+func _set_timeline_row_priority(id:int,value:int) -> void:
+	_record_timeline_undo()
+	for row in timeline_rows:
+		if int(row.id)==id:row.priority=value
+	for clip in timeline_clips:
+		if int(clip.get("timeline_row_id",-1))==id:clip.priority=value
+	if not timeline_playing:_on_timeline_scrubbed(timeline_playhead)
+	save_timeline()
+
 func _rebuild_timeline_tracks() -> void:
 	if not is_instance_valid(timeline_tracks):return
+	_sync_timeline_rows()
 	_update_timeline_combat_totals()
 	for child in timeline_tracks.get_children():child.queue_free()
 	var width:=maxi(1,roundi(timeline_duration*TIMELINE_PIXELS_PER_SECOND))
@@ -1347,7 +1415,7 @@ func _rebuild_timeline_tracks() -> void:
 	ruler_row.add_theme_constant_override("separation",UI_EDGE_GAP)
 	timeline_tracks.add_child(ruler_row)
 	var fit_button:=button(ruler_row,"Fit",fit_timeline_to_clips)
-	fit_button.custom_minimum_size=Vector2(86,26)
+	fit_button.custom_minimum_size=Vector2(300,26)
 	fit_button.tooltip_text="Set Length to the end of the last clip, removing unused time"
 	timeline_scrubber=Control.new()
 	timeline_scrubber.set_script(load("res://scripts/animation_timeline_ruler.gd"))
@@ -1357,24 +1425,50 @@ func _rebuild_timeline_tracks() -> void:
 	timeline_scrubber.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	ruler_row.add_child(timeline_scrubber)
 	_add_timeline_unused_overlay(timeline_scrubber)
-	for track in TIMELINE_TRACKS:
+	for row_config in timeline_rows:
+		var track:String=row_config.track
 		var row:=HBoxContainer.new()
 		row.custom_minimum_size.y=36
 		row.add_theme_constant_override("separation",UI_EDGE_GAP)
 		timeline_tracks.add_child(row)
-		var label:=menu_label(row,"EVERYTHING" if track=="BODY" else track,13)
-		label.custom_minimum_size.x=86
-		label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
+		var header:=HBoxContainer.new()
+		header.custom_minimum_size.x=300
+		header.add_theme_constant_override("separation",6)
+		row.add_child(header)
+		var priority:=OptionButton.new()
+		for value in range(1,100):priority.add_item(str(value),value)
+		priority.custom_minimum_size.x=50
+		priority.fit_to_longest_item=false
+		priority.select(clampi(int(row_config.priority)-1,0,98))
+		priority.tooltip_text="Priority · higher numbers take over overlapping animations"
+		priority.item_selected.connect(func(index):_set_timeline_row_priority(int(row_config.id),index+1))
+		header.add_child(priority)
+		var label:=menu_label(header,"EVERYTHING" if track=="BODY" else track,13)
+		label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		label.custom_minimum_size.x=100
+		label.clip_text=true
+		var plus:=button(header,"+",func():add_timeline_row(int(row_config.id)))
+		plus.custom_minimum_size=Vector2(24,30)
+		plus.tooltip_text="Add another "+label.text+" row"
+		var minus:=button(header,"−",func():remove_timeline_row(int(row_config.id)))
+		minus.custom_minimum_size=Vector2(24,30)
+		minus.tooltip_text="Remove this row and its clips · Ctrl+Z to undo"
+		var track_row_count:=0
+		for candidate in timeline_rows:
+			if str(candidate.track)==track:track_row_count+=1
+		minus.disabled=track_row_count<=1
+		if minus.disabled:minus.tooltip_text="Keep one "+label.text+" row · use + to add layers"
 		var lane:=Control.new()
 		lane.set_script(load("res://scripts/animation_timeline_lane.gd"))
 		lane.set("editor",self)
 		lane.set("track_id",track)
+		lane.set_meta("timeline_row_id",int(row_config.id))
 		lane.custom_minimum_size=Vector2(width,36)
 		lane.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		row.add_child(lane)
 		var track_clips:Array[Dictionary]=[]
 		for clip in timeline_clips:
-			if str(clip.track)==track:track_clips.append(clip)
+			if int(clip.get("timeline_row_id",-1))==int(row_config.id):track_clips.append(clip)
 		track_clips.sort_custom(func(a:Dictionary,b:Dictionary):return float(a.start)<float(b.start) if not is_equal_approx(float(a.start),float(b.start)) else int(a.id)<int(b.id))
 		var layer_ends:Array[float]=[]
 		for clip in track_clips:
@@ -1697,7 +1791,7 @@ func show_unit_selection_warning() -> void:
 		add_child(unit_selection_warning)
 	if not unit_selection_warning.visible:unit_selection_warning.call_deferred("popup_centered")
 
-func add_timeline_clip(entry:Dictionary,track:String,time:float) -> void:
+func add_timeline_clip(entry:Dictionary,track:String,time:float,row_id:int=-1) -> void:
 	if not can_add_unit_animation():
 		show_unit_selection_warning()
 		return
@@ -1713,6 +1807,10 @@ func add_timeline_clip(entry:Dictionary,track:String,time:float) -> void:
 	clip["start"]=0.0
 	clip["duration"]=minf(default_duration,timeline_duration-float(clip.start))
 	clip["priority"]=3
+	for row in timeline_rows:
+		if int(row.id)==row_id:
+			clip["timeline_row_id"]=row_id
+			clip.priority=int(row.priority)
 	var motion_type:=_timeline_motion_type(clip)
 	if not motion_type.is_empty():
 		clip["effort"]=_timeline_default_effort(motion_type)
@@ -1723,7 +1821,7 @@ func add_timeline_clip(entry:Dictionary,track:String,time:float) -> void:
 
 func _record_timeline_undo() -> void:
 	timeline_redo_history.clear()
-	var snapshot:Dictionary={"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead}
+	var snapshot:Dictionary={"rows":timeline_rows.duplicate(true),"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead}
 	if not timeline_undo_history.is_empty() and timeline_undo_history.back()==snapshot:return
 	timeline_undo_history.append(snapshot)
 	if timeline_undo_history.size()>100:timeline_undo_history.pop_front()
@@ -1731,10 +1829,11 @@ func _record_timeline_undo() -> void:
 func undo_timeline_edit() -> void:
 	while not timeline_undo_history.is_empty():
 		var snapshot:Dictionary=timeline_undo_history.pop_back()
-		if snapshot.clips==timeline_clips and is_equal_approx(float(snapshot.duration),timeline_duration):continue
-		timeline_redo_history.append({"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead})
+		if snapshot.clips==timeline_clips and snapshot.get("rows",[])==timeline_rows and is_equal_approx(float(snapshot.duration),timeline_duration):continue
+		timeline_redo_history.append({"rows":timeline_rows.duplicate(true),"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead})
 		stop_timeline()
 		timeline_clips.assign(snapshot.clips.duplicate(true))
+		timeline_rows.assign(snapshot.get("rows",[]).duplicate(true))
 		timeline_duration=float(snapshot.duration)
 		timeline_selected_id=int(snapshot.selected)
 		timeline_playhead=clampf(float(snapshot.playhead),0.0,timeline_duration)
@@ -1750,9 +1849,10 @@ func undo_timeline_edit() -> void:
 func redo_timeline_edit() -> void:
 	if timeline_redo_history.is_empty():return
 	var snapshot:Dictionary=timeline_redo_history.pop_back()
-	timeline_undo_history.append({"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead})
+	timeline_undo_history.append({"rows":timeline_rows.duplicate(true),"clips":timeline_clips.duplicate(true),"duration":timeline_duration,"selected":timeline_selected_id,"playhead":timeline_playhead})
 	stop_timeline()
 	timeline_clips.assign(snapshot.clips.duplicate(true))
+	timeline_rows.assign(snapshot.get("rows",[]).duplicate(true))
 	timeline_duration=float(snapshot.duration)
 	timeline_selected_id=int(snapshot.selected)
 	timeline_playhead=clampf(float(snapshot.playhead),0.0,timeline_duration)
@@ -2089,11 +2189,15 @@ func _timeline_priority_changed(index:int) -> void:
 			save_timeline()
 			return
 
-func move_timeline_clip(id:int,track:String,time:float) -> void:
+func move_timeline_clip(id:int,track:String,time:float,row_id:int=-1) -> void:
 	_record_timeline_undo()
 	for clip in timeline_clips:
 		if int(clip.id)==id:
 			clip.track=track
+			for row in timeline_rows:
+				if int(row.id)==row_id:
+					clip.timeline_row_id=row_id
+					clip.priority=int(row.priority)
 			clip.start=clampf(time,0.0,maxf(0.0,timeline_duration-float(clip.duration)))
 			_rebuild_timeline_tracks()
 			if timeline_selected_id==id:select_timeline_clip(id)
@@ -2106,6 +2210,7 @@ func begin_timeline_clip_drag(id:int,track:String) -> void:
 
 func finish_timeline_clip_drag(id:int,mouse_global:Vector2,clip_global:Vector2) -> void:
 	var destination:=timeline_drag_original_track
+	var destination_row:=-1
 	for row in timeline_tracks.get_children():
 		if row.get_child_count()<2:continue
 		var lane:=row.get_child(1) as Control
@@ -2113,13 +2218,14 @@ func finish_timeline_clip_drag(id:int,mouse_global:Vector2,clip_global:Vector2) 
 		var rect:=lane.get_global_rect()
 		if mouse_global.y>=rect.position.y and mouse_global.y<=rect.end.y:
 			destination=str(lane.get("track_id"))
+			destination_row=int(lane.get_meta("timeline_row_id",-1))
 			break
 	var target_lane:=_timeline_lane_for(destination)
 	var start_x:=clip_global.x
 	if is_instance_valid(target_lane):start_x-=target_lane.global_position.x
 	timeline_drag_clip_id=-1
 	timeline_drag_original_track=""
-	move_timeline_clip(id,destination,start_x/TIMELINE_PIXELS_PER_SECOND)
+	move_timeline_clip(id,destination,start_x/TIMELINE_PIXELS_PER_SECOND,destination_row)
 
 func _timeline_lane_for(track:String) -> Control:
 	for row in timeline_tracks.get_children():
@@ -2436,7 +2542,7 @@ func _stop_track(track:String) -> void:
 func save_timeline() -> void:
 	var name_:=timeline_name.text.strip_edges() if is_instance_valid(timeline_name) else "New animation"
 	if name_.is_empty():return
-	var snapshot:Dictionary={"name":name_,"duration":timeline_duration,"clips":timeline_clips.duplicate(true)}
+	var snapshot:Dictionary={"name":name_,"duration":timeline_duration,"clips":timeline_clips.duplicate(true),"rows":timeline_rows.duplicate(true)}
 	var found_index:=-1
 	for i in range(timeline_library.size()):
 		if str(timeline_library[i].get("name",""))==name_:found_index=i;break
@@ -2479,6 +2585,7 @@ func _select_saved_timeline(index:int) -> void:
 	stop_timeline()
 	var library_index:=timeline_visible_library_indices[index]
 	var snapshot:Dictionary=timeline_library[library_index]
+	timeline_rows.assign(snapshot.get("rows",[]).duplicate(true))
 	timeline_name.text=str(snapshot.get("name",""))
 	timeline_duration=float(snapshot.get("duration",12.0))
 	timeline_clips.clear()
@@ -2498,6 +2605,7 @@ func _select_saved_timeline(index:int) -> void:
 	config.save(TIMELINE_PATH)
 
 func new_timeline() -> void:
+	timeline_rows.clear()
 	timeline_undo_history.clear()
 	timeline_redo_history.clear()
 	stop_timeline()
@@ -2543,6 +2651,7 @@ func load_timeline() -> void:
 	if not timeline_library.is_empty():
 		active_index=clampi(active_index,0,timeline_library.size()-1)
 		var snapshot:Dictionary=timeline_library[active_index]
+		timeline_rows.assign(snapshot.get("rows",[]).duplicate(true))
 		# Old unnamed drafts must not override the default starter animation.
 		if str(snapshot.get("name","")).strip_edges().to_lower() in ["","new animation"]:
 			timeline_clips.clear()
