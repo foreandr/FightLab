@@ -9,7 +9,7 @@ func half_spin_angle(time:float) -> float:
 	# The airborne Twist turns TAU over its source interval. Split at 50%,
 	# discard the second half, and hold that 180-degree orientation for the strike.
 	var retained_source_progress:=0.5*smoothstep(0.32,0.74,global_time)
-	var angle:=TAU*smoothstep(0.0,1.0,retained_source_progress)
+	var angle:=-TAU*smoothstep(0.0,1.0,retained_source_progress)
 	return angle*(1.0-smoothstep(1.00,FLIP_START+FLIP_DURATION,global_time))
 
 func sample_flip(time:float) -> Dictionary:
@@ -31,6 +31,6 @@ func derived_entry(source:Dictionary,title:String,resource:Dictionary,group:Stri
 				break
 		title="Backflip + half airborne twist"
 		operation+="; retain first half of airborne Twist, discard second half; hold facing through slash, unwind on recovery"
-		assert(is_equal_approx(half_spin_angle(0.86-FLIP_START),PI))
+		assert(is_equal_approx(half_spin_angle(0.86-FLIP_START),-PI))
 		assert(is_zero_approx(half_spin_angle(FLIP_DURATION)))
 	return super.derived_entry(source,title,resource,group,category,step,parents,operation)
