@@ -24,7 +24,7 @@ func build_demo() -> void:
 	var resource:=bake("corkscrew_open_hand_hook",workspace.timeline_duration,sample_combo)
 	var parents:Array=[]
 	for clip in workspace.timeline_clips:parents.append(Credits.source(clip))
-	var entry:=derived_entry({},"Corkscrew Open Hand Melee Hook",resource,"Attack","Air Combat","Hook",parents,"combined editable timeline baked for reuse; source clips retained in metadata")
+	var entry:=derived_entry({},str(selected.name),resource,"Attack","Air Combat","Hook",parents,"combined editable timeline baked for reuse; source clips retained in metadata")
 	entry.attack_bone="hand_r"
 	entry.composed_timeline=selected.duplicate(true)
 	entry.tags=["airborne","corkscrew","melee","hook","open hand"]

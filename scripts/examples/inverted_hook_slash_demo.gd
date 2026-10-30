@@ -83,6 +83,7 @@ func build_demo() -> void:
 		if body_up()<0:inverted_count+=1
 	var inverted_fraction:=float(inverted_count)/61
 	workspace._apply_timeline_at(0.86,true)
+	print("Composition inversion: source phase=",inverted_phase," impact up=",body_up()," inverted fraction=",inverted_fraction)
 	assert(body_up()<-0.2,"Main slash is not happening upside down")
 	assert(workspace.timeline_active["TORSO"].id==3 and workspace.timeline_active["RIGHT ARM"].id==4)
 	assert(inverted_fraction>0.5,"Flip should be inverted for most of its duration")

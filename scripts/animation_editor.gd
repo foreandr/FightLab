@@ -1480,6 +1480,9 @@ func _rebuild_timeline_tracks() -> void:
 			clip_button.alignment=HORIZONTAL_ALIGNMENT_LEFT
 			var combat:=_clip_combat_stats(clip)
 			clip_button.text="%s · STA %.1f"%[clip.title,combat.stamina]
+			if str(clip.get("group",""))=="Attack":
+				clip_button.text="ATTACK · "+clip_button.text
+				clip_button.add_theme_color_override("font_color",Color("9b352c"))
 			if str(clip.get("group",""))=="Attack" and float(combat.damage)>0:
 				clip_button.text+=" · DMG %.1f"%float(combat.damage)
 			clip_button.pressed.connect(func():select_timeline_clip(int(clip.id)))
