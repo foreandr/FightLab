@@ -1146,6 +1146,9 @@ func build_timeline(parent:Control) -> void:
 	timeline_name.custom_minimum_size.x=210
 	timeline_library_menu=OptionButton.new()
 	timeline_library_menu.custom_minimum_size.x=150
+	timeline_library_menu.fit_to_longest_item=false
+	timeline_library_menu.clip_text=true
+	timeline_library_menu.tooltip_text="Load a saved animation timeline"
 	timeline_library_menu.hide()
 	timeline_library_menu.item_selected.connect(_select_saved_timeline)
 	top.add_child(timeline_library_menu)
@@ -1354,6 +1357,7 @@ func _rebuild_timeline_tracks() -> void:
 		for clip in timeline_clips:
 			if str(clip.track)!=track:continue
 			var clip_button:=Button.new()
+			clip_button.alignment=HORIZONTAL_ALIGNMENT_LEFT
 			var combat:=_clip_combat_stats(clip)
 			clip_button.text="%s · STA %.1f"%[clip.title,combat.stamina]
 			if str(clip.get("group",""))=="Attack" and float(combat.damage)>0:
@@ -2403,6 +2407,7 @@ func save_timeline() -> void:
 
 func _rebuild_timeline_library_menu() -> void:
 	if not is_instance_valid(timeline_library_menu):return
+	timeline_library_menu.visible=not timeline_library.is_empty()
 	timeline_library_menu.clear()
 	timeline_visible_library_indices.clear()
 	for i in range(timeline_library.size()):
@@ -2452,6 +2457,7 @@ func new_timeline() -> void:
 	timeline_serial=0
 	timeline_selected_id=-1
 	if is_instance_valid(timeline_library_menu):timeline_library_menu.select(-1)
+	if is_instance_valid(timeline_library_menu):timeline_library_menu.text="Load animation…"
 	_rebuild_timeline_tracks()
 	timeline_time_label.text="0.00 s"
 
