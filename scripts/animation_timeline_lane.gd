@@ -28,18 +28,17 @@ func _draw() -> void:
 	if drop_highlight:
 		draw_rect(Rect2(Vector2.ZERO,size),Color(0.91,0.72,0.30,0.32))
 		draw_rect(Rect2(Vector2(0,1),Vector2(size.x,maxf(0,size.y-2))),Color("b08a4b"),false,2.0)
-	var center_y:=size.y*0.5
-	draw_line(Vector2(0,center_y),Vector2(size.x,center_y),Color("382c1c"),2.0)
 	var pixels:float=editor.TIMELINE_PIXELS_PER_SECOND if editor!=null else 100.0
 	var tick_spacing:=pixels*0.25
 	var last_tick:=floori(size.x/tick_spacing)
-	for quarter in range(last_tick+1):
-		var x:float=minf(float(quarter)*tick_spacing,size.x)
-		var half_height:=5.0 if quarter%4==0 else 2.0
-		draw_line(Vector2(x,center_y-half_height),Vector2(x,center_y+half_height),Color("7e6b4d",0.72),1.0)
-	var last_tick_x:=float(last_tick)*tick_spacing
-	if size.x-last_tick_x>0.5:
-		draw_line(Vector2(size.x,center_y-2.0),Vector2(size.x,center_y+2.0),Color("7e6b4d",0.72),1.0)
+	var layers:=int(get_meta("clip_layer_count",1))
+	for layer in layers:
+		var center_y:=size.y/float(layers)*(float(layer)+0.5)
+		draw_line(Vector2(0,center_y),Vector2(size.x,center_y),Color("382c1c"),2.0)
+		for quarter in range(last_tick+1):
+			var x:float=minf(float(quarter)*tick_spacing,size.x)
+			var half_height:=5.0 if quarter%4==0 else 2.0
+			draw_line(Vector2(x,center_y-half_height),Vector2(x,center_y+half_height),Color("7e6b4d",0.72),1.0)
 	if editor!=null:
 		var x:float=float(editor.timeline_playhead)*pixels
 		draw_line(Vector2(x,1),Vector2(x,size.y-1),Color("b64234"),2.0)

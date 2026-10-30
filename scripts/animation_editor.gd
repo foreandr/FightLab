@@ -652,7 +652,7 @@ func build_ui() -> void:
 	legend.add_theme_font_size_override("font_size",15)
 	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
 	legend.text+="\n\nJUMP STAMINA\nStamina depletion controls jump height and airtime. Extending a jump automatically increases its stamina requirement, up to 100. Put Jump on EVERYTHING and a jab on its arm track to combine them. At equal priority the specific body-part track wins."
-	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+wheel over the ruler or tracks changes time zoom; elsewhere it changes panel size. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
+	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
 	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. Set your credit name in Options → Creator name. Animations and spells preserve prior contributors when modified."
 	controls_scroll.add_child(legend)
 	var controls_button:=button(options_column,"CONTROLS",func():controls_dialog.popup_centered())
@@ -1184,7 +1184,7 @@ func build_timeline(parent:Control) -> void:
 	top.add_child(top_spacer)
 	timeline_time_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	timeline_time_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
-	var priority_label:=menu_label(top,"Priority",13)
+	var priority_label:=menu_label(top,"Priority (higher wins)",12)
 	timeline_priority=OptionButton.new()
 	for value in range(1,6):timeline_priority.add_item(str(value),value)
 	timeline_priority.select(2)
@@ -1362,8 +1362,16 @@ func _rebuild_timeline_tracks() -> void:
 		lane.custom_minimum_size=Vector2(width,36)
 		lane.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		row.add_child(lane)
+		var track_clips:Array[Dictionary]=[]
 		for clip in timeline_clips:
-			if str(clip.track)!=track:continue
+			if str(clip.track)==track:track_clips.append(clip)
+		track_clips.sort_custom(func(a:Dictionary,b:Dictionary):return float(a.start)<float(b.start) if not is_equal_approx(float(a.start),float(b.start)) else int(a.id)<int(b.id))
+		var layer_ends:Array[float]=[]
+		for clip in track_clips:
+			var layer:=0
+			while layer<layer_ends.size() and layer_ends[layer]>float(clip.start)+0.0001:layer+=1
+			if layer==layer_ends.size():layer_ends.append(0.0)
+			layer_ends[layer]=float(clip.start)+maxf(float(clip.duration),36.0/TIMELINE_PIXELS_PER_SECOND)
 			var clip_button:=Button.new()
 			clip_button.alignment=HORIZONTAL_ALIGNMENT_LEFT
 			var combat:=_clip_combat_stats(clip)
@@ -1375,11 +1383,16 @@ func _rebuild_timeline_tracks() -> void:
 			clip_button.set("editor",self)
 			clip_button.set("clip_id",int(clip.id))
 			lane.add_child(clip_button)
-			clip_button.position=Vector2(float(clip.start)*TIMELINE_PIXELS_PER_SECOND,2)
+			clip_button.position=Vector2(float(clip.start)*TIMELINE_PIXELS_PER_SECOND,layer*36.0+2.0)
 			clip_button.size=Vector2(maxf(36.0,float(clip.duration)*TIMELINE_PIXELS_PER_SECOND),32)
 			clip_button.tooltip_text=animation_info_text(clip)
 			clip_button.set_meta("timeline_clip_id",clip.id)
+			clip_button.set_meta("timeline_clip_layer",layer)
 			clip_button.gui_input.connect(func(event):_on_clip_gui_input(event,int(clip.id)))
+		var layer_count:=maxi(1,layer_ends.size())
+		lane.set_meta("clip_layer_count",layer_count)
+		lane.custom_minimum_size.y=36.0*layer_count
+		row.custom_minimum_size.y=36.0*layer_count
 		_add_timeline_unused_overlay(lane)
 		lane.queue_redraw()
 	_update_timeline_ruler()
@@ -1472,7 +1485,7 @@ func _scale_panel_controls(node:Node,zoom:float) -> void:
 			node.add_theme_constant_override("icon_max_width",maxi(8,roundi(20.0*zoom)))
 		if node is Button and node.has_meta("timeline_clip_id"):
 			node.size.y=32.0*zoom
-			node.position.y=2.0*zoom
+			node.position.y=(float(node.get_meta("timeline_clip_layer",0))*36.0+2.0)*zoom
 		node.queue_redraw()
 	for child in node.get_children():_scale_panel_controls(child,zoom)
 
@@ -4829,7 +4842,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.ctrl_pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
 		var key:=_zoom_panel_at(event.position)
 		if not key.is_empty():
-			if key=="Timeline" and timeline_clip_scroll.get_global_rect().has_point(event.position):change_timeline_time_zoom(1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
+			if key=="Timeline" and event.shift_pressed:change_timeline_time_zoom(1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
 			else:change_panel_zoom(key,1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
 			get_viewport().set_input_as_handled()
 			return

@@ -26,7 +26,7 @@ func _ready() -> void:
 	add_theme_color_override("font_color",Color("382c1c"))
 	add_theme_color_override("font_hover_color",Color("382c1c"))
 	add_theme_font_size_override("font_size",12)
-	alignment=HORIZONTAL_ALIGNMENT_CENTER
+	alignment=HORIZONTAL_ALIGNMENT_LEFT
 	clip_text=true
 	process_priority=1
 
