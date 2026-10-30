@@ -152,7 +152,7 @@ func build_ui() -> void:
 	slow_button=button(actions,"Slow [T]",toggle_slow)
 	button(actions,"Home [Esc]",return_home)
 	result_label=menu_label(footer,"Ready — choose a move, then Play",15)
-	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · F reframe · Shift faster",13)
+	menu_label(footer,"Camera: WASD move · Q/E height · Hold middle mouse rotate · Wheel zoom · Shift faster",13)
 	move_menu.item_selected.connect(func(_index):settings_changed())
 	distance_input.value_changed.connect(func(_value):settings_changed())
 	block_menu.item_selected.connect(func(_index):settings_changed())
@@ -598,7 +598,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_X: reset_setup()
 		KEY_SPACE: toggle_pause()
 		KEY_T: toggle_slow()
-		KEY_F: reframe_camera()
 		KEY_B:
 			get_viewport().set_input_as_handled()
 			return_to_battle()
