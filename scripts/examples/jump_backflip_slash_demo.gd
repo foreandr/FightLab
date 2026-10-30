@@ -81,7 +81,7 @@ func build_demo() -> void:
 	editor._rebuild_timeline_library_menu()
 	editor.timeline_library_menu.show()
 	editor.timeline_library_menu.tooltip_text="Loaded: "+name_
-	editor.TIMELINE_PIXELS_PER_SECOND=300.0
+	editor._update_time_zoom_label()
 	editor._rebuild_timeline_tracks()
 	editor.timeline_playhead=0
 	editor.select_group("Attack")
@@ -94,6 +94,9 @@ func build_demo() -> void:
 	editor.camera_initialized=true
 	editor.inspection_camera.capture_view(editor.field.camera,7.5)
 	editor._show_library_notice("Saved %s · BOT_1 selected · press Play"%name_)
+	root.show()
+	root.grab_focus()
+	root.request_attention()
 	print("COMBO DEMO SAVED AND READY: ",name_)
 
 func make_clip(editor:Node,entry:Dictionary,id:int,track:String,start:float,duration:float,priority:int,stamina:float) -> Dictionary:

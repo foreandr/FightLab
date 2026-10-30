@@ -128,7 +128,8 @@ var timeline_origin_basis:=Basis.IDENTITY
 var timeline_origin_valid:=false
 var preserve_camera_on_setup_reset:=false
 const TIMELINE_TRACKS := ["BODY", "HEAD", "TORSO", "LEFT ARM", "RIGHT ARM", "LEFT LEG", "RIGHT LEG"]
-var TIMELINE_PIXELS_PER_SECOND := 100.0
+var TIMELINE_PIXELS_PER_SECOND := 600.0
+var timeline_time_zoom_label:Label
 var panel_zoom_levels:Dictionary={}
 var panel_zoom_roots:Dictionary={}
 const TIMELINE_DEFAULT_CLIP_DURATION := 0.8666667
@@ -651,7 +652,7 @@ func build_ui() -> void:
 	legend.add_theme_font_size_override("font_size",15)
 	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
 	legend.text+="\n\nJUMP STAMINA\nStamina depletion controls jump height and airtime. Extending a jump automatically increases its stamina requirement, up to 100. Put Jump on EVERYTHING and a jab on its arm track to combine them. At equal priority the specific body-part track wins."
-	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Timeline zoom also scales tracks and time spacing. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
+	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+wheel over the ruler or tracks changes time zoom; elsewhere it changes panel size. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
 	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. Set your credit name in Options → Creator name. Animations and spells preserve prior contributors when modified."
 	controls_scroll.add_child(legend)
 	var controls_button:=button(options_column,"CONTROLS",func():controls_dialog.popup_centered())
@@ -1163,6 +1164,13 @@ func build_timeline(parent:Control) -> void:
 	timeline_length_input.custom_minimum_size.x=90
 	timeline_length_input.value_changed.connect(_set_timeline_duration)
 	top.add_child(timeline_length_input)
+	menu_label(top,"Time zoom",12)
+	for direction in [-1,1]:
+		var zoom_button:=button(top,"−" if direction<0 else "+",func():change_timeline_time_zoom(direction))
+		zoom_button.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
+		zoom_button.custom_minimum_size=Vector2(26,28)
+		zoom_button.tooltip_text="Show more time" if direction<0 else "Spread seconds out for precise editing"
+	timeline_time_zoom_label=menu_label(top,"6×",12)
 	timeline_damage_label=menu_label(top,"DMG 0",13)
 	timeline_stamina_label=menu_label(top,"Stamina 0",13)
 	timeline_mana_label=menu_label(top,"Mana 0",13)
@@ -1392,6 +1400,7 @@ func add_next_unit() -> void:
 func _build_workspace_dividers(ui:Control) -> void:
 	var config:=ConfigFile.new()
 	if config.load("user://animation_workspace_layout.cfg")==OK:
+		TIMELINE_PIXELS_PER_SECOND=clampf(float(config.get_value("layout","time_pixels",600.0)),25.0,2400.0)
 		workspace_collapsed=config.get_value("layout","collapsed",workspace_collapsed).duplicate()
 		panel_zoom_levels=config.get_value("layout","zoom",{}).duplicate()
 		workspace_category_width=float(config.get_value("layout","categories",164.0))
@@ -1415,7 +1424,7 @@ func _build_workspace_dividers(ui:Control) -> void:
 		workspace_dividers.append(handle)
 	ui.resized.connect(_apply_workspace_layout)
 	panel_zoom_roots.merge({"Categories":workspace_categories,"Animations":workspace_choices,"Timeline":timeline_panel,"Options":options_panel,"Playback":animation_footer})
-	TIMELINE_PIXELS_PER_SECOND=100.0*float(panel_zoom_levels.get("Timeline",1.0))
+	_update_time_zoom_label()
 	for key in panel_zoom_roots:call_deferred("_apply_panel_zoom",key)
 	_apply_workspace_layout()
 
@@ -1431,7 +1440,6 @@ func change_panel_zoom(key:String,steps:int,reset:=false) -> void:
 	var zoom:=1.0 if reset else clampf(float(panel_zoom_levels.get(key,1.0))+float(steps)*0.1,0.6,1.8)
 	panel_zoom_levels[key]=zoom
 	if key=="Timeline":
-		TIMELINE_PIXELS_PER_SECOND=100.0*zoom
 		_rebuild_timeline_tracks()
 	_apply_panel_zoom(key)
 	save_workspace_layout()
@@ -1440,6 +1448,15 @@ func _apply_panel_zoom(key:String) -> void:
 	if not panel_zoom_roots.has(key):return
 	_scale_panel_controls(panel_zoom_roots[key],float(panel_zoom_levels.get(key,1.0)))
 	if key=="Animations":_apply_workspace_layout()
+
+func change_timeline_time_zoom(steps:int) -> void:
+	TIMELINE_PIXELS_PER_SECOND=clampf(TIMELINE_PIXELS_PER_SECOND*pow(1.25,steps),25.0,2400.0)
+	_rebuild_timeline_tracks()
+	_update_time_zoom_label()
+	save_workspace_layout()
+
+func _update_time_zoom_label() -> void:
+	if is_instance_valid(timeline_time_zoom_label):timeline_time_zoom_label.text="%.1f×"%(TIMELINE_PIXELS_PER_SECOND/100.0)
 
 func _scale_panel_controls(node:Node,zoom:float) -> void:
 	if node is Control:
@@ -1519,6 +1536,7 @@ func _apply_workspace_layout() -> void:
 
 func save_workspace_layout() -> void:
 	var config:=ConfigFile.new()
+	config.set_value("layout","time_pixels",TIMELINE_PIXELS_PER_SECOND)
 	config.set_value("layout","categories",workspace_category_width)
 	config.set_value("layout","browser",workspace_browser_width)
 	config.set_value("layout","timeline",workspace_timeline_height)
@@ -4811,7 +4829,8 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.ctrl_pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
 		var key:=_zoom_panel_at(event.position)
 		if not key.is_empty():
-			change_panel_zoom(key,1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
+			if key=="Timeline" and timeline_clip_scroll.get_global_rect().has_point(event.position):change_timeline_time_zoom(1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
+			else:change_panel_zoom(key,1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else -1)
 			get_viewport().set_input_as_handled()
 			return
 	if event is InputEventKey and event.pressed and event.ctrl_pressed and event.keycode in [KEY_EQUAL,KEY_MINUS,KEY_0] and not get_viewport().gui_get_focus_owner() is LineEdit:
