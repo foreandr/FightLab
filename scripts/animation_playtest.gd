@@ -8,6 +8,12 @@ var jump_height:=0.0
 var elapsed:=0.0
 var camera_before:=Transform3D.IDENTITY
 var camera_offset:=Vector3(0,3.5,7)
+var camera_yaw:=PI
+var camera_pitch:=0.42
+var camera_distance:=8.0
+var orbiting:=false
+var moving:=false
+var camera_offsets_before:=Vector2.ZERO
 var round_before:=false
 var camera_input_before:=true
 var camera_manual_before:=false
@@ -18,7 +24,7 @@ var snapshots:Dictionary={}
 func setup(owner_:Node,parent:Container) -> void:
 	editor=owner_
 	control_button=editor.button(parent,"Take Control",toggle)
-	control_button.tooltip_text="Control selected bot: WASD move, Shift sprint, Space jump, click arena to use timeline, Backspace resets test units, Escape releases"
+	control_button.tooltip_text="WASD move · Shift sprint · Space jump · Click attack · Wheel zoom · Middle/right-drag orbit · Arrows orbit · −/+ zoom · Home reset camera · Backspace reset · Esc release"
 
 func toggle() -> void:
 	if active:release();return
@@ -29,6 +35,9 @@ func toggle() -> void:
 	jump_height=0
 	jump_velocity=0
 	camera_before=editor.field.camera.global_transform
+	camera_offsets_before=Vector2(editor.field.camera.h_offset,editor.field.camera.v_offset)
+	editor.field.camera.h_offset=0
+	editor.field.camera.v_offset=0
 	camera_input_before=editor.camera_input_enabled
 	camera_manual_before=editor.inspection_camera.manual
 	editor.camera_input_enabled=false
@@ -37,6 +46,10 @@ func toggle() -> void:
 	var unit:Node=editor.focused_unit
 	var backward:Vector3=unit.global_basis.z.normalized()
 	camera_offset=-backward*7+Vector3.UP*4
+	camera_yaw=atan2(camera_offset.x,camera_offset.z)
+	camera_pitch=0.42
+	camera_distance=8.0
+	orbiting=false
 	snapshots.clear()
 	for bot in editor.added_units:
 		snapshots[bot.get_instance_id()]={"transform":bot.global_transform,"health":bot.health,"stamina":bot.stamina,"mana":bot.mana}
@@ -45,13 +58,15 @@ func toggle() -> void:
 	editor.get_tree().paused=false
 	control_button.text="Release Control"
 	control_button.release_focus()
-	editor._show_library_notice("WASD move · Shift sprint · Space jump · Click arena to use timeline · Backspace reset · Esc release")
+	editor._show_library_notice("WASD move · Shift sprint · Space jump · Click attack · Wheel zoom · Middle/right-drag orbit · Esc release")
 
 func release() -> void:
 	if not active:return
 	editor.stop_timeline()
 	editor.clear_jump_tails(null,true)
 	active=false
+	orbiting=false
+	moving=false
 	held.clear()
 	jump_height=0
 	jump_velocity=0
@@ -62,6 +77,8 @@ func release() -> void:
 			bot.health=saved.health;bot.stamina=saved.stamina;bot.mana=saved.mana
 			bot.invulnerability=0
 	editor.field.camera.global_transform=camera_before
+	editor.field.camera.h_offset=camera_offsets_before.x
+	editor.field.camera.v_offset=camera_offsets_before.y
 	editor.camera_input_enabled=camera_input_before
 	editor.inspection_camera.manual=camera_manual_before
 	editor.field.round_active=round_before
@@ -80,7 +97,28 @@ func reset_units() -> void:
 	hit_once.clear();previous_points.clear()
 
 func handle_input(event:InputEvent) -> bool:
-	if active and event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_MIDDLE:return true
+	if active and event is InputEventMouseButton:
+		var arena_hover:bool=editor.get_viewport().gui_get_hovered_control()==editor.base_ui.get_node_or_null("ArenaUnitDrop")
+		if event.button_index in [MOUSE_BUTTON_MIDDLE,MOUSE_BUTTON_RIGHT] and (arena_hover or orbiting):
+			orbiting=event.pressed
+			return true
+		if arena_hover and event.pressed and not event.ctrl_pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+			zoom_camera(-1 if event.button_index==MOUSE_BUTTON_WHEEL_UP else 1)
+			return true
+	if active and event is InputEventMouseMotion and orbiting:
+		camera_yaw-=event.relative.x*0.008
+		camera_pitch=clampf(camera_pitch+event.relative.y*0.006,-0.1,1.25)
+		_update_camera()
+		return true
+	if active and event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			JOY_BUTTON_RIGHT_STICK:zoom_camera(1)
+			JOY_BUTTON_A:
+				if jump_height<=0:jump_velocity=6.0
+			JOY_BUTTON_X,JOY_BUTTON_RIGHT_SHOULDER:trigger()
+			JOY_BUTTON_B:release()
+			_:return false
+		return true
 	if active and event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed:
 		var control:Control=editor.get_viewport().gui_get_hovered_control()
 		if control==editor.base_ui.get_node_or_null("ArenaUnitDrop"):
@@ -90,6 +128,11 @@ func handle_input(event:InputEvent) -> bool:
 	if not active:return false
 	if event.keycode==KEY_ESCAPE and event.pressed:release();return true
 	if editor.get_viewport().gui_get_focus_owner() is LineEdit or editor.get_viewport().gui_get_focus_owner() is TextEdit:return false
+	if event.pressed and not event.ctrl_pressed and event.keycode in [KEY_MINUS,KEY_EQUAL,KEY_PAGEUP,KEY_PAGEDOWN,KEY_HOME]:
+		if event.keycode==KEY_HOME:camera_pitch=0.42;camera_distance=8.0;camera_yaw=editor.focused_unit.rotation.y+PI;_update_camera()
+		else:zoom_camera(1 if event.keycode in [KEY_MINUS,KEY_PAGEDOWN] else -1)
+		return true
+	if event.keycode in [KEY_LEFT,KEY_RIGHT,KEY_UP,KEY_DOWN]:held[event.keycode]=event.pressed;return true
 	if event.keycode==KEY_BACKSPACE:
 		if event.pressed and not event.echo:reset_units()
 		return true
@@ -98,6 +141,16 @@ func handle_input(event:InputEvent) -> bool:
 		if event.keycode==KEY_SPACE and event.pressed and not event.echo and jump_height<=0:jump_velocity=6.0
 		return true
 	return false
+
+func zoom_camera(steps:int) -> void:
+	camera_distance=clampf(camera_distance*pow(1.15,steps),2.0,30.0)
+	_update_camera()
+
+func _update_camera() -> void:
+	if not active or not is_instance_valid(editor.focused_unit):return
+	camera_offset=Vector3(sin(camera_yaw)*cos(camera_pitch),sin(camera_pitch),cos(camera_yaw)*cos(camera_pitch))*camera_distance
+	editor.field.camera.global_position=editor.focused_unit.global_position+Vector3.UP*0.8+camera_offset
+	editor.field.camera.look_at(editor.focused_unit.global_position+Vector3.UP*1.1)
 
 func trigger() -> void:
 	if not active or editor.timeline_playing:return
@@ -121,8 +174,22 @@ func physics(delta:float) -> void:
 	var forward:Vector3=-camera.global_basis.z;forward.y=0;forward=forward.normalized()
 	var right:Vector3=camera.global_basis.x;right.y=0;right=right.normalized()
 	var direction:Vector3=forward*(float(held.get(KEY_W,false))-float(held.get(KEY_S,false)))+right*(float(held.get(KEY_D,false))-float(held.get(KEY_A,false)))
+	camera_yaw+=(float(held.get(KEY_LEFT,false))-float(held.get(KEY_RIGHT,false)))*delta*1.8
+	camera_pitch=clampf(camera_pitch+(float(held.get(KEY_DOWN,false))-float(held.get(KEY_UP,false)))*delta*1.2,-0.1,1.25)
+	var pads:=Input.get_connected_joypads()
+	var pad_sprint:=false
+	if not pads.is_empty():
+		var pad:int=pads[0]
+		var move_stick:=Vector2(Input.get_joy_axis(pad,JOY_AXIS_LEFT_X),Input.get_joy_axis(pad,JOY_AXIS_LEFT_Y))
+		var look_stick:=Vector2(Input.get_joy_axis(pad,JOY_AXIS_RIGHT_X),Input.get_joy_axis(pad,JOY_AXIS_RIGHT_Y))
+		if move_stick.length()>0.2:direction+=right*move_stick.x-forward*move_stick.y
+		if look_stick.length()>0.2:
+			camera_yaw-=look_stick.x*delta*2.0
+			camera_pitch=clampf(camera_pitch+look_stick.y*delta*1.5,-0.1,1.25)
+		pad_sprint=Input.is_joy_button_pressed(pad,JOY_BUTTON_LEFT_STICK)
 	direction=direction.limit_length(1)
-	var speed:=7.0 if held.get(KEY_SHIFT,false) else 4.0
+	moving=direction.length()>0.01
+	var speed:=7.0 if held.get(KEY_SHIFT,false) or pad_sprint else 4.0
 	var before:=unit.global_position
 	var next:=before+direction*speed*delta
 	var flat:=Vector2(next.x,next.z).limit_length(float(editor.field.Boundary.RADIUS)-1.0)
@@ -150,8 +217,7 @@ func physics(delta:float) -> void:
 		if editor.actor.player.has_animation(entry.clip):
 			editor._sample_row_animation(entry,fposmod(elapsed,0.8))
 			editor._set_unit_pose_target(unit)
-	camera.global_position=unit.global_position+camera_offset
-	camera.look_at(unit.global_position+Vector3.UP*1.1)
+	_update_camera()
 
 func contacts() -> void:
 	if not active or not editor.timeline_playing:return

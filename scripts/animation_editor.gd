@@ -650,7 +650,7 @@ func build_ui() -> void:
 	legend.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	legend.add_theme_color_override("font_color",BOOK_INK)
 	legend.add_theme_font_size_override("font_size",15)
-	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
+	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps. Wheel zooms the camera; middle/right-drag or arrows orbit. −/+ zoom, Home resets camera. Gamepad: left stick move, right stick orbit, R3 zoom out, A jump, X/RB timeline, B release.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
 	legend.text+="\n\nJUMP STAMINA\nStamina depletion controls jump height and airtime. Extending a jump automatically increases its stamina requirement, up to 100. Put Jump on EVERYTHING and a jab on its arm track to combine them. At equal priority the specific body-part track wins."
 	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
 	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. Set your credit name in Options → Creator name. Animations and spells preserve prior contributors when modified."
@@ -1002,6 +1002,15 @@ func _play_store_animation(entry:Dictionary) -> void:
 	play_animation_row(entry)
 
 func _ensure_animation_source(entry:Dictionary) -> void:
+	if entry.has("animation_resource"):
+		var clip_name:=str(entry.get("clip",""))
+		if actor.player.has_animation(clip_name):return
+		var animation:=load(str(entry.animation_resource)) as Animation
+		if animation==null:return
+		var namespace_:=clip_name.get_slice("/",0)
+		if not actor.player.has_animation_library(namespace_):actor.player.add_animation_library(namespace_,AnimationLibrary.new())
+		actor.player.get_animation_library(namespace_).add_animation(clip_name.get_slice("/",1),animation)
+		return
 	if entry.has("source_animation") and not actor.player.has_animation(str(entry.clip)):
 		actor.player.stop()
 		var source:=load("res://assets/combat/animations/UAL2_Standard.glb") as AnimationLibrary
@@ -2464,7 +2473,9 @@ func _select_saved_timeline(index:int) -> void:
 	timeline_duration=float(snapshot.get("duration",12.0))
 	timeline_clips.clear()
 	for clip in snapshot.get("clips",[]):
-		if clip is Dictionary:timeline_clips.append(clip.duplicate(true))
+		if clip is Dictionary:
+			_ensure_animation_source(clip)
+			timeline_clips.append(clip.duplicate(true))
 	timeline_serial=0
 	for clip in timeline_clips:timeline_serial=maxi(timeline_serial,int(clip.get("id",0)))
 	timeline_length_input.set_value_no_signal(timeline_duration)
@@ -4800,7 +4811,7 @@ func _process(delta: float) -> void:
 		for fighter in field.fighters:
 			if fighter.mode in ["idle","review"]:preload("res://scripts/editor_rig_pose.gd").idle(fighter,idle_preview_elapsed)
 	for unit in added_units:
-		if is_instance_valid(unit) and not unit.has_meta("editor_jump_tail") and unit!=row_preview_unit and not (timeline_playing and unit==focused_unit) and not (playtest.active and unit==focused_unit and (playtest.held.get(KEY_W,false) or playtest.held.get(KEY_A,false) or playtest.held.get(KEY_S,false) or playtest.held.get(KEY_D,false))):_set_unit_idle_target(unit,idle_preview_elapsed)
+		if is_instance_valid(unit) and not unit.has_meta("editor_jump_tail") and unit!=row_preview_unit and not (timeline_playing and unit==focused_unit) and not (playtest.active and unit==focused_unit and playtest.moving):_set_unit_idle_target(unit,idle_preview_elapsed)
 	super._process(delta)
 	if is_instance_valid(row_preview_unit) and is_instance_valid(actor):
 		var previous_elapsed:=row_preview_elapsed
