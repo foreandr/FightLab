@@ -11,14 +11,14 @@ func build_demo() -> void:
 		if str(workspace.timeline_library[i].get("name","")).begins_with("Corkscrew Open Hand Melee Hook"):index=i
 	assert(index>=0,"Saved aerial combo missing")
 	workspace.spawn_editor_unit(Vector3(0,0.02,0))
-	workspace.spawn_editor_unit(Vector3(0,0.02,1.1))
 	workspace.focus_editor_unit(0)
 	workspace._rebuild_timeline_library_menu()
 	workspace._select_saved_timeline(workspace.timeline_visible_library_indices.find(index))
 	workspace.select_group("Attack")
 	for category in workspace.category_store.names_for("Attack"):
 		if str(category).nocasecmp_to("Air Combat")==0:workspace.select_category(category,true)
-	workspace._on_timeline_scrubbed(0.96)
+	workspace._on_timeline_scrubbed(0.0)
 	frame_camera()
 	root.show();root.grab_focus();root.request_attention()
-	print("SAVED AERIAL COMBO OPEN: per-row priority and layer controls ready")
+	assert(is_zero_approx(workspace.timeline_playhead), "Timeline must open at zero")
+	print("SAVED AERIAL COMBO OPEN: 0.00 s; one bot; timeline ready")

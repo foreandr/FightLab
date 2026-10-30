@@ -79,6 +79,12 @@ var animation_store_list:VBoxContainer
 var animation_store_search:LineEdit
 var animation_store_count:Label
 var animation_store_entries:Array[Dictionary]=[]
+const STORE_PAGE_SIZE:=100
+var store_page:=0
+var store_page_label:Label
+var store_page_previous:Button
+var store_page_next:Button
+var store_last_query:=""
 const AssetProvenance=preload("res://scripts/asset_provenance.gd")
 const StoreLibrary=preload("res://scripts/animation_store_library.gd")
 var store_library=StoreLibrary.new()
@@ -93,6 +99,9 @@ var timeline_panel: PanelContainer
 var timeline_name: LineEdit
 var timeline_save_overlay: Control
 var timeline_save_name: LineEdit
+var timeline_save_group: OptionButton
+var timeline_save_category: OptionButton
+var timeline_save_error: Label
 var timeline_library_menu: OptionButton
 var timeline_library: Array[Dictionary] = []
 var timeline_visible_library_indices:Array[int]=[]
@@ -617,6 +626,13 @@ func build_ui() -> void:
 		filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		filter.item_selected.connect(func(_index:int):_save_store_preferences();_populate_animation_store())
 	_load_store_preferences()
+	var pages:=HBoxContainer.new()
+	store_content.add_child(pages)
+	store_page_previous=button(pages,"← Previous",func():store_page=maxi(0,store_page-1);_populate_animation_store())
+	store_page_label=menu_label(pages,"Page 1",12)
+	store_page_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	store_page_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	store_page_next=button(pages,"Next →",func():store_page+=1;_populate_animation_store())
 	var store_scroll:=ScrollContainer.new()
 	store_scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	store_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
@@ -907,6 +923,7 @@ func _open_workspace_section(section:String) -> void:
 
 func _load_animation_store() -> void:
 	animation_store_entries=Library.entries()
+	animation_store_entries.append_array(preload("res://scripts/community_animation_catalog.gd").entries())
 	for group in Library.GROUPS:
 		for category in category_store.names_for(group):animation_store_entries.append_array(load_custom_motion(category))
 	# Include source clips beyond the curated Motion/Attack browser.
@@ -959,7 +976,10 @@ func _populate_animation_store() -> void:
 	if not is_instance_valid(animation_store_list):return
 	clear_list(animation_store_list)
 	var query:=animation_store_search.text.strip_edges().to_lower()
+	var query_key:="%s|%d|%d|%d"%[query,store_body_filter.selected,store_air_filter.selected,store_view_filter.selected]
+	if query_key!=store_last_query:store_page=0;store_last_query=query_key
 	var count:=0
+	var matches_:Array[Dictionary]=[]
 	for entry in animation_store_entries:
 		var id:=StoreLibrary.key(entry)
 		var taken:bool=store_library.is_taken(entry) or entry.has("path")
@@ -972,6 +992,14 @@ func _populate_animation_store() -> void:
 		if store_air_filter.selected>0 and str(entry.get("air_state",""))!=store_air_filter.get_item_text(store_air_filter.selected):continue
 		if not query.is_empty() and not StoreLibrary.matches(entry,query):continue
 		count+=1
+		matches_.append(entry)
+	store_page=clampi(store_page,0,maxi(0,ceili(float(count)/STORE_PAGE_SIZE)-1))
+	store_page_label.text="Page %d / %d · %d matches"%[store_page+1,maxi(1,ceili(float(count)/STORE_PAGE_SIZE)),count]
+	store_page_previous.disabled=store_page==0
+	store_page_next.disabled=(store_page+1)*STORE_PAGE_SIZE>=count
+	for entry in matches_.slice(store_page*STORE_PAGE_SIZE,(store_page+1)*STORE_PAGE_SIZE):
+		var id:=StoreLibrary.key(entry)
+		var blocked:bool=store_library.blocked.has(id)
 		var row:=HBoxContainer.new()
 		row.add_theme_constant_override("separation",6)
 		animation_store_list.add_child(row)
@@ -983,6 +1011,7 @@ func _populate_animation_store() -> void:
 		title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		title.clip_text=true
 		title.tooltip_text=animation_info_text(entry)+"\nTags\t"+", ".join(entry.get("tags",[]))+"\nBody\t"+", ".join(entry.get("body_parts",[]))+"\nState\t"+str(entry.get("air_state","Grounded"))
+		if entry.has("source_name"):title.tooltip_text+="\nSource\t"+str(entry.source_name)+"\nLicense\t"+str(entry.get("license","Unspecified"))
 		var play:=animation_icon_button(row,"play","Play once on selected bot",func():_play_store_animation(entry))
 		play.name="StorePlay"
 		_style_store_action(play,Color("388753"))
@@ -1004,6 +1033,9 @@ func _play_store_animation(entry:Dictionary) -> void:
 	play_animation_row(entry)
 
 func _ensure_animation_source(entry:Dictionary) -> void:
+	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
+		_show_library_notice("Could not import this source animation · original file preserved")
+		return
 	if entry.has("animation_resource"):
 		var clip_name:=str(entry.get("clip",""))
 		if actor.player.has_animation(clip_name):return
@@ -1266,9 +1298,9 @@ func open_timeline_save_dialog() -> void:
 	var card:=PanelContainer.new()
 	card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	card.offset_left=-210
-	card.offset_top=-92
+	card.offset_top=-172
 	card.offset_right=210
-	card.offset_bottom=92
+	card.offset_bottom=172
 	var card_style:=StyleBoxFlat.new()
 	card_style.bg_color=BOOK_PAPER
 	card_style.border_color=BOOK_GOLD
@@ -1288,6 +1320,34 @@ func open_timeline_save_dialog() -> void:
 	timeline_save_name.custom_minimum_size.y=38
 	timeline_save_name.alignment=HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(timeline_save_name)
+	var destination_group:=selected_group if selected_group in ["Motion","Attack"] else "Attack"
+	var destination_category:=selected_category
+	for entry in store_library.taken.values():
+		if str(entry.get("title",""))==timeline_name.text.strip_edges():
+			destination_group=str(entry.get("group",destination_group))
+			destination_category=str(entry.get("category",destination_category))
+			break
+	menu_label(content,"Save in",14)
+	timeline_save_group=OptionButton.new()
+	timeline_save_group.name="SaveLibrary"
+	timeline_save_group.tooltip_text="Save location · Motion or Attack"
+	timeline_save_group.add_item("Motion")
+	timeline_save_group.add_item("Attack")
+	timeline_save_group.select(0 if destination_group=="Motion" else 1)
+	content.add_child(timeline_save_group)
+	timeline_save_category=OptionButton.new()
+	timeline_save_category.name="SaveFolder"
+	timeline_save_category.tooltip_text="Save location · Folder"
+	timeline_save_category.fit_to_longest_item=false
+	timeline_save_category.custom_minimum_size.y=34
+	content.add_child(timeline_save_category)
+	_populate_timeline_save_folders(destination_category)
+	timeline_save_group.item_selected.connect(func(_index:int):_populate_timeline_save_folders())
+	timeline_save_error=menu_label(content,"",13)
+	timeline_save_error.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	timeline_save_error.add_theme_color_override("font_color",Color("a52f26"))
+	for control in [timeline_save_name,timeline_save_group,timeline_save_category]:
+		control.gui_input.connect(_timeline_save_key_input)
 	var actions:=HBoxContainer.new()
 	actions.alignment=BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation",UI_EDGE_GAP)
@@ -1300,20 +1360,47 @@ func open_timeline_save_dialog() -> void:
 	timeline_save_name.grab_focus()
 	timeline_save_name.select_all()
 
+func _populate_timeline_save_folders(preferred:String="") -> void:
+	timeline_save_category.clear()
+	var group:=timeline_save_group.get_item_text(timeline_save_group.selected)
+	for folder in category_store.names_for(group):timeline_save_category.add_item(folder)
+	for i in timeline_save_category.item_count:
+		if timeline_save_category.get_item_text(i).nocasecmp_to(preferred)==0:timeline_save_category.select(i);break
+
+func _timeline_save_key_input(event:InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		_close_timeline_save_dialog()
+
 func _confirm_timeline_save() -> void:
 	var name_:=timeline_save_name.text.strip_edges() if is_instance_valid(timeline_save_name) else ""
 	if name_.is_empty():
-		timeline_save_name.placeholder_text="Enter a name"
+		timeline_save_error.text="Enter an animation name."
 		timeline_save_name.grab_focus()
 		return
-	timeline_name.text=name_
+	if timeline_save_category.selected<0:
+		timeline_save_error.text="Choose a folder."
+		return
+	var group:=timeline_save_group.get_item_text(timeline_save_group.selected)
+	var category:=timeline_save_category.get_item_text(timeline_save_category.selected)
+	var result:Dictionary=preload("res://scripts/timeline_library_save.gd").save(self,name_,group,category)
+	if not result.ok:
+		timeline_save_error.text=str(result.error)
+		return
+	timeline_name.text=str(result.entry.title)
 	_close_timeline_save_dialog()
 	save_timeline()
+	select_group(group)
+	select_category(category,true)
+	_show_library_notice("Saved · %s → %s / %s"%[timeline_name.text,group,category])
 
 func _close_timeline_save_dialog() -> void:
 	if is_instance_valid(timeline_save_overlay):timeline_save_overlay.queue_free()
 	timeline_save_overlay=null
 	timeline_save_name=null
+	timeline_save_group=null
+	timeline_save_category=null
+	timeline_save_error=null
 
 func clear_timeline() -> void:
 	_record_timeline_undo()
@@ -2546,6 +2633,11 @@ func save_timeline() -> void:
 	var name_:=timeline_name.text.strip_edges() if is_instance_valid(timeline_name) else "New animation"
 	if name_.is_empty():return
 	var snapshot:Dictionary={"name":name_,"duration":timeline_duration,"clips":timeline_clips.duplicate(true),"rows":timeline_rows.duplicate(true)}
+	for entry in store_library.taken.values():
+		if str(entry.get("title",""))==name_:
+			snapshot.group=entry.group
+			snapshot.category=entry.category
+			break
 	var found_index:=-1
 	for i in range(timeline_library.size()):
 		if str(timeline_library[i].get("name",""))==name_:found_index=i;break
@@ -2566,7 +2658,7 @@ func save_timeline() -> void:
 
 func _rebuild_timeline_library_menu() -> void:
 	if not is_instance_valid(timeline_library_menu):return
-	timeline_library_menu.visible=not timeline_library.is_empty()
+	timeline_library_menu.hide()
 	timeline_library_menu.clear()
 	timeline_visible_library_indices.clear()
 	for i in range(timeline_library.size()):
@@ -2574,7 +2666,7 @@ func _rebuild_timeline_library_menu() -> void:
 		if name_.is_empty() or name_.to_lower()=="new animation":continue
 		timeline_library_menu.add_item(name_,i)
 		timeline_visible_library_indices.append(i)
-	timeline_library_menu.visible=not timeline_visible_library_indices.is_empty()
+	timeline_library_menu.hide()
 	var selected:=-1
 	var current_name:=timeline_name.text.strip_edges() if is_instance_valid(timeline_name) else ""
 	for visible_index in range(timeline_visible_library_indices.size()):

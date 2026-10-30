@@ -155,6 +155,8 @@ static func matches(entry:Dictionary,query:String) -> bool:
 		elif term.begins_with("body:"):haystack=str(entry.get("body_parts",[])).to_lower()
 		elif term.begins_with("state:") or term.begins_with("air:"):haystack=str(entry.get("air_state","")).to_lower()
 		elif term.begins_with("source:"):haystack=(str(entry.get("clip",""))+" "+JSON.stringify(metadata)).to_lower()
+		elif term.begins_with("license:"):haystack=str(entry.get("license","")).to_lower()
+		elif term.begins_with("commercial:"):haystack="yes true allowed" if bool(entry.get("commercial_use",false)) else "no false restricted"
 		elif term.begins_with("author:"):
 			haystack=""
 			for node in metadata.get("nodes",{}).values():haystack+=" "+str(node.get("author","")).to_lower()

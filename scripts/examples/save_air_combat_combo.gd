@@ -44,7 +44,7 @@ func build_demo() -> void:
 	workspace.select_category(category,true)
 	workspace._rebuild_timeline_tracks()
 	workspace._rebuild_timeline_library_menu()
-	workspace._on_timeline_scrubbed(0.96)
+	workspace._on_timeline_scrubbed(0.0)
 	frame_camera()
 	root.show();root.grab_focus();root.request_attention()
 	print("AIR COMBAT SAVED: full combo with jump height, source timeline and credits; F camera shortcut removed")

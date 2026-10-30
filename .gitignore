@@ -23,3 +23,6 @@ Thumbs.db
 # Local downloaded clothing archive and development scratch files
 /assets/characters/wardrobe/library/
 /work/
+
+# Resumable community animation downloads; source URLs and importer are tracked.
+/assets/animations/community/

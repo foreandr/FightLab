@@ -20,7 +20,7 @@ func sample_flip(time:float) -> Dictionary:
 	var parent_basis:Basis=rig.global_basis
 	if parent_index>=0:parent_basis=parent_basis*rig.get_bone_global_pose(parent_index).basis
 	var world_time:=FLIP_START+time
-	var lean:=deg_to_rad(-35.0)*smoothstep(0.62,0.82,world_time)*(1-smoothstep(1.04,1.18,world_time))
+	var lean:=deg_to_rad(35.0)*smoothstep(0.62,0.82,world_time)*(1-smoothstep(1.04,1.18,world_time))
 	var up:Vector3=(parent_basis.inverse()*Vector3.UP).normalized()
 	var right:Vector3=(parent_basis.inverse()*workspace.actor.global_basis.x).normalized()
 	pose.rotations.pelvis=Quaternion(up,half_spin_angle(time))*Quaternion(right,lean)*(pose.rotations.pelvis as Quaternion)
