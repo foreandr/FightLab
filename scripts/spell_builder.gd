@@ -921,6 +921,7 @@ func set_limiter_enabled(enabled:bool) -> void:
    limiter_warning.title="Limiter off · Testing only"
    limiter_warning.dialog_text="Values are independent and spells cannot be saved.\nExtreme settings may freeze the game.\nExperiment at your own discretion."
    limiter_warning.ok_button_text="Understood"
+   limiter_warning.get_label().add_theme_color_override("font_color",Color("fff3db"))
    add_child(limiter_warning)
   limiter_warning.popup_centered()
 
