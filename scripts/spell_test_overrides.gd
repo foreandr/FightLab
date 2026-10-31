@@ -11,6 +11,7 @@ func apply(spec:Dictionary) -> Dictionary:
 	result["unrestricted_preview"]=true
 	result["testing_only"]=true
 	result["mana"]=values.mana
+	result.erase("mana_percent")
 	result["stamina_cost"]=values.stamina
 	result["damage"]=values.damage
 	result["physical_damage"]=values.damage

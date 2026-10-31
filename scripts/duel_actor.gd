@@ -116,6 +116,7 @@ func count_action(name_: String) -> void:
 	arena.events.append({"time":arena.elapsed, "event":"action", "team":team, "action":name_})
 
 func reset_fighter(location: Vector3) -> void:
+	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	impact_physics.reset(skeleton)
 	position = location
 	ground_spawn = location
@@ -165,6 +166,7 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 func start_cast(air: bool) -> void:
+	arena.combat().interrupt_cast_attempt(self)
 	current_spell = choose_spell(air)
 	if mana < arena.mana_cost(current_spell):
 		# A cheap bolt is preferable to an unaffordable heavy cast.
@@ -183,6 +185,7 @@ func start_cast(air: bool) -> void:
 	clip = ""
 	play(animation, CAST_SPEED)
 	mode_length = player.get_animation(animation).length / CAST_SPEED + 0.08
+	arena.combat().begin_cast_attempt(self,current_spell,mode_length)
 	count_action("air_cast" if air else "cast")
 	if air:
 		air_casts += 1
@@ -803,6 +806,7 @@ func advance_animation(delta: float) -> void:
 	player.advance(delta)
 
 func tick_cast(delta: float) -> bool:
+	arena.combat().advance_cast_attempt(self,mode_time)
 	cast_time += delta * CAST_SPEED
 	face_rival(delta)
 	var released := false

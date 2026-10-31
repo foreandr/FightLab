@@ -57,6 +57,19 @@ combat().cast(actor,spec,animation_profile={}) -> bool
   Same request, using the spec's hand as origin. Handles projectile/ground,
   healing, armor, haste, burst, beam, ice beam, nova and earth summon effects.
 
+Interrupted cast stamina
+  begin_cast_attempt(actor,spec,duration,mode_owned=true) snapshots the attempt's
+  stamina cost and animation duration. Advance it with the animation's elapsed
+  time using advance_cast_attempt(actor,elapsed). Interrupting/restarting an
+  unreleased attempt spends cost * clamp(elapsed/duration,0,1), limited to the
+  actor's remaining stamina. Mana is not spent for that interruption.
+  Successful release pays the ordinary full cost once and clears the attempt;
+  canceling its recovery cannot charge it again. God Mode remains unlimited.
+  Native actor casts and Create use this same accounting. Native casts cancel
+  automatically when they leave cast mode; externally driven previews pass
+  mode_owned=false and explicitly interrupt on stop/switch/restart.
+  Resetting a fighter discards its attempt along with the explicit full reset.
+
 spawn_projectile and combat().dispatch are lower-level execution APIs for callers
 that already committed a cast. Do not call them after release for the same cast.
 

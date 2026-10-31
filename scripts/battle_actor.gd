@@ -357,6 +357,7 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 func start_cast(air: bool) -> void:
+	arena.combat().interrupt_cast_attempt(self)
 	if arena.story_mode:
 		set_close_combat(true)
 		return
@@ -404,12 +405,14 @@ func start_cast(air: bool) -> void:
 		current_spell.release=mode_length*practice_release_fraction
 		var hand:String=str(practice_spell_animation.get("attack_bone",current_spell.get("hand","hand_r")))
 		current_spell.hand="Head" if hand in ["mouth","head"] else hand
+	arena.combat().begin_cast_attempt(self,current_spell,mode_length)
 	count_action("air_cast" if air else "cast")
 	if air:
 		air_casts += 1
 
 func tick_cast(delta: float) -> bool:
 	if not can_cast_with(current_spell,practice_spell_animation):
+		arena.combat().interrupt_cast_attempt(self)
 		mode="frozen"
 		return false
 	face_rival(delta)
@@ -428,7 +431,9 @@ func tick_cast(delta: float) -> bool:
 	if not did_release and charge_goal > 0 and cast_phase == "windup" and cast_time >= hold_at:
 		cast_time = hold_at
 		cast_phase = "hold"
+		arena.combat().advance_cast_attempt(self,cast_time)
 		return false
+	arena.combat().advance_cast_attempt(self,cast_time)
 	var release := false
 	if not did_release and cast_time >= current_spell.release:
 		did_release = true

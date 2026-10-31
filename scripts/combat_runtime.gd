@@ -5,15 +5,55 @@ const Momentum=preload("res://scripts/physical_momentum.gd")
 const Projectile=preload("res://scripts/basic_projectile.gd")
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 var field:Node
+var cast_attempts:Dictionary={}
 
 func _init(host:Node) -> void:
 	field=host
 
+func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,duration:float,mode_owned:bool=true) -> void:
+	interrupt_cast_attempt(actor)
+	for key in cast_attempts.keys():
+		if cast_attempts[key].actor.get_ref()==null:cast_attempts.erase(key)
+	cast_attempts[actor.get_instance_id()]={"actor":weakref(actor),"stamina":maxf(0.0,float(spec.get("stamina_cost",0.0))),"duration":maxf(0.0,duration),"elapsed":0.0,"mode_owned":mode_owned}
+
+func advance_cast_attempt(actor:CharacterBody3D,elapsed:float) -> void:
+	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
+	if not attempt.is_empty():attempt.elapsed=maxf(float(attempt.elapsed),maxf(0.0,elapsed))
+
+func interrupt_cast_attempt(actor:CharacterBody3D) -> float:
+	var key:=actor.get_instance_id()
+	var attempt:Dictionary=cast_attempts.get(key,{})
+	if attempt.is_empty():return 0.0
+	cast_attempts.erase(key)
+	var progress:=clampf(float(attempt.elapsed)/maxf(0.001,float(attempt.duration)),0.0,1.0)
+	var cost:=minf(actor.stamina,float(attempt.stamina)*progress)
+	var before:float=actor.stamina
+	if cost>0.0:actor.spend_stamina(cost)
+	var paid:float=maxf(0.0,before-actor.stamina)
+	preload("res://scripts/combat_diagnostics.gd").event(field,"cast_interrupted",{"actor":str(actor.name),"progress":progress,"stamina":paid})
+	return paid
+
+func _cancel_exited_cast(actor:CharacterBody3D) -> void:
+	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
+	if not attempt.is_empty() and attempt.mode_owned and actor.mode!="cast":interrupt_cast_attempt(actor)
+
+func discard_cast_attempt(actor:CharacterBody3D) -> void:
+	cast_attempts.erase(actor.get_instance_id())
+
 func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={}) -> bool:
-	if not field.round_active or actor.health<=0:return false
-	if actor.has_method("can_cast_with") and not actor.can_cast_with(spec,profile):return false
-	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement") and not actor.practice_god_mode and actor.stamina<actor.flash_stamina_requirement():return false
-	return actor.spend_cast_resources(float(spec.get("stamina_cost",0.0)),Rules.mana_cost(spec,actor.MAX_MANA,field.combat_defaults))
+	if not field.round_active or actor.health<=0:
+		interrupt_cast_attempt(actor)
+		return false
+	if actor.has_method("can_cast_with") and not actor.can_cast_with(spec,profile):
+		interrupt_cast_attempt(actor)
+		return false
+	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement") and not actor.practice_god_mode and actor.stamina<actor.flash_stamina_requirement():
+		interrupt_cast_attempt(actor)
+		return false
+	var paid:bool=actor.spend_cast_resources(float(spec.get("stamina_cost",0.0)),Rules.mana_cost(spec,actor.MAX_MANA,field.combat_defaults))
+	if paid:cast_attempts.erase(actor.get_instance_id())
+	else:interrupt_cast_attempt(actor)
+	return paid
 
 func release(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dictionary={}) -> bool:
 	if not authorize_cast(actor,spec,profile):return false
@@ -333,10 +373,12 @@ func step_pulses(delta: float) -> void:
 
 func step_actors(delta:float) -> void:
 	for f in field.fighters:
+		_cancel_exited_cast(f)
 		var incoming: Vector3=f.velocity
 		if Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z).length()>incoming.length():
 			incoming=Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z)
 		f.tick(delta)
+		_cancel_exited_cast(f)
 		if not is_instance_valid(f.get("ragdoll")) and f.health>0:
 			for i in f.get_slide_collision_count():
 				var contact: KinematicCollision3D=f.get_slide_collision(i)

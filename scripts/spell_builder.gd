@@ -32,6 +32,7 @@ var spell_kind:="Projectiles"
 var casting_animation:Dictionary={}
 var preview_preferences_path:="user://spell_preview_preferences.cfg"
 var demo_source_ready:=false
+var cast_attempt_actor:CharacterBody3D
 var demo_button:Button
 var demo_dialog:ConfirmationDialog
 var demo_search:LineEdit
@@ -878,6 +879,8 @@ func set_preview_slow(enabled:bool) -> void:
  GameDiagnostics.log_event("spell_preview_slow_motion",{"enabled":preview_slow,"time_scale":Engine.time_scale})
 
 func stop_preview_controls() -> void:
+ interrupt_preview_cast()
+ playing=false
  if preview_repeating:set_preview_repeat(false)
  if preview_slow:set_preview_slow(false)
 
@@ -1076,10 +1079,12 @@ func refresh_demo_choices() -> void:
   demo_choices[choice].add_theme_color_override("font_color",Color("98703d") if selected else Color("382c1c"))
 
 func play_demo_preview() -> void:
+ interrupt_preview_cast()
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
  var stamina_cost:=float(demo_physical_stats().stamina)
  if not editor.actor.practice_god_mode and stamina_cost>float(editor.actor.stamina)+0.0001:
   playing=false
+  begin_demo_exit()
   if not preview_repeating:editor._show_library_notice("Needs %.1f stamina · available %.1f"%[stamina_cost,float(editor.actor.stamina)])
   return
  if not demo_source_ready:
@@ -1094,6 +1099,9 @@ func play_demo_preview() -> void:
  elapsed=0
  playing=true
  released=false
+ if creation_step=="projectile":
+  cast_attempt_actor=editor.actor
+  editor.field.combat().begin_cast_attempt(cast_attempt_actor,demo_preview_spec(),cast_duration(),false)
 
  if not limiter_enabled and cast_duration()<=0.0:
   if creation_step=="projectile":launch_projectile()
@@ -1103,6 +1111,10 @@ func play_demo_preview() -> void:
 
 func process_demo_preview(delta:float) -> void:
  idle_elapsed+=delta
+ if playing and creation_step=="projectile" and not editor.actor.can_cast_with(demo_preview_spec(),casting_animation):
+  playing=false
+  repeat_wait=REPEAT_DELAY
+  begin_demo_exit()
  if not playing:
   editor.actor.recover_idle_resources(delta)
   if caster_moving:
@@ -1118,6 +1130,7 @@ func process_demo_preview(delta:float) -> void:
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
   return
  elapsed+=delta
+ if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
  var progress:=clampf(elapsed/maxf(0.001,cast_duration()),0.0,1.0)
  CastPose.pose(editor.actor,casting_animation,minf(0.9999,progress),cast_pose_aim(progress))
  if not demo_enter_pose.is_empty():
@@ -1149,9 +1162,14 @@ func blend_demo_pose(from:Array[Transform3D],weight:float) -> void:
  CastPose.blend_from(editor.actor,from,weight)
 
 func begin_demo_exit() -> void:
+ interrupt_preview_cast()
  demo_exit_pose=capture_demo_pose()
  demo_exit_elapsed=0.0
  demo_enter_pose.clear()
+
+func interrupt_preview_cast() -> void:
+ if is_instance_valid(cast_attempt_actor) and is_instance_valid(editor) and is_instance_valid(editor.field):editor.field.combat().interrupt_cast_attempt(cast_attempt_actor)
+ cast_attempt_actor=null
 
 func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if str(entry.get("clip","")).is_empty():return false
@@ -1374,6 +1392,7 @@ func cast_duration() -> float:
  return CastPose.Source.duration(editor.actor,casting_animation.step,casting_animation.clip)
 
 func play_cast_preview() -> void:
+ interrupt_preview_cast()
  if category not in ["Projectiles","Summons"] or casting_animation.is_empty() or not is_instance_valid(editor.actor):return
  if not demo_source_ready:
   if not editor._ensure_animation_source(casting_animation):return
@@ -1382,6 +1401,8 @@ func play_cast_preview() -> void:
  elapsed=0
  playing=true
  released=false
+ cast_attempt_actor=editor.actor
+ editor.field.combat().begin_cast_attempt(cast_attempt_actor,demo_preview_spec(),cast_duration(),false)
  if release_fraction==0:
   CastPose.pose(editor.actor,casting_animation,0)
   launch_projectile()
@@ -1428,6 +1449,7 @@ func _process(delta:float) -> void:
   last_damage_velocity=editor.actor.velocity
   return
  if not editor.actor.can_cast_with(demo_preview_spec(),casting_animation):
+  interrupt_preview_cast()
   playing=false
   repeat_wait=REPEAT_DELAY
   return
@@ -1442,6 +1464,7 @@ func _process(delta:float) -> void:
    fighter.restore_ice_pose()
  if playing:
   elapsed+=delta
+  if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
   var progress:=clampf(elapsed/maxf(0.001,cast_duration()),0,1)
   CastPose.pose(editor.actor,casting_animation,minf(0.9999,progress))
   if not released and progress>=release_fraction:
@@ -1693,6 +1716,7 @@ func _exit_tree() -> void:
  if is_instance_valid(spell_playback_panel):spell_playback_panel.queue_free()
 
 func reset_caster_pose() -> void:
+ interrupt_preview_cast()
  demo_enter_pose.clear()
  demo_exit_pose.clear()
  if not is_instance_valid(editor) or not is_instance_valid(editor.actor):return

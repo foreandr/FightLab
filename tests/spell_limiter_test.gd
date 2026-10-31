@@ -39,10 +39,13 @@ func run() -> void:
 	if not check(editor.field.shot_serial==modal_shots,"Casting hotkey passes through warning"):return
 	b.limiter_warning.hide()
 	if not check(not preload("res://scripts/combat_pointer.gd").dialog_open(b.get_viewport()),"Dismissed warning still owns cursor"):return
-	root.grab_focus()
-	root.warp_mouse(editor.base_ui.get_node("ArenaUnitDrop").get_global_rect().get_center())
-	await process_frame
-	b.update_third_person_view(0.0)
+	# Window focus/mouse warps are delivered asynchronously by the OS.
+	for frame in 30:
+		root.grab_focus()
+		root.warp_mouse(editor.base_ui.get_node("ArenaUnitDrop").get_global_rect().get_center())
+		await RenderingServer.frame_post_draw
+		b.update_third_person_view(0.0)
+		if b.third_person_crosshair.visible and Input.mouse_mode==Input.MOUSE_MODE_HIDDEN:break
 	if not check(b.third_person_crosshair.visible and Input.mouse_mode==Input.MOUSE_MODE_HIDDEN,"Arena crosshair did not resume after dismissing warning"):return
 	for key in ["duration","release","mana","stamina","damage"]:
 		b.test_inputs[key].set_value(0.0)
@@ -59,6 +62,7 @@ func run() -> void:
 	b.save_draft()
 	if not check(FileAccess.get_file_as_string(b.draft_path)==saved,"Off-mode save overwrote valid draft"):return
 	editor.actor.mana=0;editor.actor.stamina=0
+	b.set_character_god_mode(editor.actor,false)
 	var before:int=editor.field.shot_serial
 	b.play_demo_preview()
 	if not check(editor.field.shot_serial==before+1 and not b.playing,"Zero-duration cast is not immediate"):return
