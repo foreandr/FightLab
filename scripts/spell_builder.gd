@@ -1101,7 +1101,8 @@ func play_demo_preview() -> void:
  released=false
  if creation_step=="projectile":
   cast_attempt_actor=editor.actor
-  editor.field.combat().begin_cast_attempt(cast_attempt_actor,demo_preview_spec(),cast_duration(),false)
+  var attempt_spec:=demo_preview_spec()
+  editor.field.combat().begin_cast_attempt(cast_attempt_actor,attempt_spec,cast_duration()*float(attempt_spec.release),false)
 
  if not limiter_enabled and cast_duration()<=0.0:
   if creation_step=="projectile":launch_projectile()
@@ -1402,7 +1403,8 @@ func play_cast_preview() -> void:
  playing=true
  released=false
  cast_attempt_actor=editor.actor
- editor.field.combat().begin_cast_attempt(cast_attempt_actor,demo_preview_spec(),cast_duration(),false)
+ var attempt_spec:=demo_preview_spec()
+ editor.field.combat().begin_cast_attempt(cast_attempt_actor,attempt_spec,cast_duration()*float(attempt_spec.release),false)
  if release_fraction==0:
   CastPose.pose(editor.actor,casting_animation,0)
   launch_projectile()

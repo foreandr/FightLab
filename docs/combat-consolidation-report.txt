@@ -122,10 +122,12 @@ Follow-up tests: +176 / -0 lines. Saved level metadata: +11 lines.
 
 INTERRUPTED-CAST STAMINA (2026-10-31)
 
-Unreleased casts now retain stamina cost in proportion to the animation already
-performed. Example: interrupting a 10-stamina, 1-second cast at 0.25 seconds costs
-2.5 stamina. Repeated restarts accumulate these costs. The shared runtime snapshots
-the original cost/duration, so changing settings cannot rewrite the old debt.
+Unreleased casts retain stamina cost in proportion to progress towards the spell's
+scheduled launch. For a 10-stamina spell launching at 0.55 seconds, interruption
+at 0.385 seconds (70% towards launch) costs 7 stamina. Repeated restarts accumulate
+these costs. The shared runtime snapshots the original cost/release point, so
+changing settings cannot rewrite the old debt. Post-launch recovery time is not
+part of that percentage.
 Mana still pays at release. A successful release pays its full normal stamina
 cost once; interrupting its recovery adds no second charge. God Mode remains
 unlimited, interruption cannot overdraw stamina, and explicit resets clear debt.
@@ -140,3 +142,5 @@ The limiter test explicitly disables God Mode and waits for asynchronous window
 focus rather than assuming focus is restored in a single frame.
 
 Implementation: +80 / -4 lines. Tests: +87 / -4 lines.
+Release-window refinement: +9 / -7 implementation lines; +18 / -7 test lines.
+Verified 70% cancellation costs against both early and late selected launch times.

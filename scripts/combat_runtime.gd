@@ -10,11 +10,11 @@ var cast_attempts:Dictionary={}
 func _init(host:Node) -> void:
 	field=host
 
-func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,duration:float,mode_owned:bool=true) -> void:
+func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:float,mode_owned:bool=true) -> void:
 	interrupt_cast_attempt(actor)
 	for key in cast_attempts.keys():
 		if cast_attempts[key].actor.get_ref()==null:cast_attempts.erase(key)
-	cast_attempts[actor.get_instance_id()]={"actor":weakref(actor),"stamina":maxf(0.0,float(spec.get("stamina_cost",0.0))),"duration":maxf(0.0,duration),"elapsed":0.0,"mode_owned":mode_owned}
+	cast_attempts[actor.get_instance_id()]={"actor":weakref(actor),"stamina":maxf(0.0,float(spec.get("stamina_cost",0.0))),"time_to_release":maxf(0.0,time_to_release),"elapsed":0.0,"mode_owned":mode_owned}
 
 func advance_cast_attempt(actor:CharacterBody3D,elapsed:float) -> void:
 	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
@@ -25,7 +25,7 @@ func interrupt_cast_attempt(actor:CharacterBody3D) -> float:
 	var attempt:Dictionary=cast_attempts.get(key,{})
 	if attempt.is_empty():return 0.0
 	cast_attempts.erase(key)
-	var progress:=clampf(float(attempt.elapsed)/maxf(0.001,float(attempt.duration)),0.0,1.0)
+	var progress:=clampf(float(attempt.elapsed)/maxf(0.001,float(attempt.time_to_release)),0.0,1.0)
 	var cost:=minf(actor.stamina,float(attempt.stamina)*progress)
 	var before:float=actor.stamina
 	if cost>0.0:actor.spend_stamina(cost)

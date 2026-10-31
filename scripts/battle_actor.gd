@@ -405,7 +405,7 @@ func start_cast(air: bool) -> void:
 		current_spell.release=mode_length*practice_release_fraction
 		var hand:String=str(practice_spell_animation.get("attack_bone",current_spell.get("hand","hand_r")))
 		current_spell.hand="Head" if hand in ["mouth","head"] else hand
-	arena.combat().begin_cast_attempt(self,current_spell,mode_length)
+	arena.combat().begin_cast_attempt(self,current_spell,float(current_spell.release))
 	count_action("air_cast" if air else "cast")
 	if air:
 		air_casts += 1

@@ -185,7 +185,7 @@ func start_cast(air: bool) -> void:
 	clip = ""
 	play(animation, CAST_SPEED)
 	mode_length = player.get_animation(animation).length / CAST_SPEED + 0.08
-	arena.combat().begin_cast_attempt(self,current_spell,mode_length)
+	arena.combat().begin_cast_attempt(self,current_spell,float(current_spell.release)/CAST_SPEED)
 	count_action("air_cast" if air else "cast")
 	if air:
 		air_casts += 1

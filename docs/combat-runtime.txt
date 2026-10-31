@@ -58,11 +58,14 @@ combat().cast(actor,spec,animation_profile={}) -> bool
   healing, armor, haste, burst, beam, ice beam, nova and earth summon effects.
 
 Interrupted cast stamina
-  begin_cast_attempt(actor,spec,duration,mode_owned=true) snapshots the attempt's
-  stamina cost and animation duration. Advance it with the animation's elapsed
+  begin_cast_attempt(actor,spec,time_to_release,mode_owned=true) snapshots the
+  stamina cost and scheduled release time. Advance it with the animation's elapsed
   time using advance_cast_attempt(actor,elapsed). Interrupting/restarting an
-  unreleased attempt spends cost * clamp(elapsed/duration,0,1), limited to the
+  unreleased attempt spends cost * clamp(elapsed/time_to_release,0,1), limited to the
   actor's remaining stamina. Mana is not spent for that interruption.
+  Thus 70% of the way to release costs 70%, irrespective of recovery time after
+  release. Create converts the timing fraction to seconds; native casts supply
+  the release point in the same clock units used by their animation sampler.
   Successful release pays the ordinary full cost once and clears the attempt;
   canceling its recovery cannot charge it again. God Mode remains unlimited.
   Native actor casts and Create use this same accounting. Native casts cancel
