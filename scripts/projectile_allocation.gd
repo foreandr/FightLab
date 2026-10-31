@@ -1,5 +1,10 @@
 extends RefCounted
-## Every slider spends part of one fixed budget; other shares retain their ratio.
+## Normalize the chosen mix, then spend only the selected fraction of available power.
+static func spend(raw:Dictionary,with_effect:bool,total_power:float) -> Dictionary:
+	var result:=normalize(raw,with_effect)
+	for key in result:result[key]*=clampf(total_power,0.0,1.0)
+	return result
+
 static func normalize(raw:Dictionary,with_effect:bool) -> Dictionary:
 	var keys:Array=["size","speed","effect"] if with_effect else ["size","speed"]
 	var result:Dictionary={}

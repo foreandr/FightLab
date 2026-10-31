@@ -2,6 +2,15 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+scripts/projectile_allocation.gd
+  normalize/change preserve the size/speed/effect mix. spend applies Total power
+  (0..1) without reallocating unused power. Spell UI shows actual spent shares,
+  with each channel limited by that selected budget. Full power preserves old
+  behavior; zero uses minimum projectile size/speed and no effect. Total power
+  is saved with the spell and older drafts default to 100 percent. Limiter-off
+  controls remain independent, hiding the balanced budget row until restored.
+  This controls allocation, not the existing animation/resource-cost formulas.
+
 scripts/character_hitbox_overlays.gd
   Field.set_combat_hitboxes toggles sending projectile spheres (cyan) and receiving
   actor collision shapes (pink) together. Spell Hitboxes [2] uses this shared API;

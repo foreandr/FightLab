@@ -58,6 +58,10 @@ var demo_size_bonus_label:Label
 var demo_speed_bonus_label:Label
 var demo_burn_label:Label
 var projectile_allocations:Dictionary={}
+var total_power:=1.0
+var total_power_slider:HSlider
+var total_power_label:Label
+var total_power_row:HBoxContainer
 var allocation_sliders:Dictionary={}
 var allocation_labels:Dictionary={}
 var allocation_rows:Dictionary={}
@@ -518,6 +522,21 @@ func setup(owner_editor:Node) -> void:
  timing_column.add_child(release_slider)
  release_slider.tooltip_text="Early cast → apex. Casting near the apex gives full Spell amp."
  power_balance_label=editor.menu_label(timing_column,"Power balance",18)
+ total_power_row=HBoxContainer.new()
+ timing_column.add_child(total_power_row)
+ total_power_label=editor.menu_label(total_power_row,"Total power: 100%",15)
+ total_power_label.custom_minimum_size.x=140
+ total_power_slider=HSlider.new()
+ total_power_slider.name="TotalSpellPower"
+ total_power_slider.min_value=0
+ total_power_slider.max_value=100
+ total_power_slider.step=0.1
+ total_power_slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ total_power_slider.custom_minimum_size.y=28
+ total_power_slider.focus_mode=Control.FOCUS_ALL
+ total_power_slider.tooltip_text="How much of the available power to use. Size, speed and effect share this amount. Lower it for a weaker spell; resource-cost rules stay the same."
+ total_power_slider.value_changed.connect(func(value:float):set_total_power(value/100.0))
+ total_power_row.add_child(total_power_slider)
  for allocation_key in ["size","speed","effect"]:
   var key:String=allocation_key
   var row:=HBoxContainer.new()
@@ -778,13 +797,22 @@ func allocation_for(effect:String) -> Dictionary:
  projectile_allocations[effect]=result
  return result
 
+func set_total_power(value:float) -> void:
+ if not limiter_enabled:return
+ total_power=clampf(value,0.0,1.0)
+ refresh_projectile_allocation()
+ refresh_demo_timing()
+ save_draft()
+ if is_visible_in_tree() and creation_step=="projectile":play_demo_preview()
+
 func set_projectile_allocation(key:String,value:float) -> void:
  if not limiter_enabled:
   set_test_value(key,value*100.0)
   return
  if preview_effect not in ["None","Fire"]:return
  if key=="effect" and preview_effect=="None":return
- projectile_allocations[preview_effect]=Allocation.change(allocation_for(preview_effect),key,value,preview_effect!="None")
+ if total_power<=0.0:return
+ projectile_allocations[preview_effect]=Allocation.change(allocation_for(preview_effect),key,value/total_power,preview_effect!="None")
  refresh_projectile_allocation()
  refresh_demo_timing()
  save_draft()
@@ -794,12 +822,19 @@ func set_projectile_allocation(key:String,value:float) -> void:
 func refresh_projectile_allocation() -> void:
  if allocation_sliders.is_empty():return
  var shares:=allocation_for(preview_effect)
+ if is_instance_valid(total_power_slider):
+  total_power_slider.set_value_no_signal(total_power*100.0)
+  total_power_label.text="Total power: %.1f%%"%(total_power*100.0)
  for key in allocation_sliders:
   var active:=shares.has(key)
   allocation_rows[key].visible=active
   if not active:continue
-  var percent:float=float(shares[key])*100.0 if limiter_enabled else float(test_overrides.values.get(key,0.0))
+  var percent:float=float(shares[key])*total_power*100.0 if limiter_enabled else float(test_overrides.values.get(key,0.0))
+  allocation_sliders[key].set_block_signals(true)
+  allocation_sliders[key].max_value=maxf(0.1,total_power*100.0) if limiter_enabled else 100.0
+  allocation_sliders[key].editable=not limiter_enabled or total_power>0.0
   allocation_sliders[key].set_value_no_signal(percent)
+  allocation_sliders[key].set_block_signals(false)
   var title:String="Burn" if key=="effect" else str(key).capitalize()
   allocation_labels[key].text="%s: %.1f%%"%[title,percent] if limiter_enabled else title
 
@@ -898,6 +933,7 @@ func set_limiter_enabled(enabled:bool) -> void:
  limiter_enabled=enabled
  limiter_toggle.set_pressed_no_signal(enabled)
  limiter_notice.visible=not enabled
+ total_power_row.visible=enabled
  duration_endpoints.visible=enabled
  power_balance_label.text="Power balance" if enabled else "Independent values"
  demo_duration_slider.exp_edit=enabled
@@ -1314,11 +1350,12 @@ func projectile_spec() -> Dictionary:
 func projectile_effect_spec(effect:String) -> Dictionary:
  var spec:Dictionary=Projectile.spec(effect,projectile_size,potency,testing_sizes,projectile_velocity)
  if demo_only_stage and spell_kind=="Projectiles":
-  var shares:=allocation_for(effect)
+  var shares:=Allocation.spend(allocation_for(effect),effect!="None",total_power)
   spec["projectile_radius"]=Projectile.MIN_RADIUS*pow(Projectile.MAX_RADIUS/Projectile.MIN_RADIUS,float(shares["size"]))
   spec["projectile_velocity"]=lerpf(Projectile.MIN_VELOCITY,Projectile.MAX_VELOCITY,float(shares.speed))
   spec["potency"]=4.0*float(shares.get("effect",0.0))
   spec["power_allocation"]=shares.duplicate()
+  spec["total_power"]=total_power
  if effect=="None":
   spec["name"]="Elementless projectile"
   spec["mana"]=10.0
@@ -1945,7 +1982,7 @@ func save_draft() -> void:
  if not limiter_enabled:return
  if draft_path.is_empty():return
  var cfg=ConfigFile.new()
- var signature: String=JSON.stringify({"kind":spell_kind,"delivery_type":delivery_type,"element":element,"size":projectile_size,"potency":potency,"velocity":projectile_velocity,"release":release_fraction,"allocation":projectile_allocations,"appearance":appearances},"",true).sha256_text()
+ var signature: String=JSON.stringify({"kind":spell_kind,"delivery_type":delivery_type,"element":element,"size":projectile_size,"potency":potency,"velocity":projectile_velocity,"release":release_fraction,"allocation":projectile_allocations,"total_power":total_power,"appearance":appearances},"",true).sha256_text()
  if signature!=spell_provenance_signature:
   var parents:Array=[]
   parents.append(spell_provenance if not spell_provenance.is_empty() else Provenance.source({"id":"fightlab_spell_"+element.to_lower(),"title":element+" spell"},"spell"))
@@ -1962,6 +1999,7 @@ func save_draft() -> void:
  cfg.set_value("spell","projectile_effect_confirmed",projectile_effect_confirmed)
  cfg.set_value("spell","release_fraction",release_fraction)
  cfg.set_value("spell","power_allocations",projectile_allocations)
+ cfg.set_value("spell","total_power",total_power)
  cfg.set_value("projectile","element",element)
  cfg.set_value("projectile","size",projectile_size)
  cfg.set_value("projectile","potency",potency)
@@ -1980,6 +2018,7 @@ func load_draft() -> void:
  projectile_effect_confirmed=bool(cfg.get_value("spell","projectile_effect_confirmed",false))
  release_fraction=clampf(float(cfg.get_value("spell","release_fraction",MIN_RELEASE_FRACTION)),MIN_RELEASE_FRACTION,MAX_RELEASE_FRACTION)
  projectile_allocations=cfg.get_value("spell","power_allocations",{}).duplicate(true)
+ total_power=clampf(float(cfg.get_value("spell","total_power",1.0)),0.0,1.0)
  if delivery_type not in DELIVERY_TYPES:delivery_type=""
  testing_sizes=bool(cfg.get_value("testing","oversized",false))
  appearances=cfg.get_value("appearance","elements",{})
