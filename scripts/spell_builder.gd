@@ -1709,7 +1709,6 @@ func workspace_visibility_changed() -> void:
   if is_instance_valid(editor.target.practice_dummy_visual):editor.target.practice_dummy_visual.set_enabled(false)
   editor.target.practice_damageable_dummy=false
   editor.target.practice_god_mode=false
-  editor.target.remove_meta("practice_damage_readout")
   editor.target.collision_layer=0
   for item in editor.target.targets:item[0].collision_layer=0
   for item in editor.target.limb_targets:item[0].collision_layer=0
@@ -1885,7 +1884,6 @@ func update_training_dummy(_delta:float) -> void:
   dummy_damage_mark=dummy.damage_taken
   dummy_total_damage+=amount
   dummy_last_damage=amount
- dummy.set_meta("practice_damage_readout","Last spell damage: %.1f"%dummy_last_damage)
 
 func refresh_dummy_controls() -> void:
  if not is_instance_valid(dummy_god_button):return

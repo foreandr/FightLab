@@ -222,8 +222,6 @@ func update_tag() -> void:
 		status_label.text=str(fighter.get("return_state"))
 	if _fighter_number("water_depth")>1.65 and fighter.health>0:
 		status_label.text="AIR · %.1fs"%_fighter_number("air_remaining")
-	if fighter.has_meta("practice_damage_readout"):
-		status_label.text=str(fighter.get_meta("practice_damage_readout"))
 
 func _set_resource_fraction(key: String, raw_fraction: float) -> void:
 	var fraction:=clampf(raw_fraction,0.0,1.0)

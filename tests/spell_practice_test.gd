@@ -63,7 +63,7 @@ func run() -> void:
 		root.get_texture().get_image().save_png("user://logs/spell_practice_failure.png")
 	if not check(dummy.damage_taken>damage and dummy.health<health,"Playing a projectile did not damage mannequin"):return
 	await RenderingServer.frame_post_draw
-	if not check(b.dummy_last_damage>0.0 and "Last spell damage:" in str(dummy.get_meta("practice_damage_readout","")),"Last spell damage readout did not update"):return
+	if not check(b.dummy_last_damage>0.0 and not dummy.has_meta("practice_damage_readout"),"Damage bookkeeping failed or removed overhead readout returned"):return
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/spell_practice_hit.png")
 	dummy.invulnerability=0.0
@@ -84,7 +84,7 @@ func run() -> void:
 		dummy.receive_magic(10000.0,editor.actor.global_basis.z,editor.actor,dummy.bone_point("spine_03"),"chest","spine_03",Vector3.FORWARD*0.1)
 		await RenderingServer.frame_post_draw
 		if not check(dummy.health>0.0,"God mode mannequin died from a lethal hit"):return
-	if not check(b.dummy_total_damage>=20000.0 and dummy.get_meta("practice_damage_readout","").begins_with("Last spell damage:"),"God mode does not count full damage or display the last damage"):return
+	if not check(b.dummy_total_damage>=20000.0 and not dummy.has_meta("practice_damage_readout"),"God mode damage bookkeeping failed or removed overhead readout returned"):return
 	b.dummy_god_button.set_pressed(false)
 	b.load_demo_preferences()
 	if not check(not b.dummy_god_mode and not b.dummy_god_button.button_pressed,"God mode preference was not saved"):return
