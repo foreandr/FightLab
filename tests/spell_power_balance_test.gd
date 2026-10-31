@@ -37,7 +37,7 @@ func run() -> void:
 	b.allocation_sliders.speed.value=100.0
 	var fast:Dictionary=b.demo_preview_spec()
 	if not check(float(fast.physical_damage)>float(large.physical_damage) and is_equal_approx(float(fast.physical_damage)/float(large.physical_damage),float(fast.projectile_velocity)/float(large.projectile_velocity)),"Speed does not multiply physical damage linearly"):return
-	if not check(is_equal_approx(float(fast.physical_damage),float(b.demo_physical_stats().damage)*float(fast.projectile_velocity)/14.0),"Physical damage baseline is incorrect"):return
+	if not check(is_equal_approx(float(fast.physical_damage),float(b.demo_physical_stats().damage)*float(fast.projectile_velocity)/float(b.NEUTRAL_DAMAGE_VELOCITY)),"Physical damage baseline is incorrect"):return
 	if not check(b.demo_damage_label.text=="Physical damage: %.1f"%float(fast.physical_damage),"Displayed physical damage differs from actual impact"):return
 	b.allocation_sliders.size.value=90.0
 	b.preview_projectile_effect("Fire")

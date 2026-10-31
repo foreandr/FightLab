@@ -2,6 +2,14 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+Neutral spell physical damage
+  SpellBuilder calibrates damage speed against the full-power, one-second,
+  50/50 size/speed, centered-timing setup: 8.35 m/s base x 1.125 = 9.39375 m/s.
+  A neutral offensive elementless cast therefore costs 10 mana and 10 stamina,
+  and applies 10 physical damage before defenses. Projectile size/speed and the
+  existing costs are unchanged. Damage factors shown in the RHS are relative to
+  this neutral speed and amp; unrestricted test damage remains independent.
+
 scripts/projectile_allocation.gd
   normalize/change preserve the size/speed/effect mix. spend applies Total power
   (0..1) without reallocating unused power. Spell UI shows actual spent shares,

@@ -105,6 +105,9 @@ var projectile_initialized:=false
 const MIN_RELEASE_FRACTION:=0.05
 const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
+const NEUTRAL_DAMAGE_BASE_VELOCITY:=(Projectile.MIN_VELOCITY+Projectile.MAX_VELOCITY)*0.5
+const NEUTRAL_DAMAGE_AMP:=1.0+MAX_RELEASE_BONUS*0.5
+const NEUTRAL_DAMAGE_VELOCITY:=NEUTRAL_DAMAGE_BASE_VELOCITY*NEUTRAL_DAMAGE_AMP
 var release_fraction:=MIN_RELEASE_FRACTION
 var release_slider:HSlider
 var playing:=false
@@ -563,7 +566,7 @@ func setup(owner_editor:Node) -> void:
  demo_stamina_note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  demo_damage_label=editor.menu_label(timing_column,"",19)
  demo_damage_label.add_theme_color_override("font_color",Color("bb443d"))
- demo_damage_label.tooltip_text="Physical impact scales with projectile speed. 14 m/s = ×1 damage. Burn is separate."
+ demo_damage_label.tooltip_text="1 s, 50/50 size/speed and centered timing = 10 damage. Speed and amp scale relative to that default. Burn is separate."
  demo_damage_breakdown=editor.menu_label(timing_column,"",13)
  demo_damage_breakdown.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  demo_amplifier_label=editor.menu_label(timing_column,"",19)
@@ -1038,7 +1041,7 @@ func demo_projectile_stats() -> Dictionary:
  var amp:float=float(timing.amplifier)*float(release_timing_stats().multiplier)
  var base_radius:float=float(base.get("projectile_radius",projectile_size))*Projectile.CAST_RADIUS_SCALE
  var base_velocity:float=float(base.get("projectile_velocity",projectile_velocity))
- var speed_damage_multiplier:=base_velocity*amp/Projectile.DEFAULT_VELOCITY
+ var speed_damage_multiplier:=base_velocity*amp/NEUTRAL_DAMAGE_VELOCITY
  var impact_damage:float=float(demo_physical_stats().damage)*speed_damage_multiplier
  return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":base_radius,"base_velocity":base_velocity,"radius":base_radius*amp,"velocity":base_velocity*amp,"speed_damage_multiplier":speed_damage_multiplier,"physical_damage":impact_damage,"burn_dps":3.0*float(base.get("potency",0.0))*amp if effect=="Fire" else 0.0,"effect":effect}
 
@@ -1057,7 +1060,8 @@ func refresh_demo_timing() -> void:
   demo_stamina_note.text="Needs %.1f stamina · maximum %.0f"%[float(physical.stamina),max_stamina]
  var stats:=demo_projectile_stats()
  demo_damage_label.text="Physical damage: %.1f"%float(stats.physical_damage)
- demo_damage_breakdown.text="%.1f base × %.2f speed × %.2f amp"%[float(physical.damage),float(stats.base_velocity)/Projectile.DEFAULT_VELOCITY,float(stats.amplifier)]
+ demo_damage_breakdown.text="%.1f base × %.2f speed × %.2f amp"%[float(physical.damage),float(stats.base_velocity)/NEUTRAL_DAMAGE_BASE_VELOCITY,float(stats.amplifier)/NEUTRAL_DAMAGE_AMP]
+ demo_damage_breakdown.tooltip_text="Damage factors are relative to the default 50/50 allocation and centered timing."
  demo_mana_cost_label.text="Mana cost: %.1f"%float(stats.mana)
  demo_mana_base_label.text="%.1f base × %.1f%%"%[float(stats.base_mana),float(stats.cost_percent)]
  demo_amplifier_label.text="Spell amp: +%.1f%%"%((float(stats.amplifier)-1.0)*100.0)
