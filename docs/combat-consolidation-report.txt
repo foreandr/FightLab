@@ -197,3 +197,13 @@ strafe legs/root and all other animations remain intact. Tests compare arm/finge
 tracks and sampled live skeletal poses against backward walking throughout the
 cycle, and compare untouched tracks against the previous committed library.
 Implementation: +5 / -5 lines; regenerated the two strafe clips.
+
+GUARDED LOCOMOTION ARM SWAY (2026-10-31)
+
+Added subtle opposing shoulder (+/-4 degrees) and counter-elbow (+/-2 degrees)
+motion to backward walking, copied into both sideways strafes with the existing
+authoring tool. Kept the guard posture, leg/root motion and existing timing.
+Preserved clean arm source metadata makes the tool repeatable without cumulative
+edits. Verified opposite phases, amplitude, repeated edits, sampled skeletal poses
+and unchanged non-arm/unrelated tracks against the previous committed library.
+Implementation: +29 / -3 lines; updated three clips in the animation library.

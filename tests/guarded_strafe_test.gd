@@ -17,6 +17,24 @@ func same_track(a:Animation,ai:int,b:Animation,bi:int) -> bool:
 func run() -> void:
 	var library:AnimationLibrary=load("res://assets/combat/animations/duel.res")
 	var donor:=library.get_animation("walk_back")
+	var original:Animation=donor.get_meta("arm_sway_source",null)
+	if not check(original!=null,"Missing preserved source for repeatable sway edit"):return
+	var repeated:Animation=preload("res://scripts/vendor/copy_strafe_guard.gd").sway(donor)
+	var shoulders:=0
+	for track in donor.get_track_count():
+		if donor.track_get_type(track)!=Animation.TYPE_ROTATION_3D:continue
+		var bone:=str(donor.track_get_path(track)).get_slice(":",1)
+		if bone not in ["upperarm_l","upperarm_r"]:continue
+		shoulders+=1
+		var source_track:=original.find_track(donor.track_get_path(track),Animation.TYPE_ROTATION_3D)
+		var repeat_track:=repeated.find_track(donor.track_get_path(track),Animation.TYPE_ROTATION_3D)
+		for progress in [0.0,0.25,0.5,0.75,1.0]:
+			var current:=donor.rotation_track_interpolate(track,progress*donor.length)
+			var clean:=original.rotation_track_interpolate(source_track,progress*original.length)
+			var expected:=deg_to_rad(4.0)*sin(progress*TAU)*(1.0 if bone.ends_with("_l") else -1.0)
+			if not check(absf((clean.inverse()*current).get_euler().x-expected)<0.0001,"Sway amplitude/alternating phase is incorrect"):return
+			if not check(absf(current.dot(repeated.rotation_track_interpolate(repeat_track,progress*repeated.length)))>0.99999,"Rerunning tool stacks arm sway"):return
+	if not check(shoulders==2,"Shoulder sway missing on one arm"):return
 	var arms:Animation=Channels.filtered(donor,"duel/walk_back","arm_l").duplicate(true)
 	var right:=Channels.filtered(donor,"duel/walk_back","arm_r")
 	for track in right.get_track_count():right.copy_track(track,arms)
@@ -42,7 +60,7 @@ func run() -> void:
 			var current:=library.get_animation(name_)
 			for track in old.get_track_count():
 				var index:=current.find_track(old.track_get_path(track),old.track_get_type(track))
-				if name_ in ["strafe_left","strafe_right"] and arms.find_track(old.track_get_path(track),old.track_get_type(track))>=0:continue
+				if name_ in ["strafe_left","strafe_right","walk_back"] and arms.find_track(old.track_get_path(track),old.track_get_type(track))>=0:continue
 				if not check(same_track(old,track,current,index),"Changed non-arm track: %s %s"%[name_,old.track_get_path(track)]):return
 	change_scene_to_file("res://scenes/fight.tscn")
 	await process_frame
