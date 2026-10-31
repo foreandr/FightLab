@@ -30,11 +30,11 @@ static func sway(base:Animation) -> Animation:
 			for frame in 61:
 				var progress:=frame/60.0
 				var phase:=progress*TAU+(PI if bone.ends_with("_r") else 0.0)
-				var angle:=deg_to_rad(6.0 if bone.begins_with("upperarm") else -3.0)*sin(phase)
+				var angle:=deg_to_rad(8.0 if bone.begins_with("upperarm") else -4.0)*sin(phase)
 				var rotation:=source.rotation_track_interpolate(track,progress*source.length)*Quaternion(Vector3.RIGHT,angle)
 				result.rotation_track_insert_key(target,progress*result.length,rotation.normalized())
 	result.set_meta("arm_sway_source",source)
-	result.set_meta("arm_sway_degrees",6.0)
+	result.set_meta("arm_sway_degrees",8.0)
 	return result
 func _initialize() -> void:
 	var library:=load(LIBRARY).duplicate(true) as AnimationLibrary
@@ -44,5 +44,5 @@ func _initialize() -> void:
 		push_error("Could not save guarded strafes: %s"%error)
 		quit(1)
 		return
-	print("SWAYING GUARD ARMS: walk_back → strafe_left / strafe_right; opposing 6 degree shoulder sway; legs/root preserved")
+	print("SWAYING GUARD ARMS: walk_back → strafe_left / strafe_right; opposing 8 degree shoulder sway; legs/root preserved")
 	quit()

@@ -31,7 +31,7 @@ func run() -> void:
 		for progress in [0.0,0.25,0.5,0.75,1.0]:
 			var current:=donor.rotation_track_interpolate(track,progress*donor.length)
 			var clean:=original.rotation_track_interpolate(source_track,progress*original.length)
-			var expected:=deg_to_rad(6.0)*sin(progress*TAU)*(1.0 if bone.ends_with("_l") else -1.0)
+			var expected:=deg_to_rad(8.0)*sin(progress*TAU)*(1.0 if bone.ends_with("_l") else -1.0)
 			if not check(absf((clean.inverse()*current).get_euler().x-expected)<0.0001,"Sway amplitude/alternating phase is incorrect"):return
 			if not check(absf(current.dot(repeated.rotation_track_interpolate(repeat_track,progress*repeated.length)))>0.99999,"Rerunning tool stacks arm sway"):return
 	if not check(shoulders==2,"Shoulder sway missing on one arm"):return
