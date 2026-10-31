@@ -110,6 +110,7 @@ func finish_round(winner: int) -> void:
 
 func clear_battle_effects() -> void:
 	clear_combat_numbers()
+	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.clear_hits()
 	if vfx:
 		vfx.clear()
 	for shot in shots:

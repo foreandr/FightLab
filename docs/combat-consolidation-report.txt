@@ -219,3 +219,20 @@ Verified actual melee/elementless impacts, unchanged damage, bounded short-lived
 particles, no flame/smoke/blast ring, neutral ground contact, preserved fire burst
 and the independent-mode API.
 Implementation: +16 / -3 lines.
+
+PHYSICAL HEADSHOTS AND HIT REGIONS (2026-10-31)
+
+Shared combat_hit_regions rules make head hits deal twice the physical damage;
+body/limbs stay at normal damage. Applied once to each receiving area after shield
+absorption, before actor armor/health. Burn/status potency and duration, mana and
+stamina, knockback and adjacent ice damage keep their original values. Existing
+compatible Hit_Head and Hit_Chest clips now provide distinct smooth reactions.
+Strong/lethal hits retain their physical ragdoll behavior.
+The receiving hitbox view colors/labels head orange (2x physical) and body pink
+(1x). The exact struck shape lights yellow with a translucent fill for 0.45s.
+Disabling hitboxes or resetting clears highlights without changing collision.
+Verified actual head/body projectile and melee hits, non-head limb damage, Fire
+potency and burn ticks, distinct sampled animation poses, exact highlight target,
+expiry/toggle/reset, unchanged neutral 10/10/10, AoE and independent-mode runtime.
+Visually inspected the Create dummy head highlight and actual 20 physical readout.
+Implementation: +109 / -9 lines. Existing animation assets reused.

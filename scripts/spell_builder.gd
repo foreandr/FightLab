@@ -668,7 +668,7 @@ func setup(owner_editor:Node) -> void:
  projectile_hitbox_button.toggle_mode=true
  projectile_hitbox_button.set_pressed_no_signal(preview_hitboxes)
  projectile_hitbox_button.toggled.connect(set_preview_hitboxes)
- projectile_hitbox_button.tooltip_text="2 toggles both: cyan projectile hitboxes and pink character receiving hitboxes."
+ projectile_hitbox_button.tooltip_text="2 · Cyan projectile, orange head (2× physical damage), pink body (1×). The struck receiving hitbox flashes yellow. Burn and other effects are unchanged."
  combat_numbers_button=editor.button(playback_row,"Numbers [3]",func():pass)
  combat_numbers_button.name="CombatNumbersToggle"
  combat_numbers_button.toggle_mode=true

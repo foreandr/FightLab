@@ -68,6 +68,9 @@ func mana_cost(spec: Dictionary) -> float:
 func set_projectile_hitboxes(enabled:bool) -> void:
 	set_combat_hitboxes(enabled)
 
+func show_hit_region(area:Area3D) -> void:
+	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.flash_hit(area)
+
 func set_combat_hitboxes(enabled:bool) -> void:
 	projectile_hitboxes_visible=enabled
 	for shot in shots:_update_projectile_hitbox(shot)

@@ -20,6 +20,17 @@ Level independence
 
 Ownership
 
+scripts/combat_hit_regions.gd
+  Shared physical hit-region rules and presentation names/colors. Head hits apply
+  2x direct physical damage; every other receiving region stays at 1x. Runtime
+  applies this once after shield absorption, before actor armor/health handling.
+  Spell specs, status potency/duration, burn ticks, resource costs and knockback
+  are not multiplied. DuelActor selects existing Hit_Head / Hit_Chest clips with
+  smooth playback and recovery. Strong/lethal hits retain their ragdoll behavior.
+  Hitboxes [2]: orange head, pink body, labels show physical multipliers. Only
+  the struck collision shape flashes yellow/fills for 0.45 seconds. Debug meshes
+  never change collision; disabling/resetting clears highlights.
+
 Guarded sideways strafe authoring
   scripts/vendor/copy_strafe_guard.gd copies both arm/finger channels from
   duel/walk_back into strafe_left/right via animation_channels.replace_channels.

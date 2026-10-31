@@ -272,18 +272,22 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	if not is_instance_valid(area):return fraction>0
 	var zone: String=area.get_meta("zone","chest")
 	var bone: String=area.get_meta("bone","spine_03")
+	var physical_multiplier:=preload("res://scripts/combat_hit_regions.gd").physical_multiplier(zone)
+	var contact_damage:=amount
+	amount*=physical_multiplier
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken
 	if victim.has_method("set_hit_context"):victim.set_hit_context(q,shattered,bool(spec.get("launch",false)))
 	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400)):
 		return fraction>0
 	field.show_combat_number(victim,"physical",maxf(0.0,victim.damage_taken-damage_before))
+	field.show_hit_region(area)
 	if victim.has_method("receive_status"):victim.receive_status(attacker,spec)
-	if is_instance_valid(field.spell_environment):field.spell_environment.damage_ice_near(point,amount,0.8)
+	if is_instance_valid(field.spell_environment):field.spell_environment.damage_ice_near(point,contact_damage,0.8)
 	if spec.effect=="melee":
 		attacker.melee_hits+=1
 		attacker.melee_damage+=health_before-victim.health
-	field.combat_impact_feedback(attacker,victim,spec,point,direction,hit_area,{"zone":zone,"bone":bone,"damage":health_before-victim.health,"charge":q,"impulse":impulse,"shattered":shattered})
+	field.combat_impact_feedback(attacker,victim,spec,point,direction,hit_area,{"zone":zone,"bone":bone,"damage":health_before-victim.health,"physical_multiplier":physical_multiplier,"charge":q,"impulse":impulse,"shattered":shattered})
 	return true
 
 func step_channels(delta: float) -> void:

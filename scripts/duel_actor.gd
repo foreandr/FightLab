@@ -1,6 +1,7 @@
 extends "res://scripts/spell_actor.gd"
 const Movement=preload("res://scripts/character_movement.gd")
 var last_logged_locomotion_state := ""
+var last_hit_zone:=""
 var practice_god_mode:=false
 
 func restore_god_resources() -> void:
@@ -118,6 +119,7 @@ func count_action(name_: String) -> void:
 func reset_fighter(location: Vector3) -> void:
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	impact_physics.reset(skeleton)
+	last_hit_zone=""
 	position = location
 	ground_spawn = location
 	velocity = Vector3.ZERO
@@ -616,6 +618,7 @@ func tick(delta: float) -> void:
 	elif mode == "cast":
 		pending_release = tick_cast(delta)
 	elif mode == "hit":
+		if clip in ["ual1/Hit_Head","ual1/Hit_Chest"]:player.speed_scale=player.get_animation(clip).length/maxf(0.001,mode_length)
 		if mode_time >= mode_length:
 			mode = "idle" if is_on_floor() else "air"
 			mode_time = 0
@@ -839,6 +842,7 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 	if health <= 0 or invulnerability > 0 or not arena.round_active:
 		return false
 	var applied := minf(health, amount)
+	last_hit_zone=zone
 	health = maxf(0, health - applied)
 	damage_taken += applied
 	attacker.damage_dealt += applied
@@ -856,9 +860,10 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 	else:
 		mode = "hit"
 		mode_time = 0
-		mode_length = clampf(0.16 + impact_physics.support_loss * 0.12, 0.18, 0.40)
+		var reaction:=preload("res://scripts/combat_hit_regions.gd").reaction(zone)
+		mode_length = maxf(0.42 if zone=="head" else 0.36,clampf(0.16 + impact_physics.support_loss * 0.12, 0.18, 0.40))
 		clip = ""
-		play("fight/guard")
+		play(reaction,player.get_animation(reaction).length/mode_length)
 	return true
 
 func apply_physical_impact(point: Vector3, impulse: Vector3, zone: String, bone: String) -> void:
