@@ -16,19 +16,19 @@ func same_track(a:Animation,ai:int,b:Animation,bi:int) -> bool:
 	return true
 func run() -> void:
 	var library:AnimationLibrary=load("res://assets/combat/animations/duel.res")
-	var donor:=library.get_animation("shield_hold_brace")
-	var arms:Animation=Channels.filtered(donor,"duel/shield_hold_brace","arm_l").duplicate(true)
-	var right:=Channels.filtered(donor,"duel/shield_hold_brace","arm_r")
+	var donor:=library.get_animation("walk_back")
+	var arms:Animation=Channels.filtered(donor,"duel/walk_back","arm_l").duplicate(true)
+	var right:=Channels.filtered(donor,"duel/walk_back","arm_r")
 	for track in right.get_track_count():right.copy_track(track,arms)
 	for name_ in ["strafe_left","strafe_right"]:
 		var clip:=library.get_animation(name_)
-		if not check(clip.loop_mode==Animation.LOOP_LINEAR and clip.get_meta("arm_source","")=="duel/shield_hold_brace","Copied clip missing loop/source metadata"):return
+		if not check(clip.loop_mode==Animation.LOOP_LINEAR and clip.get_meta("arm_source","")=="duel/walk_back","Copied clip missing loop/source metadata"):return
 		for track in arms.get_track_count():
 			var index:=clip.find_track(arms.track_get_path(track),arms.track_get_type(track))
 			if not check(index>=0,"Copied arm track missing"):return
 			for time in [0.0,0.25,0.5,0.75,0.999]:
 				if arms.track_get_type(track)==Animation.TYPE_ROTATION_3D:
-					if not check(absf(clip.rotation_track_interpolate(index,time*clip.length).dot(arms.rotation_track_interpolate(track,time*arms.length)))>0.99999,"Arm/finger pose does not match blocking source"):return
+					if not check(absf(clip.rotation_track_interpolate(index,time*clip.length).dot(arms.rotation_track_interpolate(track,time*arms.length)))>0.99999,"Arm/finger pose does not match backward-walk source"):return
 		# Copying is non-destructive, even when the same resource is both inputs.
 		var count:=clip.get_track_count()
 		var copied:=Channels.replace_channels(clip,clip,name_,["arm_l"])
@@ -52,18 +52,24 @@ func run() -> void:
 	var actor=field.fighters[0]
 	for name_ in ["strafe_left","strafe_right"]:
 		for time in [0.0,0.25,0.5,0.75]:
+			Pose.pose(actor,{"clip":"duel/walk_back","store_raw":true},time)
+			var reference:Dictionary={}
+			for track in arms.get_track_count():
+				if arms.track_get_type(track)!=Animation.TYPE_ROTATION_3D:continue
+				var bone:=str(arms.track_get_path(track)).get_slice(":",1)
+				if actor.bones.has(bone):reference[bone]=actor.skeleton.get_bone_pose_rotation(actor.bones[bone])
 			Pose.pose(actor,{"clip":"duel/"+name_,"store_raw":true},time)
-			var chest:float=actor.bone_point("spine_03").y
-			if not check(actor.bone_point("hand_l").y>chest-0.15 and actor.bone_point("hand_r").y>chest-0.15,"Hands are not raised to a blocking position"):return
+			for bone in reference:
+				if not check(absf(actor.skeleton.get_bone_pose_rotation(actor.bones[bone]).dot(reference[bone]))>0.99999,"Live strafe arms differ from backward walk"):return
 	if DisplayServer.get_name()!="headless":
 		for index in field.fighters.size():
 			var unit=field.fighters[index]
 			unit.global_position=Vector3((index-1)*2.2,0.02,0)
 			unit.rotation.y=0.0
-			Pose.pose(unit,{"clip":"duel/"+["strafe_left","shield_hold_brace","strafe_right"][index%3],"store_raw":true},0.25)
+			Pose.pose(unit,{"clip":"duel/"+["strafe_left","walk_back","strafe_right"][index%3],"store_raw":true},0.25)
 		field.camera.position=Vector3(5,3.2,7)
 		field.camera.look_at(Vector3(0,1.1,0))
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("user://logs/guarded_strafe.png")
-	print("GUARDED STRAFE PASSED: copied blocking arms/fingers, raised hands in both live strafe clips, looping, immutable sources and baseline leg/root/unrelated-track preservation")
+	print("GUARDED STRAFE PASSED: backward-walk arms/fingers match both live strafe clips, looping, immutable sources and baseline leg/root/unrelated-track preservation")
 	quit()

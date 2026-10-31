@@ -187,3 +187,13 @@ Compared against the previous committed library: all non-arm strafe tracks and
 all unrelated animation tracks are unchanged. Verified raised hands throughout
 both live loops and visually inspected a rendered strafe/block comparison.
 Implementation: +43 / -1 lines, plus the two updated animation resources.
+
+STRAFE DONOR CORRECTION (2026-10-31)
+
+User clarified that the intended arms are from backward walking, not blocking.
+Re-ran the same body-part copy tool with duel/walk_back as the donor for both
+strafe clips. The generator and source metadata use that donor too. Original
+strafe legs/root and all other animations remain intact. Tests compare arm/finger
+tracks and sampled live skeletal poses against backward walking throughout the
+cycle, and compare untouched tracks against the previous committed library.
+Implementation: +5 / -5 lines; regenerated the two strafe clips.

@@ -22,7 +22,7 @@ Ownership
 
 Guarded sideways strafe authoring
   scripts/vendor/copy_strafe_guard.gd copies both arm/finger channels from
-  duel/shield_hold_brace into strafe_left/right via animation_channels.replace_channels.
+  duel/walk_back into strafe_left/right via animation_channels.replace_channels.
   The saved clips keep their original leg/root tracks and looping timing. The
   full duel generator repeats the same operation so rebuilding preserves it.
   Story's strafe arm layers use these same clips rather than a separate guard.
