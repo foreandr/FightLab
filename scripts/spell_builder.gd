@@ -24,6 +24,8 @@ const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const CombatAim=preload("res://scripts/combat_aim.gd")
 const CombatPointer=preload("res://scripts/combat_pointer.gd")
 const Movement=preload("res://scripts/character_movement.gd")
+const Momentum=preload("res://scripts/physical_momentum.gd")
+var last_damage_velocity:=Vector3.ZERO
 var draft_path:="user://projectile_spell_draft.cfg"
 var category:="Projectiles"
 var spell_kind:="Projectiles"
@@ -1043,7 +1045,14 @@ func demo_projectile_stats() -> Dictionary:
  var base_velocity:float=float(base.get("projectile_velocity",projectile_velocity))
  var speed_damage_multiplier:=base_velocity*amp/NEUTRAL_DAMAGE_VELOCITY
  var impact_damage:float=float(demo_physical_stats().damage)*speed_damage_multiplier
- return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":base_radius,"base_velocity":base_velocity,"radius":base_radius*amp,"velocity":base_velocity*amp,"speed_damage_multiplier":speed_damage_multiplier,"physical_damage":impact_damage,"burn_dps":3.0*float(base.get("potency",0.0))*amp if effect=="Fire" else 0.0,"effect":effect}
+ var movement:=Vector3.ZERO
+ var aim:=Vector3.BACK
+ if is_instance_valid(editor.actor):
+  movement=editor.actor.velocity
+  var origin:Vector3=editor.field.fighter_hand(editor.actor,CombatAim.emitter(casting_animation))+editor.actor.global_basis.z*0.12
+  aim=preview_aim_direction(origin)
+ var launch:=Momentum.projectile(base,movement,aim,base_velocity*amp,impact_damage)
+ return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":base_radius,"base_velocity":base_velocity,"radius":base_radius*amp,"velocity":launch.speed,"stationary_velocity":base_velocity*amp,"speed_damage_multiplier":speed_damage_multiplier,"physical_damage":launch.spec.damage,"stationary_damage":impact_damage,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":3.0*float(base.get("potency",0.0))*amp if effect=="Fire" else 0.0,"effect":effect}
 
 func refresh_demo_timing() -> void:
  if not is_instance_valid(demo_duration_slider):return
@@ -1061,6 +1070,7 @@ func refresh_demo_timing() -> void:
  var stats:=demo_projectile_stats()
  demo_damage_label.text="Physical damage: %.1f"%float(stats.physical_damage)
  demo_damage_breakdown.text="%.1f base × %.2f speed × %.2f amp"%[float(physical.damage),float(stats.base_velocity)/NEUTRAL_DAMAGE_BASE_VELOCITY,float(stats.amplifier)/NEUTRAL_DAMAGE_AMP]
+ if float(stats.movement_multiplier)>1.0001:demo_damage_breakdown.text+=" × %.2f movement"%float(stats.movement_multiplier)
  demo_damage_breakdown.tooltip_text="Damage factors are relative to the default 50/50 allocation and centered timing."
  demo_mana_cost_label.text="Mana cost: %.1f"%float(stats.mana)
  demo_mana_base_label.text="%.1f base × %.1f%%"%[float(stats.base_mana),float(stats.cost_percent)]
@@ -1400,11 +1410,11 @@ func demo_preview_spec() -> Dictionary:
   spec["base_projectile_velocity"]=stats.base_velocity
   spec["spell_amplifier"]=stats.amplifier
   spec["projectile_radius"]=stats.radius
-  spec["projectile_velocity"]=stats.velocity
+  spec["projectile_velocity"]=stats.stationary_velocity
   spec["motion_damage"]=float(demo_physical_stats().damage)
   spec["speed_damage_multiplier"]=stats.speed_damage_multiplier
-  spec["physical_damage"]=stats.physical_damage
-  spec["damage"]=stats.physical_damage
+  spec["physical_damage"]=stats.stationary_damage
+  spec["damage"]=stats.stationary_damage
  return spec if limiter_enabled else test_overrides.apply(spec)
 
 func cast_duration() -> float:
@@ -1433,14 +1443,17 @@ func projectile_preview_launch() -> Dictionary:
  var spec:Dictionary=demo_preview_spec()
  var origin:Vector3=editor.field.fighter_hand(actor,spec.hand)+actor.global_basis.z*0.12
  if demo_only_stage and creation_step=="projectile":
-  spec["aim_direction"]=actor.global_basis.z.normalized()
-  if manual_aim:
-   if manual_aim_valid:spec["aim_direction"]=(manual_aim_point-origin).normalized()
-  else:
-   var subject:CharacterBody3D=spell_focus_target if is_instance_valid(spell_focus_target) else editor.target
-   if is_instance_valid(subject) and subject.visible and subject.health>0.0:
-    spec["aim_direction"]=(CombatAim.focused_chest(subject)-origin).normalized()
+  spec["aim_direction"]=preview_aim_direction(origin)
  return {"spec":spec,"origin":origin}
+
+func preview_aim_direction(origin:Vector3) -> Vector3:
+ var direction:Vector3=editor.actor.global_basis.z.normalized()
+ if manual_aim:
+  if manual_aim_valid:direction=(manual_aim_point-origin).normalized()
+ else:
+  var subject:CharacterBody3D=spell_focus_target if is_instance_valid(spell_focus_target) else editor.target
+  if is_instance_valid(subject) and subject.visible and subject.health>0.0:direction=(CombatAim.focused_chest(subject)-origin).normalized()
+ return direction
 
 func launch_projectile() -> void:
  var actor=editor.actor
@@ -1454,7 +1467,9 @@ func launch_projectile() -> void:
   return
  if spec.effect=="summon_earth":editor.field.summon_earth(actor,spec)
  else:editor.field.spawn_projectile(actor,spec,origin)
- GameDiagnostics.log_event("spell_preview_fired",{"name":spec.get("name",""),"element":spec.get("projectile_element",""),"duration":demo_duration,"mana":spec.get("mana",0),"potency":spec.get("potency",1),"damage":spec.get("damage",0)})
+ var fired_damage:float=float(spec.get("damage",0))
+ if spec.effect!="summon_earth" and not editor.field.shots.is_empty():fired_damage=float(editor.field.shots.back().spec.damage)
+ GameDiagnostics.log_event("spell_preview_fired",{"name":spec.get("name",""),"element":spec.get("projectile_element",""),"duration":demo_duration,"mana":spec.get("mana",0),"potency":spec.get("potency",1),"damage":fired_damage,"nominal_damage":spec.get("damage",0)})
 
 func _process(delta:float) -> void:
  _update_resize_grips()
@@ -1464,6 +1479,8 @@ func _process(delta:float) -> void:
  if demo_only_stage:
   update_third_person_view(delta)
   process_demo_preview(delta)
+  if limiter_enabled and creation_step=="projectile" and (not editor.actor.velocity.is_equal_approx(last_damage_velocity) or not editor.actor.velocity.is_zero_approx()):refresh_demo_timing()
+  last_damage_velocity=editor.actor.velocity
   return
  if not editor.actor.can_cast_with(demo_preview_spec(),casting_animation):
   playing=false
@@ -1847,6 +1864,7 @@ func _physics_process(delta:float) -> void:
  if not is_visible_in_tree() or not demo_only_stage or not is_instance_valid(editor.actor):return
  if not get_window().has_focus() or editor.camera_text_editing():
   movement_keys.clear()
+  editor.actor.velocity=Vector3.ZERO
   caster_moving=false
   caster_move_axes=Vector2.ZERO
   caster_sprinting=false
@@ -1861,7 +1879,7 @@ func _physics_process(delta:float) -> void:
  caster_moving=not direction.is_zero_approx()
  if caster_moving:
   var speed:=7.0 if movement_keys.get(KEY_SHIFT,false) else 4.0
-  caster.velocity=direction*speed
+  caster.velocity=direction*speed*caster.movement_multiplier()
   caster.move_and_slide()
   var flat:=Vector2(caster.position.x,caster.position.z).limit_length(float(editor.field.Boundary.RADIUS)-1.0)
   caster.position.x=flat.x

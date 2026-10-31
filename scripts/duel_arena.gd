@@ -221,6 +221,7 @@ func cast_magic(f: CharacterBody3D, spec: Dictionary, air: bool) -> void:
 		spawn_projectile(f, spec, origin)
 
 func damage_for(spec: Dictionary) -> float:
+	if spec.get("movement_applied",false):return float(spec.damage)
 	if spec.effect == "melee":
 		return spec.damage
 	return {"orb":16.0, "spark":12.0, "slash":18.0, "cleave":22.0, "heavy":24.0, "spear":22.0, "ground":18.0, "nova":20.0, "beam":24.0}.get(spec.effect, 16.0)
@@ -257,7 +258,8 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 	elif spec.effect == "spear":
 		target_bone = "Head"
 	var aim := predictive_aim(f, origin, speed, target_bone)
-	var velocity_ := (aim - origin).normalized() * speed
+	var launch:=preload("res://scripts/physical_momentum.gd").projectile(spec,f.velocity,(aim-origin).normalized(),speed,damage_for(spec))
+	var velocity_:Vector3=launch.velocity
 	node.look_at(camera.global_position if spec.effect in ["slash", "cleave"] else origin + velocity_)
 	if spec.effect == "cleave":
 		node.rotate_object_local(Vector3.FORWARD, PI / 2)
@@ -265,7 +267,7 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 		node.scale = Vector3(0.60, 0.60, 3.6)
 	shot_serial += 1
 	var mass: float = {"spark":8.0, "orb":13.0, "heavy":24.0, "spear":14.0, "slash":11.0, "cleave":17.0, "ground":15.0}.get(spec.effect, 13.0)
-	shots.append({"id":shot_serial, "node":node, "velocity":velocity_, "mass":mass, "caster":f, "age":0.0, "trail":0.0, "spec":spec, "radius":radius})
+	shots.append({"id":shot_serial, "node":node, "velocity":velocity_, "mass":mass, "caster":f, "age":0.0, "trail":0.0, "spec":launch.spec, "radius":radius})
 
 func incoming_threat(f: CharacterBody3D) -> int:
 	for shot in shots:
@@ -446,7 +448,7 @@ func closest_hit_area(results: Array, point: Vector3) -> Area3D:
 	return best
 
 func apply_impact(attacker: CharacterBody3D, victim: CharacterBody3D, spec: Dictionary, point: Vector3, direction: Vector3, hit_area: Area3D = null, incoming_impulse := Vector3.ZERO) -> bool:
-	var amount := damage_for(spec)
+	var amount := damage_for(spec)*preload("res://scripts/physical_momentum.gd").melee_multiplier(attacker.velocity,direction,spec)
 	var health_before: float = victim.health
 	var area: Area3D = hit_area if hit_area != null else victim.nearest_hurtbox(point)
 	var zone: String = area.get_meta("zone", "chest")

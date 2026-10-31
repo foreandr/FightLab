@@ -2,6 +2,19 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+scripts/physical_momentum.gd
+  Physical damage uses actual horizontal velocity toward the hit, not sprint
+  flags or a character speed stat. Melee adds 3 percent per forward m/s. Older
+  limb-speed calculations subtract attacker root velocity before their existing
+  animation-speed multiplier, keeping root movement in the shared bonus.
+  Projectiles inherit 35 percent of forward velocity along their existing aim
+  direction and physical damage scales by actual launch speed / nominal speed.
+  Effects, size and resource costs do not gain that bonus. Capture once at launch;
+  later caster motion cannot alter an in-flight shot. Both arena modes share the
+  rules, and Create's RHS previews the same calculation live while moving.
+  Unrestricted preview fields remain independent. Prediction and actual spawning
+  use the same BattleArena.projectile_launch_state.
+
 Neutral spell physical damage
   SpellBuilder calibrates damage speed against the full-power, one-second,
   50/50 size/speed, centered-timing setup: 8.35 m/s base x 1.125 = 9.39375 m/s.

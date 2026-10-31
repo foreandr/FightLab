@@ -1472,7 +1472,7 @@ func resolve_melee(delta: float) -> void:
 			var victim = area.get_meta("fighter")
 			if victim.health <= 0:
 				continue
-			var speed: float = (movement / delta - victim.velocity).length()
+			var speed: float = (movement / delta - velocity - victim.velocity).length()
 			var momentum_speed := maxf(speed, combo_speed * clampf(combo_time / 0.48, 0, 1))
 			var multiplier := 1.0 + clampf((momentum_speed - 5.0) / 8.0, 0, 2.5)
 			var impulse := (movement / delta * 8.0).limit_length(180) + flat_direction(position, victim.position) * maxf(0, momentum_speed - 5) * 22
@@ -1522,7 +1522,7 @@ func _resolve_story_limb_strikes(delta: float) -> void:
 				var area: Area3D = results[0].collider
 				var victim = area.get_meta("fighter")
 				if victim.health <= 0:continue
-				var speed: float = (movement / maxf(delta, 0.0001) - victim.velocity).length()
+				var speed: float = (movement / maxf(delta, 0.0001) - velocity - victim.velocity).length()
 				var multiplier := 1.0 + clampf((speed - 5.0) / 8.0, 0, 2.5)
 				var impulse := (movement / maxf(delta, 0.0001) * 8.0).limit_length(180) + forward * maxf(0, speed - 5) * 22
 				var charge_value := float(strike.charge)

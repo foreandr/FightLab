@@ -5,6 +5,7 @@ const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
 const GladiatorialPit=preload("res://scenes/maps/gladiatorial_pit.tscn")
 const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
+const Momentum=preload("res://scripts/physical_momentum.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
 const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
 const BattleFighterTag = preload("res://scripts/fighter_overhead_tag.gd")
@@ -469,31 +470,39 @@ func projectile_aim_target(caster:CharacterBody3D,spec:Dictionary,origin:Vector3
 		target=target_point+aim_target.velocity*minf(0.4,origin.distance_to(target_point)/speed)
 	return target
 
-func predict_projectile_impact(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
+func projectile_launch_state(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
 	var rules=preload("res://scripts/basic_projectile.gd")
 	var motion:Dictionary=rules.resolved_motion(spec)
 	var target:=projectile_aim_target(caster,spec,origin,float(motion.speed))
 	var direction:Vector3=(target-origin).normalized()
-	var age:float=rules.lifetime(origin.distance_to(target),float(motion.radius),float(motion.speed))
-	return projectile_impact_predictor.predict(self,caster,origin,origin+direction*float(motion.speed)*age,float(motion.radius),spec)
+	var launch:=Momentum.projectile(spec,caster.velocity,direction,float(motion.speed),damage_for(spec))
+	launch["target"]=target
+	launch["radius"]=motion.radius
+	return launch
+
+func predict_projectile_impact(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
+	var launch:=projectile_launch_state(caster,spec,origin)
+	var age:float=preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(launch.target),float(launch.radius),float(launch.speed))
+	return projectile_impact_predictor.predict(self,caster,origin,origin+launch.velocity*age,float(launch.radius),launch.spec)
 
 func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> void:
 	var q: float = clampf(spec.get("charge",0),0,1)
-	var motion:=preload("res://scripts/basic_projectile.gd").resolved_motion(spec)
-	var speed:float=motion.speed
-	var radius:float=motion.radius
+	var launch:=projectile_launch_state(f,spec,origin)
+	var speed:float=launch.speed
+	var radius:float=launch.radius
 	var node: MeshInstance3D = preload("res://scripts/basic_projectile.gd").visual(spec.projectile_element,radius,spec.get("appearance",{})) if spec.has("projectile_element") else vfx.projectile(f.team,"slash" if spec.effect=="slash" else "orb",radius)
 	add_child(node)
 	node.position = origin
 	if spec.effect=="slash":
 		node.scale = Vector3.ONE*(1+q*0.6)
-	var target:=projectile_aim_target(f,spec,origin,speed)
-	var velocity_: Vector3 = (target-origin).normalized()*speed
+	var target:Vector3=launch.target
+	var velocity_:Vector3=launch.velocity
 	if node.has_meta("look"):
 		node.look_at_from_position(origin,origin+velocity_,Vector3.FORWARD if absf(velocity_.normalized().dot(Vector3.UP))>0.95 else Vector3.UP)
 		if node.get_meta("look").shape in ["Shard","Ring"]:node.rotate_object_local(Vector3.RIGHT,PI/2)
 	shot_serial += 1
-	shots.append({"max_age":preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(target),radius,speed),"id":shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":spec.duplicate(),"radius":radius})
+	shots.append({"max_age":preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(target),radius,speed),"id":shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":launch.spec,"radius":radius})
+	GameDiagnostics.log_event("projectile_launch",{"shot":shot_serial,"speed":speed,"movement_speed":launch.spec.movement_speed,"physical_damage":launch.spec.damage})
 	_update_projectile_hitbox(shots.back())
 
 func step_shots(delta: float) -> void:
@@ -646,7 +655,7 @@ func step_channels(delta: float) -> void:
 func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictionary,point: Vector3,direction: Vector3,hit_area: Area3D=null,incoming_impulse:=Vector3.ZERO)->bool:
 	if victim==attacker or victim.health<=0 or not round_active or victim.invulnerability>0:
 		return false
-	var amount:=damage_for(spec)
+	var amount:=damage_for(spec)*Momentum.melee_multiplier(attacker.velocity,direction,spec)
 	var original:=amount
 	var q: float=clampf(spec.get("charge",0),0,1)
 	var impulse: Vector3=incoming_impulse if not incoming_impulse.is_zero_approx() else direction*amount*9
