@@ -182,8 +182,6 @@ var dummy_god_button:Button
 var dummy_total_damage:=0.0
 var dummy_last_damage:=0.0
 var dummy_damage_mark:=0.0
-var dummy_hit_text:Label3D
-var dummy_hit_age:=0.0
 var practice_human:CharacterBody3D
 
 func setup(owner_editor:Node) -> void:
@@ -1702,7 +1700,6 @@ func workspace_visibility_changed() -> void:
   for item in editor.target.targets:item[0].collision_layer=0
   for item in editor.target.limb_targets:item[0].collision_layer=0
   editor.actor.collision_layer=0
-  if is_instance_valid(dummy_hit_text):dummy_hit_text.hide()
  if not is_visible_in_tree() and is_instance_valid(practice_human):
   practice_human.practice_damageable_dummy=false
   practice_human.practice_god_mode=false
@@ -1835,16 +1832,6 @@ func prepare_preview_targets() -> void:
    for item in practice_human.limb_targets:item[0].collision_layer=8<<practice_human.team
    var human_tag=practice_human.get_node_or_null("OverheadHealthTag")
    if human_tag!=null:human_tag.name_label.text="Human target"
-  if not is_instance_valid(dummy_hit_text):
-   dummy_hit_text=Label3D.new()
-   dummy_hit_text.billboard=BaseMaterial3D.BILLBOARD_ENABLED
-   dummy_hit_text.no_depth_test=true
-   dummy_hit_text.font_size=28
-   dummy_hit_text.pixel_size=0.009
-   dummy_hit_text.modulate=Color("ff6759")
-   dummy_hit_text.outline_size=6
-   editor.field.add_child(dummy_hit_text)
-  dummy_hit_text.hide()
   if editor.focused_unit not in [editor.actor,editor.target,practice_human]:editor.select_editor_unit(editor.actor)
 
 func _physics_process(delta:float) -> void:
@@ -1872,7 +1859,7 @@ func _physics_process(delta:float) -> void:
  if not playing or is_instance_valid(spell_focus_target):
   Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
 
-func update_training_dummy(delta:float) -> void:
+func update_training_dummy(_delta:float) -> void:
  refresh_dummy_controls()
  if not demo_only_stage or not is_instance_valid(editor.target) or not editor.target.practice_damageable_dummy:return
  var dummy=editor.target
@@ -1881,14 +1868,6 @@ func update_training_dummy(delta:float) -> void:
   dummy_damage_mark=dummy.damage_taken
   dummy_total_damage+=amount
   dummy_last_damage=amount
-  dummy_hit_age=0.0
-  if is_instance_valid(dummy_hit_text):
-   dummy_hit_text.text="−%.1f"%amount
-   dummy_hit_text.show()
- if is_instance_valid(dummy_hit_text) and dummy_hit_text.visible:
-  dummy_hit_age+=delta
-  dummy_hit_text.global_position=dummy.global_position+Vector3.UP*(2.8+dummy_hit_age*0.5)
-  if dummy_hit_age>1.3:dummy_hit_text.hide()
  dummy.set_meta("practice_damage_readout","Last spell damage: %.1f"%dummy_last_damage)
 
 func refresh_dummy_controls() -> void:
@@ -1948,7 +1927,6 @@ func reset_training_dummy(clear_stats:=true) -> void:
  if clear_stats:
   dummy_total_damage=0.0
   dummy_last_damage=0.0
- if is_instance_valid(dummy_hit_text):dummy_hit_text.hide()
 
 func reset_practice_scene() -> void:
  stop_preview_controls()

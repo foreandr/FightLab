@@ -58,6 +58,10 @@ func run() -> void:
 		if field.shots.is_empty():break
 	var received:float=editor.target.damage_taken-before
 	if not check(numbers.entries.size()==3 and numbers.entries.back().kind=="physical" and is_equal_approx(numbers.entries.back().amount,received) and is_equal_approx(received,expected_damage) and numbers.entries.back().actor.get_ref()==editor.target,"Damage label is not the actual hit on the immortal victim"):return
+	b.update_training_dummy(0.016)
+	if not check(is_equal_approx(b.dummy_last_damage,received),"Removing duplicate popup broke last spell damage readout"):return
+	for child in field.get_children():
+		if not check(not (child is Label3D),"Dummy-only untyped damage popup still exists alongside typed physical number"):return
 	var initial_y:float=numbers.entries[0].label.global_position.y
 	numbers._process(0.6)
 	if not check(numbers.entries[0].label.global_position.y>initial_y and numbers.entries[0].label.modulate.a<1 and numbers.entries[0].label.modulate.a>0,"Numbers do not float and fade"):return

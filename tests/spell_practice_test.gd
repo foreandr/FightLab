@@ -63,7 +63,7 @@ func run() -> void:
 		root.get_texture().get_image().save_png("user://logs/spell_practice_failure.png")
 	if not check(dummy.damage_taken>damage and dummy.health<health,"Playing a projectile did not damage mannequin"):return
 	await RenderingServer.frame_post_draw
-	if not check(b.dummy_hit_text.visible,"Damage number did not appear"):return
+	if not check(b.dummy_last_damage>0.0 and "Last spell damage:" in str(dummy.get_meta("practice_damage_readout","")),"Last spell damage readout did not update"):return
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/spell_practice_hit.png")
 	dummy.invulnerability=0.0
