@@ -557,3 +557,7 @@ Spell preview ownership and live practice:
 - The amber predicted-impact overlay was rejected and removed. Physical prediction remains a read-only diagnostic API.
 - Regression checks reproduced the old false hit, verified above-head misses and chest hits at three camera angles/distances, and passed third-person focus and spell casting/hitbox controls.
 - This checkpoint also preserves the current shared character mechanics and spell creation workspace. The downloaded community animation archive remains local; attached project animation copies are included.
+
+### Spell sound preference — noted for future work (2026-10-31)
+- User likes camera proximity affecting spell sound. Preserve that effect and add a player-facing toggle to enable or disable camera-distance influence on spell audio.
+- Apply the preference consistently through shared audio settings across modes. This records the request; the toggle is not implemented yet.
