@@ -37,6 +37,7 @@ var camera_orbit_pitch := 0.362
 var camera_focus_target: CharacterBody3D
 var projectile_hitboxes_visible:=false
 var projectile_impact_predictor=preload("res://scripts/projectile_impact_predictor.gd").new()
+var projectile_area_impact=preload("res://scripts/projectile_area_impact.gd").new()
 
 func set_projectile_hitboxes(enabled:bool) -> void:
 	projectile_hitboxes_visible=enabled
@@ -506,6 +507,9 @@ func step_shots(delta: float) -> void:
 		shot.age += delta
 		shot.trail += delta
 		var hit := false
+		var impact_center:=to
+		var primary:CharacterBody3D
+		var primary_area:Area3D
 		var contact := {}
 		var blocked_by: CharacterBody3D
 		for enemy in fighters:
@@ -518,7 +522,9 @@ func step_shots(delta: float) -> void:
 		if not contact.is_empty():
 			shot["impact_position"]=blocked_by.global_position
 			to=contact.point
-			hit=apply_impact(shot.caster,blocked_by,shot.spec,contact.point,shot.velocity.normalized(),null,shot.velocity*shot.mass)
+			impact_center=contact.point
+			primary=blocked_by
+			hit=true
 		var shape := SphereShape3D.new()
 		shape.radius=shot.radius
 		var query := PhysicsShapeQueryParameters3D.new()
@@ -538,12 +544,16 @@ func step_shots(delta: float) -> void:
 				if victim.health>0:
 					shot["impact_position"]=victim.global_position
 					to=point
-					apply_impact(shot.caster,victim,shot.spec,victim.contact_surface(result.collider,point),shot.velocity.normalized(),result.collider,shot.velocity*shot.mass)
+					impact_center=victim.contact_surface(result.collider,point)
+					primary=victim
+					primary_area=result.collider
 					hit=true
 					break
 		if not hit and not ground.is_empty():
 			impact_burst(ground.position,shot.caster.team,false)
+			impact_center=ground.position
 			hit=true
+		if hit:projectile_area_impact.apply(self,shot,impact_center,primary,primary_area)
 		if shot.spec.has("projectile_element"):
 			spell_environment.projectile_step(shot,from,to,hit)
 		if hit or shot.age>float(shot.get("max_age",2.2)):

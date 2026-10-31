@@ -67,6 +67,9 @@ func run() -> void:
 	await physics_frame
 	b.preview_effect="None"
 	b.demo_duration=1.0
+	b.projectile_allocations["None"]={"size":0.5,"speed":0.5}
+	b.select_demo_choice("cross",false)
+	b.playing=false
 	b.manual_aim=true;b.manual_aim_valid=true
 	b.manual_aim_point=editor.target.bone_point("spine_03")
 	var launch:Dictionary=b.projectile_preview_launch()
