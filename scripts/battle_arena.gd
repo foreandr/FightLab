@@ -36,12 +36,22 @@ var story_camera_initialized := false
 var camera_orbit_pitch := 0.362
 var camera_focus_target: CharacterBody3D
 var projectile_hitboxes_visible:=false
+var character_hitbox_overlays:Node
 var projectile_impact_predictor=preload("res://scripts/projectile_impact_predictor.gd").new()
 var projectile_area_impact=preload("res://scripts/projectile_area_impact.gd").new()
 
 func set_projectile_hitboxes(enabled:bool) -> void:
+	set_combat_hitboxes(enabled)
+
+func set_combat_hitboxes(enabled:bool) -> void:
 	projectile_hitboxes_visible=enabled
 	for shot in shots:_update_projectile_hitbox(shot)
+	if enabled and not is_instance_valid(character_hitbox_overlays):
+		character_hitbox_overlays=preload("res://scripts/character_hitbox_overlays.gd").new()
+		character_hitbox_overlays.name="CharacterHitboxOverlays"
+		character_hitbox_overlays.field=self
+		add_child(character_hitbox_overlays)
+	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.set_enabled(enabled)
 
 func _update_projectile_hitbox(shot:Dictionary) -> void:
 	if not is_instance_valid(shot.node):return

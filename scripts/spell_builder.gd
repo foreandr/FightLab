@@ -644,7 +644,7 @@ func setup(owner_editor:Node) -> void:
  projectile_hitbox_button.toggle_mode=true
  projectile_hitbox_button.set_pressed_no_signal(preview_hitboxes)
  projectile_hitbox_button.toggled.connect(set_preview_hitboxes)
- projectile_hitbox_button.tooltip_text="Show actual spell collision spheres · 2"
+ projectile_hitbox_button.tooltip_text="2 toggles both: cyan projectile hitboxes and pink character receiving hitboxes."
  for node in [projectile_preview_button,projectile_repeat_button,projectile_slow_button,projectile_hitbox_button]:
   node.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
   node.custom_minimum_size.x=140
@@ -810,7 +810,7 @@ func play_projectile_once() -> void:
 func set_preview_hitboxes(enabled:bool) -> void:
  preview_hitboxes=enabled
  if is_instance_valid(projectile_hitbox_button):projectile_hitbox_button.set_pressed_no_signal(enabled)
- if is_instance_valid(editor.field):editor.field.set_projectile_hitboxes(enabled)
+ if is_instance_valid(editor.field):editor.field.set_combat_hitboxes(enabled)
  save_demo_preferences()
 
 func set_preview_repeat(enabled:bool) -> void:
@@ -1638,7 +1638,7 @@ func workspace_visibility_changed() -> void:
   third_person_orbiting=false
   if is_instance_valid(third_person_crosshair):third_person_crosshair.hide()
   if is_instance_valid(editor.field):editor.field.camera_focus_target=null
- if is_instance_valid(editor.field):editor.field.set_projectile_hitboxes(preview_hitboxes and is_visible_in_tree())
+ if is_instance_valid(editor.field):editor.field.set_combat_hitboxes(preview_hitboxes and is_visible_in_tree())
  movement_keys.clear()
  caster_moving=false
  caster_move_axes=Vector2.ZERO

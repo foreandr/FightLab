@@ -2,6 +2,14 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+scripts/character_hitbox_overlays.gd
+  Field.set_combat_hitboxes toggles sending projectile spheres (cyan) and receiving
+  actor collision shapes (pink) together. Spell Hitboxes [2] uses this shared API;
+  set_projectile_hitboxes remains a compatibility adapter. Receiving outlines use
+  exact capsule dimensions as wireframes, follow CollisionShape3D transforms and update on shape
+  changes. Include active wooden-dummy shapes, hide inactive shapes, and never
+  change collision layers or gameplay shapes. No mesh rebuilding while disabled.
+
 scripts/projectile_area_impact.gd
   Shared live projectile impact area for Story and Create. Splash reaches twice
   the projectile radius around first contact (or world impact), with one normal
