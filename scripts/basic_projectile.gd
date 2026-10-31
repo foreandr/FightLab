@@ -14,6 +14,8 @@ const CAST_RADIUS_SCALE:=1.0/3.0
 const AIM_DISTANCE:=20.0
 
 static func resolved_motion(spec:Dictionary) -> Dictionary:
+	if spec.get("unrestricted_preview",false):
+		return {"radius":maxf(0.0001,float(spec.projectile_radius)),"speed":maxf(0.0,float(spec.projectile_velocity))}
 	var charge:=clampf(float(spec.get("charge",0.0)),0.0,1.0)
 	var speed:float=(14.0 if spec.effect=="orb" else 17.0)*(1.0+charge*0.7)
 	if spec.has("projectile_velocity"):speed=clampf(float(spec.projectile_velocity),1.0,50.0)
@@ -27,7 +29,7 @@ static func resolved_motion(spec:Dictionary) -> Dictionary:
 	return {"radius":radius,"speed":speed}
 
 static func lifetime(distance:float,radius:float,speed:float) -> float:
-	return clampf((distance+radius*2.0)/speed+2.0,2.2,90.0)
+	return clampf((distance+radius*2.0)/maxf(0.001,speed)+2.0,2.2,90.0)
 static func size_share(radius:float) -> float:
 	return clampf(log(maxf(MIN_RADIUS,radius)/MIN_RADIUS)/log(MAX_RADIUS/MIN_RADIUS),0,1)
 static func potency_share(potency:float) -> float:

@@ -2,6 +2,15 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+scripts/spell_test_overrides.gd
+  Limiter-off values are session-only final overrides: duration/release, size,
+  speed, effect, mana, stamina and physical damage. Changing one never changes
+  another. Percent controls use normal maximum size/speed/effect as 100 percent.
+  Specs are marked unrestricted_preview and testing_only. BasicProjectile resolves
+  their final geometry/speed without gameplay clamps (zero radius uses a tiny
+  positive physics representation). SpellBuilder.save_draft rejects limiter-off
+  state; raw values never enter preferences. Re-enabling restores balanced inputs.
+
 scripts/duel_actor.gd and scripts/battle_actor.gd
   God Mode is a per-actor practice_god_mode flag. Shared resource spending and
   recovery honor unlimited stamina/mana; BattleActor preserves full health while

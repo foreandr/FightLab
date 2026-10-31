@@ -39,6 +39,15 @@ var demo_only_stage:=true
 var demo_choices:Dictionary={}
 const DEMO_ANIMATIONS:={"cross":{"title":"Left cross","source":"Left cross"},"hook":{"title":"Melee hook","source":"Melee Hook"},"knee":{"title":"Left knee","source":"Left knee"},"block":{"title":"Block stand","source":"block stand"},"mend":{"title":"Self mend","source":"self mend"}}
 var demo_duration:=1.0
+var limiter_enabled:=true
+var limiter_toggle:CheckButton
+var limiter_notice:Label
+var limiter_warning:AcceptDialog
+var test_overrides=preload("res://scripts/spell_test_overrides.gd").new()
+var test_inputs:Dictionary={}
+var test_extra_rows:Array[Control]=[]
+var duration_endpoints:HBoxContainer
+var power_balance_label:Label
 var demo_duration_slider:HSlider
 var demo_duration_label:Label
 var demo_mana_cost_label:Label
@@ -462,6 +471,16 @@ func setup(owner_editor:Node) -> void:
  timing_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
  demo_timing_panel.add_child(timing_scroll)
  timing_scroll.add_child(timing_column)
+ limiter_toggle=CheckButton.new()
+ limiter_toggle.name="SpellLimiter"
+ limiter_toggle.text="Limiter"
+ limiter_toggle.button_pressed=true
+ limiter_toggle.focus_mode=Control.FOCUS_ALL
+ limiter_toggle.toggled.connect(set_limiter_enabled)
+ timing_column.add_child(limiter_toggle)
+ limiter_notice=editor.menu_label(timing_column,"TESTING ONLY · Saving disabled",14)
+ limiter_notice.add_theme_color_override("font_color",Color("bb443d"))
+ limiter_notice.hide()
  demo_mana_cost_label=editor.menu_label(timing_column,"",21)
  demo_mana_cost_label.add_theme_color_override("font_color",Color("328fc4"))
  demo_mana_base_label=editor.menu_label(timing_column,"",14)
@@ -479,6 +498,7 @@ func setup(owner_editor:Node) -> void:
  demo_duration_slider.value_changed.connect(set_demo_duration)
  timing_column.add_child(demo_duration_slider)
  var endpoints:=HBoxContainer.new()
+ duration_endpoints=endpoints
  timing_column.add_child(endpoints)
  var start:Label=editor.menu_label(endpoints,"0.1 s",13)
  var endpoint_space:=Control.new()
@@ -496,7 +516,7 @@ func setup(owner_editor:Node) -> void:
  release_slider.value_changed.connect(func(value:float):set_release_fraction(value/100.0))
  timing_column.add_child(release_slider)
  release_slider.tooltip_text="Early cast → apex. Casting near the apex gives full Spell amp."
- editor.menu_label(timing_column,"Power balance",18)
+ power_balance_label=editor.menu_label(timing_column,"Power balance",18)
  for allocation_key in ["size","speed","effect"]:
   var key:String=allocation_key
   var row:=HBoxContainer.new()
@@ -537,6 +557,19 @@ func setup(owner_editor:Node) -> void:
  demo_speed_bonus_label.add_theme_color_override("font_color",Color("8154a5"))
  demo_burn_label=editor.menu_label(timing_column,"",17)
  demo_burn_label.add_theme_color_override("font_color",Color("bb6937"))
+ add_test_input("duration",demo_duration_slider," s")
+ add_test_input("release",release_slider," %")
+ for key in allocation_sliders:add_test_input(key,allocation_sliders[key]," %")
+ for key in ["mana","stamina","damage"]:
+  var row:=HBoxContainer.new()
+  timing_column.add_child(row)
+  timing_column.move_child(row,demo_stamina_label.get_index())
+  var caption:Label=editor.menu_label(row,{"mana":"Mana cost","stamina":"Stamina depletion","damage":"Physical damage"}[key],15)
+  caption.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  caption.add_theme_color_override("font_color",{"mana":Color("328fc4"),"stamina":Color("388753"),"damage":Color("bb443d")}[key])
+  add_test_input(key,row,"")
+  test_extra_rows.append(row)
+  row.hide()
  refresh_projectile_allocation()
  refresh_demo_timing()
  delivery_screen=VBoxContainer.new()
@@ -745,6 +778,9 @@ func allocation_for(effect:String) -> Dictionary:
  return result
 
 func set_projectile_allocation(key:String,value:float) -> void:
+ if not limiter_enabled:
+  set_test_value(key,value*100.0)
+  return
  if preview_effect not in ["None","Fire"]:return
  if key=="effect" and preview_effect=="None":return
  projectile_allocations[preview_effect]=Allocation.change(allocation_for(preview_effect),key,value,preview_effect!="None")
@@ -761,8 +797,10 @@ func refresh_projectile_allocation() -> void:
   var active:=shares.has(key)
   allocation_rows[key].visible=active
   if not active:continue
-  allocation_sliders[key].set_value_no_signal(float(shares[key])*100.0)
-  allocation_labels[key].text="%s: %.1f%%"%["Burn" if key=="effect" else str(key).capitalize(),float(shares[key])*100.0]
+  var percent:float=float(shares[key])*100.0 if limiter_enabled else float(test_overrides.values.get(key,0.0))
+  allocation_sliders[key].set_value_no_signal(percent)
+  var title:String="Burn" if key=="effect" else str(key).capitalize()
+  allocation_labels[key].text="%s: %.1f%%"%[title,percent] if limiter_enabled else title
 
 func play_projectile_once() -> void:
  set_preview_repeat(false)
@@ -821,7 +859,96 @@ func select_demo_choice(choice:String,save:=true) -> void:
  GameDiagnostics.log_event("spell_demo_source_missing",{"choice":choice,"requested_source":source_name})
  editor._show_library_notice("Demo animation not found in your folders: "+str(DEMO_ANIMATIONS[choice].source))
 
+func add_test_input(key:String,control:Control,suffix:String) -> void:
+ var row:HBoxContainer
+ if control is HSlider:
+  if control.get_parent() is HBoxContainer:row=control.get_parent()
+  else:
+   var parent:=control.get_parent()
+   var index:=control.get_index()
+   row=HBoxContainer.new()
+   parent.remove_child(control)
+   parent.add_child(row)
+   parent.move_child(row,index)
+   row.add_child(control)
+  control.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ else:row=control
+ var input:=SpinBox.new()
+ input.name="Unrestricted"+key.capitalize()
+ input.min_value=0.0
+ input.max_value=100.0
+ input.allow_greater=true
+ input.step=0.001 if key=="duration" else 0.1
+ input.suffix=suffix
+ input.custom_minimum_size.x=145
+ input.size_flags_horizontal=Control.SIZE_SHRINK_END
+ input.focus_mode=Control.FOCUS_ALL
+ input.value_changed.connect(func(value:float):set_test_value(key,value))
+ row.add_child(input)
+ input.hide()
+ test_inputs[key]=input
+ if key in ["size","speed","effect"]:input.tooltip_text="100% = normal maximum. Independent final value; changing this does not change the other values."
+
+func set_limiter_enabled(enabled:bool) -> void:
+ if enabled==limiter_enabled:return
+ stop_preview_controls()
+ playing=false
+ if not enabled:test_overrides.seed(demo_preview_spec(),demo_duration,release_fraction)
+ limiter_enabled=enabled
+ limiter_toggle.set_pressed_no_signal(enabled)
+ limiter_notice.visible=not enabled
+ duration_endpoints.visible=enabled
+ power_balance_label.text="Power balance" if enabled else "Independent values"
+ demo_duration_slider.exp_edit=enabled
+ for key in test_inputs:test_inputs[key].visible=not enabled
+ for row in test_extra_rows:row.visible=not enabled
+ for slider in [demo_duration_slider,release_slider]:
+  slider.set_block_signals(true)
+  slider.allow_greater=not enabled
+  slider.min_value=(0.1 if slider==demo_duration_slider else MIN_RELEASE_FRACTION*100.0) if enabled else 0.0
+  slider.max_value=60.0 if slider==demo_duration_slider else (MAX_RELEASE_FRACTION*100.0 if enabled else 100.0)
+  slider.set_block_signals(false)
+ for key in allocation_sliders:
+  allocation_sliders[key].set_block_signals(true)
+  allocation_sliders[key].allow_greater=not enabled
+  allocation_sliders[key].set_block_signals(false)
+ for label in [demo_mana_base_label,demo_stamina_label,demo_damage_label,demo_stamina_note,demo_damage_breakdown,demo_amplifier_label,demo_amp_breakdown]:label.visible=enabled
+ refresh_projectile_allocation()
+ refresh_demo_timing()
+ if not enabled:
+  if not is_instance_valid(limiter_warning):
+   limiter_warning=AcceptDialog.new()
+   limiter_warning.title="Limiter off · Testing only"
+   limiter_warning.dialog_text="Values are independent and spells cannot be saved.\nExtreme settings may freeze the game.\nExperiment at your own discretion."
+   limiter_warning.ok_button_text="Understood"
+   add_child(limiter_warning)
+  limiter_warning.popup_centered()
+
+func set_test_value(key:String,value:float) -> void:
+ if limiter_enabled:return
+ test_overrides.set_value(key,value)
+ refresh_projectile_allocation()
+ refresh_test_controls()
+
+func refresh_test_controls() -> void:
+ var values:Dictionary=test_overrides.values
+ for key in test_inputs:test_inputs[key].set_value_no_signal(float(values[key]))
+ demo_duration_slider.set_value_no_signal(float(values.duration))
+ release_slider.set_value_no_signal(float(values.release))
+ demo_duration_label.text="%.3f s"%float(values.duration)
+ demo_mana_cost_label.text="Mana cost: %.1f"%float(values.mana)
+ demo_stamina_label.text="Stamina depletion: %.1f"%float(values.stamina)
+ demo_damage_label.text="Physical damage: %.1f"%float(values.damage)
+ var spec:Dictionary=test_overrides.apply(projectile_effect_spec(preview_effect))
+ demo_size_bonus_label.text="Diameter: %.2f m"%(float(spec.projectile_radius)*2.0)
+ demo_speed_bonus_label.text="Speed: %.1f m/s"%float(spec.projectile_velocity)
+ demo_burn_label.visible=preview_effect=="Fire"
+ demo_burn_label.text="Burn: %.1f/s"%(3.0*float(spec.potency))
+
 func set_demo_duration(value:float) -> void:
+ if not limiter_enabled:
+  set_test_value("duration",value)
+  return
  demo_duration=clampf(value,0.1,60.0)
  casting_animation["duration"]=demo_duration
  # Reprice the whole preview instead of changing the cost midway through a cast.
@@ -838,6 +965,9 @@ func release_timing_stats() -> Dictionary:
  return {"fraction":release_fraction,"seconds":demo_duration*release_fraction,"bonus_percent":bonus*MAX_RELEASE_BONUS*100.0,"multiplier":1.0+bonus*MAX_RELEASE_BONUS}
 
 func set_release_fraction(value:float) -> void:
+ if not limiter_enabled:
+  set_test_value("release",value*100.0)
+  return
  release_fraction=clampf(value,MIN_RELEASE_FRACTION,MAX_RELEASE_FRACTION)
  refresh_demo_timing()
  save_draft()
@@ -845,6 +975,7 @@ func set_release_fraction(value:float) -> void:
   play_demo_preview()
 
 func demo_physical_stats() -> Dictionary:
+ if not limiter_enabled:return {"duration":test_overrides.values.duration,"stamina":test_overrides.values.stamina,"damage":test_overrides.values.damage,"effort":test_overrides.values.stamina}
  var choice:=str(casting_animation.get("demo_choice","cross"))
  var offensive:=choice in ["cross","hook","knee"]
  # One second is neutral. Faster buys delivery, slower buys power.
@@ -867,6 +998,9 @@ func demo_projectile_stats() -> Dictionary:
 
 func refresh_demo_timing() -> void:
  if not is_instance_valid(demo_duration_slider):return
+ if not limiter_enabled:
+  refresh_test_controls()
+  return
  demo_duration_slider.set_value_no_signal(demo_duration)
  demo_duration_label.text="%.1f s"%demo_duration
  var physical:=demo_physical_stats()
@@ -914,6 +1048,12 @@ func play_demo_preview() -> void:
  playing=true
  released=false
 
+ if not limiter_enabled and cast_duration()<=0.0:
+  if creation_step=="projectile":launch_projectile()
+  released=true
+  playing=false
+  begin_demo_exit()
+
 func process_demo_preview(delta:float) -> void:
  idle_elapsed+=delta
  if not playing:
@@ -941,7 +1081,7 @@ func process_demo_preview(delta:float) -> void:
   var fade:=minf(DEMO_TRANSITION_SECONDS,cast_duration()*0.25)
   blend_demo_pose(demo_enter_pose,smoothstep(0.0,fade,elapsed))
   if elapsed>=fade:demo_enter_pose.clear()
- if creation_step=="projectile" and not released and progress>=release_fraction:
+ if creation_step=="projectile" and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
  if progress>=1.0:
@@ -1214,9 +1354,10 @@ func demo_preview_spec() -> Dictionary:
   spec["speed_damage_multiplier"]=stats.speed_damage_multiplier
   spec["physical_damage"]=stats.physical_damage
   spec["damage"]=stats.physical_damage
- return spec
+ return spec if limiter_enabled else test_overrides.apply(spec)
 
 func cast_duration() -> float:
+ if not limiter_enabled:return float(test_overrides.values.duration)
  if casting_animation.has("duration"):return float(casting_animation.duration)
  if not is_instance_valid(editor.actor):return 0.64
  if casting_animation.get("store_raw",false) and editor.actor.player.has_animation(str(casting_animation.clip)):return editor.actor.player.get_animation(str(casting_animation.clip)).length
@@ -1790,6 +1931,7 @@ func reset_field() -> void:
  editor.frame_spell_preview(editor.actor)
 
 func save_draft() -> void:
+ if not limiter_enabled:return
  if draft_path.is_empty():return
  var cfg=ConfigFile.new()
  var signature: String=JSON.stringify({"kind":spell_kind,"delivery_type":delivery_type,"element":element,"size":projectile_size,"potency":potency,"velocity":projectile_velocity,"release":release_fraction,"allocation":projectile_allocations,"appearance":appearances},"",true).sha256_text()
