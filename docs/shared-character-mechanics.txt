@@ -26,7 +26,7 @@ Guarded sideways strafe authoring
   The saved clips keep their original leg/root tracks and looping timing. The
   full duel generator repeats the same operation so rebuilding preserves it.
   Backward walking and both strafes share a subtle opposing arm sway: shoulders
-  swing +/-4 degrees, elbows counter by 2 degrees. The tool preserves the clean
+  swing +/-6 degrees, elbows counter by 3 degrees. The tool preserves the clean
   arm source in metadata so regeneration never compounds this edit.
   Story's strafe arm layers use these same clips rather than a separate guard.
   Run the copy tool with Godot --headless --path . --script
