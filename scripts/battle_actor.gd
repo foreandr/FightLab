@@ -17,7 +17,6 @@ var custom_motion_step := ""
 var editor_pose_locked:=false
 var practice_immortal:=false
 var practice_damageable_dummy:=false
-var practice_god_mode:=false
 var practice_wooden_dummy:=false
 var practice_dummy_visual:Node3D
 
@@ -1267,6 +1266,7 @@ func start_burst(paid := false) -> void:
 	count_action("flash_charge")
 
 func tick(delta: float) -> void:
+	if practice_god_mode:restore_god_resources()
 	if practice_wooden_dummy and health<=0.0:
 		mode="ko"
 		velocity=Vector3.ZERO
@@ -1568,7 +1568,7 @@ func update_status(delta: float) -> void:
 		if burn_clock >= 0.5:
 			burn_clock -= 0.5
 			var damage := minf(health, burn_damage)
-			health -= damage
+			if not practice_god_mode:health -= damage
 			damage_taken += damage
 			if is_instance_valid(burn_source):
 				burn_source.damage_dealt += damage
@@ -1615,7 +1615,7 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 			arena.events.append({"time":arena.elapsed,"event":"freeze","victim":team})
 
 func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
-	if not practice_immortal:return receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
+	if not practice_immortal and not practice_god_mode:return receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
 	# Keep damage, guard, status and physical reactions; prevent lethal branches.
 	var previous_health:=health
 	var previous_damage:=damage_taken
@@ -1668,6 +1668,9 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	return landed
 
 func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> void:
+	if practice_god_mode:
+		health=MAX_HEALTH
+		return
 	if practice_immortal and not drowned:
 		health=0.0 if practice_damageable_dummy and not practice_god_mode else MAX_HEALTH
 		return
@@ -1695,9 +1698,9 @@ func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -
 		return
 	var damage:=clampf((speed-4.0)*1.8,0,22)
 	var applied:=minf(health,damage)
-	health-=applied
+	if not practice_god_mode:health-=applied
 	damage_taken+=applied
-	stamina=maxf(0,stamina-damage*0.8)
+	if not practice_god_mode:stamina=maxf(0,stamina-damage*0.8)
 	minimum_stamina=minf(minimum_stamina,stamina)
 	stamina_delay=maxf(stamina_delay,0.65)
 	guard_energy=maxf(0,guard_energy-damage*0.6)

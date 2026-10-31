@@ -75,6 +75,8 @@ func run() -> void:
 	if not check(absf(dummy.practice_dummy_visual.body.rotation.z)>1.0 and not is_instance_valid(dummy.ragdoll),"Defeated dummy did not fall over or spawned human ragdoll"):return
 	b.reset_training_dummy()
 	if not check(dummy.health>0.0 and not dummy.practice_god_mode,"Manual reset did not restore mortal mannequin"):return
+	editor.select_editor_unit(dummy)
+	b.refresh_dummy_controls()
 	b.dummy_god_button.set_pressed(true)
 	if not check(dummy.practice_god_mode and dummy.practice_immortal,"God mode toggle did not apply"):return
 	for hit in 2:

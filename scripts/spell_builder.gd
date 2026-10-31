@@ -156,6 +156,7 @@ var caster_moving:=false
 var caster_move_axes:=Vector2.ZERO
 var caster_sprinting:=false
 var dummy_god_mode:=true
+var character_god_modes:Dictionary={}
 var dummy_god_button:Button
 var dummy_total_damage:=0.0
 var dummy_last_damage:=0.0
@@ -623,12 +624,13 @@ func setup(owner_editor:Node) -> void:
  movement_hint.tooltip_text="W forward · A/D strafe · S backpedal · Combine keys for diagonals · Shift runs · F focuses the camera."
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
- editor.menu_label(projectile_screen,"Practice mannequin",18)
+ editor.menu_label(projectile_screen,"Selected character",18)
  dummy_god_button=editor.button(projectile_screen,"God mode: On",func():pass)
  dummy_god_button.name="MannequinGodMode"
  dummy_god_button.toggle_mode=true
  dummy_god_button.focus_mode=Control.FOCUS_ALL
- dummy_god_button.toggled.connect(set_dummy_god_mode)
+ dummy_god_button.toggled.connect(set_selected_god_mode)
+ dummy_god_button.tooltip_text="Click a character, including yourself, then toggle unlimited health, stamina and mana. Hits and reactions still apply."
  var dummy_reset_button:Button=editor.button(projectile_screen,"Reset mannequin",reset_training_dummy)
  dummy_reset_button.name="ResetPracticeMannequin"
  dummy_reset_button.focus_mode=Control.FOCUS_ALL
@@ -895,7 +897,7 @@ func refresh_demo_choices() -> void:
 func play_demo_preview() -> void:
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
  var stamina_cost:=float(demo_physical_stats().stamina)
- if stamina_cost>float(editor.actor.stamina)+0.0001:
+ if not editor.actor.practice_god_mode and stamina_cost>float(editor.actor.stamina)+0.0001:
   playing=false
   if not preview_repeating:editor._show_library_notice("Needs %.1f stamina · available %.1f"%[stamina_cost,float(editor.actor.stamina)])
   return
@@ -996,6 +998,7 @@ func save_demo_preferences() -> void:
  cfg.set_value("preview","choice",str(casting_animation.get("demo_choice","cross")))
  cfg.set_value("preview","duration",demo_duration)
  cfg.set_value("practice","dummy_god_mode",dummy_god_mode)
+ cfg.set_value("practice","character_god_modes",character_god_modes)
  cfg.set_value("preview","hitboxes",preview_hitboxes)
  cfg.save(preview_preferences_path)
 
@@ -1005,6 +1008,7 @@ func load_demo_preferences() -> void:
  if cfg.load(preview_preferences_path)!=OK:return
  demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)
  dummy_god_mode=bool(cfg.get_value("practice","dummy_god_mode",true))
+ character_god_modes=cfg.get_value("practice","character_god_modes",{})
  preview_hitboxes=bool(cfg.get_value("preview","hitboxes",false))
  refresh_dummy_controls()
  var saved:String=str(cfg.get_value("preview","choice","cross"))
@@ -1571,7 +1575,10 @@ func prepare_preview_targets() -> void:
   if demo_only_stage and fighter==editor.actor:fighter.position=Vector3(0,0.02,0)
   fighter.velocity=Vector3.ZERO
   fighter.editor_pose_locked=fighter==editor.actor
-  fighter.practice_immortal=true
+  fighter.practice_god_mode=bool(character_god_modes.get(god_mode_key(fighter),dummy_god_mode if fighter==editor.target else false))
+  fighter.practice_immortal=fighter.practice_god_mode
+  fighter.practice_damageable_dummy=true
+  if fighter.practice_god_mode:fighter.restore_god_resources()
   fighter.brain_enabled=false
   fighter.mode="review"
   var toward:Vector3=(editor.target.position if fighter==editor.actor else editor.actor.position)-fighter.position
@@ -1613,8 +1620,8 @@ func prepare_preview_targets() -> void:
    practice_human.clip=""
    practice_human.play("ual1/Idle")
    practice_human.practice_damageable_dummy=true
-   practice_human.practice_god_mode=false
-   practice_human.practice_immortal=false
+   practice_human.practice_god_mode=bool(character_god_modes.get("human",false))
+   practice_human.practice_immortal=practice_human.practice_god_mode
    practice_human.practice_home=dummy.practice_home+dummy.global_basis.x*3.0
    practice_human.position=practice_human.practice_home
    practice_human.rotation.y=dummy.rotation.y
@@ -1665,6 +1672,7 @@ func _physics_process(delta:float) -> void:
   Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
 
 func update_training_dummy(delta:float) -> void:
+ refresh_dummy_controls()
  if not demo_only_stage or not is_instance_valid(editor.target) or not editor.target.practice_damageable_dummy:return
  var dummy=editor.target
  if dummy.damage_taken>dummy_damage_mark:
@@ -1684,20 +1692,44 @@ func update_training_dummy(delta:float) -> void:
 
 func refresh_dummy_controls() -> void:
  if not is_instance_valid(dummy_god_button):return
- dummy_god_button.text="God mode: On" if dummy_god_mode else "God mode: Off"
- dummy_god_button.set_pressed_no_signal(dummy_god_mode)
+ var unit=editor.focused_unit
+ var valid:bool=is_instance_valid(unit) and unit.is_visible_in_tree()
+ dummy_god_button.disabled=not valid
+ if not valid:
+  dummy_god_button.text="Select a character · God mode"
+  dummy_god_button.set_pressed_no_signal(false)
+  return
+ var label:String="You" if unit==editor.actor else ("Combat dummy" if unit==editor.target else ("Human target" if unit==practice_human else str(unit.name)))
+ dummy_god_button.text="%s · God mode: %s"%[label,"On" if unit.practice_god_mode else "Off"]
+ dummy_god_button.set_pressed_no_signal(unit.practice_god_mode)
 
-func set_dummy_god_mode(enabled:bool) -> void:
- dummy_god_mode=enabled
- if is_visible_in_tree() and is_instance_valid(editor.target):
-  var dummy=editor.target
-  dummy.practice_god_mode=enabled
-  dummy.practice_immortal=enabled
-  if enabled:
-   if dummy.health<=0.0:reset_training_dummy(false)
-   dummy.health=dummy.MAX_HEALTH
+func god_mode_key(unit:Node) -> String:
+ if unit==editor.actor:return "caster"
+ if unit==editor.target:return "dummy"
+ if unit==practice_human:return "human"
+ return str(unit.name)
+
+func set_selected_god_mode(enabled:bool) -> void:
+ var unit=editor.focused_unit
+ if not is_instance_valid(unit) or not unit.is_visible_in_tree():
+  refresh_dummy_controls()
+  return
+ set_character_god_mode(unit,enabled)
+
+func set_character_god_mode(unit:CharacterBody3D,enabled:bool) -> void:
+ if not is_instance_valid(unit):return
+ character_god_modes[god_mode_key(unit)]=enabled
+ if unit==editor.target:dummy_god_mode=enabled
+ if enabled and unit.health<=0.0:unit.reset_fighter(unit.position)
+ unit.practice_god_mode=enabled
+ unit.practice_immortal=enabled
+ unit.practice_damageable_dummy=true
+ if enabled:unit.restore_god_resources()
  refresh_dummy_controls()
  save_demo_preferences()
+
+func set_dummy_god_mode(enabled:bool) -> void:
+ set_character_god_mode(editor.target,enabled)
 
 func reset_training_dummy(clear_stats:=true) -> void:
  if not is_instance_valid(editor.target):return

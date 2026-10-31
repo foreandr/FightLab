@@ -2,6 +2,14 @@ SHARED CHARACTER MECHANICS
 
 Ownership
 
+scripts/duel_actor.gd and scripts/battle_actor.gd
+  God Mode is a per-actor practice_god_mode flag. Shared resource spending and
+  recovery honor unlimited stamina/mana; BattleActor preserves full health while
+  retaining successful hit events, damage accounting, guard and status reactions.
+  Spell practice edits only the selected character and saves independent caster,
+  dummy and human choices. Reset preserves these choices. No selection disables
+  the toggle rather than silently targeting another character.
+
 scripts/combat_aim.gd
   Cursor rays, focused chest anchors, local aim angles and front-hemisphere limits.
   Live spells use ray_point. Authored Story calibration uses calibration_point;

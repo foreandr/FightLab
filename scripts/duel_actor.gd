@@ -1,6 +1,14 @@
 extends "res://scripts/spell_actor.gd"
 const Movement=preload("res://scripts/character_movement.gd")
 var last_logged_locomotion_state := ""
+var practice_god_mode:=false
+
+func restore_god_resources() -> void:
+	health=MAX_HEALTH
+	mana=MAX_MANA
+	stamina=MAX_STAMINA
+	mana_delay=0.0
+	stamina_delay=0.0
 ## Autonomous elemental fighter. Root movement uses CharacterBody3D physics;
 ## sprint, tucked flight, casting and flips all deform the licensed skeleton.
 const MAX_HEALTH := 160.0
@@ -331,6 +339,9 @@ func set_close_combat(value: bool) -> void:
 	arena.events.append({"time":arena.elapsed, "event":"tactic", "team":team, "tactic":"fists" if value else "magic", "mana":mana})
 
 func spend_mana(amount: float) -> bool:
+	if practice_god_mode:
+		mana=MAX_MANA
+		return true
 	if mana + 0.0001 < amount:
 		return false
 	mana = maxf(0, mana - amount)
@@ -340,6 +351,9 @@ func spend_mana(amount: float) -> bool:
 	return true
 
 func spend_stamina(amount: float) -> bool:
+	if practice_god_mode:
+		stamina=MAX_STAMINA
+		return true
 	if stamina + 0.0001 < amount:
 		return false
 	stamina = maxf(0, stamina - amount)
@@ -349,6 +363,9 @@ func spend_stamina(amount: float) -> bool:
 	return true
 
 func spend_cast_resources(stamina_cost:float,mana_cost_:float) -> bool:
+	if practice_god_mode:
+		restore_god_resources()
+		return true
 	stamina_cost=maxf(0.0,stamina_cost)
 	mana_cost_=maxf(0.0,mana_cost_)
 	if stamina+0.0001<stamina_cost or mana+0.0001<mana_cost_:return false
@@ -414,6 +431,10 @@ func resolve_melee(delta: float) -> void:
 	melee_previous = hand
 
 func recover_resources(delta: float) -> void:
+	if practice_god_mode:
+		restore_god_resources()
+		recover_guard(delta)
+		return
 	mana_delay = maxf(0, mana_delay - delta)
 	stamina_delay = maxf(0, stamina_delay - delta)
 	if not arena.round_active or health <= 0:

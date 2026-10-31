@@ -5357,6 +5357,9 @@ func begin_live_preview(reset_loops: bool=true) -> void:
 
 func _spend_unit_stamina(unit:CharacterBody3D,amount:float) -> void:
 	if not is_instance_valid(unit) or amount<=0.0:return
+	if unit.practice_god_mode:
+		unit.restore_god_resources()
+		return
 	unit.stamina=maxf(0.0,float(unit.stamina)-amount)
 	unit.stamina_delay=maxf(float(unit.stamina_delay),0.65)
 	var tag:=unit.get_node_or_null("OverheadHealthTag")
