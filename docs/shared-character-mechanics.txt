@@ -3,8 +3,8 @@ SHARED CHARACTER MECHANICS
 Ownership
 
 scripts/projectile_area_impact.gd
-  Shared live projectile impact area for Story and Create. The projectile radius
-  defines a sphere around the first contact (or world impact), with one normal
+  Shared live projectile impact area for Story and Create. Splash reaches twice
+  the projectile radius around first contact (or world impact), with one normal
   apply_impact call per enemy, independent of the number of overlapping hurtboxes.
   Uses each target's normal defenses/status handling; excludes the caster/team,
   respects solid cover, and does not add piercing or repeated flight damage.

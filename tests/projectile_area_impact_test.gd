@@ -71,6 +71,11 @@ func run() -> void:
 	cast(field,caster,1.3,"Fire")
 	if not check(first.burns_applied==first_burns+1 and second.burns_applied==second_burns+1 and first.burn_time>0.0 and second.burn_time>0.0,"Fire effect not applied once to both targets"):return
 	reset_hits(field.fighters)
+	for index in 3:areas[3+index].position.x=2.5
+	await physics_frame
+	cast(field,caster,1.3)
+	if not check(first.damage_taken==10.0 and second.damage_taken==10.0,"Lenient splash misses nearby secondary target outside strict projectile radius"):return
+	reset_hits(field.fighters)
 	for index in 3:areas[3+index].position.x=3.0
 	await physics_frame
 	cast(field,caster,1.3)
@@ -91,5 +96,5 @@ func run() -> void:
 	var spec:Dictionary={"id":"ground_aoe","effect":"orb","damage":10.0,"potency":0.0}
 	field.projectile_area_impact.apply(field,{"id":999,"caster":caster,"radius":1.3,"velocity":Vector3.BACK*14,"mass":1.0,"spec":spec},Vector3(0.4,2,3.8))
 	if not check(first.damage_taken==10.0 and second.damage_taken==10.0,"World impact area fails to hit both targets"):return
-	print("PROJECTILE AOE PASSED: small single-target, large multi-target, one hit per actor despite overlapping limbs, caster exclusion, radius boundary, cover occlusion and world-impact splash")
+	print("PROJECTILE AOE PASSED: small single-target, large multi-target, lenient secondary splash, one hit per actor, caster exclusion, radius boundary, cover occlusion and world-impact splash")
 	quit()

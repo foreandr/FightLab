@@ -1,10 +1,11 @@
 extends RefCounted
 ## One impact area per projectile, one application per enemy, regardless of limbs.
+const SPLASH_RADIUS_MULTIPLIER:=2.0
 var sphere:=SphereShape3D.new()
 var query:=PhysicsShapeQueryParameters3D.new()
 
 func apply(field:Node,shot:Dictionary,center:Vector3,primary:CharacterBody3D=null,primary_area:Area3D=null) -> void:
-	sphere.radius=maxf(0.0001,float(shot.radius))
+	sphere.radius=maxf(0.0001,float(shot.radius)*SPLASH_RADIUS_MULTIPLIER)
 	query.shape=sphere
 	query.transform=Transform3D(Basis.IDENTITY,center)
 	query.collision_mask=field.enemy_hurt_mask(shot.caster.team)
@@ -37,4 +38,4 @@ func apply(field:Node,shot:Dictionary,center:Vector3,primary:CharacterBody3D=nul
 		if field.apply_impact(shot.caster,victim,shot.spec,contact.point,direction,contact.area,shot.velocity*shot.mass):
 			affected.append(str(victim.name))
 	shot["aoe_targets"]=affected
-	GameDiagnostics.log_event("projectile_area_impact",{"shot":shot.id,"radius":shot.radius,"center":str(center),"targets":affected})
+	GameDiagnostics.log_event("projectile_area_impact",{"shot":shot.id,"radius":shot.radius,"splash_radius":sphere.radius,"center":str(center),"targets":affected})
