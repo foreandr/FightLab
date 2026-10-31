@@ -28,11 +28,11 @@ scripts/combat_floating_numbers.gd
   bounded lifetime/count. Spell Numbers [3] is a mode input adapter to this API.
 
 scripts/physical_momentum.gd
-  Physical damage uses actual horizontal velocity toward the hit, not sprint
-  flags or a character speed stat. Melee adds 3 percent per forward m/s. Older
+  Physical damage uses actual horizontal speed in any direction, not sprint
+  flags or a character speed stat. Melee adds 3 percent per horizontal m/s. Older
   limb-speed calculations subtract attacker root velocity before their existing
   animation-speed multiplier, keeping root movement in the shared bonus.
-  Projectiles inherit 35 percent of forward velocity along their existing aim
+  Projectiles inherit 35 percent of horizontal speed along their existing aim
   direction and physical damage scales by actual launch speed / nominal speed.
   Effects, size and resource costs do not gain that bonus. Capture once at launch;
   later caster motion cannot alter an in-flight shot. Both arena modes share the

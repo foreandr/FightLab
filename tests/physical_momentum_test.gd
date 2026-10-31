@@ -34,8 +34,17 @@ func run() -> void:
 		var before:float=victim.damage_taken
 		field.apply_impact(actor,victim,melee,area.global_position,Vector3.BACK,area,Vector3.BACK*0.1)
 		if not check(is_equal_approx(victim.damage_taken-before,10.0*(1.0+speed*0.03)),"Actual melee does not apply movement once at speed %s"%speed):return
-	for movement in [Vector3.RIGHT*7,Vector3.FORWARD*7,Vector3.UP*7]:
-		if not check(Momentum.melee_multiplier(movement,Vector3.BACK,melee)==1.0,"Sideways/backward/vertical movement gives forward melee bonus"):return
+	for direction in [Vector3.RIGHT,Vector3.LEFT,Vector3.FORWARD,Vector3(1,0,1).normalized()]:
+		actor.velocity=direction*7+Vector3.UP*12
+		victim.invulnerability=0.0;victim.guard_energy=0;victim.armor_hp=0
+		var before:float=victim.damage_taken
+		field.apply_impact(actor,victim,melee,area.global_position,Vector3.BACK,area,Vector3.BACK*0.1)
+		if not check(is_equal_approx(victim.damage_taken-before,12.1),"Side/back/diagonal melee does not use horizontal speed exactly once"):return
+		var shot:Dictionary=Momentum.projectile({"effect":"orb"},actor.velocity,Vector3.BACK,10.0,10.0)
+		if not check(is_equal_approx(float(shot.speed),12.45) and is_equal_approx(float(shot.spec.damage),12.45) and shot.velocity.is_equal_approx(Vector3.BACK*12.45),"Side/back/diagonal motion must amplify speed and damage without changing aim"):return
+	if not check(Momentum.melee_multiplier(Vector3.UP*7,Vector3.BACK,melee)==1.0,"Vertical movement gives horizontal melee bonus"):return
+	var vertical:Dictionary=Momentum.projectile({"effect":"orb"},Vector3.UP*7,Vector3.BACK,10.0,10.0)
+	if not check(vertical.speed==10.0 and vertical.spec.damage==10.0,"Vertical movement gives horizontal projectile bonus"):return
 	actor.velocity=Vector3.ZERO
 	b.manual_aim=true;b.manual_aim_valid=true
 	var origin:Vector3=field.fighter_hand(actor,preload("res://scripts/combat_aim.gd").emitter(b.casting_animation))+actor.global_basis.z*0.12
@@ -100,5 +109,5 @@ func run() -> void:
 	for frame in 2:await physics_frame
 	await process_frame
 	if not check(is_equal_approx(float(b.demo_projectile_stats().physical_damage),10.0),"Stopping does not restore neutral damage readout"):return
-	print("PHYSICAL MOMENTUM PASSED: actual static/walk/sprint/amped melee, directional bonus, moving projectile hit and velocity/damage snapshot, no double application, unchanged costs/effects/size, RHS match and Limiter-off independence")
+	print("PHYSICAL MOMENTUM PASSED: actual static/walk/sprint/amped and side/back/diagonal melee, horizontal projectile speed/damage without aim drift or vertical bonus, moving hit and snapshot, no double application, unchanged costs/effects/size, RHS match and Limiter-off independence")
 	quit()

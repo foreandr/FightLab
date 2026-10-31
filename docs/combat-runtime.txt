@@ -79,6 +79,9 @@ that already committed a cast. Do not call them after release for the same cast.
 projectile_launch_state / predict_projectile_impact are read-only forecasts.
 Movement contribution is captured once at launch. Future caster velocity does
 not change an in-flight projectile. AoE applies once per victim, not per limb.
+Shared physical_momentum.gd uses horizontal speed equally for forward, backward,
+sideways and diagonal motion. Vertical velocity contributes nothing. Projectile
+speed increases along the existing aim direction, without sideways aim drift.
 
 AUTHORING A SPELL
 
