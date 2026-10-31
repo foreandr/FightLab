@@ -87,7 +87,7 @@ var demo_exit_pose:Array[Transform3D]=[]
 var demo_exit_elapsed:=0.0
 const DEMO_TRANSITION_SECONDS:=0.18
 var demo_confirm_button:Button
-const DELIVERY_TYPES:=["Projectile","Targeted","Touch","Barrier"]
+const DELIVERY_TYPES:=["Projectile","Beam","Targeted","Touch","Barrier"]
 var delivery_type:=""
 var creation_step:="demo"
 var demo_screen:VBoxContainer
