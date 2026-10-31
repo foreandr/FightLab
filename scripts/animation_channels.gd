@@ -6,6 +6,25 @@ static var _versions:Dictionary={}
 static var cache_hits:=0
 static var cache_misses:=0
 
+## Authoring tool: copy selected body parts without editing either source clip.
+static func replace_channels(base:Animation,donor:Animation,donor_name:String,channels:Array[String]) -> Animation:
+	var result:=base.duplicate(true) as Animation
+	for channel in channels:
+		var part:=filtered(donor,donor_name,channel)
+		if part==null:continue
+		for index in part.get_track_count():
+			var path:=part.track_get_path(index)
+			var type:=part.track_get_type(index)
+			for old in range(result.get_track_count()-1,-1,-1):
+				if result.track_get_path(old)==path and result.track_get_type(old)==type:result.remove_track(old)
+			part.copy_track(index,result)
+			var added:=result.get_track_count()-1
+			# Work backward when extending time to keep key indexes stable.
+			var keys:=range(result.track_get_key_count(added))
+			if result.length>=part.length:keys.reverse()
+			for key in keys:result.track_set_key_time(added,key,part.track_get_key_time(index,key)*result.length/maxf(0.001,part.length))
+	return result
+
 static func revision(source:Animation) -> int:
 	var id:=source.get_instance_id()
 	if not _versions.has(id) or _versions[id].source.get_ref()!=source:

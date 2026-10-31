@@ -93,6 +93,7 @@ func add_defense_clips(lib: AnimationLibrary, fight: AnimationLibrary, ual2: Ani
 		lib.add_animation("shield_hold_" + style, make_animation([[0.0, held], [0.8, held]], true))
 		lib.add_animation("shield_hit_" + style, make_animation([[0.0, held], [0.08, recoil], [0.28, held]], false))
 		lib.add_animation("shield_lower_" + style, make_animation([[0.0, held], [0.24, guard]], false))
+	preload("res://scripts/vendor/copy_strafe_guard.gd").apply(lib)
 	var dodge := duplicate_pose(guard)
 	move_bone(dodge, "pelvis", Vector3(0, -0.18, -0.05))
 	rotate_bone(dodge, "spine_02", Vector3.RIGHT, -15)

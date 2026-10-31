@@ -174,3 +174,16 @@ the shared physical damage bonus. Spell practice exposes move_caster for scripts
 Verified eight directional walk/sprint rates, analog angles, actual Story speeds,
 scripted spell-practice movement/poses and Take Control animation parity.
 Implementation: +21 / -5 lines.
+
+GUARDED STRAFE ARM COPY (2026-10-31)
+
+Used the existing animation channel filters to copy both arms and all finger
+tracks from shield_hold_brace onto the two sideways strafe clips. The reusable
+replace_channels authoring tool duplicates sources and fits donor key timing to
+the recipient loop. A repeatable Godot script edits only those two saved clips;
+the full clip generator calls the same operation. Story's arm overlays now read
+those strafe clips too, matching Create and Take Control.
+Compared against the previous committed library: all non-arm strafe tracks and
+all unrelated animation tracks are unchanged. Verified raised hands throughout
+both live loops and visually inspected a rendered strafe/block comparison.
+Implementation: +43 / -1 lines, plus the two updated animation resources.

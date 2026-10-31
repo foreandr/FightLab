@@ -604,7 +604,7 @@ func update_story_strafe_hands(side:String) -> void:
 		return
 	for channel in ["arm_l","arm_r"]:
 		if story_strikes.has(channel) or story_limb_reservations.has(channel):continue
-		var clip_name:=_filtered_limb_animation("fight/walk_guard",channel)
+		var clip_name:=_filtered_limb_animation("duel/strafe_%s"%side,channel)
 		if clip_name.is_empty():continue
 		var limb_player:AnimationPlayer=story_limb_players[channel]
 		if limb_player.current_animation!=clip_name:limb_player.play(clip_name,0.12,1.0)
