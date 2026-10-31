@@ -746,6 +746,13 @@ func choose_delivery_type(value:String) -> void:
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
 
 func open_projectile_workspace() -> void:
+ stop_preview_controls()
+ if not limiter_enabled:set_limiter_enabled(true)
+ if is_instance_valid(limiter_warning):limiter_warning.hide()
+ total_power=1.0
+ demo_duration=1.0
+ casting_animation["duration"]=demo_duration
+ release_fraction=(MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5
  category="Projectiles"
  spell_kind="Projectiles"
  delivery_type="Projectile"
@@ -756,16 +763,15 @@ func open_projectile_workspace() -> void:
   potency=1.0
   projectile_velocity=Projectile.DEFAULT_VELOCITY
   testing_sizes=false
- if not projectile_effect_confirmed:element="None"
- if element not in ["None","Fire"]:
-  element="None"
-  projectile_effect_confirmed=false
+ element="None"
+ projectile_effect_confirmed=false
  preview_effect=element
  refresh()
  refresh_effect_choices()
  refresh_demo_timing()
  show_creation_step("projectile")
  save_draft()
+ save_demo_preferences()
  play_demo_preview()
 
 func preview_projectile_effect(value:String) -> void:

@@ -28,9 +28,10 @@ func run() -> void:
 	builder.demo_confirm_button.pressed.emit()
 	var camera_before:Transform3D=editor.field.camera.global_transform
 	builder.delivery_choices.Projectile.pressed.emit()
+	if not check(editor.field.camera.global_transform.is_equal_approx(camera_before),"Projectile choice reset the camera"):return
 	if not check(builder.creation_step=="projectile" and builder.projectile_screen.is_visible_in_tree(),"Projectile choice did not open its editor"):return
 	if not check(builder.demo_timing_panel.is_visible_in_tree() and builder.demo_timing_panel.anchor_left>0.5 and builder.anchor_left==0.0,"Timing must stay on the right and Fireball on the left"):return
-	if not check(builder.demo_mana_cost_label.is_visible_in_tree() and builder.demo_amplifier_label.is_visible_in_tree() and is_equal_approx(float(builder.demo_duration),4.0),"Projectile editor lost timing readouts or selected duration"):return
+	if not check(builder.demo_mana_cost_label.is_visible_in_tree() and builder.demo_amplifier_label.is_visible_in_tree() and is_equal_approx(float(builder.demo_duration),1.0),"Projectile editor lost timing readouts or one-second entry default"):return
 	var base:Dictionary=builder.projectile_spec()
 	if not check(base.projectile_element=="None","Default projectile must be elementless"):return
 	builder.set_demo_duration(0.5)
@@ -88,7 +89,6 @@ func run() -> void:
 		builder.select_demo_choice(choice)
 		if not check(is_zero_approx(float(builder.demo_physical_stats().damage)),"Passive demo deals physical damage"):return
 	builder.select_demo_choice("cross")
-	if not check(editor.field.camera.global_transform.is_equal_approx(camera_before),"Projectile choice reset the camera"):return
 	builder.set_demo_duration(0.5)
 	var serial_before:int=editor.field.shot_serial
 	builder.projectile_preview_button.pressed.emit()
@@ -132,6 +132,7 @@ func run() -> void:
 	builder.projectile_back_button.pressed.emit()
 	if not check(is_equal_approx(Engine.time_scale,initial_scale) and not builder.preview_repeating and not builder.preview_slow,"Back leaked slow motion or repeating into the workspace"):return
 	builder.delivery_choices.Projectile.pressed.emit()
+	base=builder.projectile_spec()
 	builder.set_demo_duration(16.0)
 	var amplified:Dictionary=builder.demo_preview_spec()
 	if not check(is_zero_approx(float(amplified.mana)) and is_equal_approx(float(amplified.potency),float(base.potency)*(34.0/9.0)),"Live preview does not match the mana/amp readout"):return
@@ -139,7 +140,7 @@ func run() -> void:
 	builder.projectile_back_button.pressed.emit()
 	if not check(builder.creation_step=="delivery" and builder.demo_timing_panel.is_visible_in_tree(),"Back hid the timing readout"):return
 	builder.delivery_choices.Projectile.pressed.emit()
-	if not check(is_equal_approx(float(builder.demo_duration),16.0) and builder.projectile_initialized,"Reopening projectile discarded duration or its draft"):return
+	if not check(is_equal_approx(float(builder.demo_duration),1.0) and builder.total_power==1.0 and is_equal_approx(float(builder.release_fraction),0.3) and builder.element=="None" and builder.projectile_initialized,"Reopening projectile did not restore requested defaults"):return
 	print("PROJECTILE WORKSPACE PASSED: Fire-only selection, neutral default, release at 5/30/55 percent, timing amp, release bounds and persistence, effect confirmation, playback, stamina/damage and mana/amp")
 	builder.draft_path=original_draft
 	builder.preview_preferences_path=original_preferences
