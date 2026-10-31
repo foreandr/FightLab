@@ -12,7 +12,7 @@ const StoryRivals = preload("res://scripts/story_rivals.gd")
 const BodyBarrierOverlay = preload("res://scripts/body_barrier_overlay.gd")
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
-	[{"id":"ice_armor","name":"Glacial Armor","effect":"armor","animation":"twin_push","hand":"both","release":1.0}, {"id":"ice_beam","name":"Freezing Ray","effect":"ice_beam","animation":"flame_channel","hand":"both","release":0.8}],
+	[{"id":"ice_bolt","name":"Ice Bolt","effect":"orb","animation":"twin_push","hand":"both","release":1.0}, {"id":"ice_beam","name":"Freezing Ray","effect":"ice_beam","animation":"flame_channel","hand":"both","release":0.8}],
 	[{"id":"overdrive","name":"Overdrive","effect":"haste","animation":"self_mend","hand":"both","release":0.95}, {"id":"flash_step","name":"Flash Step","effect":"burst","animation":"palm_fireball","hand":"hand_r","release":0.68}]]
 var armor_meshes: Array = []
 var barrier_materials: Array[Array] = []
@@ -544,7 +544,6 @@ func update_fight_ui() -> void:
 		elif f.mode=="cast" and f.cast_phase=="hold": states.append("CHARGING %d%%"%int(f.charge_value*100))
 		elif f.mode=="melee_charge": states.append("UPPERCUT %d%%"%int(f.melee_charge*100))
 		else: states.append("FISTS" if f.close_combat else "MAGIC")
-		if f.armor_hp>0: states.append("ARMOR %d"%int(f.armor_hp))
 		if f.haste_time>0: states.append("OVERDRIVE %ds"%ceili(f.haste_time))
 		if f.chill_time>0: states.append("SLOWED")
 		if f.burn_time>0: states.append("BURNING")

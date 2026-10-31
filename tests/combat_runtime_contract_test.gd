@@ -90,7 +90,7 @@ func run() -> void:
 	if not check(actor.health==115,"Shared heal dispatch failed"):return
 	world.combat().dispatch(actor,{"id":"armor","effect":"armor"},actor.global_position)
 	world.combat().dispatch(actor,{"id":"haste","effect":"haste"},actor.global_position)
-	if not check(actor.armor_hp==50 and actor.haste_time==14,"Shared armor/haste dispatch failed"):return
+	if not check(actor.armor_hp==0 and actor.haste_time==14,"Cosmetic armor or shared haste dispatch failed"):return
 	actor.editor_pose_locked=false;target.editor_pose_locked=false
 	actor.mode="idle";target.mode="idle"
 	for frame in 5:world.tick_combat(1.0/60.0)

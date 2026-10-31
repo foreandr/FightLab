@@ -829,11 +829,6 @@ func select_action() -> void:
 		decision += 1
 		start_cast(false)
 		return
-	if team == 1 and mana > 28 and armor_time < 0.2 and decision % 4 == 1:
-		spell_cursor = 0
-		decision += 1
-		start_cast(false)
-		return
 	if team == 2 and flat_distance() > 2.0 and stamina > 30 and mana > 10 and tactics.avoid_flash<=0:
 		start_burst()
 		decision += 1
@@ -1566,11 +1561,6 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	last_attacker = attacker.team
 	if team==2 and haste_time>0:
 		amount*=0.75
-	if armor_hp > 0:
-		var absorbed := minf(armor_hp, amount * 0.55)
-		armor_hp -= absorbed
-		amount -= absorbed
-		impulse *= 0.65
 	if is_instance_valid(ragdoll):
 		if invulnerability > 0 or health <= 0:
 			return false
@@ -1595,7 +1585,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 		enter_death(attacker,impulse,point)
 		return true
 	var landed := super.receive_magic(amount, direction, attacker, point, zone, bone, impulse)
-	if landed and (impulse.length() >= 440 or (last_guard_shattered and impulse.length() >= 280) or last_hit_launch or health <= 0):
+	if landed and preload("res://scripts/combat_defense_rules.gd").ragdolls(amount):
 		start_ragdoll(impulse, point)
 	return landed
 

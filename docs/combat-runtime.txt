@@ -55,7 +55,8 @@ combat().release(actor,spec,origin,animation_profile={}) -> bool
 
 combat().cast(actor,spec,animation_profile={}) -> bool
   Same request, using the spec's hand as origin. Handles projectile/ground,
-  healing, armor, haste, burst, beam, ice beam, nova and earth summon effects.
+  healing, haste, burst, beam, ice beam, nova and earth summon effects.
+  Legacy armor dispatch is a compatibility no-op; armor is cosmetic.
 
 Interrupted cast stamina
   begin_cast_attempt(actor,spec,time_to_release,mode_owned=true) snapshots the
@@ -91,11 +92,17 @@ selection. This changes presentation only, not impact physics, damage or costs.
 
 combat_hit_regions.gd owns physical headshot scaling. apply_impact identifies the
 actual receiving area, applies head 2x / other 1x once to its physical component
-after shield absorption and before actor armor/health handling, then separately
+after shield absorption and before actor health handling, then separately
 applies the original status spec. Burn/status potency and duration, mana/stamina,
 knockback and nearby-ice damage do not inherit the headshot multiplier. Each AoE
 victim resolves its own receiving area. Successful hits notify optional hitbox
 highlights, and the common actor uses distinct existing head/chest reaction clips.
+
+combat_defense_rules.gd defines the provisional 40-physical-damage threshold for
+nonlethal hit ragdolls. Death retains its ragdoll path. Incoming impulse affects
+motion, not the hit threshold. Cosmetic armor cannot absorb damage or impulse.
+The authoring panel uses the same pure rule for unblocked body/head predictions.
+Barrier/block changes, guard-break policy and a blocking dummy are deferred.
 
 AUTHORING A SPELL
 

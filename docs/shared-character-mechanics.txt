@@ -23,13 +23,23 @@ Ownership
 scripts/combat_hit_regions.gd
   Shared physical hit-region rules and presentation names/colors. Head hits apply
   2x direct physical damage; every other receiving region stays at 1x. Runtime
-  applies this once after shield absorption, before actor armor/health handling.
+  applies this once after shield absorption, before actor health handling.
   Spell specs, status potency/duration, burn ticks, resource costs and knockback
   are not multiplied. DuelActor selects existing Hit_Head / Hit_Chest clips with
   smooth playback and recovery. Strong/lethal hits retain their ragdoll behavior.
-  Hitboxes [2]: orange head, pink body, labels show physical multipliers. Only
+  Hitboxes [2]: orange head, pink body, no floating region captions. Only
   the struck collision shape flashes yellow/fills for 0.45 seconds. Debug meshes
   never change collision; disabling/resetting clears highlights.
+
+scripts/combat_defense_rules.gd
+  Provisional nonlethal ragdoll threshold: 40 actual physical damage from a hit.
+  Headshot doubling counts toward it; impulse still drives knockback and ragdoll
+  motion, but high impulse or a launch flag alone no longer triggers hit ragdoll.
+  Death still ragdolls. Armor is cosmetic: no damage/impulse absorption; legacy
+  armor spells no longer grant protection. Compatibility armor fields remain for
+  old content/tools. The authoring panel predicts unblocked body/head outcomes
+  using these same rules; lethal hits and target-specific reductions are caveats.
+  Barrier/block redesign and a permanently blocking test dummy are deferred.
 
 Guarded sideways strafe authoring
   scripts/vendor/copy_strafe_guard.gd copies both arm/finger channels from

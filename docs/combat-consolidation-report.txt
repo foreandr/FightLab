@@ -247,3 +247,30 @@ head/body text, critical styling and fade color, resource-label regression and a
 rendered Create preview. This presentation change adds no physics simulation;
 normal articulated impact reactions already use a reduced 13-joint spring model.
 Implementation: +12 / -9 lines.
+
+COSMETIC ARMOR AND DAMAGE-BASED RAGDOLL (2026-10-31)
+
+User clarified armor is cosmetic. Removed its damage/impulse absorption and made
+legacy armor spell dispatch a compatibility no-op. Retired the armor AI cast and
+replaced its old roster spell with Ice Bolt; clothing/outfit appearance remains.
+Nonlethal direct-hit ragdolls now use a shared provisional threshold of 40 actual
+physical damage, including headshot doubling. Force controls knockback/ragdoll
+motion, not the hit trigger; launch metadata alone no longer forces a ragdoll.
+Death still ragdolls. Existing target-specific non-armor effects are preserved.
+Added a compact RHS body/headshot prediction, explicitly for unblocked nonlethal
+hits, using that same rule in normal and Limiter-off previews. Removed floating
+head/body hitbox captions while preserving color/highlight feedback.
+Verified strong-low-force and weak-high-force hits, exact threshold, headshots,
+death, armor fields unable to reduce damage, disabled legacy armor effects,
+independent-mode contract, headshot/status regression and actual Create preview.
+Implementation: +19 / -20 lines.
+
+DEFERRED BLOCK/BARRIER DESIGN
+User explicitly deferred block work after initially describing it. No permanently
+blocking dummy, barrier redesign or new shield-break badge was implemented.
+Keep these requested ideas for later: barriers provide blocking (not cosmetic
+armor); holding drains stamina; hits chip stamina; a broken shield destroys block
+without automatically ragdolling; reactivation requires a full bar; recovery uses
+the other resources' rate; show a yellow shield-break badge. Ragdoll from damage
+getting through and blocked/effect-filtered predictions need to be finalized with
+that barrier implementation. A 10-physical-damage barrier was the example given.

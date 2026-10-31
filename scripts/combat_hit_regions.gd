@@ -8,7 +8,5 @@ static func is_head(zone:String) -> bool:return zone.to_lower()=="head"
 static func physical_multiplier(zone:String) -> float:return HEAD_PHYSICAL_MULTIPLIER if is_head(zone) else 1.0
 static func reaction(zone:String) -> String:return "ual1/Hit_Head" if is_head(zone) else "ual1/Hit_Chest"
 static func color(zone:String) -> Color:return HEAD_COLOR if is_head(zone) else BODY_COLOR
-static func label(zone:String) -> String:
-	if is_head(zone):return "HEAD · 2× physical"
-	if zone=="chest":return "BODY · 1× physical"
+static func label(_zone:String) -> String:
 	return ""

@@ -79,9 +79,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
 				for i in 5:field.vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color("85ffc1"),0.55,4)
 			field.combat_sound("ice",recipient.global_position,0.45)
 		"armor":
-			actor.armor_time=float(spec.get("armor_duration",6.5))
-			actor.armor_hp=float(spec.get("armor_hp",50.0))
-			field.combat_sound("ice",actor.global_position,0.5)
+			pass # Legacy armor content is cosmetic; it grants no combat benefit.
 		"haste":
 			actor.haste_time=float(spec.get("haste_duration",14.0))
 			field.combat_sound("dash",actor.global_position,0.6)
