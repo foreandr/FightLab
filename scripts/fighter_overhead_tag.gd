@@ -5,6 +5,7 @@ var display_name := ""
 var name_label: Label3D
 var status_label: Label3D
 var resource_fills: Dictionary = {}
+const Smoothing=preload("res://scripts/resource_bar_smoothing.gd")
 var chat_bubble: Node3D
 var chat_panel: MeshInstance3D
 var chat_outline: MeshInstance3D
@@ -221,10 +222,22 @@ func update_tag() -> void:
 		status_label.text=str(fighter.get("return_state"))
 	if _fighter_number("water_depth")>1.65 and fighter.health>0:
 		status_label.text="AIR · %.1fs"%_fighter_number("air_remaining")
+	if fighter.has_meta("practice_damage_readout"):
+		status_label.text=str(fighter.get_meta("practice_damage_readout"))
 
 func _set_resource_fraction(key: String, raw_fraction: float) -> void:
 	var fraction:=clampf(raw_fraction,0.0,1.0)
 	var entry: Dictionary=resource_fills[key]
+	entry["target"]=fraction
+	if not entry.has("displayed"):entry["displayed"]=fraction
+
+func _advance_resource_bars(delta:float) -> void:
+	for key in resource_fills:
+		var entry:Dictionary=resource_fills[key]
+		entry["displayed"]=Smoothing.approach(float(entry.get("displayed",1.0)),float(entry.get("target",1.0)),delta)
+		_draw_resource_fraction(entry,float(entry.displayed))
+
+func _draw_resource_fraction(entry:Dictionary,fraction:float) -> void:
 	var box: BoxMesh=entry.mesh
 	var fill: MeshInstance3D=entry.node
 	box.size.x=BAR_WIDTH*fraction
@@ -238,6 +251,7 @@ func _fighter_number(property_name: String) -> float:
 
 func _process(_delta: float) -> void:
 	update_tag()
+	_advance_resource_bars(_delta)
 	if chat_time_left>0:
 		chat_time_left=maxf(0.0,chat_time_left-_delta)
 		if chat_time_left<=0 and is_instance_valid(chat_bubble):chat_bubble.visible=false

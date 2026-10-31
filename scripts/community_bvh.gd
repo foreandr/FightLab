@@ -135,6 +135,8 @@ static func retarget(data:Dictionary,actor:Node) -> Animation:
 			var index:int=actor.bones[bone]
 			var rest_basis:Basis=rig.global_basis*rig.get_bone_global_rest(index).basis
 			var child:String=CHILDREN.get(bone,"")
+			if bone=="spine_01" and map.has("spine_02"):child="spine_02"
+			elif bone=="spine_02" and not map.has("spine_03") and map.has("neck_01"):child="neck_01"
 			var basis:=rest_basis
 			var parent_index:=rig.get_bone_parent(index)
 			var parent_name:=rig.get_bone_name(parent_index) if parent_index>=0 else ""
@@ -145,6 +147,10 @@ static func retarget(data:Dictionary,actor:Node) -> Animation:
 				if from.length()>0.001 and to.length()>0.001:basis=Basis(Quaternion(from.normalized(),to.normalized()))*rest_basis
 			desired[bone]=basis
 		# Use the shoulder line to retain torso twist, facing and full-body flips.
+		# Shoulder/up vectors describe the full-body orientation even when a
+		# source skeleton only has two mapped spine joints (as in ACCAD's
+		# Female1 files). Requiring spine_03 here silently discarded cartwheels,
+		# flips and other inversions from those clips.
 		if map.has("upperarm_l") and map.has("upperarm_r") and map.has("spine_01"):
 			var up:Vector3=(source[map.Head].origin-source[map.pelvis].origin).normalized()
 			var right:Vector3=(source[map.upperarm_r].origin-source[map.upperarm_l].origin).normalized()

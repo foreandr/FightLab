@@ -1,5 +1,6 @@
 extends RefCounted
 const Provenance=preload("res://scripts/asset_provenance.gd")
+const ProjectAssets=preload("res://scripts/animation_project_assets.gd")
 var path:="user://animation_store_library.cfg"
 var taken:Dictionary={}
 var blocked:Dictionary={}
@@ -13,9 +14,21 @@ static func key(entry:Dictionary) -> String:
 
 func load_state() -> void:
 	var cfg:=ConfigFile.new()
-	if cfg.load(path)!=OK:return
-	taken=cfg.get_value("store","taken",{}).duplicate(true)
-	blocked=cfg.get_value("store","blocked",{}).duplicate(true)
+	if cfg.load(path)==OK:
+		taken=cfg.get_value("store","taken",{}).duplicate(true)
+		blocked=cfg.get_value("store","blocked",{}).duplicate(true)
+	_load_project_entries()
+
+func _load_project_entries() -> void:
+	if not FileAccess.file_exists(ProjectAssets.MANIFEST):return
+	var manifest=JSON.parse_string(FileAccess.get_file_as_string(ProjectAssets.MANIFEST))
+	if not manifest is Dictionary:return
+	for entry in manifest.get("entries",[]):
+		if not entry is Dictionary:continue
+		var id:=str(entry.get("store_asset_id",""))
+		var asset_path:=str(entry.get("project_asset_path",""))
+		if id.is_empty() or not asset_path.begins_with(ProjectAssets.ROOT+"/") or not FileAccess.file_exists(asset_path):continue
+		taken[id]=entry.duplicate(true)
 
 func save() -> bool:
 	var cfg:=ConfigFile.new()
@@ -23,7 +36,7 @@ func save() -> bool:
 	cfg.set_value("store","blocked",blocked)
 	return cfg.save(path)==OK
 
-func take(entry:Dictionary,group:String,category:String,existing_names:Array=[]) -> bool:
+func take(entry:Dictionary,group:String,category:String,existing_names:Array=[],animation:Animation=null) -> bool:
 	var id:=key(entry)
 	if taken.has(id):id=id+":"+Crypto.new().generate_random_bytes(6).hex_encode()
 	var local:Dictionary=entry.duplicate(true)
@@ -36,11 +49,46 @@ func take(entry:Dictionary,group:String,category:String,existing_names:Array=[])
 	local.group=group
 	local.category=category
 	local["provenance"]=Provenance.derive([Provenance.source(entry)],"animation",str(local.title),Provenance.creator_name(),"added to personal library")
+	if animation==null:animation=ProjectAssets.resolve(entry)
+	var project_path:=ProjectAssets.save_animation(animation,id,str(local.title))
+	if project_path.is_empty():return false
+	local["project_asset_path"]=project_path
+	local["animation_resource"]=project_path
+	local.erase("bvh_source")
+	local.erase("original_filename")
 	var before:Dictionary=taken.duplicate(true)
 	taken[id]=local
-	if not save():taken=before;return false
+	if not save() or not _save_project_manifest():
+		taken=before
+		save()
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(project_path))
+		return false
 	last_taken_entry=local.duplicate(true)
 	return true
+
+func ensure_project_copy(id:String,animation:Animation=null) -> bool:
+	if not taken.has(id):return false
+	if str(taken[id].get("project_asset_path","")).begins_with(ProjectAssets.ROOT+"/"):return true
+	if animation==null:animation=ProjectAssets.resolve(taken[id])
+	var project_path:=ProjectAssets.save_animation(animation,id,str(taken[id].get("title","Animation")))
+	if project_path.is_empty():return false
+	var before:Dictionary=taken.duplicate(true)
+	taken[id]["project_asset_path"]=project_path
+	taken[id]["animation_resource"]=project_path
+	taken[id].erase("bvh_source")
+	if not save() or not _save_project_manifest():
+		taken=before
+		save()
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(project_path))
+		return false
+	return true
+
+func _save_project_manifest() -> bool:
+	var portable:Array[Dictionary]=[]
+	for entry in taken.values():
+		var asset_path:=str(entry.get("project_asset_path",""))
+		if asset_path.begins_with(ProjectAssets.ROOT+"/") and FileAccess.file_exists(asset_path):portable.append(entry.duplicate(true))
+	return ProjectAssets.save_manifest(portable)
 
 func is_taken(entry:Dictionary) -> bool:
 	var id:=key(entry)
@@ -53,14 +101,16 @@ func move(id:String,group:String,category:String) -> bool:
 	var before:=taken.duplicate(true)
 	taken[id].group=group
 	taken[id].category=category
-	if not save():taken=before;return false
+	if not save() or not _save_project_manifest():taken=before;save();return false
 	return true
 
 func remove(id:String) -> bool:
 	if not taken.has(id):return false
 	var before:=taken.duplicate(true)
+	var asset_path:=str(taken[id].get("project_asset_path",""))
 	taken.erase(id)
-	if not save():taken=before;return false
+	if not save() or not _save_project_manifest():taken=before;save();return false
+	if asset_path.begins_with(ProjectAssets.ROOT+"/") and FileAccess.file_exists(asset_path):DirAccess.remove_absolute(ProjectSettings.globalize_path(asset_path))
 	return true
 
 static func unique_name(requested:String,names:Array) -> String:
@@ -82,7 +132,15 @@ func rename(id:String,requested:String) -> String:
 	var name_:=unique_name(requested,names)
 	taken[id].title=name_
 	taken[id].provenance=Provenance.derive([Provenance.source(taken[id])],"animation",name_,Provenance.creator_name(),"renamed in personal library")
-	if not save():taken=before;return ""
+	var old_path:=str(taken[id].get("project_asset_path",""))
+	if old_path.begins_with(ProjectAssets.ROOT+"/") and FileAccess.file_exists(old_path):
+		var animation:=load(old_path) as Animation
+		var new_path:=ProjectAssets.save_animation(animation,id,name_)
+		if new_path.is_empty():taken=before;return ""
+		taken[id]["project_asset_path"]=new_path
+		taken[id]["animation_resource"]=new_path
+	if not save() or not _save_project_manifest():taken=before;save();return ""
+	if old_path.begins_with(ProjectAssets.ROOT+"/") and old_path!=str(taken[id].get("project_asset_path","")):DirAccess.remove_absolute(ProjectSettings.globalize_path(old_path))
 	return name_
 
 func set_blocked(entry:Dictionary,value:bool) -> bool:
@@ -144,7 +202,7 @@ static func matches(entry:Dictionary,query:String) -> bool:
 	var regex:=RegEx.new()
 	regex.compile('(?:[^\\s"]|"[^"]*")+')
 	var metadata:Dictionary=entry.get("provenance",{})
-	var all_text:="%s %s %s %s %s"%[entry.get("title",""),entry.get("clip",""),entry.get("tags",[]),entry.get("body_parts",[]),entry.get("air_state","")]
+	var all_text:="%s %s %s %s %s %s %s"%[entry.get("title",""),entry.get("clip",""),entry.get("tags",[]),entry.get("body_parts",[]),entry.get("air_state",""),entry.get("store_creator",""),entry.get("source_name","")]
 	for match_ in regex.search_all(query.to_lower()):
 		var term:=match_.get_string()
 		var negative:=term.begins_with("-")
@@ -154,11 +212,12 @@ static func matches(entry:Dictionary,query:String) -> bool:
 		if term.begins_with("tag:"):haystack=str(entry.get("tags",[])).to_lower()
 		elif term.begins_with("body:"):haystack=str(entry.get("body_parts",[])).to_lower()
 		elif term.begins_with("state:") or term.begins_with("air:"):haystack=str(entry.get("air_state","")).to_lower()
-		elif term.begins_with("source:"):haystack=(str(entry.get("clip",""))+" "+JSON.stringify(metadata)).to_lower()
+		elif term.begins_with("source:"):haystack=(str(entry.get("clip",""))+" "+str(entry.get("source_name",""))+" "+str(entry.get("source_url",""))+" "+JSON.stringify(metadata)).to_lower()
 		elif term.begins_with("license:"):haystack=str(entry.get("license","")).to_lower()
 		elif term.begins_with("commercial:"):haystack="yes true allowed" if bool(entry.get("commercial_use",false)) else "no false restricted"
 		elif term.begins_with("author:"):
 			haystack=""
+			haystack=str(entry.get("store_creator","")).to_lower()
 			for node in metadata.get("nodes",{}).values():haystack+=" "+str(node.get("author","")).to_lower()
 		var found:=haystack.contains(value)
 		if found==negative:return false

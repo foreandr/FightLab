@@ -478,6 +478,7 @@ func update_camera(delta: float) -> void:
 	camera_initialized=true
 
 func take_camera_control() -> void:
+	if not is_instance_valid(field) or not is_instance_valid(field.camera):return
 	inspection_camera.take_control(field.camera,(actor.focus_position()+target.focus_position())*0.5+Vector3.UP*0.35)
 
 func reframe_camera() -> void:
@@ -529,6 +530,7 @@ func release_camera_text_focus(event: InputEvent) -> void:
 		focused.release_focus.call_deferred()
 
 func _input(event: InputEvent) -> void:
+	if not is_instance_valid(field) or not is_instance_valid(field.camera):return
 	release_camera_text_focus(event)
 	# Release even over a menu so the cursor can never remain captured.
 	if camera_dragging:
@@ -583,6 +585,7 @@ func return_home() -> void:
 	get_tree().change_scene_to_file("res://scenes/home.tscn")
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if not is_instance_valid(field) or not is_instance_valid(field.camera):return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	match event.keycode:

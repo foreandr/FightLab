@@ -1,4 +1,6 @@
 extends "res://scripts/duel_actor.gd"
+const Channels=preload("res://scripts/animation_channels.gd")
+const AimPose=preload("res://scripts/character_aim_pose.gd")
 const Ragdoll = preload("res://scripts/combat_ragdoll.gd")
 const FLASH_STEP_SPEED := 34.0
 const OVERDRIVE_MOVE_SPEED := FLASH_STEP_SPEED*0.75
@@ -14,6 +16,11 @@ var custom_motion_frames: Array = []
 var custom_motion_step := ""
 var editor_pose_locked:=false
 var practice_immortal:=false
+var practice_damageable_dummy:=false
+var practice_god_mode:=false
+var practice_wooden_dummy:=false
+var practice_dummy_visual:Node3D
+
 var practice_spell_animation:Dictionary={}
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
@@ -120,6 +127,10 @@ var story_enemy_charge_side := ""
 var story_enemy_charge_elapsed := 0.0
 var story_enemy_charge_duration := 0.0
 var story_enemy_charge_resolving := false
+
+func bone_point(bone:String,offset:=Vector3.ZERO) -> Vector3:
+	if practice_wooden_dummy and is_instance_valid(practice_dummy_visual):return practice_dummy_visual.aim_point(bone)+global_basis*offset
+	return super.bone_point(bone,offset)
 
 func story_spells_for_animation(animation_id: String) -> Array[Dictionary]:
 	var attached_spells:Array[Dictionary]=[]
@@ -306,6 +317,7 @@ func focus_position() -> Vector3:
 	return ragdoll.location() - Vector3.UP * 0.65 if is_instance_valid(ragdoll) else global_position
 
 func overhead_tag_position() -> Vector3:
+	if practice_wooden_dummy:return global_position+Vector3.UP*2.8
 	return ragdoll.location()+Vector3.UP*1.45 if is_instance_valid(ragdoll) else global_position+Vector3.UP*2.2
 
 func movement_multiplier() -> float:
@@ -480,37 +492,21 @@ func _create_story_limb_players() -> void:
 		story_limb_players[channel] = limb_player
 
 func _filtered_limb_animation(source_name: String, channel: String) -> String:
-	var cache_key := "%s|%s" % [source_name, channel]
-	if story_limb_animation_cache.has(cache_key):return str(story_limb_animation_cache[cache_key])
 	if not player.has_animation(source_name):return ""
-	var filtered := player.get_animation(source_name).duplicate(true) as Animation
-	filtered.resource_name = "Story limb %s %s" % [channel, source_name]
-	filtered.loop_mode = Animation.LOOP_LINEAR if source_name.contains("shield_hold") or source_name in ["duel/strafe_left","duel/strafe_right","fight/walk_guard"] else Animation.LOOP_NONE
-	for track_index in range(filtered.get_track_count() - 1, -1, -1):
-		var bone_name := str(filtered.track_get_path(track_index)).get_slice(":", 1)
-		var keep_track:=false
-		match channel:
-			"arm_l", "arm_r":
-				var side:=channel.right(1)
-				keep_track=bone_name.ends_with("_%s"%side) and (bone_name.begins_with("upperarm_") or bone_name.begins_with("lowerarm_") or bone_name.begins_with("hand_") or bone_name.begins_with("thumb_") or bone_name.begins_with("index_") or bone_name.begins_with("middle_") or bone_name.begins_with("pinky_") or bone_name.begins_with("ring_")) or bone_name=="clavicle_%s"%side
-			"leg_l", "leg_r":
-				var side:=channel.right(1)
-				keep_track=bone_name.ends_with("_%s"%side) and (bone_name.begins_with("thigh_") or bone_name.begins_with("calf_") or bone_name.begins_with("foot_") or bone_name.begins_with("ball_"))
-			"face":
-				keep_track=bone_name in ["Head","neck_01","jaw","eye_l","eye_r"]
-			"torso":
-				keep_track=bone_name in ["spine_01","spine_02","spine_03","neck_01","clavicle_l","clavicle_r"]
-		if not keep_track:filtered.remove_track(track_index)
-	if filtered.get_track_count() == 0:return ""
-	var animation_name := "limb_%d" % story_limb_clip_serial
-	story_limb_clip_serial += 1
-	var library := AnimationLibrary.new()
-	library.add_animation(animation_name, filtered)
-	var library_name := "story_%d" % story_limb_clip_serial
-	var limb_player: AnimationPlayer = story_limb_players[channel]
-	limb_player.add_animation_library(library_name, library)
-	var full_name := "%s/%s" % [library_name, animation_name]
-	story_limb_animation_cache[cache_key] = full_name
+	var source:=player.get_animation(source_name)
+	var cache_key:="%s|%s|%d"%[source_name,channel,Channels.revision(source)]
+	if story_limb_animation_cache.has(cache_key):return str(story_limb_animation_cache[cache_key])
+	var filtered:=Channels.filtered(source,source_name,channel)
+	if filtered==null:return ""
+	var animation_name:="limb_%d"%story_limb_clip_serial
+	story_limb_clip_serial+=1
+	var library:=AnimationLibrary.new()
+	library.add_animation(animation_name,filtered)
+	var library_name:="story_%d"%story_limb_clip_serial
+	var limb_player:AnimationPlayer=story_limb_players[channel]
+	limb_player.add_animation_library(library_name,library)
+	var full_name:="%s/%s"%[library_name,animation_name]
+	story_limb_animation_cache[cache_key]=full_name
 	return full_name
 
 func _play_story_limb_animation(channel: String, animation: String, speed: float = 1.0) -> bool:
@@ -643,11 +639,7 @@ func _apply_story_punch_aim(delta:float) -> void:
 		var strike:Dictionary=story_strikes.get(channel,story_punch_previews.get(channel,{}))
 		var aim:Vector3=strike.get("aim_direction",Vector3.ZERO)
 		if aim.is_zero_approx():continue
-		var local_aim:=global_basis.inverse()*aim.normalized()
-		var yaw:=clampf(atan2(local_aim.x,local_aim.z),-0.8,0.8)
-		var side:String=channel.right(1)
-		_add_story_aim_rotation("thigh_%s"%side,Vector3.UP,yaw*0.78)
-		_add_story_aim_rotation("calf_%s"%side,Vector3.UP,yaw*0.18)
+		AimPose.aim_leg(self,channel.right(1),aim)
 	if not cursor_action_active and story_torso_recovery_pending:
 		story_torso_recovery_elapsed+=delta
 		var progress:=clampf(story_torso_recovery_elapsed/maxf(0.001,story_torso_recovery_duration),0.0,1.0)
@@ -660,41 +652,15 @@ func _apply_story_punch_aim(delta:float) -> void:
 	_apply_story_calibration_aim()
 
 func _rotate_torso_punch_endpoint_to_facing_line(channel:String)->void:
-	var side:=channel.right(1)
-	var torso_pivot:=bone_point("spine_03")
-	var fist:=bone_point("hand_%s"%side)
-	var current_offset:=fist-torso_pivot
-	var target_offset:=story_calibration_aim_target-torso_pivot
-	var current_flat:=Vector3(current_offset.x,0.0,current_offset.z)
-	var target_flat:=Vector3(target_offset.x,0.0,target_offset.z)
-	if current_flat.length_squared()<0.0001 or target_flat.length_squared()<0.0001:return
-	var yaw:=clampf(current_flat.signed_angle_to(target_flat,Vector3.UP),-deg_to_rad(120.0),deg_to_rad(120.0))
-	var current_pitch:=atan2(current_offset.y,maxf(0.001,current_flat.length()))
-	var target_pitch:=atan2(target_offset.y,maxf(0.001,target_flat.length()))
-	var pitch:=clampf(current_pitch-target_pitch,-deg_to_rad(80.0),deg_to_rad(80.0))
-	story_torso_recovery_yaw=yaw
-	story_torso_recovery_pitch=pitch
-	var off_center:=clampf(Vector2(yaw/deg_to_rad(89.0),pitch/deg_to_rad(80.0)).length(),0.0,1.0)
-	story_torso_recovery_duration=lerpf(0.12,0.26,off_center)
-	_apply_training_torso_pose(yaw*story_torso_aim_blend,pitch*story_torso_aim_blend)
+	var correction:=AimPose.endpoint_angles(self,"hand_%s"%channel.right(1),story_calibration_aim_target)
+	if correction.is_empty():return
+	story_torso_recovery_yaw=correction.yaw
+	story_torso_recovery_pitch=correction.pitch
+	story_torso_recovery_duration=correction.recovery_duration
+	AimPose.apply_torso(self,float(correction.yaw)*story_torso_aim_blend,float(correction.pitch)*story_torso_aim_blend)
 
 func _apply_training_torso_pose(yaw:float,pitch:float)->void:
-	# Let the arm absorb small aim corrections on its own. Bring the upper torso
-	# in only after the target moves outside that natural reach, and involve the
-	# hips/legs only for a genuinely far-off angle.
-	var arm_yaw_deadzone:=deg_to_rad(18.0)
-	var torso_yaw:=signf(yaw)*maxf(0.0,absf(yaw)-arm_yaw_deadzone)
-	var hip_start:=deg_to_rad(58.0)
-	var hip_yaw_magnitude:=clampf(absf(torso_yaw)-hip_start,0.0,deg_to_rad(42.0))
-	var hip_yaw:=signf(torso_yaw)*hip_yaw_magnitude
-	var upper_yaw:=clampf(torso_yaw-hip_yaw,-deg_to_rad(82.0),deg_to_rad(82.0))
-	var arm_pitch_deadzone:=deg_to_rad(10.0)
-	var torso_pitch:=signf(pitch)*maxf(0.0,absf(pitch)-arm_pitch_deadzone)
-	_add_story_aim_rotation("pelvis",Vector3.UP,hip_yaw)
-	_add_story_aim_rotation("spine_02",Vector3.UP,upper_yaw*0.5)
-	_add_story_aim_rotation("spine_03",Vector3.UP,upper_yaw*0.5)
-	_add_story_aim_rotation("spine_02",global_basis.x,torso_pitch*0.5)
-	_add_story_aim_rotation("spine_03",global_basis.x,torso_pitch*0.5)
+	AimPose.apply_torso(self,yaw,pitch)
 
 func set_story_calibration_aim(target:Vector3, enabled:bool)->void:
 	story_calibration_aim_target=target
@@ -702,38 +668,13 @@ func set_story_calibration_aim(target:Vector3, enabled:bool)->void:
 
 func _apply_story_calibration_aim()->void:
 	if not story_calibration_aim_enabled or not arena.story_mode or not player_controlled:return
-	var channel:=""
-	for candidate in ["arm_l","arm_r"]:
-		if story_punch_previews.has(candidate):
-			channel=candidate
-			break
-	if channel.is_empty():return
-	var side:=channel.right(1)
-	var elbow:=bone_point("lowerarm_%s"%side)
-	var fist:=bone_point("hand_%s"%side)
-	var current_direction:=fist-elbow
-	var desired_direction:=story_calibration_aim_target-elbow
-	if current_direction.length_squared()<0.0001 or desired_direction.length_squared()<0.0001:return
-	var world_delta:=Quaternion(current_direction.normalized(),desired_direction.normalized())
-	var bone_index:=int(bones.get("lowerarm_%s"%side,-1))
-	if bone_index<0:return
-	var parent:=skeleton.get_bone_parent(bone_index)
-	var parent_world_basis:=skeleton.global_transform.basis
-	if parent>=0:parent_world_basis=skeleton.global_transform.basis*skeleton.get_bone_global_pose(parent).basis
-	var parent_world_rotation:=parent_world_basis.get_rotation_quaternion()
-	var local_delta:=parent_world_rotation.inverse()*world_delta*parent_world_rotation
-	skeleton.set_bone_pose_rotation(bone_index,local_delta*skeleton.get_bone_pose_rotation(bone_index))
-	skeleton.force_update_all_bone_transforms()
+	for channel in ["arm_l","arm_r"]:
+		if story_punch_previews.has(channel):
+			AimPose.align_forearm(self,channel.right(1),story_calibration_aim_target)
+			return
 
 func _add_story_aim_rotation(bone_name:String,world_axis:Vector3,angle:float) -> void:
-	if not bones.has(bone_name) or absf(angle)<0.001:return
-	var index:int=int(bones[bone_name])
-	var parent:int=skeleton.get_bone_parent(index)
-	var axis_in_skeleton:=skeleton.global_basis.inverse()*world_axis
-	var axis_in_parent:=axis_in_skeleton if parent<0 else skeleton.get_bone_global_pose(parent).basis.inverse()*axis_in_skeleton
-	if axis_in_parent.is_zero_approx():return
-	var current:Quaternion=skeleton.get_bone_pose_rotation(index)
-	skeleton.set_bone_pose_rotation(index,Quaternion(axis_in_parent.normalized(),angle)*current)
+	AimPose.rotate_bone(self,bone_name,world_axis,angle)
 
 func _advance_story_limb_animations(delta: float) -> void:
 	for channel in story_limb_reservations.keys():
@@ -1326,13 +1267,17 @@ func start_burst(paid := false) -> void:
 	count_action("flash_charge")
 
 func tick(delta: float) -> void:
+	if practice_wooden_dummy and health<=0.0:
+		mode="ko"
+		velocity=Vector3.ZERO
+		return
 	if drowned:
 		if is_instance_valid(ragdoll):ragdoll.step(delta)
 		return
 	# Preview and live-practice controllers own the rig while this is set.
 	if editor_pose_locked:return
 	update_status(delta)
-	if practice_immortal and not drowned and air_remaining>0:health=MAX_HEALTH
+	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH
 	stun_time=maxf(0,stun_time-delta)
 	if stun_time>0 and health>0 and not is_instance_valid(ragdoll):
 		invulnerability=maxf(0,invulnerability-delta)
@@ -1638,6 +1583,7 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 		return
 	if spec.has("projectile_element"):
 		var potency:float=float(spec.get("potency",1.0))
+		if potency<=0.0:return
 		match str(spec.projectile_element):
 			"Fire":
 				burn_damage=1.5*potency
@@ -1671,9 +1617,11 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
 	if not practice_immortal:return receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
 	# Keep damage, guard, status and physical reactions; prevent lethal branches.
+	var previous_health:=health
+	var previous_damage:=damage_taken
 	health=maxf(MAX_HEALTH,maxf(0,amount)+MAX_HEALTH+1)
 	var landed:=receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
-	health=MAX_HEALTH
+	health=maxf(0.0,previous_health-(damage_taken-previous_damage)) if practice_damageable_dummy and not practice_god_mode else MAX_HEALTH
 	return landed
 
 func receive_magic_impact(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
@@ -1721,7 +1669,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 
 func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> void:
 	if practice_immortal and not drowned:
-		health=MAX_HEALTH
+		health=0.0 if practice_damageable_dummy and not practice_god_mode else MAX_HEALTH
 		return
 	ko_count+=1
 	death_age=0
@@ -1732,7 +1680,7 @@ func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> v
 	mode="ragdoll"
 	arena.events.append({"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
 	GameDiagnostics.log_event("fighter_death", {"team":team, "name":story_profile.get("name", "Fighter"), "attacker_team":attacker.team if is_instance_valid(attacker) else -1, "fight":arena.story_stage if arena.story_mode else 0})
-	if not practice_immortal:arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
+	if not practice_immortal and not practice_damageable_dummy:arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
 
 func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -> void:
 	if wall_crash_cooldown>0 or speed<4.5:
@@ -1763,6 +1711,7 @@ func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -
 		enter_death(attacker,-normal*speed*impact_physics.BODY_MASS,point)
 
 func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
+	if practice_wooden_dummy:return
 	if is_instance_valid(ragdoll):
 		return
 	impact_physics.saved_pose.clear()
@@ -1847,7 +1796,7 @@ func tick_return_home(delta:float) -> void:
 		return_state="At base"
 		mode="idle"
 		drive_velocity=Vector3.ZERO
-		play("fight/guard")
+		play("ual1/Idle" if practice_damageable_dummy else "fight/guard")
 	else:
 		mode="frozen" if blocked else "returning"
 		rotation.y=lerp_angle(rotation.y,atan2(offset.x,offset.z),minf(1,delta*8))

@@ -1,0 +1,75 @@
+SHARED CHARACTER MECHANICS
+
+Ownership
+
+scripts/combat_aim.gd
+  Cursor rays, focused chest anchors, local aim angles and front-hemisphere limits.
+  Live spells use ray_point. Authored Story calibration uses calibration_point;
+  its near-plane limits intentionally preserve existing saved aim maps.
+  Free projectile aim passes fighters and radius to ray_point. Near silhouettes
+  choose a convergence depth at the front of their hurt bounds, preserving the
+  exact cursor ray rather than aiming toward a fighter's center or distant wall.
+  Camera position and lock-on targeting remain independent.
+
+scripts/character_aim_pose.gd
+  Arm-first corrections, torso dead zones, hip participation, leg yaw and hand
+  endpoint alignment. Call after sampling the base pose and before ice constraints.
+  Story's existing recovery controller delegates to these functions. Spell preview
+  passes an optional aim dictionary through SpellCastMotion.pose.
+
+scripts/character_movement.gd
+  Camera-relative movement, flat direction, target-facing and root turning.
+  Story, Create and Take Control keep their input adapters and use these rules.
+
+scripts/third_person_camera.gd
+  Camera adoption, lock/release, yaw calculation, orbit, zoom and follow framing.
+  Story and Create use the same state operations. Take Control shares framing,
+  retaining its gamepad/keyboard shortcuts and restoring the authoring camera.
+
+scripts/combat_pointer.gd
+  Mouse-following pointer placement and mouse-input transparency. Story's cursor
+  and Create's crosshair retain their drawings and inherit this common base.
+
+scripts/projectile_impact_predictor.gd
+  Read-only forecast from the actual casting origin. Uses the same enemy sphere
+  radius, shield checks and world collision policy as live flight. The field API
+  predict_projectile_impact is reusable by modes with a known projectile spec.
+  BasicProjectile.resolved_motion, lifetime and the field's projectile_aim_target
+  are shared by spawning and prediction. This diagnostic API is read-only;
+  the rejected amber impact overlay is no longer displayed in Create.
+
+scripts/animation_channels.gd
+  Channel filtering and bounded read-only filtered-clip cache (128 entries).
+  Repeated consumers of a source Animation reuse its filtered resource. Editing
+  a source invalidates cached variants; clips already playing remain snapshots.
+  Each actor owns its AnimationPlayers and lightweight library bindings, never
+  shared playback state. Consumers must not edit cached clips in place.
+
+Contracts
+
+  Selection is independent from lock-on. Hover is blue; click selects gold.
+  Clicking empty ground clears selection without releasing an active lock.
+  F locks/replaces/releases focus; release preserves zoom and orbit.
+  Existing Story calibration method names remain compatibility adapters.
+  Native authoring, scrubbing and locomotion do not receive aim corrections unless
+  an aim request is explicitly passed to the animation sampler.
+  Resource costs, damage, mana scaling and recovery remain in their existing
+  owners. This refactor deliberately does not retune them.
+
+Adding a mode
+
+  Supply input, controlled actor, selected target, active camera and sampled pose.
+  Reuse these modules; do not copy Story or Create mechanics into the new screen.
+  Keep mode-specific UI, saved preferences, calibration data and animation clocks
+  outside the shared math. Use existing animation resources rather than rebuilding
+  filtered clips, meshes or libraries every frame.
+
+Regression checks
+
+  tests/shared_character_mechanics_test.gd
+  tests/third_person_focus_test.gd
+  tests/story_third_person_focus_test.gd
+  tests/creation_directional_movement_test.gd
+  tests/animation_playtest_camera_test.gd
+  tests/spell_preview_mana_test.gd
+  tests/spell_cast_hotkey_test.gd

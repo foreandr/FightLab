@@ -1,5 +1,7 @@
 extends "res://scripts/battle_arena.gd"
+const FocusVisuals=preload("res://scripts/focus_visuals.gd")
 ## Story's first encounter: the newly created character must survive a duel.
+const CombatAim=preload("res://scripts/combat_aim.gd")
 const DEFAULT_SPELL_AIM_LIFT := PI / 6.0
 var survive_label: Label
 var main_menu_button: Button
@@ -233,30 +235,12 @@ func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _build_target_marker() -> void:
-	target_marker=Label3D.new()
-	target_marker.name="FocusedTargetDiamond"
-	target_marker.text="◆"
-	target_marker.font_size=32
-	target_marker.pixel_size=0.010
-	target_marker.billboard=BaseMaterial3D.BILLBOARD_ENABLED
-	target_marker.no_depth_test=true
-	target_marker.modulate=Color("ffd166")
-	target_marker.outline_size=7
-	target_marker.outline_modulate=Color("20202a")
-	target_marker.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	target_marker.visible=false
-	add_child(target_marker)
+	target_marker=FocusVisuals.create_marker(self)
 
 func _update_target_marker() -> void:
-	if not is_instance_valid(target_marker):return
-	if not is_instance_valid(camera_focus_target) or camera_focus_target.health<=0:
-		target_marker.visible=false
-		return
-	var anchor:Vector3=camera_focus_target.global_position+Vector3.UP*2.2
-	if camera_focus_target.has_method("overhead_tag_position"):
-		anchor=camera_focus_target.overhead_tag_position()
-	target_marker.global_position=anchor+Vector3.UP*0.48
-	target_marker.visible=true
+	var subject:CharacterBody3D=camera_focus_target if is_instance_valid(camera_focus_target) else selected_fighter
+	if not is_instance_valid(subject) or subject.health<=0:subject=null
+	FocusVisuals.update_marker(target_marker,subject)
 
 func _process(delta:float) -> void:
 	if not punch_capture_side.is_empty():
@@ -269,7 +253,7 @@ func _process(delta:float) -> void:
 	_advance_calibration_spell_previews(delta)
 	_update_calibration_cursor_marker()
 	_update_facing_direction_line()
-	if is_instance_valid(mouse_cursor):mouse_cursor.position=_aim_screen_position()
+	if is_instance_valid(mouse_cursor):mouse_cursor.place(_aim_screen_position())
 	var pointed:=_fighter_under_mouse()
 	if pointed!=hovered_fighter:
 		hovered_fighter=pointed
@@ -310,16 +294,12 @@ func _refresh_fighter_selection_rings() -> void:
 		ring.visible=(is_selected or is_hovered) and fighter.health>0
 		if not ring.visible:continue
 		ring.global_position=fighter.global_position+Vector3.UP*0.055
-		var material:=ring.material_override as StandardMaterial3D
-		var color:=Color("ffd166") if is_selected else Color("70dfff")
-		material.albedo_color=Color(color.r,color.g,color.b,0.86 if is_selected else 0.68)
-		material.emission=color
+		FocusVisuals.update_ring(ring,is_selected,is_hovered,fighter.health>0)
 
 func _select_fighter_from_mouse() -> void:
 	var pointed:=_fighter_under_mouse()
-	if not is_instance_valid(pointed):return
 	selected_fighter=pointed
-	GameDiagnostics.log_event("fighter_selected",{"fighter":pointed.story_profile.get("name",""),"focused":pointed==camera_focus_target})
+	GameDiagnostics.log_event("fighter_selected",{"fighter":pointed.story_profile.get("name","") if is_instance_valid(pointed) else "","focused":is_instance_valid(pointed) and pointed==camera_focus_target})
 	_refresh_fighter_selection_rings()
 
 func _build_mouse_cursor() -> void:
@@ -920,22 +900,7 @@ func _update_calibration_cursor_marker()->void:
 	punch_capture_cursor_marker.visible=calibration_aim_guide_visible
 
 func _cursor_aim_point(actor:CharacterBody3D,pointer:Vector2)->Vector3:
-	var active_camera:=get_viewport().get_camera_3d()
-	var facing:=actor.global_basis.z.normalized()
-	var aim_plane_center:=actor.global_position+facing*1.8+Vector3.UP*1.25
-	if active_camera!=null:
-		var origin:=active_camera.project_ray_origin(pointer)
-		var ray_direction:=active_camera.project_ray_normal(pointer).normalized()
-		var denominator:=ray_direction.dot(facing)
-		if denominator>0.025:
-			var distance:float=(aim_plane_center-origin).dot(facing)/denominator
-			if distance>0.0:
-				var point:=origin+ray_direction*distance
-				var local_aim:Vector3=actor.global_basis.inverse()*(point-actor.bone_point("spine_03"))
-				var yaw:=clampf(atan2(local_aim.x,local_aim.z),-deg_to_rad(89),deg_to_rad(89))
-				var pitch:=clampf(atan2(local_aim.y,maxf(0.001,Vector2(local_aim.x,local_aim.z).length())),-deg_to_rad(80),deg_to_rad(80))
-				return actor.bone_point("spine_03")+actor.global_basis*(Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*4.0)
-	return aim_plane_center
+	return CombatAim.calibration_point(get_viewport().get_camera_3d(),actor,pointer)
 
 func _finish_action_calibration()->void:
 	_save_punch_aim_settings()
@@ -1614,10 +1579,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if event.keycode == KEY_F:
-		if is_instance_valid(camera_focus_target):
-			focus_camera_on(null)
-		elif is_instance_valid(selected_fighter):
-			focus_camera_on(selected_fighter)
+		if is_instance_valid(camera_focus_target) or is_instance_valid(selected_fighter):
+			focus_camera_on(ThirdPersonCamera.next_target(camera_focus_target,selected_fighter,fighters[0]))
 		else:
 			GameDiagnostics.log_event("camera_focus_miss", {"reason":"no_gold_selected_fighter"})
 		get_viewport().set_input_as_handled()
@@ -2062,22 +2025,7 @@ func _mouse_aim_direction(player:CharacterBody3D,pointer:Vector2) -> Vector3:
 	return _constrain_aim_to_front(player,Vector3(-direction.x,0,-direction.z).normalized())
 
 func _constrain_aim_to_front(player:CharacterBody3D,aim:Vector3)->Vector3:
-	var forward:=player.global_basis.z
-	forward.y=0.0
-	if forward.is_zero_approx():return aim.normalized()
-	forward=forward.normalized()
-	var direction:=aim.normalized()
-	var horizontal:=Vector3(direction.x,0.0,direction.z)
-	if horizontal.is_zero_approx():return direction
-	if horizontal.dot(forward)<0.0:
-		var side:=player.global_basis.x
-		side.y=0.0
-		side=side.normalized()
-		var side_sign:=1.0 if horizontal.dot(side)>=0.0 else -1.0
-		horizontal=(forward*0.015+side*side_sign).normalized()
-		var horizontal_scale:=sqrt(maxf(0.0,1.0-direction.y*direction.y))
-		return (horizontal*horizontal_scale+Vector3.UP*direction.y).normalized()
-	return direction
+	return CombatAim.constrain_front(player,aim)
 
 func _punch_aim_pointer(player:CharacterBody3D,cursor:Vector2)->Vector2:
 	if is_instance_valid(camera_focus_target) and camera_focus_target!=player and camera_focus_target.health>0:
@@ -2089,11 +2037,7 @@ func _punch_aim_pointer(player:CharacterBody3D,cursor:Vector2)->Vector2:
 	return cursor
 
 func _focused_target_chest_point(target:CharacterBody3D)->Vector3:
-	if is_instance_valid(target) and target.has_method("bone_point"):
-		# Use the actual chest joint so close-range aim doesn't drift up toward
-		# the head when the target's height or pose differs from the player.
-		return target.bone_point("spine_02")+Vector3.UP*0.04
-	return target.global_position+Vector3.UP*1.0 if is_instance_valid(target) else Vector3.ZERO
+	return CombatAim.focused_chest(target)
 
 func _punch_angles_for_pointer(animation_id:String,pointer:Vector2)->Dictionary:
 	var samples:=_equipped_calibration_samples(animation_id)
@@ -2138,10 +2082,9 @@ func _story_action_aim(animation_id:String,player:CharacterBody3D)->Dictionary:
 	if emitter in ["hand_l","hand_r"]:origin=player.bone_point("hand_%s"%emitter.right(1))
 	var world_aim:Vector3=(aim_point-origin).normalized()
 	if world_aim.is_zero_approx():world_aim=_mouse_aim_direction(player,pointer)
-	var local_direction:=player.global_basis.inverse()*world_aim.normalized()
-	var yaw:=atan2(local_direction.x,local_direction.z)
-	var pitch:=clampf(atan2(local_direction.y,maxf(0.001,Vector2(local_direction.x,local_direction.z).length())),-deg_to_rad(80),deg_to_rad(80))
-	return {"direction":world_aim,"pitch":pitch,"yaw":yaw}
+	var result:=CombatAim.angles(player,world_aim)
+	result["direction"]=world_aim
+	return result
 
 func _focused_target_direction(player:CharacterBody3D) -> Vector3:
 	if is_instance_valid(camera_focus_target) and camera_focus_target!=player and camera_focus_target.health>0:
@@ -2193,12 +2136,7 @@ func _cast_linked_spell_item(animation_id:String,player,spell:Dictionary,charge_
 	GameDiagnostics.log_event("story_spell_cast", {"animation":animation_id,"spell":spell.get("id",""),"element":spell.get("element","Nature" if is_heal else "Fire"),"target":camera_focus_target.story_profile.get("name","") if is_heal and is_instance_valid(camera_focus_target) and camera_focus_target.team==player.team else player.story_profile.get("name",""),"mana_remaining":player.mana})
 
 func _raise_spell_aim(player:CharacterBody3D,direction:Vector3,lift:float)->Vector3:
-	var safe_direction:=_constrain_aim_to_front(player,direction.normalized())
-	var horizontal:=Vector3(safe_direction.x,0.0,safe_direction.z)
-	if horizontal.is_zero_approx():return safe_direction
-	var pitch:=atan2(safe_direction.y,horizontal.length())
-	var raised_pitch:=clampf(pitch+lift,-0.05,deg_to_rad(82.0))
-	return (horizontal.normalized()*cos(raised_pitch)+Vector3.UP*sin(raised_pitch)).normalized()
+	return CombatAim.raised_direction(player,direction,lift)
 
 func _use_story_ability(ability: String) -> void:
 	if fighters.is_empty() or (not round_active and not post_fight_freeplay):

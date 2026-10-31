@@ -4,6 +4,8 @@ var resizing:=false
 var resize_edges:=Vector2.ZERO
 var resize_origin:=Rect2()
 var resize_grips:Array[Control]=[]
+var minimum_window_size:=Vector2(320,220)
+var ignore_content_minimum:=false
 
 func _ready() -> void:
 	set_process_input(true)
@@ -66,7 +68,8 @@ func resize_window_by(amount:Vector2) -> void:
 	resize_edges=Vector2.ZERO
 
 func _resize_to(point:Vector2) -> void:
-	var minimum:=get_combined_minimum_size().max(Vector2(320,220))
+	var minimum:=minimum_window_size
+	if not ignore_content_minimum:minimum=minimum.max(get_combined_minimum_size())
 	var viewport_size:=get_viewport_rect().size
 	var start:=resize_origin.position
 	var end:=resize_origin.end

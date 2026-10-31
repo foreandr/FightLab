@@ -1,0 +1,86 @@
+{
+	"entries": [
+		{
+			"air_state": "Airborne",
+			"animated_body_parts": [],
+			"animation_resource": "res://assets/animations/attached/female1_d6_cartwheel_8538aa7bd1c9.tres",
+			"body_parts": [
+				"Misc"
+			],
+			"category": "Downloaded",
+			"classification_confidence": "keyword inference; original source names retained",
+			"classification_source": "Source metadata, title keywords and animated bone tracks; inferred hints",
+			"clip": "community/f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+			"commercial_use": true,
+			"downloaded": true,
+			"duration": 4.7666619,
+			"frame_count": 144.0,
+			"group": "Motion",
+			"license": "CC BY 3.0",
+			"original_title": "Female1 D6 CartWheel",
+			"project_asset_path": "res://assets/animations/attached/female1_d6_cartwheel_8538aa7bd1c9.tres",
+			"provenance": {
+				"head": "revision:edb736ac8130a77c19207347ce66e547",
+				"nodes": {
+					"revision:edb736ac8130a77c19207347ce66e547": {
+						"asset_type": "animation",
+						"author": "foreandr",
+						"citations": [],
+						"created_utc": "2026-10-30T18:16:48",
+						"id": "revision:edb736ac8130a77c19207347ce66e547",
+						"operation": "added to personal library",
+						"parents": [
+							"source:f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01"
+						],
+						"title": "Female1 D6 CartWheel"
+					},
+					"source:f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01": {
+						"asset_type": "animation",
+						"author": "ACCAD / The Ohio State University",
+						"citations": [
+							{
+								"author": "ACCAD / The Ohio State University",
+								"license": "CC BY 3.0",
+								"original_filename": "Female1_D6_CartWheel.bvh",
+								"sha256": "f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+								"url": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data"
+							}
+						],
+						"id": "source:f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+						"operation": "downloaded original; BVH retargeted on demand",
+						"parents": [],
+						"title": "Female1 D6 CartWheel"
+					}
+				},
+				"schema": 1.0
+			},
+			"sha256": "f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+			"source_duration": 4.7666619,
+			"source_name": "ACCAD Open Motion Project",
+			"source_timing": "native_v1",
+			"source_url": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data",
+			"step": "Imported Motion",
+			"store_asset_id": "download:f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+			"store_creator": "ACCAD / The Ohio State University",
+			"store_raw": true,
+			"store_source_id": "download:f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+			"store_top_score": 100.0,
+			"tags": [
+				"acrobatics",
+				"accad",
+				"commercial",
+				"female1",
+				"d6",
+				"cartwheel",
+				"community",
+				"f7218310c17c8e40479a1140addd2d74a2b696949b0b947d6cd649f8d742ee01",
+				"imported",
+				"motion",
+				"misc",
+				"airborne"
+			],
+			"title": "Female1 D6 CartWheel"
+		}
+	],
+	"version": 1
+}

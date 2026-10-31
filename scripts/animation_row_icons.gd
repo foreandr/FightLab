@@ -18,6 +18,8 @@ static func get_icon(action:String) -> Texture2D:
 		"favorite":"<path d='m10 2 2.5 5 5.5.8-4 3.9.95 5.5L10 14.6l-4.95 2.6.95-5.5-4-3.9L7.5 7Z'/>",
 		"favorited":"<path fill='#f2ce85' d='m10 2 2.5 5 5.5.8-4 3.9.95 5.5L10 14.6l-4.95 2.6.95-5.5-4-3.9L7.5 7Z'/>",
 		"add":"<path d='M10 4v12M4 10h12'/>",
+		"download":"<path d='M10 2v10m0 0 4-4m-4 4L6 8M3 13v4h14v-4'/>",
+		"downloaded":"<path d='m3 10 4 4 10-9'/>",
 		"clone":"<rect x='7' y='7' width='10' height='10' rx='1.5'/><path d='M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13H7'/>",
 		"delete":"<path d='M3.5 6h13M8 6V3.5h4V6M5 6l.7 11h8.6L15 6M8.2 9v5.5M11.8 9v5.5'/>",
 		"undo":"<path d='m7 3-4 4 4 4M3 7h8a5 5 0 0 1 0 10H8'/>",

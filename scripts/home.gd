@@ -1,9 +1,12 @@
 extends Control
+const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
 var page := "Home"
 var content: VBoxContainer
 var navigation_buttons := {}
 var scene_loading_overlay: Control
 var scene_loading_progress: ProgressBar
+var scene_loading_status: Label
+var scene_loading_pacer=LoadingPacer.new()
 
 func _ready() -> void:
 	get_tree().paused=false
@@ -163,25 +166,36 @@ func open_scene(path: String) -> void:
 
 func open_create_workspace() -> void:
 	var path:="res://scenes/combat_sandbox.tscn"
+	scene_loading_pacer.begin("home_to_create")
 	_show_scene_loading("OPENING CREATE")
 	await RenderingServer.frame_post_draw
 	var request_error:=ResourceLoader.load_threaded_request(path)
 	if request_error!=OK:
+		if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening Create scene…"
 		_clear_scene_loading()
 		open_scene(path)
 		return
 	var progress:Array=[]
 	var status:=ResourceLoader.load_threaded_get_status(path,progress)
 	while status==ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-		if not progress.is_empty() and is_instance_valid(scene_loading_progress):
-			scene_loading_progress.value=float(progress[0])*100.0
+		if is_instance_valid(scene_loading_status):
+			if not progress.is_empty():scene_loading_status.text="Loading Create scene · %d%%"%int(round(float(progress[0])*100.0))
+			else:scene_loading_status.text="Loading Create scene…"
+		if is_instance_valid(scene_loading_progress):scene_loading_progress.value=scene_loading_pacer.progress_percent(float(progress[0]) if not progress.is_empty() else 0.0)
 		await get_tree().process_frame
 		status=ResourceLoader.load_threaded_get_status(path,progress)
 	if status==ResourceLoader.THREAD_LOAD_LOADED:
+		if is_instance_valid(scene_loading_status):scene_loading_status.text="Starting Create workspace…"
+		while not scene_loading_pacer.target_reached():
+			if is_instance_valid(scene_loading_progress):scene_loading_progress.value=scene_loading_pacer.progress_percent(1.0)
+			await get_tree().process_frame
+		if is_instance_valid(scene_loading_progress):scene_loading_progress.value=100.0
+		await RenderingServer.frame_post_draw
 		var packed_scene:=ResourceLoader.load_threaded_get(path) as PackedScene
 		if packed_scene!=null:
 			get_tree().change_scene_to_packed(packed_scene)
 			return
+	if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening Create scene…"
 	_clear_scene_loading()
 	open_scene(path)
 
@@ -200,9 +214,9 @@ func _show_scene_loading(title_text:String) -> void:
 	var card:=PanelContainer.new()
 	card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	card.offset_left=-190
-	card.offset_top=-34
+	card.offset_top=-48
 	card.offset_right=190
-	card.offset_bottom=34
+	card.offset_bottom=48
 	var style:=StyleBoxFlat.new()
 	style.bg_color=Color("e8ddc4")
 	style.border_color=Color("98794d")
@@ -221,6 +235,12 @@ func _show_scene_loading(title_text:String) -> void:
 	title.add_theme_font_size_override("font_size",22)
 	title.add_theme_color_override("font_color",Color("382c1c"))
 	content_box.add_child(title)
+	scene_loading_status=Label.new()
+	scene_loading_status.text="Preparing Create scene…"
+	scene_loading_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	scene_loading_status.add_theme_font_size_override("font_size",13)
+	scene_loading_status.add_theme_color_override("font_color",Color("382c1c"))
+	content_box.add_child(scene_loading_status)
 	scene_loading_progress=ProgressBar.new()
 	scene_loading_progress.min_value=0
 	scene_loading_progress.max_value=100
@@ -232,6 +252,7 @@ func _clear_scene_loading() -> void:
 	if is_instance_valid(scene_loading_overlay):scene_loading_overlay.queue_free()
 	scene_loading_overlay=null
 	scene_loading_progress=null
+	scene_loading_status=null
 
 func _set_fullscreen(enabled: bool) -> void:
 	var window := get_window()

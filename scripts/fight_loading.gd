@@ -2,6 +2,7 @@ extends Control
 ## Keep the creator visible as a lightweight transition while arena resources load.
 
 const FIGHT_SCENE := "res://scenes/fight.tscn"
+const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
 const LOAD_PATHS := [
 	"res://assets/characters/base/Superhero_Male_FullBody.gltf",
 	"res://assets/characters/base/Superhero_Female_FullBody.gltf",
@@ -17,15 +18,19 @@ const LOAD_PATHS := [
 
 var elapsed := 0.0
 var progress_bar: ProgressBar
+var progress_label: Label
 var fight_scene: PackedScene
 var loaded_paths := {}
 var load_paths: Array[String] = []
 var load_started_usec := 0
 var asset_started_usec: Dictionary = {}
 var last_progress_log := 0.0
+var progress_pacer=LoadingPacer.new()
+var fight_scene_request_failed:=false
 
 func _ready() -> void:
 	load_started_usec = Time.get_ticks_usec()
+	progress_pacer.begin("fight_loading")
 	_build_screen()
 	for path in LOAD_PATHS:
 		_queue_load(path)
@@ -36,18 +41,28 @@ func _ready() -> void:
 		if result != OK:
 			loaded_paths[path] = true
 			GameDiagnostics.log_event("asset_load_request_failed", {"path":path, "error":result})
-	# Parse the fight scene on the main thread. Threaded scene parsing can fail
-	# while resolving shaders from script preloads, even though those shaders
-	# load normally on their own.
-	await get_tree().process_frame
 	var scene_started_usec := Time.get_ticks_usec()
-	fight_scene = load(FIGHT_SCENE) as PackedScene
-	GameDiagnostics.log_timing("fight_scene_resource_load", scene_started_usec, {"loaded":fight_scene != null})
+	var scene_request_error:=ResourceLoader.load_threaded_request(FIGHT_SCENE,"PackedScene",true)
+	if scene_request_error!=OK:
+		fight_scene_request_failed=true
+		GameDiagnostics.log_event("fight_scene_load_request_failed",{"error":scene_request_error})
+	# Parse the fight scene on the main thread. Threaded scene parsing can fail
+	# on headless renderers; the normal desktop renderer handles its preloaded
+	# shaders and resources on the worker thread.
+	await get_tree().process_frame
+	progress_label.text="Preparing fight scene…"
+	await RenderingServer.frame_post_draw
+	if fight_scene_request_failed:
+		GameDiagnostics.log_event("fight_scene_threaded_load_unavailable",{"path":FIGHT_SCENE})
+	else:
+		asset_started_usec[FIGHT_SCENE]=scene_started_usec
 
 func _process(delta: float) -> void:
-	elapsed += delta
+	elapsed=float(Time.get_ticks_usec()-load_started_usec)/1_000_000.0
 	var total_progress := 0.0
 	var completed := 0
+	var current_path := ""
+	var current_asset_progress := -1.0
 	for path in load_paths:
 		if loaded_paths.get(path, false):
 			total_progress += 1.0
@@ -69,10 +84,39 @@ func _process(delta: float) -> void:
 			total_progress += 1.0
 			completed += 1
 		else:
-			if not progress.is_empty():
-				total_progress += float(progress[0])
-	progress_bar.value = total_progress / load_paths.size() * 100.0
-	if elapsed >= 0.55 and completed == load_paths.size():
+			var asset_progress:=float(progress[0]) if not progress.is_empty() else 0.0
+			total_progress += asset_progress
+			if current_path.is_empty() or asset_progress>current_asset_progress:
+				current_path=path
+				current_asset_progress=asset_progress
+	var scene_progress:=0.0
+	if fight_scene==null and not fight_scene_request_failed:
+		var scene_progress_array:Array=[]
+		var scene_status:=ResourceLoader.load_threaded_get_status(FIGHT_SCENE,scene_progress_array)
+		if scene_status==ResourceLoader.THREAD_LOAD_LOADED:
+			fight_scene=ResourceLoader.load_threaded_get(FIGHT_SCENE) as PackedScene
+			GameDiagnostics.log_timing("fight_scene_resource_load",int(asset_started_usec.get(FIGHT_SCENE,load_started_usec)),{"loaded":fight_scene!=null,"threaded":true})
+		elif scene_status==ResourceLoader.THREAD_LOAD_FAILED or scene_status==ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+			fight_scene_request_failed=true
+			GameDiagnostics.log_event("fight_scene_threaded_load_failed",{"path":FIGHT_SCENE,"status":scene_status})
+		else:
+			scene_progress=float(scene_progress_array[0]) if not scene_progress_array.is_empty() else 0.0
+			if scene_progress>current_asset_progress:
+				current_path=FIGHT_SCENE
+				current_asset_progress=scene_progress
+	if fight_scene!=null or fight_scene_request_failed:
+		total_progress+=1.0
+		completed+=1
+	else:
+		total_progress+=scene_progress
+	var total_items:=load_paths.size()+1
+	progress_bar.value=progress_pacer.progress_percent(total_progress/float(total_items))
+	if completed<total_items and not current_path.is_empty():
+		progress_label.text="Loading %s · %d of %d items · %d%%"%[current_path.get_file().get_basename().replace("_"," "),completed+1,total_items,int(round(maxf(0.0,current_asset_progress)*100.0))]
+	else:
+		progress_label.text="Finishing arena setup…"
+	if progress_pacer.target_reached() and completed==total_items:
+		progress_bar.value=100.0
 		_enter_fight(false)
 	elif elapsed >= 25.0:
 		_enter_fight(true)
@@ -181,12 +225,12 @@ func _build_screen() -> void:
 	title.add_theme_font_size_override("font_size", 25)
 	title.add_theme_color_override("font_color", Color("e9c982"))
 	center.add_child(title)
-	var message := Label.new()
-	message.text = "Preparing the fight..."
-	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	message.add_theme_font_size_override("font_size", 15)
-	message.add_theme_color_override("font_color", Color("b8c6d2"))
-	center.add_child(message)
+	progress_label = Label.new()
+	progress_label.text = "Queueing arena assets…"
+	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	progress_label.add_theme_font_size_override("font_size", 15)
+	progress_label.add_theme_color_override("font_color", Color("b8c6d2"))
+	center.add_child(progress_label)
 	progress_bar = ProgressBar.new()
 	progress_bar.min_value = 0
 	progress_bar.max_value = 100

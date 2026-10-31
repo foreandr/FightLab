@@ -30,6 +30,24 @@ func run():
 		if index==0:first=arm
 		elif first.angle_to(arm)>0.1:moved=true
 	assert(moved,"Punch arm did not animate")
+	var quality:Dictionary=preload("res://scripts/animation_quality_gate.gd").inspect(animation,editor.actor.skeleton)
+	assert(quality.ok,"Valid punch failed the clipping gate: "+str(quality.get("reason","")))
+	var project_manifest_existed:=FileAccess.file_exists(preload("res://scripts/animation_project_assets.gd").MANIFEST)
+	if not editor.store_library.is_taken(entry):
+		assert(editor.store_library.take(entry,"Motion","Downloaded",[],animation),"Could not save a selected animation as a project asset")
+		var saved_entry:Dictionary=editor.store_library.last_taken_entry
+		assert(str(saved_entry.animation_resource).begins_with("res://assets/animations/attached/"))
+		assert(FileAccess.file_exists(str(saved_entry.animation_resource)))
+		assert(editor.store_library.remove(str(saved_entry.store_asset_id)),"Could not clean up the store-save fixture")
+		if not project_manifest_existed:DirAccess.remove_absolute(ProjectSettings.globalize_path(preload("res://scripts/animation_project_assets.gd").MANIFEST))
+	var test_bot:CharacterBody3D=editor.added_units[0]
+	var stamina_before:=test_bot.stamina
+	editor._spend_unit_stamina(test_bot,20.0)
+	assert(is_equal_approx(float(test_bot.stamina_delay),0.65),"Action did not start the normal recovery delay")
+	editor._tick_editor_stamina_recovery(0.5)
+	assert(is_equal_approx(float(test_bot.stamina),stamina_before-20.0),"Stamina recovered before the normal delay elapsed")
+	editor._tick_editor_stamina_recovery(0.15)
+	assert(test_bot.stamina>stamina_before-20.0,"Stamina did not recover at the normal idle rate")
 	var checked_sources:Dictionary={}
 	for candidate in entries:
 		var source:=str(candidate.source_name)
@@ -53,6 +71,7 @@ func run():
 	editor.store_view_filter.select(0)
 	editor._populate_animation_store()
 	assert(editor.animation_store_list.get_child_count()==100,"Shop must build exactly one hundred-result page")
+	assert(editor.store_sort_filter.item_count==3 and editor.store_creator_filter.item_count>1,"Shop creator browsing or sorting is missing")
 	var first_title:String=editor.animation_store_list.get_child(0).get_child(0).text
 	editor.store_page_next.pressed.emit()
 	assert(editor.store_page==1 and editor.animation_store_list.get_child_count()==100)
@@ -83,5 +102,5 @@ func run():
 		editor.inspection_camera.capture_view(editor.field.camera,5.0)
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("user://community_import_review.png")
-	print("COMMUNITY IMPORT PASSED: ",entries.size()," source clips in shop; ",checked_sources.size()," source rigs sampled; finite retargeted punch, moving arm, cached resource, 100-row pages")
+	print("COMMUNITY IMPORT PASSED: ",entries.size()," source clips in shop; ",checked_sources.size()," source rigs sampled; quality gate, project copy, stamina recovery, creator filters, cached resource, 100-row pages")
 	quit()

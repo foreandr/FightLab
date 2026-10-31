@@ -1,7 +1,7 @@
-extends Control
+extends "res://scripts/combat_pointer.gd"
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	super._ready()
 	custom_minimum_size = Vector2(24, 32)
 	set_process(false)
 

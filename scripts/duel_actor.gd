@@ -1,4 +1,5 @@
 extends "res://scripts/spell_actor.gd"
+const Movement=preload("res://scripts/character_movement.gd")
 var last_logged_locomotion_state := ""
 ## Autonomous elemental fighter. Root movement uses CharacterBody3D physics;
 ## sprint, tucked flight, casting and flips all deform the licensed skeleton.
@@ -9,6 +10,8 @@ const PLAN := ["cast", "strafe", "jump_cast", "retreat", "cast", "shield", "dash
 const MAX_GUARD := 44.0
 const MAX_MANA := 100.0
 const MAX_STAMINA := 100.0
+const RESOURCE_RECOVERY_RATE := 17.0
+const RESOURCE_RECOVERY_DELAY := 0.65
 const ImpactPhysics = preload("res://scripts/impact_physics.gd")
 var impact_physics := ImpactPhysics.new()
 var limb_targets: Array = []
@@ -332,7 +335,7 @@ func spend_mana(amount: float) -> bool:
 		return false
 	mana = maxf(0, mana - amount)
 	mana_spent += amount
-	mana_delay = 1.7
+	mana_delay = RESOURCE_RECOVERY_DELAY
 	minimum_mana = minf(minimum_mana, mana)
 	return true
 
@@ -341,8 +344,17 @@ func spend_stamina(amount: float) -> bool:
 		return false
 	stamina = maxf(0, stamina - amount)
 	stamina_spent += amount
-	stamina_delay = 0.65
+	stamina_delay = RESOURCE_RECOVERY_DELAY
 	minimum_stamina = minf(minimum_stamina, stamina)
+	return true
+
+func spend_cast_resources(stamina_cost:float,mana_cost_:float) -> bool:
+	stamina_cost=maxf(0.0,stamina_cost)
+	mana_cost_=maxf(0.0,mana_cost_)
+	if stamina+0.0001<stamina_cost or mana+0.0001<mana_cost_:return false
+	# Commit both costs in one frame; neither resource pays for a failed cast.
+	spend_stamina(stamina_cost)
+	spend_mana(mana_cost_)
 	return true
 
 func start_recovery() -> void:
@@ -406,6 +418,9 @@ func recover_resources(delta: float) -> void:
 	stamina_delay = maxf(0, stamina_delay - delta)
 	if not arena.round_active or health <= 0:
 		return
+	recover_guard(delta)
+	var sprinting:=mode=="run" and _player_sprint_active()
+	var resource_busy:bool=mode in ["cast","punch","dash","flip","takeoff","roll_back","dodge_back","shield","chase"] or (story_block_held and arena.story_mode and player_controlled) or (mode=="run" and (not player_controlled or sprinting))
 	if mode == "shield":
 		if arena.story_mode:
 			var drain := minf(stamina, delta * 2.0)
@@ -417,7 +432,7 @@ func recover_resources(delta: float) -> void:
 			var drain := minf(mana, delta * 3.0)
 			mana -= drain
 			mana_spent += drain
-			mana_delay = 1.7
+			mana_delay = RESOURCE_RECOVERY_DELAY
 			minimum_mana = minf(minimum_mana, mana)
 		if (arena.story_mode and stamina <= 0) or (not arena.story_mode and mana <= 0):
 			mode = "idle"
@@ -433,17 +448,21 @@ func recover_resources(delta: float) -> void:
 		if stamina <= 0:
 			story_block_held = false
 			story_block_time = 0.0
-	elif mana_delay <= 0 and mode not in ["cast", "takeoff"]:
-		mana = minf(MAX_MANA, mana + delta * 4.2)
-	var sprinting:=mode=="run" and _player_sprint_active()
+	elif mana_delay <= 0 and not resource_busy:
+		mana = minf(MAX_MANA, mana + delta * RESOURCE_RECOVERY_RATE)
 	if mode=="chase" or (mode=="run" and (not player_controlled or sprinting)):
 		var drain := minf(stamina, delta * (8.0 if mode == "chase" else (12.0 if sprinting else 6.0)))
 		stamina -= drain
 		stamina_spent += drain
 		stamina_delay = 0.4
 		minimum_stamina = minf(minimum_stamina, stamina)
-	elif stamina_delay <= 0 and mode not in ["punch", "dash", "flip", "takeoff", "roll_back", "dodge_back"]:
-		stamina = minf(MAX_STAMINA, stamina + delta * (10.0 if mode in ["strafe", "approach", "retreat"] else 17.0))
+	elif stamina_delay <= 0 and not resource_busy:
+		stamina = minf(MAX_STAMINA, stamina + delta * RESOURCE_RECOVERY_RATE)
+
+func recover_guard(delta:float) -> void:
+	guard_recovery=maxf(0.0,guard_recovery-delta)
+	if health>0 and mode!="shield" and not story_block_held and guard_recovery<=0.0:
+		guard_energy=minf(MAX_GUARD,guard_energy+delta*RESOURCE_RECOVERY_RATE)
 
 func _player_sprint_active() -> bool:
 	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and stamina>0
@@ -503,10 +522,7 @@ func tick(delta: float) -> void:
 	recover_resources(delta)
 	if arena.story_mode and player_controlled and story_block_held:story_block_time += delta
 	guard_cooldown = maxf(0, guard_cooldown - delta)
-	guard_recovery = maxf(0, guard_recovery - delta)
 	shield_recoil = maxf(0, shield_recoil - delta)
-	if mode != "shield" and guard_recovery <= 0:
-		guard_energy = minf(MAX_GUARD, guard_energy + delta * 8)
 	dodge_cooldown = maxf(0, dodge_cooldown - delta)
 	invulnerability = maxf(0, invulnerability - delta)
 	player.speed_scale = 1
@@ -656,19 +672,8 @@ func tick(delta: float) -> void:
 		if air_dash_used and air_clock > 0.46:
 			air_momentum = air_momentum.move_toward(Vector3.ZERO, delta * 12)
 	if desired.length() > 0.2 and mode in ["run", "dash"]:
-		var facing:=desired
-		var turn_character:=true
-		if arena.story_mode and player_controlled:
-			if is_instance_valid(arena.camera_focus_target):
-				facing=flat_direction(global_position,arena.camera_focus_target.global_position)
-			else:
-				# The camera heading defines the character's forward axis. MMB orbit
-				# therefore turns the character and WASD remains camera-relative.
-				if is_instance_valid(arena.camera):
-					facing=-arena.camera.global_basis.z
-					facing.y=0
-					facing=facing.normalized()
-		if turn_character:rotation.y = lerp_angle(rotation.y, atan2(facing.x, facing.z), minf(1, delta * 14))
+		var facing:Vector3=Movement.facing(self,arena.camera,arena.camera_focus_target) if arena.story_mode and player_controlled else desired
+		Movement.turn(self,facing,delta)
 		if mode=="dash":
 			play("duel/dash",clampf(desired.length()/3.1,0.7,3.5))
 		else:
@@ -779,13 +784,8 @@ func locomotion_velocity(desired: Vector3) -> Vector3:
 func _player_move_direction() -> Vector3:
 	var input_direction:=_player_move_axes()
 	if arena.story_mode and player_controlled:
-		var forward:Vector3=-arena.camera.global_basis.z if is_instance_valid(arena.camera) else global_basis.z
-		forward.y=0
-		forward=forward.normalized()
-		var right:Vector3=arena.camera.global_basis.x if is_instance_valid(arena.camera) else -global_basis.x
-		right.y=0
-		right=right.normalized()
-		return (right*input_direction.x+forward*(-input_direction.y)).normalized()
+		# This input adapter uses negative Y for forwards; the shared API uses positive Y.
+		return Movement.camera_direction(Vector2(input_direction.x,-input_direction.y),arena.camera,global_basis.z).normalized()
 	return Vector3(input_direction.x,0,input_direction.y).normalized()
 
 func _player_move_axes() -> Vector2:

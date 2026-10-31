@@ -1,17 +1,8 @@
 extends RefCounted
 ## Shared, portable revision graph for animations and spells. Parent nodes are
 ## merged by ID, never nested repeatedly or discarded when a new author edits.
-const PROFILE_PATH:="user://creator_identity.cfg"
-
 static func creator_name() -> String:
-	var config:=ConfigFile.new()
-	config.load(PROFILE_PATH)
-	return str(config.get_value("creator","name","")).strip_edges()
-
-static func set_creator_name(value:String) -> void:
-	var config:=ConfigFile.new()
-	config.set_value("creator","name",value.strip_edges().left(80))
-	config.save(PROFILE_PATH)
+	return "foreandr"
 
 static func source(entry:Dictionary,asset_type:="animation") -> Dictionary:
 	if entry.get("provenance",{}) is Dictionary and not entry.get("provenance",{}).is_empty():return entry.provenance.duplicate(true)

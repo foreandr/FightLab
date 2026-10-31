@@ -1,4 +1,9 @@
 extends "res://scripts/combat_testing_sandbox.gd"
+const FocusVisuals=preload("res://scripts/focus_visuals.gd")
+var focus_marker:Label3D
+var selection_cleared:=false
+var camera_focus_active:=false
+var camera_before_focus:=Transform3D.IDENTITY
 const UI_EDGE_GAP := 6
 const PLAYBACK_BAR_HEIGHT := 40 + UI_EDGE_GAP * 2
 const UNIT_POSE_BLEND_SECONDS := 0.09
@@ -7,11 +12,20 @@ const PoseSelfCollision=preload("res://scripts/pose_self_collision.gd")
 const DragSolver=preload("res://scripts/pose_drag_solver.gd")
 const DragHandles=preload("res://scripts/pose_drag_handles.gd")
 const SourcePose=preload("res://scripts/animation_source_pose.gd")
+const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
+const StoreIndex=preload("res://scripts/animation_store_index.gd")
 const RowIcons=preload("res://scripts/animation_row_icons.gd")
 const AnimationTrash=preload("res://scripts/animation_trash.gd")
 var loading_layer:CanvasLayer
+var loading_bar:ProgressBar
+var loading_status:Label
+var create_loading_pacer=LoadingPacer.new()
 var browser: Control
 var spell_builder:PanelContainer
+var spell_zoom_dragging:=false
+var spell_zoom_drag_remainder:=0.0
+var store_zoom_dragging:=false
+var store_zoom_drag_remainder:=0.0
 var spell_draft_path:="user://projectile_spell_draft.cfg"
 var animation_favorites=preload("res://scripts/animation_favorites.gd").new()
 var favorites_path:="user://animation_favorites.cfg"
@@ -26,6 +40,7 @@ var category_dialog: ConfirmationDialog
 var category_name_input: LineEdit
 var category_error: Label
 var animation_list: VBoxContainer
+var animation_order_entries:Array[Dictionary]=[]
 var category_heading: Label
 var undo_delete_button:Button
 var deleted_animation_records:Array[Dictionary]=[]
@@ -47,11 +62,14 @@ var options_button: Button
 var options_panel: PanelContainer
 var unit_source:Button
 var added_units:Array[CharacterBody3D]=[]
+var default_unit_ready:=false
+var next_editor_unit_number:=1
 var focused_unit:CharacterBody3D
 var hovered_unit:CharacterBody3D
 var row_preview_unit:CharacterBody3D
 var row_preview_remaining:=0.0
 var row_preview_elapsed:=0.0
+var row_preview_diagnostics:Dictionary={}
 var row_preview_origin:=Vector3.ZERO
 var row_preview_stamina_cost:=0.0
 var row_preview_action_duration:=1.0
@@ -79,12 +97,23 @@ var animation_store_list:VBoxContainer
 var animation_store_search:LineEdit
 var animation_store_count:Label
 var animation_store_entries:Array[Dictionary]=[]
-const STORE_PAGE_SIZE:=100
+var store_index_records:Array[Dictionary]=[]
+var store_index_details_path:=""
+var store_loading_indicator:VBoxContainer
+var store_loading_status:Label
+var store_loading_bar:ProgressBar
+var store_loading_pacer=LoadingPacer.new()
+var store_loading_in_progress:=false
+var store_loaded:=false
+var store_creator_filter:OptionButton
+var store_sort_filter:OptionButton
+const STORE_PAGE_SIZE:=20
 var store_page:=0
 var store_page_label:Label
 var store_page_previous:Button
 var store_page_next:Button
 var store_last_query:=""
+var store_page_generation:=0
 const AssetProvenance=preload("res://scripts/asset_provenance.gd")
 const StoreLibrary=preload("res://scripts/animation_store_library.gd")
 var store_library=StoreLibrary.new()
@@ -267,6 +296,7 @@ const JUMP_JOINTS := [
 ]
 
 func _ready() -> void:
+	create_loading_pacer.begin("create_workspace")
 	loading_layer=CanvasLayer.new()
 	loading_layer.layer=110
 	add_child(loading_layer)
@@ -278,9 +308,9 @@ func _ready() -> void:
 	var loading_card:=PanelContainer.new()
 	loading_card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	loading_card.offset_left=-190
-	loading_card.offset_top=-34
+	loading_card.offset_top=-48
 	loading_card.offset_right=190
-	loading_card.offset_bottom=34
+	loading_card.offset_bottom=48
 	var loading_style:=StyleBoxFlat.new()
 	loading_style.bg_color=BOOK_PAPER
 	loading_style.border_color=BOOK_GOLD
@@ -299,10 +329,16 @@ func _ready() -> void:
 	loading_title.add_theme_font_size_override("font_size",22)
 	loading_title.add_theme_color_override("font_color",BOOK_INK)
 	loading_content.add_child(loading_title)
-	var loading_bar:=ProgressBar.new()
+	loading_status=Label.new()
+	loading_status.text="Loading saved setup…"
+	loading_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	loading_status.add_theme_font_size_override("font_size",13)
+	loading_status.add_theme_color_override("font_color",BOOK_INK)
+	loading_content.add_child(loading_status)
+	loading_bar=ProgressBar.new()
 	loading_bar.min_value=0
 	loading_bar.max_value=100
-	loading_bar.indeterminate=true
+	loading_bar.value=0
 	loading_bar.show_percentage=false
 	loading_bar.custom_minimum_size=Vector2(320,18)
 	loading_content.add_child(loading_bar)
@@ -314,7 +350,13 @@ func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS
 	custom_random.randomize()
 	deleted_animation_records=AnimationTrash.list_deleted(animation_trash_directory)
+	loading_status.text="Building arena, character rigs and editor…"
+	loading_bar.value=create_loading_pacer.progress_percent()
+	await get_tree().process_frame
 	super._ready()
+	loading_status.text="Preparing timeline and animation preview…"
+	loading_bar.value=create_loading_pacer.progress_percent()
+	await get_tree().process_frame
 	field.show()
 	browse_backdrop.hide()
 	layout_chain(true)
@@ -322,6 +364,19 @@ func _ready() -> void:
 	new_timeline()
 	_rebuild_timeline_tracks()
 	begin_live_preview()
+	default_unit_ready=true
+	ensure_default_editor_unit()
+	loading_status.text="Finalizing Create workspace…"
+	loading_bar.value=create_loading_pacer.progress_percent()
+	await get_tree().process_frame
+	loading_status.text="Finishing workspace setup…"
+	while not create_loading_pacer.target_reached():
+		loading_bar.value=create_loading_pacer.progress_percent()
+		await get_tree().process_frame
+	loading_bar.value=100
+	loading_status.text="Ready"
+	await RenderingServer.frame_post_draw
+	loading_layer.queue_free()
 
 func open_case(index:int) -> void:
 	super.open_case(index)
@@ -370,6 +425,9 @@ func _frame_bot_preview() -> void:
 	update_camera(0.0)
 
 func build_ui() -> void:
+	if is_instance_valid(loading_status):
+		loading_status.text="Building animation panels and controls…"
+		loading_bar.value=maxf(float(loading_bar.value),30.0)
 	# Retain the proven playback controller and its controls, then give animation
 	# browsing a dedicated UI for Motion and Attack.
 	super.build_ui()
@@ -525,7 +583,8 @@ func build_ui() -> void:
 	update_undo_delete_button()
 	animation_sort_menu=OptionButton.new()
 	animation_sort_menu.alignment=HORIZONTAL_ALIGNMENT_CENTER
-	for item in ["Favorites first","Name A–Z","Favorites only"]:animation_sort_menu.add_item(item)
+	for item in ["Favorites first","Name A–Z","Favorites only","Manual order · drag to sort"]:animation_sort_menu.add_item(item)
+	animation_sort_menu.tooltip_text="Choose Manual order to drag animations into your preferred order"
 	animation_sort_menu.select(animation_favorites.sort_mode)
 	animation_sort_menu.item_selected.connect(set_animation_sort)
 	choices_column.add_child(animation_sort_menu)
@@ -565,7 +624,7 @@ func build_ui() -> void:
 	options_panel.offset_left=-167
 	options_panel.offset_top=60
 	options_panel.offset_right=167
-	options_panel.offset_bottom=196
+	options_panel.offset_bottom=124
 	var options_style:=StyleBoxFlat.new()
 	options_style.bg_color=BOOK_PAPER
 	options_style.border_color=BOOK_GOLD
@@ -577,13 +636,6 @@ func build_ui() -> void:
 	var options_column:=VBoxContainer.new()
 	options_column.add_theme_constant_override("separation",6)
 	options_panel.add_child(options_column)
-	menu_label(options_column,"Creator name",13)
-	var creator_input:=LineEdit.new()
-	creator_input.name="CreatorCreditName"
-	creator_input.placeholder_text="Your name for animation/spell credits"
-	creator_input.text=AssetProvenance.creator_name()
-	creator_input.text_changed.connect(func(value:String):AssetProvenance.set_creator_name(value))
-	options_column.add_child(creator_input)
 	var animations_content:=_create_workspace_nav_panel("Animations")
 	var simulations_content:=_create_workspace_nav_panel("Simulations")
 	var store_content:=_create_workspace_nav_panel("Store")
@@ -591,6 +643,8 @@ func build_ui() -> void:
 	store_panel.set_script(preload("res://scripts/resizable_workspace_window.gd"))
 	store_panel.set_process_input(true)
 	store_panel.set_process(true)
+	store_panel.set("minimum_window_size",Vector2(220,200))
+	store_panel.set("ignore_content_minimum",true)
 	panel_zoom_roots["Store"]=store_panel
 	store_panel.offset_left=-270
 	store_panel.offset_right=270
@@ -604,10 +658,37 @@ func build_ui() -> void:
 	animation_store_count.clip_text=true
 	animation_store_count.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	button(store_header,"Close",func():store_panel.hide())
+	store_loading_indicator=VBoxContainer.new()
+	store_loading_indicator.name="StoreLoadingProgress"
+	store_loading_indicator.add_theme_constant_override("separation",2)
+	store_loading_status=menu_label(store_loading_indicator,"Preparing animation catalog…",12)
+	store_loading_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	store_loading_bar=ProgressBar.new()
+	store_loading_bar.min_value=0
+	store_loading_bar.max_value=100
+	store_loading_bar.show_percentage=false
+	store_loading_bar.custom_minimum_size=Vector2(0,14)
+	store_loading_indicator.add_child(store_loading_bar)
+	store_content.add_child(store_loading_indicator)
+	store_loading_indicator.hide()
 	animation_store_search=LineEdit.new()
 	animation_store_search.placeholder_text="Search · tag:arm body:head state:airborne -tag:fall"
 	animation_store_search.text_changed.connect(func(_text:String):_save_store_preferences();_populate_animation_store())
 	store_content.add_child(animation_store_search)
+	var browse:=HBoxContainer.new()
+	browse.add_theme_constant_override("separation",6)
+	store_content.add_child(browse)
+	store_sort_filter=OptionButton.new()
+	for name_ in ["Top","A–Z","Creator"]:store_sort_filter.add_item(name_)
+	store_sort_filter.tooltip_text="Top ranks your favorites, acrobatic moves, and combat clips first"
+	store_sort_filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	store_sort_filter.item_selected.connect(func(_index:int):_save_store_preferences();_populate_animation_store())
+	browse.add_child(store_sort_filter)
+	store_creator_filter=OptionButton.new()
+	store_creator_filter.add_item("All creators")
+	store_creator_filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	store_creator_filter.item_selected.connect(func(_index:int):_save_store_preferences();_populate_animation_store())
+	browse.add_child(store_creator_filter)
 	var filters:=HFlowContainer.new()
 	filters.add_theme_constant_override("separation",6)
 	store_content.add_child(filters)
@@ -619,8 +700,8 @@ func build_ui() -> void:
 	for name_ in ["Air + ground","Airborne","Grounded"]:store_air_filter.add_item(name_)
 	filters.add_child(store_air_filter)
 	store_view_filter=OptionButton.new()
-	for name_ in ["Available","Taken","Blocked","All items"]:store_view_filter.add_item(name_)
-	store_view_filter.tooltip_text="Taken and blocked animations are hidden from Available"
+	for name_ in ["Available","Downloaded","Blocked","All items"]:store_view_filter.add_item(name_)
+	store_view_filter.tooltip_text="Download an animation into your Downloaded folder; it stays out of Available"
 	filters.add_child(store_view_filter)
 	for filter in [store_body_filter,store_air_filter,store_view_filter]:
 		filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -668,10 +749,10 @@ func build_ui() -> void:
 	legend.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	legend.add_theme_color_override("font_color",BOOK_INK)
 	legend.add_theme_font_size_override("font_size",15)
-	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps. Wheel zooms the camera; middle/right-drag or arrows orbit. −/+ zoom, Home resets camera. Gamepad: left stick move, right stick orbit, R3 zoom out, A jump, X/RB timeline, B release.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
+	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\nF: focus the camera on the selected character.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps. Wheel zooms the camera; middle/right-drag or arrows orbit. −/+ zoom, Home resets camera. Gamepad: left stick move, right stick orbit, R3 zoom out, A jump, X/RB timeline, B release.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
 	legend.text+="\n\nJUMP STAMINA\nStamina depletion controls jump height and airtime. Extending a jump automatically increases its stamina requirement, up to 100. Put Jump on EVERYTHING and a jab on its arm track to combine them. At equal priority the specific body-part track wins."
-	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
-	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. Set your credit name in Options → Creator name. Animations and spells preserve prior contributors when modified."
+	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. On Spells, middle-mouse drag up/down also zooms; on Store, hold Ctrl and middle-drag up/down. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
+	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. New changes are automatically credited to foreandr while preserving prior contributors."
 	controls_scroll.add_child(legend)
 	var controls_button:=button(options_column,"CONTROLS",func():controls_dialog.popup_centered())
 	controls_button.name="ShowControlsLegend"
@@ -762,9 +843,13 @@ func build_ui() -> void:
 	spell_builder.offset_right=0
 	spell_builder.offset_bottom=-UI_EDGE_GAP
 	spell_builder.setup(self)
+	if spell_builder.demo_only_stage:
+		spell_builder.anchor_right=0.32
+		spell_builder.layout_connected_panels()
+	panel_zoom_roots["Spells"]=spell_builder
+	call_deferred("_apply_panel_zoom","Spells")
 	spell_builder.hide()
 	_center_box_text(ui)
-	loading_layer.queue_free()
 
 func _center_box_text(root: Node) -> void:
 	if root is Button:
@@ -922,8 +1007,32 @@ func _open_workspace_section(section:String) -> void:
 		if not was_visible:base_ui.move_child(workspace_nav_panels[section],base_ui.get_child_count()-1)
 
 func _load_animation_store() -> void:
+	if store_loaded or store_loading_in_progress:return
+	store_loading_in_progress=true
+	var cache_path:=ProjectSettings.globalize_path(StoreIndex.cache_path())
+	store_loading_pacer.begin("store_index_cold_build" if not FileAccess.file_exists(cache_path) else "store_index_build")
+	store_loading_indicator.show()
+	store_loading_bar.value=0
+	store_loading_status.text="Opening the local Store index…"
+	clear_list(animation_store_list)
+	await RenderingServer.frame_post_draw
+	var cached:Dictionary={}
+	if FileAccess.file_exists(cache_path):
+		var cache_thread:=Thread.new()
+		if cache_thread.start(func():return StoreIndex.load_cache(cache_path))==OK:
+			var result:Variant=await _wait_for_store_thread(cache_thread,0.15,"Reading the compact Store index…")
+			if result is Dictionary:cached=result
+	if cached.is_empty():
+		_set_store_loading_progress(0.12,"Building your local search index · first visit only…")
+		var build_thread:=Thread.new()
+		if build_thread.start(func():return StoreIndex.build_cache(cache_path))==OK:
+			var result:Variant=await _wait_for_store_thread(build_thread,0.12,"Indexing animation titles and tags…")
+			if result is Dictionary:cached=result
+	store_index_records.clear()
+	for record in cached.get("records",[]):
+		if record is Dictionary:store_index_records.append(record)
+	store_index_details_path=str(cached.get("details_path",StoreIndex.details_path(cache_path)))
 	animation_store_entries=Library.entries()
-	animation_store_entries.append_array(preload("res://scripts/community_animation_catalog.gd").entries())
 	for group in Library.GROUPS:
 		for category in category_store.names_for(group):animation_store_entries.append_array(load_custom_motion(category))
 	# Include source clips beyond the curated Motion/Attack browser.
@@ -941,14 +1050,38 @@ func _load_animation_store() -> void:
 		var entry:Dictionary={"group":"Motion","category":"Source clips","title":name_.get_slice("/",1).replace("_"," "),"step":"Idle","clip":name_,"store_raw":true}
 		entry["duration"]=actor.player.get_animation(name_).length
 		animation_store_entries.append(entry)
-	animation_store_entries.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.title).naturalnocasecmp_to(str(b.title))<0)
-	for index in animation_store_entries.size():
+	var total_entries:=animation_store_entries.size()
+	for index in total_entries:
 		var entry:Dictionary=animation_store_entries[index]
-		var animation:Animation
-		if entry.has("source_animation") and auxiliary!=null:animation=auxiliary.get_animation(str(entry.source_animation))
-		elif actor.player.has_animation(str(entry.clip)):animation=actor.player.get_animation(str(entry.clip))
-		animation_store_entries[index]=StoreLibrary.enrich(entry,animation)
-	_populate_animation_store()
+		if not (entry.has("store_asset_id") and entry.has("body_parts")):
+			var animation:Animation
+			if entry.has("source_animation") and auxiliary!=null:animation=auxiliary.get_animation(str(entry.source_animation))
+			elif actor.player.has_animation(str(entry.clip)):animation=actor.player.get_animation(str(entry.clip))
+			animation_store_entries[index]=StoreLibrary.enrich(entry,animation)
+	_set_store_loading_progress(0.96,"Loading the first 20 matching records…")
+	_populate_store_creators()
+	_load_store_preferences()
+	await _populate_animation_store()
+	while not store_loading_pacer.target_reached():
+		_set_store_loading_progress(0.99,"Finishing the Store’s local setup…")
+		await get_tree().create_timer(minf(store_loading_pacer.remaining_seconds(),0.1)).timeout
+	store_loaded=true
+	store_loading_bar.value=100
+	store_loading_status.text="Store ready · 20 results per page"
+	await RenderingServer.frame_post_draw
+	store_loading_indicator.hide()
+	store_loading_in_progress=false
+
+func _set_store_loading_progress(fraction:float,status:String) -> void:
+	if not is_instance_valid(store_loading_bar) or not is_instance_valid(store_loading_status):return
+	store_loading_status.text=status
+	store_loading_bar.value=store_loading_pacer.progress_percent(fraction)
+
+func _wait_for_store_thread(thread:Thread,fraction:float,status:String) -> Variant:
+	while thread.is_alive():
+		_set_store_loading_progress(fraction,status)
+		await get_tree().process_frame
+	return thread.wait_to_finish()
 
 func _save_store_preferences() -> void:
 	if not is_instance_valid(store_view_filter):return
@@ -957,30 +1090,96 @@ func _save_store_preferences() -> void:
 	config.set_value("store","body",store_body_filter.selected)
 	config.set_value("store","air",store_air_filter.selected)
 	config.set_value("store","view",store_view_filter.selected)
+	config.set_value("store","sort",store_sort_filter.selected)
+	config.set_value("store","creator",store_creator_filter.get_item_text(store_creator_filter.selected))
 	config.save("user://animation_store_preferences.cfg")
 
 func _load_store_preferences() -> void:
 	var config:=ConfigFile.new()
 	if config.load("user://animation_store_preferences.cfg")!=OK:return
 	animation_store_search.text=str(config.get_value("store","search",""))
-	for pair in [[store_body_filter,"body"],[store_air_filter,"air"],[store_view_filter,"view"]]:
+	for pair in [[store_body_filter,"body"],[store_air_filter,"air"],[store_view_filter,"view"],[store_sort_filter,"sort"]]:
 		var filter:OptionButton=pair[0]
 		filter.select(clampi(int(config.get_value("store",pair[1],0)),0,filter.item_count-1))
+	var creator:=str(config.get_value("store","creator","All creators"))
+	for index in store_creator_filter.item_count:
+		if store_creator_filter.get_item_text(index)==creator:store_creator_filter.select(index);break
+
+func _store_creator(entry:Dictionary) -> String:
+	if entry.has("store_creator"):return str(entry.store_creator)
+	var provenance:Dictionary=entry.get("provenance",{})
+	var nodes:Dictionary=provenance.get("nodes",{})
+	for node in nodes.values():
+		var author:=str(node.get("author","")).strip_edges()
+		if not author.is_empty():return author
+	var source:=str(entry.get("source_name","")).strip_edges()
+	return source if not source.is_empty() else "FightLab"
+
+func _populate_store_creators() -> void:
+	if not is_instance_valid(store_creator_filter):return
+	var config:=ConfigFile.new()
+	config.load("user://animation_store_preferences.cfg")
+	var wanted:=str(config.get_value("store","creator","All creators"))
+	var creators:Dictionary={}
+	for entry in store_index_records:creators[_store_creator(entry)]=true
+	for entry in animation_store_entries:creators[_store_creator(entry)]=true
+	var names:=creators.keys()
+	names.sort_custom(func(a:String,b:String):return a.naturalnocasecmp_to(b)<0)
+	store_creator_filter.clear()
+	store_creator_filter.add_item("All creators")
+	for name_ in names:store_creator_filter.add_item(str(name_))
+	for index in store_creator_filter.item_count:
+		if store_creator_filter.get_item_text(index)==wanted:store_creator_filter.select(index);break
 
 func _style_store_action(control:Button,color:Color) -> void:
 	control.add_theme_stylebox_override("normal",_book_box(color,color.darkened(0.2)))
 	control.add_theme_stylebox_override("hover",_book_box(color.lightened(0.15),color.darkened(0.2)))
 	control.add_theme_stylebox_override("pressed",_book_box(color.darkened(0.15),color.darkened(0.3)))
 
+func _store_top_score(entry:Dictionary) -> int:
+	var score:=0
+	if animation_favorites.has(entry):score+=1000
+	if entry.has("store_top_score"):return score+int(entry.store_top_score)
+	var tags:Array=entry.get("tags",[])
+	for pair in [["acrobatics",100],["spin",70],["jump",55],["weapon",50],["punch",40],["kick",40],["dodge",30],["block",20],["dance",10]]:
+		if str(pair[0]) in tags:score+=int(pair[1])
+	return score
+
+func _download_store_animation(entry:Dictionary) -> void:
+	var group:="Attack" if str(entry.get("group",""))=="Attack" else "Motion"
+	take_store_animation(entry,group,"Downloaded")
+
+func _log_store_action(action:String,entry:Dictionary,details:Dictionary={}) -> void:
+	var record:Dictionary={"title":entry.get("title",""),"asset_id":StoreLibrary.key(entry),"clip":entry.get("clip",""),"source":entry.get("bvh_source",""),"resource":entry.get("animation_resource",""),"entry_keys":entry.keys(),"focused_unit":str(focused_unit.name) if is_instance_valid(focused_unit) else ""}
+	record.merge(details,true)
+	GameDiagnostics.log_event("animation_store_"+action,record)
+
+func _resolve_store_record(entry:Dictionary) -> Dictionary:
+	if not entry.has("_detail_offset"):return entry
+	var full:Dictionary=StoreIndex.load_entry(store_index_details_path,int(entry.get("_detail_offset",-1)),int(entry.get("_detail_size",0)))
+	if full.is_empty() or StoreLibrary.key(full)!=StoreLibrary.key(entry):
+		_log_store_action("detail_failed",entry,{"details_file":store_index_details_path,"offset":entry.get("_detail_offset",-1),"size":entry.get("_detail_size",0)})
+		_show_library_notice("Could not read this Store item · details saved in the logs")
+		return {}
+	return StoreLibrary.enrich(full)
+
+func _toggle_store_block(entry:Dictionary,currently_blocked:bool) -> void:
+	if store_library.set_blocked(entry,not currently_blocked):_populate_animation_store()
+
 func _populate_animation_store() -> void:
 	if not is_instance_valid(animation_store_list):return
+	store_page_generation+=1
+	var generation:=store_page_generation
 	clear_list(animation_store_list)
 	var query:=animation_store_search.text.strip_edges().to_lower()
-	var query_key:="%s|%d|%d|%d"%[query,store_body_filter.selected,store_air_filter.selected,store_view_filter.selected]
+	var query_key:="%s|%d|%d|%d|%d|%d"%[query,store_body_filter.selected,store_air_filter.selected,store_view_filter.selected,store_sort_filter.selected,store_creator_filter.selected]
 	if query_key!=store_last_query:store_page=0;store_last_query=query_key
 	var count:=0
 	var matches_:Array[Dictionary]=[]
-	for entry in animation_store_entries:
+	var all_records:Array[Dictionary]=[]
+	all_records.append_array(store_index_records)
+	all_records.append_array(animation_store_entries)
+	for entry in all_records:
 		var id:=StoreLibrary.key(entry)
 		var taken:bool=store_library.is_taken(entry) or entry.has("path")
 		var blocked:bool=store_library.blocked.has(id)
@@ -990,71 +1189,169 @@ func _populate_animation_store() -> void:
 		if store_library.taken.has(id):entry=store_library.taken[id].duplicate(true)
 		if store_body_filter.selected>0 and store_body_filter.get_item_text(store_body_filter.selected) not in entry.get("body_parts",[]):continue
 		if store_air_filter.selected>0 and str(entry.get("air_state",""))!=store_air_filter.get_item_text(store_air_filter.selected):continue
+		if store_creator_filter.selected>0 and _store_creator(entry)!=store_creator_filter.get_item_text(store_creator_filter.selected):continue
 		if not query.is_empty() and not StoreLibrary.matches(entry,query):continue
 		count+=1
 		matches_.append(entry)
+	if store_sort_filter.selected==0:
+		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
+			var score_a:=_store_top_score(a);var score_b:=_store_top_score(b)
+			if score_a!=score_b:return score_a>score_b
+			return str(a.title).naturalnocasecmp_to(str(b.title))<0)
+	elif store_sort_filter.selected==2:
+		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
+			var creator_order:=_store_creator(a).naturalnocasecmp_to(_store_creator(b))
+			return creator_order<0 if creator_order!=0 else str(a.title).naturalnocasecmp_to(str(b.title))<0)
+	else:
+		matches_.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.title).naturalnocasecmp_to(str(b.title))<0)
 	store_page=clampi(store_page,0,maxi(0,ceili(float(count)/STORE_PAGE_SIZE)-1))
 	store_page_label.text="Page %d / %d · %d matches"%[store_page+1,maxi(1,ceili(float(count)/STORE_PAGE_SIZE)),count]
 	store_page_previous.disabled=store_page==0
 	store_page_next.disabled=(store_page+1)*STORE_PAGE_SIZE>=count
-	for entry in matches_.slice(store_page*STORE_PAGE_SIZE,(store_page+1)*STORE_PAGE_SIZE):
+	var visible:Array[Dictionary]=matches_.slice(store_page*STORE_PAGE_SIZE,(store_page+1)*STORE_PAGE_SIZE)
+	var detail_thread:=Thread.new()
+	var page_details:Dictionary={}
+	var page_source:=store_index_details_path
+	var page_records:=visible.duplicate(true)
+	var thread_error:=detail_thread.start(func():
+		var loaded:Dictionary={}
+		for record in page_records:
+			if not record.has("_detail_offset"):continue
+			var id:=StoreLibrary.key(record)
+			if loaded.has(id):continue
+			loaded[id]=StoreIndex.load_entry(page_source,int(record.get("_detail_offset",0)),int(record.get("_detail_size",0)))
+		return loaded)
+	if thread_error==OK:
+		var detail_result:Variant=await _wait_for_store_thread(detail_thread,0.98,"Loading this page’s 20 animation records…")
+		if detail_result is Dictionary:page_details=detail_result
+	if generation!=store_page_generation:return
+	for compact_entry in visible:
+		var entry:Dictionary=compact_entry
 		var id:=StoreLibrary.key(entry)
+		if page_details.has(id) and page_details[id] is Dictionary and not page_details[id].is_empty() and StoreLibrary.key(page_details[id])==id:
+			entry=StoreLibrary.enrich(page_details[id])
+			entry["store_creator"]=str(compact_entry.get("store_creator","FightLab"))
+			entry["store_top_score"]=int(compact_entry.get("store_top_score",0))
+			if not entry.has("store_asset_id"):entry["store_asset_id"]=id
+			if store_library.taken.has(id):entry=store_library.taken[id].duplicate(true)
+		elif compact_entry.has("_detail_offset"):
+			_log_store_action("page_detail_failed",compact_entry,{"details_file":page_source})
+		if str(entry.get("title","")).strip_edges().is_empty():entry["title"]=str(compact_entry.get("title","Animation"))
+		if not entry.has("body_parts"):entry=StoreLibrary.enrich(entry)
+		id=StoreLibrary.key(entry)
 		var blocked:bool=store_library.blocked.has(id)
+		var row_entry:Dictionary=entry.duplicate(true)
 		var row:=HBoxContainer.new()
 		row.add_theme_constant_override("separation",6)
 		animation_store_list.add_child(row)
-		var title:=button(row,str(entry.title),func():_play_store_animation(entry))
+		var title:=button(row,str(row_entry.get("title","Animation")),Callable(self,"_play_store_animation").bind(row_entry))
 		title.set_script(preload("res://scripts/animation_clip_source.gd"))
-		title.set("entry",entry.duplicate(true))
+		title.set("entry",row_entry.duplicate(true))
 		title.set("editor",self)
 		title.set("store_origin",true)
 		title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		title.clip_text=true
 		title.tooltip_text=animation_info_text(entry)+"\nTags\t"+", ".join(entry.get("tags",[]))+"\nBody\t"+", ".join(entry.get("body_parts",[]))+"\nState\t"+str(entry.get("air_state","Grounded"))
 		if entry.has("source_name"):title.tooltip_text+="\nSource\t"+str(entry.source_name)+"\nLicense\t"+str(entry.get("license","Unspecified"))
-		var play:=animation_icon_button(row,"play","Play once on selected bot",func():_play_store_animation(entry))
+		var play:=animation_icon_button(row,"play","Play once on selected bot",Callable(self,"_play_store_animation").bind(row_entry))
 		play.name="StorePlay"
 		_style_store_action(play,Color("388753"))
-		var reject:=animation_icon_button(row,"undo" if blocked else "block","Unblock this animation" if blocked else "Block this animation from the Store",func():
-			if store_library.set_blocked(entry,not blocked):_populate_animation_store())
+		var downloaded:=store_library.is_taken(row_entry)
+		var download:=animation_icon_button(row,"downloaded" if downloaded else "download","Already in Downloaded" if downloaded else "Download to your Downloaded folder and save a project copy",Callable(self,"_download_store_animation").bind(row_entry))
+		download.name="StoreDownload"
+		if downloaded:
+			download.disabled=true
+			_style_store_action(download,Color("6b9876"))
+		else:_style_store_action(download,Color("a87935"))
+		var reject:=animation_icon_button(row,"undo" if blocked else "block","Unblock this animation" if blocked else "Block this animation from the Store",Callable(self,"_toggle_store_block").bind(row_entry,blocked))
 		reject.name="StoreBlock"
 		_style_store_action(reject,Color("b8443e") if not blocked else Color("9c743d"))
-	animation_store_count.text="Animations · %d / %d"%[count,animation_store_entries.size()]
+	animation_store_count.text="Animations · %d / %d"%[count,store_index_records.size()+animation_store_entries.size()]
+	GameDiagnostics.log_event("animation_store_page_ready",{"page":store_page,"matches":count,"visible":visible.size(),"details_expected":visible.filter(func(value):return value.has("_detail_offset")).size(),"details_loaded":page_details.values().filter(func(value):return value is Dictionary and not value.is_empty()).size(),"details_file":page_source})
 	call_deferred("_apply_panel_zoom","Store")
 
 func _play_store_animation(entry:Dictionary) -> void:
+	entry=_resolve_store_record(entry)
+	if entry.is_empty():return
+	_log_store_action("play_clicked",entry)
 	if not can_add_unit_animation():
 		show_unit_selection_warning()
 		return
-	_ensure_animation_source(entry)
+	var preview_entry:=entry.duplicate(true)
+	# Store rows represent real clips, not pose-recipe names. Imported records
+	# often have generic steps like "Imported Motion"; sending those through
+	# SourcePose silently samples a fallback pose instead of the selected clip.
+	if preview_entry.has("animation_resource") or preview_entry.has("bvh_source") or preview_entry.has("source_animation"):
+		preview_entry["store_raw"]=true
 	if selected_group=="Spells":
 		select_group("Motion")
 		workspace_nav_panels.Store.show()
-	play_animation_row(entry)
+	play_animation_row(preview_entry)
 
-func _ensure_animation_source(entry:Dictionary) -> void:
+func _ensure_animation_source(entry:Dictionary) -> bool:
 	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
 		_show_library_notice("Could not import this source animation · original file preserved")
-		return
+		_log_store_action("import_failed",entry)
+		return false
 	if entry.has("animation_resource"):
 		var clip_name:=str(entry.get("clip",""))
-		if actor.player.has_animation(clip_name):return
+		if actor.player.has_animation(clip_name):return true
 		var animation:=load(str(entry.animation_resource)) as Animation
-		if animation==null:return
-		var namespace_:=clip_name.get_slice("/",0)
+		if animation==null:
+			_log_store_action("resource_load_failed",entry,{"file_exists":FileAccess.file_exists(str(entry.animation_resource))})
+			_show_library_notice("Could not load the animation clip · try the preview again")
+			return false
+		var namespace_:="store_preview"
+		var animation_name:=clip_name
+		if clip_name.contains("/"):
+			namespace_=clip_name.get_slice("/",0)
+			animation_name=clip_name.get_slice("/",1)
 		if not actor.player.has_animation_library(namespace_):actor.player.add_animation_library(namespace_,AnimationLibrary.new())
-		actor.player.get_animation_library(namespace_).add_animation(clip_name.get_slice("/",1),animation)
-		return
+		actor.player.get_animation_library(namespace_).add_animation(animation_name,animation)
+		return true
 	if entry.has("source_animation") and not actor.player.has_animation(str(entry.clip)):
 		actor.player.stop()
 		var source:=load("res://assets/combat/animations/UAL2_Standard.glb") as AnimationLibrary
+		if source==null or source.get_animation(str(entry.source_animation))==null:
+			_show_library_notice("Could not find this source animation")
+			return false
 		if not actor.player.has_animation_library("store_preview"):actor.player.add_animation_library("store_preview",AnimationLibrary.new())
 		var library:AnimationLibrary=actor.player.get_animation_library("store_preview")
 		library.add_animation(str(entry.source_animation),source.get_animation(str(entry.source_animation)).duplicate(true))
+	var ready:bool=actor.player.has_animation(str(entry.get("clip","")))
+	if not ready:
+		_log_store_action("clip_missing",entry,{"available_animation_count":actor.player.get_animation_list().size()})
+		_show_library_notice("This animation has no playable clip · details saved in the logs")
+	return ready
+
+func _portable_store_animation(entry:Dictionary) -> Animation:
+	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
+		return null
+	return preload("res://scripts/animation_project_assets.gd").resolve(entry,actor.player)
 
 func take_store_animation(entry:Dictionary,group:String,category:String) -> void:
+	entry=_resolve_store_record(entry)
+	if entry.is_empty():return
+	_log_store_action("download_clicked",entry,{"destination_group":group,"destination_folder":category})
+	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
+		_show_library_notice("Not added · this source could not be imported onto the character rig")
+		return
+	var project_animation:=_portable_store_animation(entry)
+	if project_animation==null:
+		_log_store_action("project_resolve_failed",entry,{"file_exists":FileAccess.file_exists(str(entry.get("animation_resource","")))})
+		_show_library_notice("Not added · could not create a project copy of this animation")
+		return
+	var quality:Dictionary=preload("res://scripts/animation_quality_gate.gd").inspect(project_animation,actor.skeleton)
+	if not bool(quality.get("ok",false)):
+		_log_store_action("quality_rejected",entry,quality)
+		_show_library_notice("Not added · quality check: "+str(quality.get("reason","animation failed validation")))
+		return
 	if entry.has("store_asset_id") and store_library.taken.has(StoreLibrary.key(entry)):
-		if store_library.move(StoreLibrary.key(entry),group,category):
+		var owned_id:=StoreLibrary.key(entry)
+		if not store_library.ensure_project_copy(owned_id,project_animation):
+			_show_library_notice("Could not make a project copy of this animation")
+			return
+		if store_library.move(owned_id,group,category):
 			if selected_group!=group:select_group(group)
 			select_category(category,true)
 			_populate_animation_store()
@@ -1062,14 +1359,16 @@ func take_store_animation(entry:Dictionary,group:String,category:String) -> void
 		return
 	var names:Array=[]
 	for animation in Library.entries()+load_custom_motion(category):names.append(str(animation.title))
-	if not store_library.take(entry,group,category,names):
-		selection_status.text="Could not save animation to your library"
+	if not store_library.take(entry,group,category,names,project_animation):
+		_log_store_action("project_save_failed",entry)
+		selection_status.text="Could not save animation as a project asset"
 		return
 	_populate_animation_store()
 	if selected_group!=group:select_group(group)
 	select_category(category,true)
 	selection_status.text="Added %s to %s / %s"%[entry.title,group,category]
-	_show_library_notice("Added %s → %s"%[store_library.last_taken_entry.get("title",entry.title),category])
+	_log_store_action("download_complete",entry,{"project_asset":store_library.last_taken_entry.get("animation_resource",""),"tracks":project_animation.get_track_count(),"duration":project_animation.length})
+	_show_library_notice("Added %s → %s · project asset ready for Git"%[store_library.last_taken_entry.get("title",entry.title),category])
 
 func open_rename_animation(entry:Dictionary) -> void:
 	var dialog:=ConfirmationDialog.new()
@@ -1096,10 +1395,12 @@ func open_rename_animation(entry:Dictionary) -> void:
 				var file:=FileAccess.open(str(entry.path),FileAccess.WRITE)
 				if file!=null:file.store_string(JSON.stringify(parsed,"\t"))
 		else:
-			if store_library.take(entry,str(entry.group),str(entry.category)):
+			if store_library.take(entry,str(entry.group),str(entry.category),[],_portable_store_animation(entry)):
 				store_library.rename(StoreLibrary.key(entry),requested)
 		select_category(selected_category,true)
-		if is_instance_valid(animation_store_list) and workspace_nav_panels.Store.visible:_load_animation_store()
+		if is_instance_valid(animation_store_list) and workspace_nav_panels.Store.visible:
+			if store_loaded:_populate_animation_store()
+			else:_load_animation_store()
 		dialog.queue_free()
 	dialog.confirmed.connect(commit)
 	input.text_submitted.connect(func(_text:String):commit.call())
@@ -1636,7 +1937,9 @@ func _build_workspace_dividers(ui:Control) -> void:
 	_apply_workspace_layout()
 
 func _zoom_panel_at(point:Vector2) -> String:
-	for key in ["Store","Options","Timeline","Categories","Animations","Playback","Header"]:
+	if is_instance_valid(spell_builder) and is_instance_valid(spell_builder.spell_playback_panel) and spell_builder.spell_playback_panel.is_visible_in_tree() and spell_builder.spell_playback_panel.get_global_rect().has_point(point):return "Spells"
+	if is_instance_valid(spell_builder) and is_instance_valid(spell_builder.demo_timing_panel) and spell_builder.demo_timing_panel.is_visible_in_tree() and spell_builder.demo_timing_panel.get_global_rect().has_point(point):return "Spells"
+	for key in ["Store","Options","Spells","Timeline","Categories","Animations","Playback","Header"]:
 		if not panel_zoom_roots.has(key):continue
 		var root:Control=panel_zoom_roots[key]
 		if root.is_visible_in_tree() and root.get_global_rect().has_point(point):return key
@@ -1654,6 +1957,9 @@ func change_panel_zoom(key:String,steps:int,reset:=false) -> void:
 func _apply_panel_zoom(key:String) -> void:
 	if not panel_zoom_roots.has(key):return
 	_scale_panel_controls(panel_zoom_roots[key],float(panel_zoom_levels.get(key,1.0)))
+	if key=="Spells" and is_instance_valid(spell_builder) and is_instance_valid(spell_builder.demo_timing_panel):
+		_scale_panel_controls(spell_builder.demo_timing_panel,float(panel_zoom_levels.get(key,1.0)))
+		if is_instance_valid(spell_builder.spell_playback_panel):_scale_panel_controls(spell_builder.spell_playback_panel,float(panel_zoom_levels.get(key,1.0)))
 	if key=="Animations":_apply_workspace_layout()
 
 func change_timeline_time_zoom(steps:int) -> void:
@@ -1764,7 +2070,8 @@ func spawn_editor_unit_at_screen(screen_position:Vector2) -> CharacterBody3D:
 	return spawn_editor_unit(location)
 
 func spawn_editor_unit(location:Vector3) -> CharacterBody3D:
-	var number:=added_units.size()+1
+	var number:=next_editor_unit_number
+	next_editor_unit_number+=1
 	var unit:=preload("res://scripts/battle_actor.gd").new()
 	unit.name="BOT_%d"%number
 	unit.team=0
@@ -1786,23 +2093,22 @@ func spawn_editor_unit(location:Vector3) -> CharacterBody3D:
 	unit.player.stop()
 	preload("res://scripts/editor_rig_pose.gd").idle(unit)
 	added_units.append(unit)
-	var ring:=MeshInstance3D.new()
-	ring.name="UnitFocusRing"
-	var mesh:=TorusMesh.new()
-	mesh.inner_radius=0.42
-	mesh.outer_radius=0.47
-	mesh.rings=24
-	mesh.ring_segments=8
-	ring.mesh=mesh
-	ring.position.y=0.04
-	var material:=StandardMaterial3D.new()
-	material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-	ring.material_override=material
-	unit.add_child(ring)
+	_ensure_unit_focus_ring(unit)
 	focus_editor_unit(added_units.size()-1)
-	unit_source.text="BOT_%d"%(number+1)
+	unit_source.text="BOT_%d"%next_editor_unit_number
 	selection_status.text="Added BOT_%d"%number
 	return unit
+
+func ensure_default_editor_unit() -> void:
+	for index in range(added_units.size()-1,-1,-1):
+		if not is_instance_valid(added_units[index]):added_units.remove_at(index)
+	if added_units.is_empty():
+		next_editor_unit_number=1
+		var unit:=spawn_editor_unit(Vector3(0,0.02,0))
+		if selected_group=="Spells" and spell_builder.demo_only_stage:unit.hide()
+		GameDiagnostics.log_event("editor_default_bot_created",{"name":str(unit.name),"position":[0,0.02,0],"selected":unit==focused_unit})
+	elif not is_instance_valid(focused_unit) and not selection_cleared:
+		focus_editor_unit(0)
 
 func arena_drag_point(screen_position:Vector2) -> Variant:
 	var camera:Camera3D=field.camera
@@ -1812,7 +2118,8 @@ func move_editor_unit(unit:CharacterBody3D,location:Vector3) -> void:
 	if not is_instance_valid(unit):return
 	var flat:=Vector2(location.x,location.z).limit_length(float(field.Boundary.RADIUS)-2.0)
 	unit.global_position=Vector3(flat.x,float(unit.get_meta("editor_ground_y",0.02)),flat.y)
-	if unit==focused_unit:_capture_timeline_origin()
+	if selected_group=="Spells":unit.practice_home=unit.global_position
+	elif unit==focused_unit:_capture_timeline_origin()
 
 func reset_focused_unit_position() -> void:
 	if not can_add_unit_animation():
@@ -1828,6 +2135,7 @@ func reset_focused_unit_position() -> void:
 func focus_editor_unit(index:int) -> void:
 	if playtest.active:playtest.release()
 	if index<0 or index>=added_units.size():return
+	selection_cleared=false
 	row_preview_unit=null
 	if timeline_playing:stop_timeline()
 	focused_unit=added_units[index]
@@ -1836,26 +2144,107 @@ func focus_editor_unit(index:int) -> void:
 	selection_status.text="Focused "+str(focused_unit.name)
 	_update_unit_focus_rings()
 
+func focusable_editor_units() -> Array:
+	if selected_group=="Spells" and is_instance_valid(spell_builder):
+		var units:Array=[actor,target,spell_builder.practice_human]
+		units.append_array(added_units)
+		return units
+	return added_units
+
+func select_editor_unit(unit:CharacterBody3D) -> void:
+	if not is_instance_valid(unit) or not unit.is_visible_in_tree():return
+	selection_cleared=false
+	if selected_group!="Spells":
+		focus_editor_unit(added_units.find(unit))
+		return
+	if playtest.active:playtest.release()
+	focused_unit=unit
+	_update_unit_focus_rings()
+	GameDiagnostics.log_event("spell_practice_target_selected",{"unit":str(unit.name)})
+
+func clear_editor_unit_selection() -> void:
+	if playtest.active:playtest.release()
+	if timeline_playing:stop_timeline()
+	selection_cleared=true
+	focused_unit=null
+	_update_unit_focus_rings()
+
+func _ensure_unit_focus_ring(unit:CharacterBody3D) -> MeshInstance3D:
+	var ring:MeshInstance3D=unit.get_node_or_null("UnitFocusRing")
+	if is_instance_valid(ring):return ring
+	ring=MeshInstance3D.new()
+	ring.name="UnitFocusRing"
+	var mesh:=TorusMesh.new()
+	mesh.inner_radius=0.62 if unit.practice_wooden_dummy else 0.42
+	mesh.outer_radius=0.68 if unit.practice_wooden_dummy else 0.47
+	mesh.rings=24
+	mesh.ring_segments=8
+	ring.mesh=mesh
+	ring.position.y=0.04
+	var material:=StandardMaterial3D.new()
+	material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override=material
+	ring.visible=false
+	unit.add_child(ring)
+	return ring
+
 func _pick_editor_unit(screen_position:Vector2) -> CharacterBody3D:
 	var camera:Camera3D=field.camera
 	var origin:=camera.project_ray_origin(screen_position)
 	var ray_end:=origin+camera.project_ray_normal(screen_position)*200.0
 	var closest:CharacterBody3D
 	var distance:=INF
-	for unit in added_units:
-		if not is_instance_valid(unit) or camera.is_position_behind(unit.global_position):continue
-		var points:=Geometry3D.get_closest_points_between_segments(origin,ray_end,unit.global_position+Vector3.UP*0.3,unit.global_position+Vector3.UP*1.55)
+	for unit in focusable_editor_units():
+		if not is_instance_valid(unit) or not unit.is_visible_in_tree() or camera.is_position_behind(unit.global_position):continue
+		var center:Vector3=unit.focus_position()
+		var bottom:Vector3=center+Vector3.UP*0.3
+		var top:Vector3=center+Vector3.UP*1.55
+		if is_instance_valid(unit.ragdoll):
+			bottom=unit.bone_point("pelvis")
+			top=unit.bone_point("Head")
+		var points:=Geometry3D.get_closest_points_between_segments(origin,ray_end,bottom,top)
 		if points[0].distance_to(points[1])>0.4:continue
 		var depth:=origin.distance_to(points[0])
 		if depth<distance:closest=unit;distance=depth
 	return closest
 
 func _update_unit_focus_rings() -> void:
-	for unit in added_units:
+	var selectable:=focusable_editor_units()
+	var units:Array=added_units.duplicate()
+	if is_instance_valid(field):units.append_array(field.fighters)
+	for unit in units:
 		if not is_instance_valid(unit):continue
-		var ring:MeshInstance3D=unit.get_node("UnitFocusRing")
-		ring.visible=unit==focused_unit or unit==hovered_unit
-		ring.material_override.albedo_color=Color("e9bf54") if unit==focused_unit else Color("80d8ff")
+		var ring:MeshInstance3D=unit.get_node_or_null("UnitFocusRing")
+		var active:bool=unit in selectable and unit.is_visible_in_tree()
+		if active and not is_instance_valid(ring):ring=_ensure_unit_focus_ring(unit)
+		if not is_instance_valid(ring):continue
+		FocusVisuals.update_ring(ring,unit==focused_unit,unit==hovered_unit,active)
+		if selected_group=="Spells" and active:
+			var center:Vector3=unit.focus_position()
+			ring.global_position=Vector3(center.x,0.04,center.z)
+
+	if not is_instance_valid(focus_marker):focus_marker=FocusVisuals.create_marker(self)
+	var subject:CharacterBody3D=focused_unit if focused_unit in selectable else null
+	if selected_group=="Spells" and is_instance_valid(field.camera_focus_target):subject=field.camera_focus_target
+	FocusVisuals.update_marker(focus_marker,subject)
+
+func _layout_spell_selection_area() -> void:
+	if not is_instance_valid(base_ui):return
+	var drop:Control=base_ui.get_node_or_null("ArenaUnitDrop")
+	if not is_instance_valid(drop):return
+	if selected_group=="Spells" and is_instance_valid(spell_builder):
+		drop.anchor_left=spell_builder.anchor_right
+		drop.anchor_right=spell_builder.demo_timing_panel.anchor_left
+		drop.offset_left=0
+		drop.offset_right=0
+		drop.offset_top=54
+		drop.offset_bottom=-60 if spell_builder.creation_step=="projectile" else 0
+	else:
+		drop.anchor_left=0
+		drop.anchor_right=1
+		drop.offset_left=workspace_choices.offset_right
+		drop.offset_right=0
+		drop.offset_bottom=timeline_panel.offset_top
 
 func _update_timeline_ruler() -> void:
 	if not is_instance_valid(timeline_scrubber):return
@@ -2086,7 +2475,8 @@ func _clip_default_effort(clip:Dictionary) -> float:
 	return float({"Idle":1,"Crouch":3,"Block":5,"Brace Block":8,"Knee":13,"Kick":15,"Round Kick":17,"Uppercut":18,"Sweep":17,"Elbow":12,"Cross":11,"Hook":12}.get(str(clip.get("step","")),8))
 
 func _clip_combat_stats(clip:Dictionary) -> Dictionary:
-	var idle:=str(clip.get("category",""))=="Idle" or str(clip.get("title","")).to_lower().begins_with("idle")
+	var title_lower:=str(clip.get("title","")).strip_edges().to_lower()
+	var idle:=str(clip.get("category","")).to_lower()=="idle" or title_lower.begins_with("idle") or title_lower.ends_with(" stand")
 	var effort:=0.0 if idle else clampf(float(clip.get("effort",_clip_default_effort(clip))),0.0,100.0)
 	var native_duration:=maxf(0.1,float(clip.get("source_length",_animation_timeline_duration(clip))))
 	var duration:=maxf(0.05,float(clip.get("duration",native_duration)))
@@ -2094,7 +2484,7 @@ func _clip_combat_stats(clip:Dictionary) -> Dictionary:
 	var attack:=not motion_only and str(clip.get("category","")) not in ["Block","Dodges"]
 	var damage:float=0.1+effort*1.5 if attack else 0.0
 	var spell:Dictionary=clip.get("attached_spell",{})
-	var spell_multiplier:=pow(2.0,1.0-duration) if not motion_only else 1.0
+	var spell_multiplier:=preload("res://scripts/animation_mana_scaling.gd").multiplier(duration) if not motion_only else 1.0
 	var mana:=maxf(0.0,float(spell.get("mana",0.0)))*spell_multiplier
 	return {"effort":effort,"duration":duration,"damage_multiplier":1.0,"stamina":effort,"damage":damage,"spell_multiplier":spell_multiplier,"mana":mana}
 
@@ -2790,6 +3180,9 @@ func update_controls() -> void:
 		_set_button_accent(slow_button,Engine.time_scale<1)
 
 func select_group(group: String) -> void:
+	if is_instance_valid(animation_footer):animation_footer.visible=group!="Spells" or not spell_builder.demo_only_stage
+	for unit in added_units:
+		if is_instance_valid(unit):unit.visible=group!="Spells" or not spell_builder.demo_only_stage
 	for tab_group in category_group_tabs:_set_button_accent(category_group_tabs[tab_group],tab_group==group)
 	for section in workspace_nav_panels:
 		if section=="Store" or section=="Animations" and group in ["Motion","Attack"]:continue
@@ -2820,6 +3213,7 @@ func select_group(group: String) -> void:
 		frame_spell_preview(spell_builder.preview_subject())
 		get_tree().paused=false
 		return
+	if focused_unit not in added_units and not added_units.is_empty():focus_editor_unit(0)
 	browse_animations()
 	populate_group(group)
 	title_label.text=""
@@ -2836,16 +3230,68 @@ func camera_text_editing() -> bool:
 	if is_instance_valid(category_dialog) and category_dialog.visible:return true
 	return super.camera_text_editing()
 
+func camera_keyboard_enabled() -> bool:
+	return selected_group!="Spells"
+
+func focus_camera_on_character() -> void:
+	if not is_instance_valid(field):return
+	if selected_group=="Spells" and is_instance_valid(spell_builder):
+		spell_builder.toggle_third_person_focus(focused_unit)
+		camera_focus_active=is_instance_valid(field.camera_focus_target)
+		return
+	if not is_instance_valid(focused_unit) and not (is_instance_valid(custom_editor) and custom_editor.visible):
+		field.camera_focus_target=null
+		if camera_focus_active:
+			field.camera.global_transform=camera_before_focus
+			inspection_camera.capture_view(field.camera,inspection_camera.distance)
+		camera_focus_active=false
+		GameDiagnostics.log_event("editor_camera_focus_released",{"workspace":selected_group})
+		return
+	if not camera_focus_active:camera_before_focus=field.camera.global_transform
+	camera_focus_active=true
+	if playtest.active:
+		playtest._update_camera()
+	else:
+		var subject:Node3D=focused_unit if is_instance_valid(focused_unit) and focused_unit.is_visible_in_tree() else actor
+		if is_instance_valid(custom_editor) and custom_editor.visible:subject=actor
+		if not is_instance_valid(subject):return
+		var center:Vector3=subject.focus_position()+Vector3.UP*1.1 if subject.has_method("focus_position") else subject.global_position+Vector3.UP*1.1
+		inspection_camera.take_control(field.camera,center)
+		inspection_camera.focus=center
+		inspection_camera.apply(field.camera)
+	GameDiagnostics.log_event("editor_camera_focus",{"workspace":selected_group})
+
 func frame_spell_preview(subject:Node3D) -> void:
 	# Compose once on workspace/target choice, never on parameter changes.
+	if is_instance_valid(spell_builder) and spell_builder.demo_only_stage:
+		spell_builder.third_person_ready=false
+		# Rear three-quarter view: show the full body and leave room ahead of
+		# its casting direction. Use the same view for demo and spell-type steps.
+		var forward:Vector3=subject.global_basis.z.normalized()
+		var side:Vector3=subject.global_basis.x.normalized()
+		var back:Vector3=(-forward*0.9-side*0.65+Vector3.UP*0.28).normalized()
+		var distance:=8.5
+		var center:=subject.global_position+Vector3.UP*1.1+forward*1.3
+		if is_instance_valid(spell_builder.practice_human) and spell_builder.practice_human.visible:
+			distance=11.5
+			center=subject.global_position+Vector3.UP*1.1+forward*1.7-side*0.9
+		field.camera.h_offset=0.0
+		field.camera.v_offset=0.0
+		field.camera.fov=45.0
+		field.camera.global_position=center+back*distance
+		field.camera.look_at(center)
+		inspection_camera.capture_view(field.camera,distance)
+		camera_initialized=true
+		return
 	var center:=subject.global_position+Vector3.UP*1.35
 	var back:Vector3=(actor.global_basis.z*0.8+actor.global_basis.x*0.7+Vector3.UP*0.45).normalized()
 	var right:=Vector3(back.z,0,-back.x).normalized()
-	var distance:=9.0
+	var demo_only:bool=is_instance_valid(spell_builder) and spell_builder.demo_only_stage
+	var distance:=5.0 if demo_only else 9.0
 	if is_instance_valid(practice_ally):
 		center=(actor.global_position+target.global_position+practice_ally.global_position)/3.0+Vector3.UP*1.45
 		distance=maxf(12.0,actor.position.distance_to(target.position)*2.2)
-	var shift:Vector3=-right*distance*tan(deg_to_rad(field.camera.fov*0.5))*get_viewport().get_visible_rect().size.aspect()*0.55
+	var shift:Vector3=-right*distance*tan(deg_to_rad(field.camera.fov*0.5))*get_viewport().get_visible_rect().size.aspect()*(0.30 if demo_only else 0.55)
 	field.camera.global_position=center+back*distance+shift
 	field.camera.look_at(center+shift)
 	inspection_camera.capture_view(field.camera,distance)
@@ -2871,7 +3317,7 @@ func populate_group(group: String,preferred_category: String="",preserve_preview
 		node.custom_minimum_size=Vector2(84 if custom else 120,34)
 		node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		node.clip_text=true
-		node.tooltip_text=category
+		node.tooltip_text="Drag to rearrange folders · "+category
 		category_buttons[category]=node
 		if custom:
 			var remove:=button(row,"−",func():remove_category(group,category))
@@ -2936,7 +3382,8 @@ func select_category(category: String,preserve_preview:=false) -> void:
 		if entry.group==selected_group and entry.category==category and not personal.any(func(owned:Dictionary):return StoreLibrary.key(owned)==StoreLibrary.key(entry)):entries.append(entry)
 	for entry in load_custom_motion(category):entries.append(entry)
 	entries.append_array(personal)
-	var ordered:=animation_favorites.ordered(entries)
+	var ordered:=animation_favorites.ordered(entries,selected_group+"|"+selected_category)
+	animation_order_entries.assign(ordered.duplicate(true))
 	for entry in ordered:build_animation_row(entry,entry.has("path"))
 	refresh_library_add_buttons()
 	if ordered.is_empty():menu_label(animation_list,"No matching animations",14)
@@ -2949,10 +3396,23 @@ func toggle_animation_favorite(entry:Dictionary) -> void:
 	if selected_group!="Spells":select_category(selected_category,true)
 
 func set_animation_sort(index:int) -> void:
-	animation_favorites.sort_mode=clampi(index,0,2)
+	animation_favorites.sort_mode=clampi(index,0,3)
 	animation_favorites.save()
 	animation_sort_menu.select(animation_favorites.sort_mode)
 	if selected_group!="Spells":select_category(selected_category,true)
+
+func reorder_category(group:String,source:String,target:String) -> void:
+	if not category_store.reorder(group,source,target):return
+	var keep:=selected_category
+	populate_group(group,keep,true)
+	if category_buttons.has(keep):category_scroll.call_deferred("ensure_control_visible",category_buttons[keep])
+
+func reorder_animation_entries(source:Dictionary,target:Dictionary) -> void:
+	if selected_group!=str(source.get("group","")) or selected_category!=str(source.get("category","")):return
+	var changed:=animation_favorites.reorder(animation_order_entries,selected_group+"|"+selected_category,animation_favorites.key(source),animation_favorites.key(target))
+	if changed:
+		animation_sort_menu.select(3)
+		select_category(selected_category,true)
 
 func animation_icon_button(row:Container,action:String,tooltip:String,callback:Callable) -> Button:
 	var node:=button(row,"",callback)
@@ -3044,20 +3504,33 @@ func preview_animation(entry: Dictionary) -> void:
 
 func play_animation_row(entry:Dictionary) -> void:
 	if playtest.active:playtest.release()
-	_ensure_animation_source(entry)
+	if not _ensure_animation_source(entry):return
 	if not is_instance_valid(focused_unit):
 		selection_status.text="Add and focus a unit to preview an animation"
 		return
 	stop_timeline()
+	# Starting another preview while one is already running used to leave the
+	# old row_preview_unit valid. preview_animation() then returned early, so
+	# selected_entry stayed on the previous clip while the new click only reset
+	# its timer and stamina. Release the old preview target before selecting the
+	# new clip so every click reliably swaps the pose being sampled.
+	if is_instance_valid(row_preview_unit):
+		_set_unit_idle_target(row_preview_unit,idle_preview_elapsed)
+		row_preview_unit=null
 	preview_animation(entry)
+	selected_entry=entry.duplicate(true)
 	row_preview_unit=focused_unit
 	row_preview_remaining=0.25+_animation_timeline_duration(entry)
 	row_preview_action_duration=maxf(0.05,_animation_timeline_duration(entry))
 	row_preview_stamina_cost=float(_clip_combat_stats(entry).stamina)
 	row_preview_elapsed=0.0
 	row_preview_origin=focused_unit.global_position
+	var initial_rotations:Array[Quaternion]=[]
+	for bone_index in focused_unit.skeleton.get_bone_count():initial_rotations.append(focused_unit.skeleton.get_bone_pose_rotation(bone_index))
+	row_preview_diagnostics={"entry":entry.duplicate(true),"unit":focused_unit,"initial_rotations":initial_rotations,"samples":0,"max_rotation_degrees":0.0}
+	_log_store_action("preview_started",entry,{"unit":str(focused_unit.name),"duration":row_preview_action_duration,"tracks":actor.player.get_animation(str(entry.clip)).get_track_count()})
 	preview_note.text="%s · whole body preview · timeline unchanged"%focused_unit.name
-	selection_status.text="Previewing %s on %s"%[entry.title,focused_unit.name]
+	selection_status.text="Previewing %s on %s"%[entry.get("title","Animation"),focused_unit.name]
 	live_preview_sequence.reset()
 	actor.editor_pose_locked=true
 
@@ -4885,8 +5358,22 @@ func begin_live_preview(reset_loops: bool=true) -> void:
 func _spend_unit_stamina(unit:CharacterBody3D,amount:float) -> void:
 	if not is_instance_valid(unit) or amount<=0.0:return
 	unit.stamina=maxf(0.0,float(unit.stamina)-amount)
+	unit.stamina_delay=maxf(float(unit.stamina_delay),0.65)
 	var tag:=unit.get_node_or_null("OverheadHealthTag")
 	if tag!=null:tag.update_tag()
+
+func _tick_editor_stamina_recovery(delta:float) -> void:
+	for unit in added_units:
+		if not is_instance_valid(unit) or unit==row_preview_unit or unit.stamina>=unit.MAX_STAMINA:continue
+		unit.stamina_delay=maxf(0.0,float(unit.stamina_delay)-delta)
+		# Create mode locks the actor's animation state, so `mode` can remain
+		# "takeoff"/"punch" after playback has ended. The editor owns playback
+		# and only calls this recovery path when the timeline is idle; don't let
+		# that stale combat mode permanently suppress normal stamina recovery.
+		if unit.stamina_delay<=0.0:
+			unit.stamina=minf(unit.MAX_STAMINA,float(unit.stamina)+delta*unit.RESOURCE_RECOVERY_RATE)
+		var tag:=unit.get_node_or_null("OverheadHealthTag")
+		if tag!=null:tag.update_tag()
 
 func _spend_timeline_stamina(from_time:float,to_time:float) -> void:
 	if not is_instance_valid(focused_unit):return
@@ -4899,6 +5386,8 @@ func _spend_timeline_stamina(from_time:float,to_time:float) -> void:
 
 func _physics_process(delta: float) -> void:
 	playtest.physics(delta)
+	if not timeline_playing:
+		_tick_editor_stamina_recovery(delta)
 	_tick_jump_tails(delta*Engine.time_scale)
 	if is_instance_valid(row_preview_unit):
 		update_camera(delta)
@@ -4999,8 +5488,12 @@ func update_camera(delta: float) -> void:
 	camera_initialized=true
 
 func _process(delta: float) -> void:
+	if default_unit_ready:ensure_default_editor_unit()
+	if is_instance_valid(loading_layer) and is_instance_valid(loading_bar):
+		loading_bar.value=create_loading_pacer.progress_percent()
 	if is_instance_valid(custom_editor) and custom_editor.visible and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):_capture_custom_history()
 	if is_instance_valid(field) and is_instance_valid(base_ui):
+		_layout_spell_selection_area()
 		var hover_control:=get_viewport().gui_get_hovered_control()
 		hovered_unit=_pick_editor_unit(get_viewport().get_mouse_position()) if hover_control==base_ui.get_node_or_null("ArenaUnitDrop") else null
 		_update_unit_focus_rings()
@@ -5043,15 +5536,66 @@ func _process(delta: float) -> void:
 		_set_unit_pose_target(row_preview_unit)
 		row_preview_remaining-=delta
 		if row_preview_remaining<=0.0:
+			_log_store_action("preview_finished",selected_entry,{"samples":row_preview_diagnostics.get("samples",0),"max_rotation_degrees":row_preview_diagnostics.get("max_rotation_degrees",0.0)})
 			if str(selected_entry.get("step",""))=="Jump":row_preview_unit.global_position=row_preview_origin
 			_set_unit_idle_target(row_preview_unit)
 			row_preview_unit=null
 			selection_status.text="Preview finished · press the row Play button to play again"
 	_blend_unit_pose_targets(delta)
+	if is_instance_valid(row_preview_unit) and not row_preview_diagnostics.is_empty():
+		var baseline:Array=row_preview_diagnostics.get("initial_rotations",[])
+		var maximum:float=row_preview_diagnostics.get("max_rotation_degrees",0.0)
+		for bone_index in mini(baseline.size(),row_preview_unit.skeleton.get_bone_count()):
+			maximum=maxf(maximum,rad_to_deg((baseline[bone_index] as Quaternion).angle_to(row_preview_unit.skeleton.get_bone_pose_rotation(bone_index))))
+		row_preview_diagnostics["max_rotation_degrees"]=maximum
+		row_preview_diagnostics["samples"]=int(row_preview_diagnostics.get("samples",0))+1
 	playtest.contacts()
 
 func _input(event: InputEvent) -> void:
+	if selected_group=="Spells" and is_instance_valid(spell_builder) and spell_builder.handle_third_person_input(event):
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_F and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and not camera_text_editing():
+		focus_camera_on_character()
+		get_viewport().set_input_as_handled()
+		return
 	if playtest.handle_input(event):
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_MIDDLE:
+		if event.pressed and event.ctrl_pressed and _zoom_panel_at(event.position)=="Store":
+			store_zoom_dragging=true
+			store_zoom_drag_remainder=0.0
+			get_viewport().set_input_as_handled()
+			return
+		elif not event.pressed and store_zoom_dragging:
+			store_zoom_dragging=false
+			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseMotion and store_zoom_dragging:
+		store_zoom_drag_remainder+=event.relative.y
+		var store_zoom_steps:=int(store_zoom_drag_remainder/24.0)
+		if store_zoom_steps!=0:
+			change_panel_zoom("Store",-store_zoom_steps)
+			store_zoom_drag_remainder-=float(store_zoom_steps)*24.0
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_MIDDLE and is_instance_valid(spell_builder) and spell_builder.visible:
+		if event.pressed and _zoom_panel_at(event.position)=="Spells":
+			spell_zoom_dragging=true
+			spell_zoom_drag_remainder=0.0
+			get_viewport().set_input_as_handled()
+			return
+		elif not event.pressed and spell_zoom_dragging:
+			spell_zoom_dragging=false
+			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseMotion and spell_zoom_dragging:
+		spell_zoom_drag_remainder+=event.relative.y
+		var zoom_steps:=int(spell_zoom_drag_remainder/24.0)
+		if zoom_steps!=0:
+			change_panel_zoom("Spells",-zoom_steps)
+			spell_zoom_drag_remainder-=float(zoom_steps)*24.0
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and event.alt_pressed and not event.ctrl_pressed and event.keycode in [KEY_LEFT,KEY_RIGHT,KEY_UP,KEY_DOWN] and can_add_unit_animation() and not get_viewport().gui_get_focus_owner() is LineEdit and not (get_viewport().gui_get_focus_owner() is Button and get_viewport().gui_get_focus_owner().has_meta("timeline_clip_id")):

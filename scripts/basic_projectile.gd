@@ -7,8 +7,27 @@ const TEST_RADIUS:=30.0
 const MIN_POTENCY:=0.25
 const MAX_POTENCY:=4.0
 const MIN_VELOCITY:=1.0
-const MAX_VELOCITY:=50.0
+# The former 30% allocation (1 + 49 * 0.3) is now the full base-speed budget.
+const MAX_VELOCITY:=15.7
 const DEFAULT_VELOCITY:=14.0
+const CAST_RADIUS_SCALE:=1.0/3.0
+const AIM_DISTANCE:=20.0
+
+static func resolved_motion(spec:Dictionary) -> Dictionary:
+	var charge:=clampf(float(spec.get("charge",0.0)),0.0,1.0)
+	var speed:float=(14.0 if spec.effect=="orb" else 17.0)*(1.0+charge*0.7)
+	if spec.has("projectile_velocity"):speed=clampf(float(spec.projectile_velocity),1.0,50.0)
+	var radius:float=(0.16 if spec.effect=="orb" else 0.13)*(1.0+charge*0.9)
+	if spec.has("projectile_radius"):radius=clampf(float(spec.projectile_radius),0.1,30.0 if spec.get("testing_only",false) else 2.0)
+	if spec.has("base_projectile_radius") and spec.has("base_projectile_velocity"):
+		var amp:=maxf(1.0,float(spec.get("spell_amplifier",1.0)))
+		var scale:=maxf(0.001,float(spec.get("projectile_radius_scale",1.0)))
+		radius=clampf(float(spec.base_projectile_radius),0.1*scale,(30.0 if spec.get("testing_only",false) else 2.0)*scale)*amp
+		speed=clampf(float(spec.base_projectile_velocity),1.0,50.0)*amp
+	return {"radius":radius,"speed":speed}
+
+static func lifetime(distance:float,radius:float,speed:float) -> float:
+	return clampf((distance+radius*2.0)/speed+2.0,2.2,90.0)
 static func size_share(radius:float) -> float:
 	return clampf(log(maxf(MIN_RADIUS,radius)/MIN_RADIUS)/log(MAX_RADIUS/MIN_RADIUS),0,1)
 static func potency_share(potency:float) -> float:

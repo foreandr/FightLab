@@ -624,7 +624,7 @@ func resource_meter(column: VBoxContainer, name_: String, color: Color, maximum:
 	title.add_theme_font_size_override("font_size", 11)
 	title.add_theme_color_override("font_color", color)
 	row.add_child(title)
-	var bar := ProgressBar.new()
+	var bar := preload("res://scripts/smooth_resource_bar.gd").new()
 	bar.max_value = maximum
 	bar.step = 0.01
 	bar.value = maximum
@@ -649,9 +649,9 @@ func resource_meter(column: VBoxContainer, name_: String, color: Color, maximum:
 func update_fight_ui() -> void:
 	for i in 2:
 		health_bars[i].value = fighters[i].health
-		guard_bars[i].value = fighters[i].guard_energy
-		mana_bars[i].value = fighters[i].mana
-		stamina_bars[i].value = fighters[i].stamina
+		guard_bars[i].set_target_value(fighters[i].guard_energy)
+		mana_bars[i].set_target_value(fighters[i].mana)
+		stamina_bars[i].set_target_value(fighters[i].stamina)
 		resource_labels[i][0].text = str(floori(fighters[i].mana))
 		resource_labels[i][1].text = str(floori(fighters[i].stamina))
 		resource_labels[i][2].text = str(floori(fighters[i].guard_energy))

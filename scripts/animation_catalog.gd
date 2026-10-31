@@ -1,7 +1,7 @@
 extends RefCounted
 const GROUPS := {
-	"Motion":["Idle","Run","Sprint","Jump","Land","Dash","Crouch","Acrobatics"],
-	"Attack":["Punch","Kick","Block","Dodges"]
+	"Motion":["Idle","Run","Sprint","Jump","Land","Dash","Crouch","Acrobatics","Downloaded"],
+	"Attack":["Punch","Kick","Block","Dodges","Downloaded"]
 }
 static func entries() -> Array[Dictionary]:
 	var result: Array[Dictionary]=[

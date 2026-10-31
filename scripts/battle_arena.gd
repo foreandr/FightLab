@@ -3,6 +3,8 @@ const BattleActor = preload("res://scripts/battle_actor.gd")
 const BattleVFX = preload("res://scripts/battle_vfx.gd")
 const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
+const GladiatorialPit=preload("res://scenes/maps/gladiatorial_pit.tscn")
+const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
 const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
 const BattleFighterTag = preload("res://scripts/fighter_overhead_tag.gd")
@@ -33,6 +35,24 @@ var story_camera_base_yaw := 0.0
 var story_camera_initialized := false
 var camera_orbit_pitch := 0.362
 var camera_focus_target: CharacterBody3D
+var projectile_hitboxes_visible:=false
+var projectile_impact_predictor=preload("res://scripts/projectile_impact_predictor.gd").new()
+
+func set_projectile_hitboxes(enabled:bool) -> void:
+	projectile_hitboxes_visible=enabled
+	for shot in shots:_update_projectile_hitbox(shot)
+
+func _update_projectile_hitbox(shot:Dictionary) -> void:
+	if not is_instance_valid(shot.node):return
+	var outline:MeshInstance3D=shot.get("hitbox_outline")
+	if projectile_hitboxes_visible and not is_instance_valid(outline):
+		outline=preload("res://scripts/projectile_hitbox_outline.gd").new()
+		outline.configure(float(shot.radius))
+		shot.node.add_child(outline)
+		shot["hitbox_outline"]=outline
+	if is_instance_valid(outline):
+		outline.visible=projectile_hitboxes_visible
+		outline.global_position=shot.node.global_position
 
 func _ready() -> void:
 	var setup_started_usec := Time.get_ticks_usec()
@@ -48,7 +68,7 @@ func _ready() -> void:
 		if arg.begins_with("--report-file="):
 			report_file = arg.trim_prefix("--report-file=")
 	build_colosseum_stage()
-	add_child(Boundary.new())
+	add_child(GladiatorialPit.instantiate())
 	hud.get_parent().queue_free()
 	vfx = BattleVFX.new()
 	add_child(vfx)
@@ -366,7 +386,7 @@ func cast_magic(f: CharacterBody3D, spec: Dictionary, _air: bool) -> void:
 	if not f.can_cast_with(spec,f.practice_spell_animation):return
 	if spec.effect=="burst" and f.stamina<f.flash_stamina_requirement():
 		return
-	if not round_active or f.health <= 0 or not f.spend_mana(mana_cost(spec)):
+	if not round_active or f.health <= 0 or not f.spend_cast_resources(float(spec.get("stamina_cost",0.0)),mana_cost(spec)):
 		return
 	var key := "%s/%s"%[element_name(f.team),spec.id]
 	casts[key] = casts.get(key,0)+1
@@ -427,31 +447,43 @@ func damage_for(spec: Dictionary) -> float:
 	var base := 18.0 if spec.effect=="orb" else (16.0 if spec.effect=="slash" else 4.5)
 	return base*(1.0+float(spec.get("charge",0))*1.2)
 
+func projectile_aim_target(caster:CharacterBody3D,spec:Dictionary,origin:Vector3,speed:float) -> Vector3:
+	var aim_target:=_story_aim_target(caster)
+	var target:Vector3=caster.global_position+caster.global_basis.z*8.0
+	var calibrated_aim:Variant=spec.get("aim_direction",Vector3.ZERO)
+	if calibrated_aim is Vector3 and not calibrated_aim.is_zero_approx():
+		target=origin+calibrated_aim.normalized()*preload("res://scripts/basic_projectile.gd").AIM_DISTANCE
+	elif is_instance_valid(aim_target):
+		var target_point:Vector3=aim_target.bone_point("spine_03")
+		target=target_point+aim_target.velocity*minf(0.4,origin.distance_to(target_point)/speed)
+	return target
+
+func predict_projectile_impact(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
+	var rules=preload("res://scripts/basic_projectile.gd")
+	var motion:Dictionary=rules.resolved_motion(spec)
+	var target:=projectile_aim_target(caster,spec,origin,float(motion.speed))
+	var direction:Vector3=(target-origin).normalized()
+	var age:float=rules.lifetime(origin.distance_to(target),float(motion.radius),float(motion.speed))
+	return projectile_impact_predictor.predict(self,caster,origin,origin+direction*float(motion.speed)*age,float(motion.radius),spec)
+
 func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> void:
 	var q: float = clampf(spec.get("charge",0),0,1)
-	var speed := (14.0 if spec.effect=="orb" else 17.0)*(1+q*0.7)
-	if spec.has("projectile_velocity"):speed=clampf(float(spec.projectile_velocity),1.0,50.0)
-	var radius := (0.16 if spec.effect=="orb" else 0.13)*(1+q*0.9)
-	if spec.has("projectile_radius"):radius=clampf(float(spec.projectile_radius),0.1,30.0 if spec.get("testing_only",false) else 2.0)
+	var motion:=preload("res://scripts/basic_projectile.gd").resolved_motion(spec)
+	var speed:float=motion.speed
+	var radius:float=motion.radius
 	var node: MeshInstance3D = preload("res://scripts/basic_projectile.gd").visual(spec.projectile_element,radius,spec.get("appearance",{})) if spec.has("projectile_element") else vfx.projectile(f.team,"slash" if spec.effect=="slash" else "orb",radius)
 	add_child(node)
 	node.position = origin
 	if spec.effect=="slash":
 		node.scale = Vector3.ONE*(1+q*0.6)
-	var aim_target:=_story_aim_target(f)
-	var target:Vector3=f.global_position+f.global_basis.z*8.0
-	var calibrated_aim:Variant=spec.get("aim_direction",Vector3.ZERO)
-	if calibrated_aim is Vector3 and not calibrated_aim.is_zero_approx():
-		target=origin+calibrated_aim.normalized()*20.0
-	elif is_instance_valid(aim_target):
-		var target_point:Vector3=aim_target.bone_point("spine_03")
-		target=target_point+aim_target.velocity*minf(0.4,origin.distance_to(target_point)/speed)
+	var target:=projectile_aim_target(f,spec,origin,speed)
 	var velocity_: Vector3 = (target-origin).normalized()*speed
 	if node.has_meta("look"):
 		node.look_at_from_position(origin,origin+velocity_,Vector3.FORWARD if absf(velocity_.normalized().dot(Vector3.UP))>0.95 else Vector3.UP)
 		if node.get_meta("look").shape in ["Shard","Ring"]:node.rotate_object_local(Vector3.RIGHT,PI/2)
 	shot_serial += 1
-	shots.append({"max_age":clampf((origin.distance_to(target)+radius*2)/speed+2.0,2.2,90.0),"id":shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":spec.duplicate(),"radius":radius})
+	shots.append({"max_age":preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(target),radius,speed),"id":shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":spec.duplicate(),"radius":radius})
+	_update_projectile_hitbox(shots.back())
 
 func step_shots(delta: float) -> void:
 	for i in range(shots.size()-1,-1,-1):
@@ -519,6 +551,7 @@ func step_shots(delta: float) -> void:
 			shots.remove_at(i)
 		else:
 			shot.node.position=to
+			_update_projectile_hitbox(shot)
 			if shot.trail>0.035:
 				shot.trail=0
 				if shot.spec.has("projectile_element"):
@@ -623,9 +656,9 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	victim.last_hit_launch=spec.get("launch",false)
 	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400)):
 		return fraction>0
-	if bool(get("training_mode")) and spec.effect=="melee" and attacker.team==0 and hit_area!=null and hit_area.has_meta("calibration_dummy_index") and has_method("record_training_calibration_hit"):
+	if get("training_mode")==true and spec.effect=="melee" and attacker.team==0 and hit_area!=null and hit_area.has_meta("calibration_dummy_index") and has_method("record_training_calibration_hit"):
 		call("record_training_calibration_hit",int(hit_area.get_meta("calibration_dummy_index")),zone)
-	if bool(get("training_mode")) and victim.team>0:
+	if get("training_mode")==true and victim.team>0:
 		victim.velocity=Vector3.ZERO
 		victim.knockback=Vector3.ZERO
 		victim.drive_velocity=Vector3.ZERO
@@ -649,35 +682,13 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 func update_camera(delta: float) -> void:
 	if review_camera:
 		return
-	var player_locked:bool=story_mode and fighters.size()>0 and fighters[0].player_controlled and is_instance_valid(camera_focus_target) and camera_focus_target.health>0
-	if player_locked:
-		var player=fighters[0]
-		var toward:Vector3=player.flat_direction(player.global_position,camera_focus_target.global_position)
-		var base_yaw:=atan2(-toward.x,-toward.z)
-		var yaw:=base_yaw+camera_orbit_yaw
-		var backward:=Vector3(sin(yaw)*cos(camera_orbit_pitch),sin(camera_orbit_pitch),cos(yaw)*cos(camera_orbit_pitch)).normalized()
-		var center:Vector3=player.focus_position().lerp(camera_focus_target.focus_position(),0.58)+Vector3.UP*0.72
-		var distance:=5.4*camera_zoom
-		var goal:Vector3=player.global_position+backward*distance+Vector3.UP*(distance*0.22)
-		camera.position=camera.position.lerp(goal,minf(1,delta*5))
-		camera.fov=48
-		shake=maxf(0,shake-delta)
-		camera.look_at(center+Vector3(sin(elapsed*143),cos(elapsed*111),0)*shake)
-		return
 	if story_mode and not fighters.is_empty() and fighters[0].player_controlled:
 		var player=fighters[0]
 		if not story_camera_initialized:
 			story_camera_base_yaw=player.rotation.y+PI
 			story_camera_initialized=true
-		var yaw:float=story_camera_base_yaw+camera_orbit_yaw
-		var backward:=Vector3(sin(yaw)*cos(camera_orbit_pitch),sin(camera_orbit_pitch),cos(yaw)*cos(camera_orbit_pitch)).normalized()
-		var center:Vector3=player.focus_position()+Vector3.UP*0.58
-		var distance:=4.6*camera_zoom
-		var goal:=center+backward*distance
-		camera.position=camera.position.lerp(goal,minf(1,delta*7))
-		camera.fov=58
+		ThirdPersonCamera.update(camera,player,camera_focus_target,ThirdPersonCamera.world_yaw(self,player),camera_orbit_pitch,ThirdPersonCamera.BASE_DISTANCE*camera_zoom,delta)
 		shake=maxf(0,shake-delta)
-		camera.look_at(center+Vector3(sin(elapsed*143),cos(elapsed*111),0)*shake)
 		return
 	var low:=Vector3(INF,INF,INF)
 	var high:=Vector3(-INF,-INF,-INF)
@@ -712,19 +723,20 @@ func update_camera(delta: float) -> void:
 	camera.look_at(center+Vector3(sin(elapsed*143),cos(elapsed*111),0)*shake)
 
 func adjust_camera_zoom(zoom_in: bool) -> void:
-	camera_zoom=clampf(camera_zoom*(0.90 if zoom_in else 1.11),0.55,3.8)
+	ThirdPersonCamera.zoom(self,zoom_in)
 	GameDiagnostics.log_event("camera_zoom", {"zoom":camera_zoom,"direction":"in" if zoom_in else "out"})
 
 func rotate_camera_orbit(mouse_delta: Vector2) -> void:
-	camera_orbit_yaw-=mouse_delta.x*0.0065
-	camera_orbit_pitch=clampf(camera_orbit_pitch+mouse_delta.y*0.004,0.06,1.32)
+	ThirdPersonCamera.orbit(self,mouse_delta)
 
 func log_camera_orbit() -> void:
 	GameDiagnostics.log_event("camera_orbit", {"yaw":camera_orbit_yaw,"pitch":camera_orbit_pitch})
 
 func focus_camera_on(target: CharacterBody3D) -> void:
-	camera_focus_target=null if target==camera_focus_target else target
-	if is_instance_valid(camera_focus_target):camera_orbit_yaw=0.0
+	var next:CharacterBody3D=null if target==camera_focus_target else target
+	if story_mode and not fighters.is_empty() and is_instance_valid(camera):
+		ThirdPersonCamera.set_focus(self,fighters[0],next)
+	else:camera_focus_target=next
 	var target_name: String=""
 	if is_instance_valid(target):
 		var profile: Variant=target.get("story_profile")
@@ -822,9 +834,9 @@ func update_fight_ui() -> void:
 	for i in 3:
 		var f= fighters[i]
 		health_bars[i].value=f.health
-		mana_bars[i].value=f.mana
-		stamina_bars[i].value=f.stamina
-		guard_bars[i].value=f.guard_energy
+		mana_bars[i].set_target_value(f.mana)
+		stamina_bars[i].set_target_value(f.stamina)
+		guard_bars[i].set_target_value(f.guard_energy)
 		health_labels[i].text="%s  %d / %d"%[element_name(i),ceili(f.health),f.MAX_HEALTH]
 		for j in 4:
 			resource_labels[i][j].text=str(ceili(f.health) if j==0 else floori([f.health,f.mana,f.stamina,f.guard_energy][j]))

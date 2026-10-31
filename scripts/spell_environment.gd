@@ -70,6 +70,7 @@ func reset_environment() -> void:
 func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
  var element:String=shot.spec.projectile_element
  var potency:float=float(shot.spec.get("potency",1.0))
+ if potency<=0.0:return
  var radius:float=maxf(0.7,shot.radius*2)
  if element=="Wind":
   for other in arena.shots:

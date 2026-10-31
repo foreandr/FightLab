@@ -1,4 +1,7 @@
 extends RefCounted
+const Movement=preload("res://scripts/character_movement.gd")
+const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
+const Locomotion=preload("res://scripts/creation_locomotion.gd")
 var editor
 var active:=false
 var control_button:Button
@@ -149,8 +152,7 @@ func zoom_camera(steps:int) -> void:
 func _update_camera() -> void:
 	if not active or not is_instance_valid(editor.focused_unit):return
 	camera_offset=Vector3(sin(camera_yaw)*cos(camera_pitch),sin(camera_pitch),cos(camera_yaw)*cos(camera_pitch))*camera_distance
-	editor.field.camera.global_position=editor.focused_unit.global_position+Vector3.UP*0.8+camera_offset
-	editor.field.camera.look_at(editor.focused_unit.global_position+Vector3.UP*1.1)
+	ThirdPersonCamera.update(editor.field.camera,editor.focused_unit,null,camera_yaw,camera_pitch,camera_distance,1.0)
 
 func trigger() -> void:
 	if not active or editor.timeline_playing:return
@@ -171,9 +173,9 @@ func physics(delta:float) -> void:
 	elapsed+=delta
 	var unit:CharacterBody3D=editor.focused_unit
 	var camera:Camera3D=editor.field.camera
-	var forward:Vector3=-camera.global_basis.z;forward.y=0;forward=forward.normalized()
-	var right:Vector3=camera.global_basis.x;right.y=0;right=right.normalized()
-	var direction:Vector3=forward*(float(held.get(KEY_W,false))-float(held.get(KEY_S,false)))+right*(float(held.get(KEY_D,false))-float(held.get(KEY_A,false)))
+	var forward:=Movement.camera_forward(camera)
+	var right:=forward.cross(Vector3.UP)
+	var direction:=Movement.camera_direction(Locomotion.axes(held),camera)
 	camera_yaw+=(float(held.get(KEY_LEFT,false))-float(held.get(KEY_RIGHT,false)))*delta*1.8
 	camera_pitch=clampf(camera_pitch+(float(held.get(KEY_DOWN,false))-float(held.get(KEY_UP,false)))*delta*1.2,-0.1,1.25)
 	var pads:=Input.get_connected_joypads()
@@ -202,7 +204,7 @@ func physics(delta:float) -> void:
 			separation=separation.normalized()*0.65
 			next.x=other.global_position.x+separation.x;next.z=other.global_position.z+separation.y
 	if direction.length()>0.01 and not editor.timeline_playing:
-		unit.rotation.y=atan2(direction.x,direction.z)
+		Movement.turn(unit,forward,delta)
 	if not editor.timeline_playing:
 		jump_velocity-=18.0*delta
 		jump_height=maxf(0,jump_height+jump_velocity*delta)
@@ -213,10 +215,9 @@ func physics(delta:float) -> void:
 		editor.timeline_unit_origin+=Vector3(movement.x,0,movement.z)
 		editor.timeline_origin_position+=Vector3(movement.x,0,movement.z)
 	elif direction.length()>0.01:
-		var entry:Dictionary={"group":"Motion","category":"Run","title":"Run","step":"Sprint" if speed>4 else "Run","clip":"duel/run" if speed>4 else "ual1/Jog_Fwd","duration":0.8}
-		if editor.actor.player.has_animation(entry.clip):
-			editor._sample_row_animation(entry,fposmod(elapsed,0.8))
-			editor._set_unit_pose_target(unit)
+		var move_axes:=Vector2(direction.dot(right),direction.dot(forward)).limit_length(1.0)
+		Locomotion.pose(editor.actor,move_axes,elapsed,speed>4)
+		editor._set_unit_pose_target(unit)
 	_update_camera()
 
 func contacts() -> void:

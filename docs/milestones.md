@@ -1,15 +1,126 @@
 # Saved milestones
 
+Create starts with BOT_1 selected at the center of the ring and an empty
+timeline. At least one editor bot is maintained; additional bots continue as
+BOT_2, BOT_3, and so on. The simplified Spells demo also uses the ring center.
+
 ## Current spell workspace: projectile-first
 
-Casting animation assignment has moved out of spell creation for the future
-custom-kit workflow. Preview and immortal combat use Default Spell Cast with an
-internal release point; neither animation selection nor release timing is shown.
-Animation favorites and sorting remain available in Motion/Attack creation.
+Spells opens to five requested collection animations: Left cross, Melee hook,
+Left knee, Block stand and Self mend. Exact personal-library matches take
+precedence over the starter library. Native imported clips play directly.
+Selecting one highlights it and previews the motion once. Confirm advances to
+Projectile, Targeted, Touch or Barrier. Targeted, Touch and Barrier are currently
+disabled; Projectile is available. The wider rear-side camera leaves space
+ahead of the caster and stays fixed across these steps. The type selection is
+saved with the spell draft. Back returns to the demo choices. Changing the demo
+animation returns to the first step without discarding the selected type.
+Projectile starts elementless. The left card previews effects on click and saves
+only on Confirm. Duration, green stamina depletion, red physical damage, blue
+mana cost and purple Spell amp remain in the right card. Playback has a separate
+bottom row. Preview effects never overwrite a confirmed choice until confirmed.
+Offensive demo stamina is its one-second base effort divided by duration squared,
+capped at 100; physical damage uses the shared combat formula. Block stand and
+Self mend have no physical damage. Preview stamina visibly depletes and recovers.
+Only Fire and No effect are selectable; other elements remain visible but disabled.
+The Spell timing slider sits beneath Animation duration in the right card and
+spans 5–55% of the animation: early cast through the motion's apex, excluding
+recovery. One Spell amp readout combines duration and timing. Timing contributes
++0% at 5% through +100% at 55%, multiplying the duration amplifier. No release
+percentage/time or separate Timing amp readout is displayed. It increases projectile hit
+damage and elemental potency. Motion stamina supplies the physical damage base;
+projectile impact multiplies it by actual flight speed / 14 m/s. Twice the speed
+means twice the physical impact, including speed earned through Spell amp without
+counting that amp twice. The red Physical damage readout shows this final hit value;
+burn damage stays separate. Spell amp also multiplies projectile diameter and speed.
+The right card shows the actual mana cost at the top with base × cost percentage,
+then the combined Spell amp, size multiplier/diameter, and speed multiplier/m/s.
+Elementless projectile base cost is 10 mana: 0.5 seconds costs 14.1 mana;
+late timing gives +100% Spell amp, 2× diameter and 2× speed. Earned bonuses apply
+after validation of the base size/speed, so base limits do not erase the bonus.
+All sliders are in the right card, including Power balance, sharing 100% between Size and Speed
+for No effect, or Size, Speed and Burn for Fire. Raising one slider redistributes
+the remaining budget proportionally across its peers, including recovery from a
+100% allocation. Each effect remembers its own balance in the spell draft and
+provenance. Size maps through the existing logarithmic radius range, speed through
+1–50 m/s, and Burn through 0–4 base potency; Spell amp then scales the results.
+The right panel reports amplified diameter, speed and Fire burn damage per second
+for four seconds. Zero Burn creates no burn/status/ground-fire effect. Balancing
+does not alter the base mana price or duration cost multiplier. The right controls
+scroll when needed; the left panel contains choices, Confirm and Back only.
+Release occurs before animation completion handling, including at
+the apex, and the release fraction persists with the spell draft and provenance.
+Play casts once, Repeat loops until switched off, and Slow mo previews at quarter
+speed. Leaving the projectile page disables looping and restores the prior speed.
+In Spells, W approaches the practice target, A/D strafe, and S backpedals while
+the caster keeps facing the target. Combining keys gives normalized diagonal
+movement with blended forward/backward and strafe cycles, without extra speed.
+Shift runs; starting, stopping and direction changes blend smoothly. Take Control
+uses the same directional clips and diagonal blending with camera-forward facing.
+`tests/creation_directional_movement_test.gd` verifies eight directions, poses,
+speed, facing, sprint, idle return and parity between both Create control modes.
+The camera
+follows translation and mouse camera controls remain available.
+F focuses the camera on the spell caster or selected animation character without
+moving the character or restarting playback; text entry suppresses the shortcut.
+Spellcrafting uses the normal arena selection controls for the caster, wooden
+dummy and human target: hover shows a blue ring, click makes the selection gold,
+and F centers that gold selection while preserving camera orbit/zoom. Rings and
+click handling share the normal editor implementation, with the pickable arena
+area spanning the space between the spell panels. Dragging retains placement in
+the practice workspace; returning to animations restores the normal bot selection.
+A visible training mannequin starts 3.5 m ahead. Its real hurtboxes are enabled only for this practice
+workspace, with health loss, normal impact reactions and floating damage numbers.
+It is visibly a wooden combat dummy: cross-foot stand, grained timber post and
+peg arms, padded torso with painted bullseye, and a blank wooden head. Its own
+capsule hitboxes match the visible parts. The native human model stays hidden;
+hits wobble the wooden body and mortal defeat tips it over without a human
+ragdoll. Reset restores it upright, and leaving Spells restores the original actor.
+The caster and mannequin both appear in the arena view on entry; the caster faces
+the mannequin. Spell previews aim from the actual emitting hand to the mannequin's
+chest at release, including after repositioning, for immediate target practice.
+A passive human target also appears three metres to the wooden dummy's right.
+It uses Idle cannon while standing at its practice home, including after reset
+and returning from a hit, instead of the guard/block pose. It uses the normal
+human model and is mortal by default, independently of the
+dummy's God mode. Its death does not end practice; Reset scene heals/revives and
+repositions all three. `tests/spell_human_target_test.gd` verifies placement,
+visibility within the arena view, mortal damage, reset and workspace isolation.
+It returns to its base after impacts. God mode defaults On for endless damage
+testing: real hit/burn damage is counted, with only Last spell damage displayed
+under the mannequin name. DPS and total damage are hidden. God mode Off allows normal health loss
+and death; the corpse stays until Reset mannequin or God mode is enabled again.
+There is no automatic respawn. Normal mannequin death does not end the workspace.
+The God mode preference saves separately from the spell asset. Other immortal/editor
+actors retain their existing health behavior.
+The bottom Reset scene button stops playback/repeat/slow motion, heals and revives
+the practice fighters, refills resources, restores placements/camera, and clears
+projectiles, environment effects, statuses and damage totals. It preserves the
+demo animation, duration, release timing, effect choice, power allocation and God
+mode preference. `tests/spell_scene_reset_test.gd` verifies the complete reset.
+`tests/spell_practice_test.gd` verifies key input, movement/camera follow, an actual
+projectile hit, mortal death, manual reset, repeated lethal God-mode hits, damage
+readouts and preference persistence in a rendered game.
+Left cross is the default, and the demo remains explicitly preview-only.
+The right-side timing card has one 0.1–60 second slider. It retimes the full
+demo and displays mana savings using `2^(1-duration)` below ten seconds:
+one second is neutral, two seconds saves 50%, four seconds saves 87.5%.
+At ten seconds mana saving becomes exactly 100% and stops increasing.
+Duration Spell amp is neutral at one second, then increases linearly to +100%
+at ten seconds. With charge `max(0, duration-1)/9`, its bonus is charge through
+ten seconds and charge squared thereafter. Before the release-timing multiplier,
+10 seconds gives 2× strength, 19 seconds 5×, and 28 seconds 10×.
+The curve is continuous at ten seconds; the previous logarithmic amp is replaced.
+Longer durations remain available for amplification. Preview entry, exit and
+mid-motion selection changes blend from the currently visible pose.
+The rest of the spell controls are hidden during these first steps;
+their existing implementation and saved drafts are retained. Demo preferences
+are stored separately and do not alter spell properties or contributor history.
+Animation favorites and sorting remain in Motion/Attack creation.
 
 The previous self/barrier editor, effect illustration and live roaming prototype
 are retired from the Spells workspace. Their old draft file is retained on disk.
-Spells now lists Projectiles, Buffs, Barriers, Debuffs, Summons and Teleports; only Projectiles has
+The retained builder supports Projectiles, Buffs, Barriers, Debuffs, Summons and Teleports; only Projectiles has
 content. Default Spell Cast is a new editable open-palm forward punch under
 Attack/Punch, with hip/torso support and an open hand facing the shot direction.
 The projectile pane chooses Element first, then Size (radius in meters). Fire
@@ -432,3 +543,17 @@ Spell preview ownership and live practice:
 - The Store stays open across workspace menu switches until its Close button is used or the creation screen is left.
 - Unit selection, layered body-part timelines, moving/stretching/trimming/splitting clips, undo/copy/paste, stamina/damage/mana controls, and the detailed pose/frame/version editor form the current animation workflow. The detailed editor now introduces the basic steps and keeps technical transition tools under Advanced.
 - This milestone records user acceptance of the animation structure, not a claim that every animation asset or future gameplay integration is finished.
+
+### Third milestone — animation Store previews and downloads accepted (2026-10-30)
+- User explicitly accepted this as the third milestone.
+- Paginated Store rows load their complete source records. Play previews the selected clip on the focused bot, finishes once, and leaves the timeline unchanged. Download creates a loadable project asset in the Downloaded folder.
+- Verified all 26,052 active community source records for complete indexed metadata. Exercised the actual Store buttons for Female1 D6 CartWheel, Female1 B09 WalkTurnLeft90, and an InterHuman NPY clip; measured movement on the visible bot and confirmed each preview completes. CartWheel was saved and reloaded as a project asset.
+- Structured logs record the selected asset, page detail reads, import stages, project saves, preview completion, and measured bot movement. The rendered Store workflow regression covers the complete path from paginated rows to button actions.
+- Preserve this working Store workflow as the accepted baseline. Metadata completeness does not imply that every source clip has received individual visual review.
+
+### Accepted projectile aiming checkpoint (2026-10-30)
+- User tested and accepted the revised free-aim convergence and requested saving this version.
+- Preserve the mouse-following crosshair and arbitrary camera distance/orbit. Nearby fighter hurt bounds choose convergence depth on the cursor ray, avoiding far-wall convergence that could turn an above-head aim into a near-body hit.
+- The amber predicted-impact overlay was rejected and removed. Physical prediction remains a read-only diagnostic API.
+- Regression checks reproduced the old false hit, verified above-head misses and chest hits at three camera angles/distances, and passed third-person focus and spell casting/hitbox controls.
+- This checkpoint also preserves the current shared character mechanics and spell creation workspace. The downloaded community animation archive remains local; attached project animation copies are included.

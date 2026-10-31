@@ -18,7 +18,17 @@ func _get_drag_data(_at_position:Vector2) -> Variant:
 	preview.add_theme_stylebox_override("normal",_preview_style())
 	preview.custom_minimum_size=Vector2(150,34)
 	set_drag_preview(preview)
-	return {"type":"fightlab_animation_clip","entry":entry.duplicate(true),"store_origin":store_origin}
+	return {"type":"fightlab_animation_clip","entry":entry.duplicate(true),"store_origin":store_origin,"source_order":not store_origin}
+
+func _can_drop_data(_at_position:Vector2,data:Variant) -> bool:
+	if store_origin:return false
+	if not data is Dictionary or str(data.get("type",""))!="fightlab_animation_clip":return false
+	if not bool(data.get("source_order",false)):return false
+	var source:Dictionary=data.get("entry",{})
+	return str(source.get("group",""))==str(entry.get("group","")) and str(source.get("category",""))==str(entry.get("category","")) and editor!=null
+
+func _drop_data(_at_position:Vector2,data:Variant) -> void:
+	if editor!=null:editor.reorder_animation_entries(data.get("entry",{}),entry)
 
 func _preview_style() -> StyleBoxFlat:
 	var style:=StyleBoxFlat.new()

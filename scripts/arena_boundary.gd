@@ -1,8 +1,9 @@
 extends Node3D
 ## Circular colosseum: architecture is baked into one colored mesh per sector.
-const RADIUS := 15.0
-const HEIGHT := 18.0
-const SECTORS := 40
+const MapConfig=preload("res://scripts/gladiatorial_pit_config.gd")
+const RADIUS := MapConfig.FLOOR_RADIUS
+const HEIGHT := MapConfig.WALL_HEIGHT
+const SECTORS := MapConfig.SECTORS
 var sectors: Array[MeshInstance3D]=[]
 var vertices:=PackedVector3Array()
 var normals:=PackedVector3Array()
@@ -18,7 +19,7 @@ func _ready() -> void:
 	var floor_:=StaticBody3D.new()
 	floor_.name="ArenaFloor"
 	var shape:=BoxShape3D.new()
-	shape.size=Vector3(75,0.2,75)
+	shape.size=Vector3((RADIUS+23.0)*2.0,0.2,(RADIUS+23.0)*2.0)
 	var collision:=CollisionShape3D.new()
 	collision.shape=shape
 	collision.position.y=-0.1
