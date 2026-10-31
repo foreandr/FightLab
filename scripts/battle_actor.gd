@@ -323,7 +323,7 @@ func movement_multiplier() -> float:
 	return (1.45 if team == 2 else 1.0) * (1.35 if haste_time > 0 else 1.0) * (0.60 if chill_time > 0 else 1.0)
 
 func arena_roam_radius() -> float:
-	return float(arena.Boundary.RADIUS)-2.0
+	return float(arena.combat_radius)-2.0
 
 func locomotion_velocity(desired: Vector3) -> Vector3:
 	if water_depth>0.15:
@@ -1442,54 +1442,15 @@ func tick(delta: float) -> void:
 		start_story_punch(next_side)
 	brain_enabled = enabled
 
-func resolve_melee(delta: float) -> void:
-	if arena.story_mode and player_controlled:
-		_resolve_story_limb_strikes(delta)
-		if mode != "punch":return
-	if mode != "punch" or melee_spec.is_empty() or not arena.round_active or health <= 0:
-		return
-	var limb := bone_point(melee_spec[2])
-	var movement := limb - melee_previous
-	if not melee_connected and melee_clock >= melee_spec[3] and melee_clock <= melee_spec[4] and movement.length() / delta > 0.8:
-		var shape := SphereShape3D.new()
-		shape.radius = 0.22 if attack_kind in ["knee", "front_kick", "round_kick","sweep","stomp"] else 0.105
-		var query := PhysicsShapeQueryParameters3D.new()
-		query.shape = shape
-		query.collision_mask = arena.enemy_hurt_mask(team)
-		query.collide_with_areas = true
-		query.collide_with_bodies = false
-		var samples := maxi(1, ceili(movement.length() / 0.04))
-		for i in range(samples + 1):
-			var point := melee_previous.lerp(limb, float(i) / samples)
-			if arena.spell_environment.damage_ice_near(point,strike_damage,0.22):
-				melee_connected=true
-				break
-			query.transform = Transform3D(Basis.IDENTITY, point)
-			var results := get_world_3d().direct_space_state.intersect_shape(query, 8)
-			if results.is_empty():
-				continue
-			var area: Area3D = results[0].collider
-			var victim = area.get_meta("fighter")
-			if victim.health <= 0:
-				continue
-			var speed: float = (movement / delta - velocity - victim.velocity).length()
-			var momentum_speed := maxf(speed, combo_speed * clampf(combo_time / 0.48, 0, 1))
-			var multiplier := 1.0 + clampf((momentum_speed - 5.0) / 8.0, 0, 2.5)
-			var impulse := (movement / delta * 8.0).limit_length(180) + flat_direction(position, victim.position) * maxf(0, momentum_speed - 5) * 22
-			var q := melee_charge if attack_kind in ["uppercut","left_jab","right_cross"] else 0.0
-			if q > 0:
-				impulse += Vector3.UP * 1250 * q
-			var spec := {"id":attack_kind, "name":attack_kind.replace("_", " ").capitalize(), "effect":"melee", "damage":strike_damage * multiplier * (1+q*0.7), "charge":q, "launch":q>0.6, "combo":combo_time>0, "augment":strike_augmented or haste_time>0 or armor_time>0}
-			if arena.story_mode and victim.shield_active() and victim.shield_intersection(melee_previous,limb,shape.radius).size()>0:
-				arena.apply_melee_block(self,victim,point)
-				melee_connected=true
-				break
-			melee_connected = arena.apply_impact(self, victim, spec, point, flat_direction(position, victim.position), area, impulse)
-			if melee_connected:
-				if combo_time > 0:
-					dash_combo_hits += 1
-				break
-	melee_previous = limb
+func resolve_melee(delta:float) -> void:
+	if arena.story_mode and player_controlled:_resolve_story_limb_strikes(delta)
+	if mode!="punch" or melee_spec.is_empty():return
+	var limb:=bone_point(melee_spec[2])
+	var q:=melee_charge if attack_kind in ["uppercut","left_jab","right_cross"] else 0.0
+	var was_connected:=melee_connected
+	melee_connected=preload("res://scripts/melee_contact.gd").resolve(self,{"id":attack_kind,"clock":melee_clock,"begin":melee_spec[3],"end":melee_spec[4],"previous":melee_previous,"limb":limb,"connected":melee_connected,"forward":global_basis.z,"damage":strike_damage,"charge":q,"combo_speed":combo_speed*clampf(combo_time/0.48,0,1),"radius":0.22 if attack_kind in ["knee","front_kick","round_kick","sweep","stomp"] else 0.105,"break_ice":true,"manual_block":arena.story_mode,"metadata":{"launch":q>0.6,"combo":combo_time>0,"augment":strike_augmented or haste_time>0 or armor_time>0}},delta) or melee_connected
+	if melee_connected and not was_connected and combo_time>0:dash_combo_hits+=1
+	melee_previous=limb
 
 func _resolve_story_limb_strikes(delta: float) -> void:
 	if health <= 0:return
@@ -1499,47 +1460,14 @@ func _resolve_story_limb_strikes(delta: float) -> void:
 		var spec: Array = strike.spec
 		var limb: Vector3 = bone_point(str(spec[2]))
 		var previous: Vector3 = strike.previous
-		var movement := limb - previous
 		var forward:Vector3=strike.get("aim_direction",global_basis.z)
 		forward.y = 0
 		forward = forward.normalized()
 		var action_id := str(spec[0])
 		var contact_radius:=0.22 if str(side).begins_with("leg_") else 0.105
-		if arena.round_active and not strike.connected and float(strike.clock) >= float(spec[3]) and float(strike.clock) <= float(spec[4]) and movement.length() / maxf(delta, 0.0001) > 0.8 and movement.dot(forward) > 0.0005:
-			var shape := SphereShape3D.new()
-			shape.radius = contact_radius
-			var query := PhysicsShapeQueryParameters3D.new()
-			query.shape = shape
-			query.collision_mask = arena.enemy_hurt_mask(team)
-			query.collide_with_areas = true
-			query.collide_with_bodies = false
-			var samples := maxi(1, ceili(movement.length() / 0.04))
-			for sample in range(samples + 1):
-				var point := previous.lerp(limb, float(sample) / float(samples))
-				query.transform = Transform3D(Basis.IDENTITY, point)
-				var results := get_world_3d().direct_space_state.intersect_shape(query, 8)
-				if results.is_empty():continue
-				var area: Area3D = results[0].collider
-				var victim = area.get_meta("fighter")
-				if victim.health <= 0:continue
-				var speed: float = (movement / maxf(delta, 0.0001) - velocity - victim.velocity).length()
-				var multiplier := 1.0 + clampf((speed - 5.0) / 8.0, 0, 2.5)
-				var impulse := (movement / maxf(delta, 0.0001) * 8.0).limit_length(180) + forward * maxf(0, speed - 5) * 22
-				var charge_value := float(strike.charge)
-				if charge_value > 0:impulse += Vector3.UP * 1250 * charge_value
-				var charged_profile:Dictionary=strike.get("charged_profile",{})
-				var damage:=float(strike.damage)*multiplier if not bool(strike.get("pre_scaled",false)) else float(strike.damage)*multiplier
-				if not bool(strike.get("pre_scaled",false)):damage*=1.0+charge_value*0.7
-				var hit_spec := {"id":action_id,"name":action_id.replace("_", " ").capitalize(),"effect":"melee","damage":damage,"charge":charge_value,"critical":bool(charged_profile.get("critical",false)),"crit_chance":float(charged_profile.get("crit_chance",0.0)),"charge_tier":str(charged_profile.get("tier","NORMAL")),"launch":charge_value>0.6 or float(charged_profile.get("damage_multiplier",1.0))>=1.5,"combo":combo_time>0,"augment":strike_augmented or haste_time>0 or armor_time>0}
-				if victim.shield_active() and victim.shield_intersection(previous, limb, shape.radius).size() > 0:
-					arena.apply_melee_block(self, victim, point)
-					strike.connected = true
-					break
-				strike.connected = arena.apply_impact(self, victim, hit_spec, point, forward, area, impulse)
-				if strike.connected:
-					melee_hits += 1
-					melee_damage += float(hit_spec.damage)
-					break
+		var charged_profile:Dictionary=strike.get("charged_profile",{})
+		var charge_value:=float(strike.charge)
+		strike.connected=preload("res://scripts/melee_contact.gd").resolve(self,{"id":action_id,"clock":strike.clock,"begin":spec[3],"end":spec[4],"previous":previous,"limb":limb,"connected":strike.connected,"forward":forward,"fixed_direction":true,"require_forward":true,"damage":strike.damage,"charge":charge_value,"radius":contact_radius,"pre_scaled":strike.get("pre_scaled",false),"manual_block":true,"metadata":{"critical":charged_profile.get("critical",false),"crit_chance":charged_profile.get("crit_chance",0.0),"charge_tier":charged_profile.get("tier","NORMAL"),"launch":charge_value>0.6 or float(charged_profile.get("damage_multiplier",1.0))>=1.5,"combo":combo_time>0,"augment":strike_augmented or haste_time>0 or armor_time>0}},delta) or strike.connected
 		strike.previous = limb
 		if float(strike.clock) >= float(strike.length):
 			var side_name:String={"arm_l":"left_arm","arm_r":"right_arm","leg_l":"left_leg","leg_r":"right_leg","face":"face"}.get(str(side),str(side))
@@ -1579,8 +1507,6 @@ func update_status(delta: float) -> void:
 func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 	# Story stage one is straight hand-to-hand combat; enemy team identity must
 	# never accidentally apply its elemental freeze effect through augmented hits.
-	if arena.story_mode:
-		return
 	if spec.has("projectile_element"):
 		var potency:float=float(spec.get("potency",1.0))
 		if potency<=0.0:return
@@ -1600,6 +1526,7 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 					freezes+=1
 			"Lightning":stun_time=maxf(stun_time,0.7*potency)
 		return
+	if arena.story_mode:return
 	if attacker.team == 0 and (spec.effect != "melee" or spec.get("augment",false)):
 		burn_time = minf(6, maxf(burn_time, 4.0 + float(spec.get("charge",0))*2))
 		burn_source = attacker
@@ -1920,3 +1847,8 @@ func tick_restrained(delta:float) -> void:
 	else:
 		mode="frozen"
 	advance_animation(delta)
+
+func set_hit_context(charge_value:float,shattered:bool,launch:bool) -> void:
+	last_hit_charge=charge_value
+	last_guard_shattered=shattered
+	last_hit_launch=launch

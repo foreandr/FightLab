@@ -24,7 +24,7 @@ const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const CombatAim=preload("res://scripts/combat_aim.gd")
 const CombatPointer=preload("res://scripts/combat_pointer.gd")
 const Movement=preload("res://scripts/character_movement.gd")
-const Momentum=preload("res://scripts/physical_momentum.gd")
+const Rules=preload("res://scripts/combat_spell_rules.gd")
 var last_damage_velocity:=Vector3.ZERO
 var draft_path:="user://projectile_spell_draft.cfg"
 var category:="Projectiles"
@@ -104,12 +104,12 @@ var preview_slow:=false
 var preview_original_time_scale:=1.0
 var projectile_back_button:Button
 var projectile_initialized:=false
-const MIN_RELEASE_FRACTION:=0.05
-const MAX_RELEASE_FRACTION:=0.55
-const MAX_RELEASE_BONUS:=0.25
-const NEUTRAL_DAMAGE_BASE_VELOCITY:=(Projectile.MIN_VELOCITY+Projectile.MAX_VELOCITY)*0.5
-const NEUTRAL_DAMAGE_AMP:=1.0+MAX_RELEASE_BONUS*0.5
-const NEUTRAL_DAMAGE_VELOCITY:=NEUTRAL_DAMAGE_BASE_VELOCITY*NEUTRAL_DAMAGE_AMP
+const MIN_RELEASE_FRACTION:=Rules.MIN_RELEASE_FRACTION
+const MAX_RELEASE_FRACTION:=Rules.MAX_RELEASE_FRACTION
+const MAX_RELEASE_BONUS:=Rules.MAX_RELEASE_BONUS
+const NEUTRAL_DAMAGE_BASE_VELOCITY:=Rules.NEUTRAL_DAMAGE_BASE_VELOCITY
+const NEUTRAL_DAMAGE_AMP:=Rules.NEUTRAL_DAMAGE_AMP
+const NEUTRAL_DAMAGE_VELOCITY:=Rules.NEUTRAL_DAMAGE_VELOCITY
 var release_fraction:=MIN_RELEASE_FRACTION
 var release_slider:HSlider
 var playing:=false
@@ -1011,9 +1011,7 @@ func demo_mana_stats() -> Dictionary:
  return preload("res://scripts/animation_mana_scaling.gd").stats(demo_duration)
 
 func release_timing_stats() -> Dictionary:
- # The spell peaks near the motion's apex, before the recovery half.
- var bonus:=clampf((release_fraction-MIN_RELEASE_FRACTION)/(MAX_RELEASE_FRACTION-MIN_RELEASE_FRACTION),0.0,1.0)
- return {"fraction":release_fraction,"seconds":demo_duration*release_fraction,"bonus_percent":bonus*MAX_RELEASE_BONUS*100.0,"multiplier":1.0+bonus*MAX_RELEASE_BONUS}
+ return Rules.release_timing(demo_duration,release_fraction)
 
 func set_release_fraction(value:float) -> void:
  if not limiter_enabled:
@@ -1027,32 +1025,21 @@ func set_release_fraction(value:float) -> void:
 
 func demo_physical_stats() -> Dictionary:
  if not limiter_enabled:return {"duration":test_overrides.values.duration,"stamina":test_overrides.values.stamina,"damage":test_overrides.values.damage,"effort":test_overrides.values.stamina}
- var choice:=str(casting_animation.get("demo_choice","cross"))
- var offensive:=choice in ["cross","hook","knee"]
- # One second is neutral. Faster buys delivery, slower buys power.
- # Keep the full cost visible, including casts exceeding the stamina budget.
- var seconds:=maxf(0.1,demo_duration)
- var stamina:=10.0*maxf(seconds,1.0/seconds) if offensive else 0.0
- var damage:=10.0*seconds if offensive else 0.0
- return {"duration":seconds,"stamina":stamina,"damage":damage,"effort":stamina}
+ return Rules.physical(demo_duration,demo_offensive())
+
+func demo_offensive() -> bool:
+ return str(casting_animation.get("demo_choice","cross")) in ["cross","hook","knee"]
 
 func demo_projectile_stats() -> Dictionary:
  var effect:=preview_effect if creation_step=="projectile" else element
  var base:=projectile_effect_spec(effect)
- var timing:=demo_mana_stats()
- var amp:float=float(timing.amplifier)*float(release_timing_stats().multiplier)
- var base_radius:float=float(base.get("projectile_radius",projectile_size))*Projectile.CAST_RADIUS_SCALE
- var base_velocity:float=float(base.get("projectile_velocity",projectile_velocity))
- var speed_damage_multiplier:=base_velocity*amp/NEUTRAL_DAMAGE_VELOCITY
- var impact_damage:float=float(demo_physical_stats().damage)*speed_damage_multiplier
  var movement:=Vector3.ZERO
  var aim:=Vector3.BACK
  if is_instance_valid(editor.actor):
   movement=editor.actor.velocity
   var origin:Vector3=editor.field.fighter_hand(editor.actor,CombatAim.emitter(casting_animation))+editor.actor.global_basis.z*0.12
   aim=preview_aim_direction(origin)
- var launch:=Momentum.projectile(base,movement,aim,base_velocity*amp,impact_damage)
- return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":base_radius,"base_velocity":base_velocity,"radius":base_radius*amp,"velocity":launch.speed,"stationary_velocity":base_velocity*amp,"speed_damage_multiplier":speed_damage_multiplier,"physical_damage":launch.spec.damage,"stationary_damage":impact_damage,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":3.0*float(base.get("potency",0.0))*amp if effect=="Fire" else 0.0,"effect":effect}
+ return Rules.authored_stats(base,demo_duration,release_fraction,demo_offensive(),movement,aim)
 
 func refresh_demo_timing() -> void:
  if not is_instance_valid(demo_duration_slider):return
@@ -1117,11 +1104,7 @@ func play_demo_preview() -> void:
 func process_demo_preview(delta:float) -> void:
  idle_elapsed+=delta
  if not playing:
-  editor.actor.mana_delay=maxf(0.0,editor.actor.mana_delay-delta)
-  if editor.actor.mana_delay<=0.0:editor.actor.mana=minf(editor.actor.MAX_MANA,editor.actor.mana+editor.actor.RESOURCE_RECOVERY_RATE*delta)
-  editor.actor.stamina_delay=maxf(0.0,editor.actor.stamina_delay-delta)
-  if editor.actor.stamina_delay<=0.0:editor.actor.stamina=minf(editor.actor.MAX_STAMINA,editor.actor.stamina+editor.actor.RESOURCE_RECOVERY_RATE*delta)
-  editor.actor.recover_guard(delta)
+  editor.actor.recover_idle_resources(delta)
   if caster_moving:
    Locomotion.pose(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting)
   else:RigPose.idle(editor.actor,idle_elapsed)
@@ -1150,10 +1133,7 @@ func process_demo_preview(delta:float) -> void:
   begin_demo_exit()
 
 func capture_demo_pose() -> Array[Transform3D]:
- var result:Array[Transform3D]=[]
- if not is_instance_valid(editor.actor):return result
- for bone in editor.actor.skeleton.get_bone_count():result.append(editor.actor.skeleton.get_bone_pose(bone))
- return result
+ return CastPose.capture(editor.actor)
 
 func cast_pose_aim(progress:float) -> Dictionary:
  if creation_step!="projectile":return {}
@@ -1166,9 +1146,7 @@ func cast_pose_aim(progress:float) -> Dictionary:
  return {"target":target,"emitter":CombatAim.emitter(casting_animation),"weight":weight}
 
 func blend_demo_pose(from:Array[Transform3D],weight:float) -> void:
- var rig:Skeleton3D=editor.actor.skeleton
- for bone in mini(from.size(),rig.get_bone_count()):rig.set_bone_pose(bone,from[bone].interpolate_with(rig.get_bone_pose(bone),weight))
- rig.force_update_all_bone_transforms()
+ CastPose.blend_from(editor.actor,from,weight)
 
 func begin_demo_exit() -> void:
  demo_exit_pose=capture_demo_pose()
@@ -1369,21 +1347,11 @@ func projectile_spec() -> Dictionary:
  return projectile_effect_spec(element)
 
 func projectile_effect_spec(effect:String) -> Dictionary:
- var spec:Dictionary=Projectile.spec(effect,projectile_size,potency,testing_sizes,projectile_velocity)
+ var spec:Dictionary=Rules.projectile_base(effect,projectile_size,potency,testing_sizes,projectile_velocity)
  if demo_only_stage and spell_kind=="Projectiles":
-  var shares:=Allocation.spend(allocation_for(effect),effect!="None",total_power)
-  spec["projectile_radius"]=Projectile.MIN_RADIUS*pow(Projectile.MAX_RADIUS/Projectile.MIN_RADIUS,float(shares["size"]))
-  spec["projectile_velocity"]=lerpf(Projectile.MIN_VELOCITY,Projectile.MAX_VELOCITY,float(shares.speed))
-  spec["potency"]=4.0*float(shares.get("effect",0.0))
-  spec["power_allocation"]=shares.duplicate()
-  spec["total_power"]=total_power
- if effect=="None":
-  spec["name"]="Elementless projectile"
-  spec["mana"]=10.0
-  spec["mana_percent"]=10.0
- elif effect=="Fire":spec["name"]="Fireball"
+  spec=Rules.allocate(spec,allocation_for(effect),effect,total_power)
  if spell_kind=="Summons":
-  spec={"id":"earth_wall","name":"Earth Wall","effect":"summon_earth","animation":"palm_fireball","hand":"hand_r","release":0.25,"summon_radius":projectile_size,"potency":potency,"mana_percent":Projectile.mana_percent(projectile_size,potency),"mana":Projectile.mana_cost(projectile_size,potency),"damage":0.0}
+  spec=Rules.earth_spell(projectile_size,potency)
  spec["appearance"]=appearances.get(effect,{}).duplicate(true)
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
  spec["provenance"]=spell_provenance.duplicate(true)
@@ -1393,28 +1361,9 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  return spec
 
 func demo_preview_spec() -> Dictionary:
- var spec:=projectile_effect_spec(preview_effect) if creation_step=="projectile" else projectile_spec()
- spec["stamina_cost"]=float(demo_physical_stats().stamina)
+ var base:=projectile_effect_spec(preview_effect) if creation_step=="projectile" else projectile_spec()
+ var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
  spec.hand=CombatAim.emitter(casting_animation)
- var timing:=demo_mana_stats()
- spec["mana"]=float(spec.get("mana",0.0))*float(timing.multiplier)
- spec["mana_percent"]=float(spec.get("mana_percent",0.0))*float(timing.multiplier)
- spec["damage"]=float(demo_physical_stats().damage)
- spec["physical_damage"]=spec.damage
- spec["damage"]=float(spec.damage)*float(timing.amplifier)*float(release_timing_stats().multiplier)
- spec["potency"]=float(spec.get("potency",1.0))*float(timing.amplifier)*float(release_timing_stats().multiplier)
- if spec.has("projectile_radius"):
-  var stats:=demo_projectile_stats()
-  spec["base_projectile_radius"]=stats.base_radius
-  spec["projectile_radius_scale"]=Projectile.CAST_RADIUS_SCALE
-  spec["base_projectile_velocity"]=stats.base_velocity
-  spec["spell_amplifier"]=stats.amplifier
-  spec["projectile_radius"]=stats.radius
-  spec["projectile_velocity"]=stats.stationary_velocity
-  spec["motion_damage"]=float(demo_physical_stats().damage)
-  spec["speed_damage_multiplier"]=stats.speed_damage_multiplier
-  spec["physical_damage"]=stats.stationary_damage
-  spec["damage"]=stats.stationary_damage
  return spec if limiter_enabled else test_overrides.apply(spec)
 
 func cast_duration() -> float:
@@ -1460,13 +1409,9 @@ func launch_projectile() -> void:
  var launch:=projectile_preview_launch()
  var spec:Dictionary=launch.spec
  var origin:Vector3=launch.origin
- if not actor.can_cast_with(spec,casting_animation):return
- var mana_cost:=maxf(0.0,float(spec.get("mana",0.0)))
- if not actor.spend_cast_resources(float(spec.stamina_cost),mana_cost):
-  GameDiagnostics.log_event("spell_preview_insufficient_resources",{"mana_required":mana_cost,"mana_available":actor.mana,"stamina_required":spec.stamina_cost,"stamina_available":actor.stamina})
+ if not editor.field.combat().release(actor,spec,origin,casting_animation):
+  GameDiagnostics.log_event("spell_preview_insufficient_resources",{"mana_required":editor.field.mana_cost(spec),"mana_available":actor.mana,"stamina_required":spec.stamina_cost,"stamina_available":actor.stamina})
   return
- if spec.effect=="summon_earth":editor.field.summon_earth(actor,spec)
- else:editor.field.spawn_projectile(actor,spec,origin)
  var fired_damage:float=float(spec.get("damage",0))
  if spec.effect!="summon_earth" and not editor.field.shots.is_empty():fired_damage=float(editor.field.shots.back().spec.damage)
  GameDiagnostics.log_event("spell_preview_fired",{"name":spec.get("name",""),"element":spec.get("projectile_element",""),"duration":demo_duration,"mana":spec.get("mana",0),"potency":spec.get("potency",1),"damage":fired_damage,"nominal_damage":spec.get("damage",0)})

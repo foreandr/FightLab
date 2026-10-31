@@ -12,7 +12,7 @@ func predict(field:Node,caster:CharacterBody3D,origin:Vector3,end:Vector3,radius
 	var ground:=space.intersect_ray(ground_query)
 	if not ground.is_empty():
 		best={"hit":true,"position":ground.position,"center":ground.position,"distance":origin.distance_to(ground.position),"collider":ground.collider}
-	if str(spec.get("projectile_element","")) in ["Ice","Lightning","Fire"]:
+	if str(spec.get("projectile_element","")) in ["Ice","Lightning","Fire"] and is_instance_valid(field.spell_environment):
 		var water:Dictionary=field.spell_environment.water_contact(origin,end,radius)
 		if not water.is_empty() and origin.distance_to(water.position)<float(best.distance):
 			best={"hit":true,"position":water.position,"center":water.position,"distance":origin.distance_to(water.position),"collider":water.get("collider",null)}

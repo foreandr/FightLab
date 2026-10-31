@@ -1,5 +1,5 @@
 extends SceneTree
-const Registry = preload("res://scripts/spell_arena.gd")
+const Registry = preload("res://scripts/legacy_spell_catalog.gd")
 var failed := false
 
 func _initialize() -> void:

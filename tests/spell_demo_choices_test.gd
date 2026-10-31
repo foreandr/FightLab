@@ -39,7 +39,7 @@ func run() -> void:
 	if not check(builder.demo_duration_slider.min_value==0.1 and builder.demo_duration_slider.max_value==60.0,"Duration range is incorrect"):return
 	builder.set_demo_duration(1.0)
 	if not check(editor.actor.visible and not editor.animation_footer.visible,"Demo character/toolbar visibility is incorrect"):return
-	var camera_transform:Transform3D=editor.field.camera.global_transform
+	builder.ensure_third_person_camera()
 	var forward:Vector3=editor.actor.global_basis.z.normalized()
 	if not check(forward.dot(editor.field.camera.global_position-editor.actor.global_position)<0 and forward.dot(editor.field.camera.global_basis.x)>0,"Spell camera must view from behind with casting to screen right"):return
 	builder.save_draft()
@@ -54,7 +54,10 @@ func run() -> void:
 		var base_knee:=point(knee_bone).y
 		var base_head:=point("Head").y
 		var before:Array=builder.capture_demo_pose()
+		var camera_transform:Transform3D=editor.field.camera.global_transform
+		var camera_settings:=Vector4(editor.field.camera_zoom,editor.field.camera_orbit_yaw,editor.field.camera_orbit_pitch,editor.field.story_camera_base_yaw)
 		builder.demo_choices[choice].pressed.emit()
+		if not check(editor.field.camera.global_transform.is_equal_approx(camera_transform),"Selecting a demo snapped the camera"):return
 		if not check(pose_change(before,builder.capture_demo_pose())<0.0001,"Selecting a demo snapped the rig before blending"):return
 		if not check(builder.playing and str(builder.casting_animation.demo_choice)==choice,"Button did not start "+choice):return
 		if not check(builder.creation_step=="demo","Click advanced without Confirm"):return
@@ -81,7 +84,9 @@ func run() -> void:
 		while Time.get_ticks_msec()<settled:await process_frame
 		if not check(builder.demo_exit_pose.is_empty(),"Demo exit blend did not finish"):return
 		if choice=="knee" and not check(max_knee-base_knee>0.12,"Knee animation did not visibly lift its knee"):return
-		if not check(editor.field.camera.global_transform.is_equal_approx(camera_transform),"Demo reset the camera"):return
+		# Follow-camera smoothing may move the transform while the animation plays.
+		# The user's chosen zoom/orbit must remain unchanged.
+		if not check(Vector4(editor.field.camera_zoom,editor.field.camera_orbit_yaw,editor.field.camera_orbit_pitch,editor.field.story_camera_base_yaw).is_equal_approx(camera_settings),"Demo reset zoom/orbit settings"):return
 		if not check(builder.projectile_spec()==original_spec,"Demo changed spell stats or metadata"):return
 		builder.save_draft()
 		if not check(FileAccess.get_file_as_string(builder.draft_path)==original_text,"Demo changed spell draft"):return

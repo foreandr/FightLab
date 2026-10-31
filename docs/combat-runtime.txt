@@ -1,0 +1,139 @@
+UNIVERSAL COMBAT RUNTIME
+
+The supported gameplay path is:
+  mode input -> actor / authored spell -> CombatRuntime -> shared contacts,
+  defenses, damage, statuses, resources and physical reactions.
+Story and Create both use this path. Modes own selection, camera input, menus,
+round objectives and presentation. They must not calculate their own hit damage,
+subtract a second cast cost or implement a second projectile simulation.
+
+STARTING A NEW MODE
+
+Inherit res://scripts/combat_world.gd, not BattleArena, DuelArena or SpellArena.
+CombatWorld is a Node3D with no menu, campaign or demo scene. It supplies actor
+registration, services, simulation, hitbox toggles, prediction and event hooks.
+
+Example GDScript (add your map, camera and light separately):
+
+  extends "res://scripts/combat_world.gd"
+  const Rules=preload("res://scripts/combat_spell_rules.gd")
+
+  func _ready() -> void:
+      super._ready()
+      var player=spawn_combatant(0,Vector3.ZERO)
+      var opponent=spawn_combatant(1,Vector3(0,0,4))
+      player.brain_enabled=false
+      opponent.brain_enabled=false
+      round_active=true
+
+  func fire(actor:CharacterBody3D,authored_spell:Dictionary) -> bool:
+      var origin=fighter_hand(actor,str(authored_spell.get("hand","hand_r")))
+      return combat().release(actor,authored_spell,origin)
+
+The base physics callback advances actors, their real hurtboxes/melee contacts,
+projectiles, channels and pulses. If you override it, call tick_combat(delta)
+exactly once. Do not also call individual simulation steps in the same frame.
+Existing arenas retain their visual and round-management loops and delegate
+their simulation stages to the same runtime.
+
+spawn_combatant uses the existing BattleActor and licensed character assets.
+The actor owns animation players, locomotion, recovery, defenses, death and
+status state. Give actors separate teams to make them enemies. Assign their
+input through the shared character movement/focus/camera modules documented in
+shared-character-mechanics.txt. story_mode is an existing campaign/control
+adapter flag, not a requirement for firing spells through this API.
+
+CASTING API
+
+combat().release(actor,spec,origin,animation_profile={}) -> bool
+  Checks active world, living actor, casting-limb availability, optional burst
+  requirement, God Mode and both resource budgets. Commits mana and stamina
+  atomically, then dispatches the effect. A failed request spawns nothing and
+  spends neither resource. The profile supplies limb requirements, not costs.
+
+combat().cast(actor,spec,animation_profile={}) -> bool
+  Same request, using the spec's hand as origin. Handles projectile/ground,
+  healing, armor, haste, burst, beam, ice beam, nova and earth summon effects.
+
+spawn_projectile and combat().dispatch are lower-level execution APIs for callers
+that already committed a cast. Do not call them after release for the same cast.
+
+projectile_launch_state / predict_projectile_impact are read-only forecasts.
+Movement contribution is captured once at launch. Future caster velocity does
+not change an in-flight projectile. AoE applies once per victim, not per limb.
+
+AUTHORING A SPELL
+
+combat_spell_rules.gd owns physical cost/damage from animation duration, release
+timing, normalized neutral damage, mana cost, amp, power allocation and authored
+projectile specs. animation_mana_scaling.gd owns the existing mana/amp curve.
+
+Rules.allocate(base,mix,element,total_power) applies the chosen power shares.
+Rules.projectile_base builds elementless/elemental content without the UI;
+Rules.neutral_projectile() is a ready-to-use authored 10/10/10 default.
+Rules.author(base,duration,release_fraction,offensive) returns a new spec with
+final costs, damage, radius, velocity and potency. Rules.authored_stats returns
+the matching UI values, including optional moving-caster preview. Author once;
+execute that spec unchanged. Do not run author() again when equipping/casting it.
+
+Explicit damage/mana/motion values take precedence. Legacy spell defaults are
+content dictionaries, not alternate combat engines. Older duel content keeps
+its original preset values while using the same execution pipeline. The neutral
+crafted offensive spell remains 1 s, 50/50 size/speed, centered timing and full
+power: 10 mana, 10 stamina, 10 damage against an unblocked stationary target.
+Limiter-off overrides stay in spell_test_overrides.gd; the UI's save rejection
+still applies. Execution does not recouple independent testing values.
+
+ANIMATION API
+
+spell_cast_motion.gd samples native or imported animation profiles by normalized
+progress. It preserves ice restrictions and supports explicit shared aim-pose
+corrections. capture(actor) and blend_from(actor,pose,weight) are shared by cast
+transitions and diagonal locomotion. Animation resources stay read-only and
+AnimationPlayers remain per actor. animation_channels.gd owns cached filtering.
+
+Mode-specific clocks, charge holds, editor scrubbing/undo and saved timelines
+remain their respective controllers' responsibilities; these are authoring and
+input state rather than alternate animation assets or damage implementations.
+melee_contact.gd consumes an animation's swept limb/window and uses the shared
+contact, charge, motion and impact rules. Callers only provide their animation
+clock/state and mark a returned successful contact connected.
+
+WORLD HOOKS
+
+Override projectile_aim_target, combat_target and heal_target to choose targets.
+Reuse combat_aim.gd for free aim and focused chest anchors.
+Override projectile_visual, orient_projectile, combat_sound, impact_burst,
+combat_cast_feedback, combat_heal_feedback and combat_impact_feedback for visuals,
+UI and telemetry. These hooks must not apply damage or spend costs again.
+finish_round/combat_finished handle mode objectives. combat_radius configures
+the reusable actor's bounds; the default is the saved gladiatorial pit radius.
+
+OWNERSHIP AND LEGACY SEPARATION
+
+combat_world.gd: reusable mode base and hooks; no Create or Story scene required.
+combat_runtime.gd: authorization/dispatch, actor and wall steps, projectile
+  launch/flight, impacts, channels and pulses.
+combat_spell_rules.gd: pure reusable spell construction and balance rules.
+combat_diagnostics.gd: optional host logging; shared combat can be imported by
+  scripts before UI/autoload setup without depending on a global singleton.
+melee_contact.gd: shared swept-limb contact, animation speed/charge and blocking.
+duel_actor.gd: shared resource payment/recovery, defense and base actor state.
+battle_actor.gd: full actor animation, physical reactions and status handling.
+legacy_arena_host.gd: old grassland presentation/capture utilities only.
+legacy_spell_catalog.gd: original study spell data.
+spell_arena.gd: historical visual-only asset study, not a gameplay superclass.
+  Its visual demonstrations have no gameplay damage/resource contract.
+duel_arena.gd / battle_arena.gd: existing scene, target, round and presentation
+  adapters. Their gameplay simulation delegates to CombatRuntime.
+spell_builder.gd: editor controls/preferences and live-preview input adapter.
+
+REGRESSION CONTRACT
+
+tests/combat_runtime_contract_test.gd deliberately uses a bare CombatWorld,
+without either the Story or Create scene. It exercises real actor spawning,
+atomic failure/success, actual neutral projectile damage, immutable specs,
+resource recovery, explicit Story elemental effects, animation pose changes and
+transitions, swept melee/one-hit behavior, heal/buff dispatch and God Mode.
+Run the normal Story/Create integration checks as well: they verify their
+adapters, not a separate set of combat calculations.

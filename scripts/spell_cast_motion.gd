@@ -97,3 +97,14 @@ static func _rotate_demo_bone(rig:Skeleton3D,bone:int,from:Vector3,to:Vector3) -
 	var current_world:Basis=rig.global_basis*rig.get_bone_global_pose(bone).basis
 	var desired_world:=Basis(Quaternion(from.normalized(),to.normalized()))*current_world
 	rig.set_bone_pose_rotation(bone,(parent_world.inverse()*desired_world).orthonormalized().get_rotation_quaternion())
+
+static func capture(actor:Node) -> Array[Transform3D]:
+	var result:Array[Transform3D]=[]
+	if not is_instance_valid(actor):return result
+	for bone in actor.skeleton.get_bone_count():result.append(actor.skeleton.get_bone_pose(bone))
+	return result
+
+static func blend_from(actor:Node,source:Array[Transform3D],weight:float) -> void:
+	var rig:Skeleton3D=actor.skeleton
+	for bone in mini(source.size(),rig.get_bone_count()):rig.set_bone_pose(bone,source[bone].interpolate_with(rig.get_bone_pose(bone),clampf(weight,0.0,1.0)))
+	rig.force_update_all_bone_transforms()

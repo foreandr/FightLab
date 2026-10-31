@@ -38,4 +38,4 @@ func apply(field:Node,shot:Dictionary,center:Vector3,primary:CharacterBody3D=nul
 		if field.apply_impact(shot.caster,victim,shot.spec,contact.point,direction,contact.area,shot.velocity*shot.mass):
 			affected.append(str(victim.name))
 	shot["aoe_targets"]=affected
-	GameDiagnostics.log_event("projectile_area_impact",{"shot":shot.id,"radius":shot.radius,"splash_radius":sphere.radius,"center":str(center),"targets":affected})
+	preload("res://scripts/combat_diagnostics.gd").event(field,"projectile_area_impact",{"shot":shot.id,"radius":shot.radius,"splash_radius":sphere.radius,"center":str(center),"targets":affected})

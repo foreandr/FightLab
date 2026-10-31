@@ -25,10 +25,9 @@ static func pose(actor:Node,input:Vector2,time:float,sprinting:bool) -> void:
 		var length:float=actor.player.get_animation(clip).length
 		CastPose.pose(actor,{"clip":clip,"step":"Run","store_raw":true},fposmod(time*rate/maxf(0.001,length),1.0))
 		if choices.size()>1 and index==0:
-			for bone in actor.skeleton.get_bone_count():first.append(actor.skeleton.get_bone_pose(bone))
+			first=CastPose.capture(actor)
 	if not first.is_empty():
 		var weight:=absf(input.x)/(absf(input.x)+absf(input.y))
-		for bone in first.size():actor.skeleton.set_bone_pose(bone,first[bone].interpolate_with(actor.skeleton.get_bone_pose(bone),weight))
-		actor.skeleton.force_update_all_bone_transforms()
+		CastPose.blend_from(actor,first,weight)
 	actor.set_meta("creation_locomotion_clips",choices)
 	actor.set_meta("creation_locomotion_axes",input)

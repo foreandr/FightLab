@@ -5,18 +5,15 @@ const CombatAudio = preload("res://scripts/combat_audio.gd")
 const Boundary = preload("res://scripts/arena_boundary.gd")
 const GladiatorialPit=preload("res://scenes/maps/gladiatorial_pit.tscn")
 const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
-const Momentum=preload("res://scripts/physical_momentum.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
 const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
 const BattleFighterTag = preload("res://scripts/fighter_overhead_tag.gd")
 const StoryRivals = preload("res://scripts/story_rivals.gd")
 const BodyBarrierOverlay = preload("res://scripts/body_barrier_overlay.gd")
-const OVERDRIVE_DURATION := 14.0
 const KITS := [
 	[{"id":"fireball","name":"Fireball","effect":"orb","animation":"palm_fireball","hand":"hand_r","release":0.68}, {"id":"fire_slash","name":"Cinder Slash","effect":"slash","animation":"cleaving_flick","hand":"hand_r","release":0.64}],
 	[{"id":"ice_armor","name":"Glacial Armor","effect":"armor","animation":"twin_push","hand":"both","release":1.0}, {"id":"ice_beam","name":"Freezing Ray","effect":"ice_beam","animation":"flame_channel","hand":"both","release":0.8}],
 	[{"id":"overdrive","name":"Overdrive","effect":"haste","animation":"self_mend","hand":"both","release":0.95}, {"id":"flash_step","name":"Flash Step","effect":"burst","animation":"palm_fireball","hand":"hand_r","release":0.68}]]
-var audio: Node3D
 var armor_meshes: Array = []
 var barrier_materials: Array[Array] = []
 var freeze_effects: Array[Node3D]=[]
@@ -25,48 +22,16 @@ var eliminated := {}
 var target_timer := 0.0
 var beam_clashes := 0
 var ending := false
-var spell_environment:Node3D
 var storm_aura: Node3D
-var story_stage := 1
 var creation_bot_profiles: Array[Dictionary] = []
-var editor_animation_only:=false
 var camera_zoom := 1.0
 var camera_orbit_yaw := 0.0
 var story_camera_base_yaw := 0.0
 var story_camera_initialized := false
 var camera_orbit_pitch := 0.362
-var camera_focus_target: CharacterBody3D
-var projectile_hitboxes_visible:=false
-var character_hitbox_overlays:Node
-var projectile_impact_predictor=preload("res://scripts/projectile_impact_predictor.gd").new()
-var projectile_area_impact=preload("res://scripts/projectile_area_impact.gd").new()
-
-func set_projectile_hitboxes(enabled:bool) -> void:
-	set_combat_hitboxes(enabled)
-
-func set_combat_hitboxes(enabled:bool) -> void:
-	projectile_hitboxes_visible=enabled
-	for shot in shots:_update_projectile_hitbox(shot)
-	if enabled and not is_instance_valid(character_hitbox_overlays):
-		character_hitbox_overlays=preload("res://scripts/character_hitbox_overlays.gd").new()
-		character_hitbox_overlays.name="CharacterHitboxOverlays"
-		character_hitbox_overlays.field=self
-		add_child(character_hitbox_overlays)
-	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.set_enabled(enabled)
-
-func _update_projectile_hitbox(shot:Dictionary) -> void:
-	if not is_instance_valid(shot.node):return
-	var outline:MeshInstance3D=shot.get("hitbox_outline")
-	if projectile_hitboxes_visible and not is_instance_valid(outline):
-		outline=preload("res://scripts/projectile_hitbox_outline.gd").new()
-		outline.configure(float(shot.radius))
-		shot.node.add_child(outline)
-		shot["hitbox_outline"]=outline
-	if is_instance_valid(outline):
-		outline.visible=projectile_hitboxes_visible
-		outline.global_position=shot.node.global_position
 
 func _ready() -> void:
+	combat_defaults=preload("res://scripts/combat_spell_rules.gd").BATTLE_DEFAULTS
 	var setup_started_usec := Time.get_ticks_usec()
 	rng.seed = 715391
 	wins = [0,0] if story_mode else [0,0,0]
@@ -207,12 +172,6 @@ func _rival_abilities() -> Array:
 		abilities.append("dash")
 	return abilities
 
-func enemy_hurt_mask(team: int) -> int:
-	var mask:=0
-	for fighter in fighters:
-		if fighter.team!=team:mask|=8<<fighter.team
-	return mask
-
 func spell_name(spec: Dictionary, _team: int) -> String:
 	return spec.get("name", spec.id)
 
@@ -303,26 +262,8 @@ func _physics_process(delta: float) -> void:
 		choose_targets()
 	if round_active:
 		round_time += delta
-	for f in fighters:
-		var incoming: Vector3=f.velocity
-		if Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z).length()>incoming.length():
-			incoming=Vector3(f.drive_velocity.x+f.knockback.x,f.velocity.y,f.drive_velocity.z+f.knockback.z)
-		f.tick(delta)
-		if not is_instance_valid(f.ragdoll) and f.health>0:
-			for i in f.get_slide_collision_count():
-				var contact: KinematicCollision3D=f.get_slide_collision(i)
-				if (contact.get_collider().has_meta("spell_ice") or contact.get_collider().has_meta("spell_earth")):
-					var speed:float=maxf(0,-incoming.dot(contact.get_normal()))
-					if speed>2.5:contact.get_collider().take_damage(speed*speed*0.4)
-				elif contact.get_collider().has_meta("arena_wall"):
-					var speed:=maxf(0,-incoming.dot(contact.get_normal()))
-					if speed>4.5 and (f.knockback.length()>1.5 or not f.is_on_floor() or speed>10):
-						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming)
-						break
-		f.update_targets()
-		max_radius = maxf(max_radius, Vector2(f.focus_position().x,f.focus_position().z).length())
-	for f in fighters:
-		f.resolve_melee(delta)
+	combat().step_actors(delta)
+	for f in fighters:max_radius=maxf(max_radius,Vector2(f.focus_position().x,f.focus_position().z).length())
 	for i in fighters.size():
 		var f = fighters[i]
 		for j in range(i+1,fighters.size()):
@@ -392,58 +333,26 @@ func finish_run() -> void:
 			f.ragdoll=null
 	get_tree().create_timer(0.15).timeout.connect(get_tree().quit)
 
-func cast_magic(f: CharacterBody3D, spec: Dictionary, _air: bool) -> void:
-	if story_mode and not f.story_spell_dispatching:
-		return
-	if not f.can_cast_with(spec,f.practice_spell_animation):return
-	if spec.effect=="burst" and f.stamina<f.flash_stamina_requirement():
-		return
-	if not round_active or f.health <= 0 or not f.spend_cast_resources(float(spec.get("stamina_cost",0.0)),mana_cost(spec)):
-		return
-	var key := "%s/%s"%[element_name(f.team),spec.id]
-	casts[key] = casts.get(key,0)+1
-	status = element_name(f.team)+"  •  "+spec.name+ ("  CHARGED" if spec.get("charge",0)>0.1 else "")
-	events.append({"time":elapsed,"event":"cast","team":f.team,"spell":spec.id,"charge":spec.get("charge",0),"mana":f.mana})
-	if spec.effect=="summon_earth":
-		summon_earth(f,spec)
-	elif spec.effect=="heal":
-		var recipient:=_story_heal_target(f)
-		if not is_instance_valid(recipient):return
-		var restored:=minf(float(spec.get("heal_amount",22.0)),recipient.MAX_HEALTH-recipient.health)
-		recipient.health+=restored
-		recipient.healed_this_round=true
-		var heal_color:=Color("85ffc1")
-		for i in 5:
-			vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color(heal_color,0.82),0.55,4)
-		status="%s  •  %s  •  +%d HP"%[f.story_profile.get("name","Fighter"),spec.get("name","Mend"),roundi(restored)]
-		events.append({"time":elapsed,"event":"story_heal","caster":f.story_profile.get("name","Fighter"),"target":recipient.story_profile.get("name","Fighter"),"amount":restored})
-		GameDiagnostics.log_event("story_spell_heal",{"caster":f.story_profile.get("name","Fighter"),"target":recipient.story_profile.get("name","Fighter"),"amount":restored,"focused_ally":recipient!=f})
-		audio.impact("ice",recipient.global_position,0.45)
-	elif spec.effect == "armor":
-		f.armor_time = 6.5
-		f.armor_hp = 50
-		audio.impact("ice",f.global_position,0.5)
-	elif spec.effect == "haste":
-		f.haste_time = OVERDRIVE_DURATION
-		audio.impact("dash",f.global_position,0.6)
-	elif spec.effect == "burst":
-		f.start_burst(true)
-	elif spec.effect == "ice_beam":
-		var node := MeshInstance3D.new()
-		node.material_override = vfx.ribbon_materials[1]
-		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(node)
-		channels.append({"node":node,"caster":f,"age":0.0,"spec":spec.duplicate(),"tick":0.0,"trail":0.0})
-		audio.impact("ice",fighter_hand(f,"both"),0.5)
-	else:
-		spawn_projectile(f,spec,fighter_hand(f,spec.hand))
-		audio.impact("dash",fighter_hand(f,spec.hand),0.45)
+func cast_magic(f:CharacterBody3D,spec:Dictionary,_air:bool) -> void:
+	if story_mode and not f.story_spell_dispatching:return
+	combat().cast(f,spec,f.practice_spell_animation)
 
-func mana_cost(spec: Dictionary) -> float:
-	if spec.has("mana_percent"):return float(spec.mana_percent)*0.01*BattleActor.MAX_MANA
-	if spec.has("mana"):return float(spec.mana)
-	var base: float = {"orb":14.0,"slash":12.0,"armor":20.0,"ice_beam":22.0,"haste":18.0,"burst":9.0}.get(spec.effect,12.0)
-	return base*(1.0+float(spec.get("charge",0))*0.8)
+func combat_cast_feedback(f:CharacterBody3D,spec:Dictionary) -> void:
+	var key:="%s/%s"%[element_name(f.team),spec.id]
+	casts[key]=casts.get(key,0)+1
+	status=element_name(f.team)+"  •  "+str(spec.get("name",spec.id))
+	events.append({"time":elapsed,"event":"cast","team":f.team,"spell":spec.id,"charge":spec.get("charge",0),"mana":f.mana})
+
+func heal_target(f:CharacterBody3D) -> CharacterBody3D:
+	return _story_heal_target(f)
+
+func combat_target(f:CharacterBody3D) -> CharacterBody3D:
+	return _story_aim_target(f)
+
+func combat_heal_feedback(f:CharacterBody3D,recipient:CharacterBody3D,spec:Dictionary,restored:float) -> void:
+	status="%s  •  %s  •  +%d HP"%[f.story_profile.get("name","Fighter"),spec.get("name","Mend"),roundi(restored)]
+	events.append({"time":elapsed,"event":"story_heal","caster":f.story_profile.get("name","Fighter"),"target":recipient.story_profile.get("name","Fighter"),"amount":restored})
+	GameDiagnostics.log_event("story_spell_heal",{"caster":f.story_profile.get("name","Fighter"),"target":recipient.story_profile.get("name","Fighter"),"amount":restored,"focused_ally":recipient!=f})
 
 func movement_burst(f:CharacterBody3D,landing:bool) -> void:
 	if editor_animation_only:return
@@ -452,12 +361,6 @@ func movement_burst(f:CharacterBody3D,landing:bool) -> void:
 func speed_trail(f:CharacterBody3D) -> void:
 	if editor_animation_only:return
 	super.speed_trail(f)
-
-func damage_for(spec: Dictionary) -> float:
-	if spec.has("damage"):
-		return spec.damage
-	var base := 18.0 if spec.effect=="orb" else (16.0 if spec.effect=="slash" else 4.5)
-	return base*(1.0+float(spec.get("charge",0))*1.2)
 
 func projectile_aim_target(caster:CharacterBody3D,spec:Dictionary,origin:Vector3,speed:float) -> Vector3:
 	var aim_target:=_story_aim_target(caster)
@@ -470,243 +373,27 @@ func projectile_aim_target(caster:CharacterBody3D,spec:Dictionary,origin:Vector3
 		target=target_point+aim_target.velocity*minf(0.4,origin.distance_to(target_point)/speed)
 	return target
 
-func projectile_launch_state(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
-	var rules=preload("res://scripts/basic_projectile.gd")
-	var motion:Dictionary=rules.resolved_motion(spec)
-	var target:=projectile_aim_target(caster,spec,origin,float(motion.speed))
-	var direction:Vector3=(target-origin).normalized()
-	var launch:=Momentum.projectile(spec,caster.velocity,direction,float(motion.speed),damage_for(spec))
-	launch["target"]=target
-	launch["radius"]=motion.radius
-	return launch
-
-func predict_projectile_impact(caster:CharacterBody3D,spec:Dictionary,origin:Vector3) -> Dictionary:
-	var launch:=projectile_launch_state(caster,spec,origin)
-	var age:float=preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(launch.target),float(launch.radius),float(launch.speed))
-	return projectile_impact_predictor.predict(self,caster,origin,origin+launch.velocity*age,float(launch.radius),launch.spec)
-
-func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> void:
-	var q: float = clampf(spec.get("charge",0),0,1)
-	var launch:=projectile_launch_state(f,spec,origin)
-	var speed:float=launch.speed
-	var radius:float=launch.radius
-	var node: MeshInstance3D = preload("res://scripts/basic_projectile.gd").visual(spec.projectile_element,radius,spec.get("appearance",{})) if spec.has("projectile_element") else vfx.projectile(f.team,"slash" if spec.effect=="slash" else "orb",radius)
-	add_child(node)
-	node.position = origin
-	if spec.effect=="slash":
-		node.scale = Vector3.ONE*(1+q*0.6)
-	var target:Vector3=launch.target
-	var velocity_:Vector3=launch.velocity
-	if node.has_meta("look"):
-		node.look_at_from_position(origin,origin+velocity_,Vector3.FORWARD if absf(velocity_.normalized().dot(Vector3.UP))>0.95 else Vector3.UP)
-		if node.get_meta("look").shape in ["Shard","Ring"]:node.rotate_object_local(Vector3.RIGHT,PI/2)
-	shot_serial += 1
-	shots.append({"max_age":preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(target),radius,speed),"id":shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":launch.spec,"radius":radius})
-	GameDiagnostics.log_event("projectile_launch",{"shot":shot_serial,"speed":speed,"movement_speed":launch.spec.movement_speed,"physical_damage":launch.spec.damage})
-	_update_projectile_hitbox(shots.back())
-
-func step_shots(delta: float) -> void:
-	for i in range(shots.size()-1,-1,-1):
-		var shot: Dictionary = shots[i]
-		var from: Vector3 = shot.node.position
-		var to: Vector3 = from+shot.velocity*delta
-		var ground := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from,to,1))
-		if not ground.is_empty():
-			to=ground.position
-		if shot.spec.get("projectile_element","") in ["Ice","Lightning","Fire"] and ground.is_empty():
-			var surface:Dictionary=spell_environment.water_contact(from,to,shot.radius)
-			if not surface.is_empty():
-				to=surface.position
-				ground=surface
-		if ground.has("collider") and (ground.collider.has_meta("spell_ice") or ground.collider.has_meta("spell_earth")):
-			shot["hit_structure"]=true
-			ground.collider.take_damage(damage_for(shot.spec)+shot.velocity.length()*shot.mass*0.015)
-		if shot.spec.has("projectile_element"):
-			preload("res://scripts/spell_appearance.gd").step(shot.node,shot.age,delta)
-		shot.age += delta
-		shot.trail += delta
-		var hit := false
-		var impact_center:=to
-		var primary:CharacterBody3D
-		var primary_area:Area3D
-		var contact := {}
-		var blocked_by: CharacterBody3D
-		for enemy in fighters:
-			if enemy.team==shot.caster.team or enemy.health<=0:
-				continue
-			var shield_contact: Dictionary = enemy.shield_intersection(from,to,shot.radius)
-			if not shield_contact.is_empty() and (contact.is_empty() or from.distance_to(shield_contact.point)<from.distance_to(contact.point)):
-				contact=shield_contact
-				blocked_by=enemy
-		if not contact.is_empty():
-			shot["impact_position"]=blocked_by.global_position
-			to=contact.point
-			impact_center=contact.point
-			primary=blocked_by
-			hit=true
-		var shape := SphereShape3D.new()
-		shape.radius=shot.radius
-		var query := PhysicsShapeQueryParameters3D.new()
-		query.shape=shape
-		query.collision_mask=enemy_hurt_mask(shot.caster.team)
-		query.collide_with_areas=true
-		query.collide_with_bodies=false
-		var samples := maxi(1,ceili(from.distance_to(to)/0.06))
-		for sample in range(samples+1):
-			if hit:
-				break
-			var point := from.lerp(to,float(sample)/samples)
-			query.transform=Transform3D(Basis.IDENTITY,point)
-			var results := get_world_3d().direct_space_state.intersect_shape(query,12)
-			for result in results:
-				var victim = result.collider.get_meta("fighter")
-				if victim.health>0:
-					shot["impact_position"]=victim.global_position
-					to=point
-					impact_center=victim.contact_surface(result.collider,point)
-					primary=victim
-					primary_area=result.collider
-					hit=true
-					break
-		if not hit and not ground.is_empty():
-			impact_burst(ground.position,shot.caster.team,false)
-			impact_center=ground.position
-			hit=true
-		if hit:projectile_area_impact.apply(self,shot,impact_center,primary,primary_area)
-		if shot.spec.has("projectile_element"):
-			spell_environment.projectile_step(shot,from,to,hit)
-		if hit or shot.age>float(shot.get("max_age",2.2)):
-			shot.node.queue_free()
-			shots.remove_at(i)
-		else:
-			shot.node.position=to
-			_update_projectile_hitbox(shot)
-			if shot.trail>0.035:
-				shot.trail=0
-				if shot.spec.has("projectile_element"):
-					var element:String=shot.spec.projectile_element
-					var look:Dictionary=preload("res://scripts/spell_appearance.gd").settings(element,shot.spec.get("appearance",{}))
-					var color:Color=look.color
-					if float(look.trail)<=0 or look.trail_style=="None":continue
-					if look.trail_style=="Drawn" and look.drawn_trail.size()>=3:
-						var key:String="drawn_"+str(hash(look.drawn_trail))
-						if not vfx.textures.has(key):
-							var drawn_keys:Array=vfx.textures.keys().filter(func(item):return str(item).begins_with("drawn_"))
-							if drawn_keys.size()>=24:vfx.textures.erase(drawn_keys[0])
-						vfx.textures[key]=preload("res://scripts/spell_draw_mesh.gd").trail_texture(look.drawn_trail)
-						vfx.puff(shot.node.position,key,0,Vector2.ONE*shot.radius*2,-shot.velocity*0.03,0.2+float(look.trail)*0.8,Color(color,0.7),0.15)
-						continue
-					var trail_texture:String={"Sparks":"spark_05","Smoke":"smoke_04","Wisps":"flame_04"}.get(look.trail_style,"flame_04" if element=="Fire" else ("spark_05" if element=="Lightning" else "smoke_04"))
-					if look.trail_texture!="Element style":
-						var selected:Texture2D=preload("res://scripts/spell_textures.gd").texture(look.trail_texture)
-						if selected!=null:
-							trail_texture=look.trail_texture
-							vfx.textures[trail_texture]=selected
-					vfx.puff(shot.node.position,trail_texture,0,Vector2.ONE*shot.radius*2,-shot.velocity*0.04,0.1+float(look.trail)*0.8,Color(color,0.65),0.25,5)
-				else:vfx.flight(shot.node,shot.velocity,shot.caster.team,shot.spec.effect,shot.age)
-
-func step_channels(delta: float) -> void:
-	for i in range(channels.size()-1,-1,-1):
-		var item: Dictionary=channels[i]
-		var f: CharacterBody3D=item.caster
-		item.age+=delta
-		item.tick-=delta
-		item.trail+=delta
-		if item.age>0.95+float(item.spec.get("charge",0))*0.4 or f.health<=0 or f.mode!="cast":
-			item.node.queue_free()
-			channels.remove_at(i)
-			continue
-		var from:=fighter_hand(f,"both")
-		var beam_target:=_story_aim_target(f)
-		if not is_instance_valid(beam_target):
-			item.node.queue_free()
-			channels.remove_at(i)
-			continue
-		var end: Vector3=beam_target.bone_point("spine_03")
-		var query:=PhysicsRayQueryParameters3D.create(from,end+(end-from).normalized()*0.4,enemy_hurt_mask(f.team)|1)
-		query.collide_with_areas=true
-		query.collide_with_bodies=true
-		var result:=get_world_3d().direct_space_state.intersect_ray(query)
-		var blocker: CharacterBody3D
-		for enemy in fighters:
-			if enemy.team==f.team or enemy.health<=0:
-				continue
-			var shield: Dictionary=enemy.shield_intersection(from,end)
-			if not shield.is_empty() and (result.is_empty() or from.distance_to(shield.point)<from.distance_to(result.position)):
-				end=shield.point
-				blocker=enemy
-		if blocker!=null:
-			if item.tick<=0:
-				apply_impact(f,blocker,item.spec,end,(end-from).normalized())
-				item.tick=0.18
-		elif not result.is_empty():
-			end=result.position
-			if item.tick<=0 and result.collider.has_meta("fighter") and result.collider.get_meta("fighter").health>0:
-				apply_impact(f,result.collider.get_meta("fighter"),item.spec,end,(end-from).normalized(),result.collider,(end-from).normalized()*35)
-				item.tick=0.18
-		var path:=[]
-		for segment in 14:
-			path.append(from.lerp(end,segment/13.0)+Vector3.UP*sin(segment*1.5+elapsed*30)*0.025)
-		vfx.update_ribbon(item.node,path,0.22+float(item.spec.get("charge",0))*0.18)
-		if item.trail>0.1:
-			item.trail=0
-			vfx.puff(end,"smoke_04",1,Vector2.ONE*0.65,Vector3.UP*0.4,0.4,Color(0.75,0.95,1,0.55),0.6)
-
-func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictionary,point: Vector3,direction: Vector3,hit_area: Area3D=null,incoming_impulse:=Vector3.ZERO)->bool:
-	if victim==attacker or victim.health<=0 or not round_active or victim.invulnerability>0:
-		return false
-	var amount:=damage_for(spec)*Momentum.melee_multiplier(attacker.velocity,direction,spec)
-	var original:=amount
-	var q: float=clampf(spec.get("charge",0),0,1)
-	var impulse: Vector3=incoming_impulse if not incoming_impulse.is_zero_approx() else direction*amount*9
-	if spec.get("projectile_element","")=="Wind":
-		impulse+=Vector3.UP*330*float(spec.get("potency",1.0))
-	if q>0.6 and spec.effect!="melee" and spec.effect!="ice_beam":
-		impulse+=Vector3.UP*900*q
-	var pressure:=amount*(1+q*1.8)+maxf(0,impulse.length()-250)/65.0
-	var absorbed: float=victim.absorb_magic(pressure,point-direction*2,point)
-	var fraction:=clampf(absorbed/maxf(0.1,pressure),0,1)
-	var shattered: bool=absorbed>0 and victim.guard_energy<=0
-	if fraction>0:
-		victim.apply_physical_impact(point,impulse*fraction*0.12,"shield","lowerarm_r")
-		amount*=1-fraction
-		impulse*=1-fraction
-		audio.impact("shatter" if shattered else "shield",point,0.85)
-	if amount<=0.05:
-		return true
-	if shattered and q>0.6:
-		impulse+=Vector3.UP*450*q
-	var area: Area3D=hit_area if hit_area!=null else victim.nearest_hurtbox(point)
-	var zone: String=area.get_meta("zone","chest")
-	var bone: String=area.get_meta("bone","spine_03")
-	var health_before: float=victim.health
-	victim.last_hit_charge=q
-	victim.last_guard_shattered=shattered
-	victim.last_hit_launch=spec.get("launch",false)
-	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400)):
-		return fraction>0
+func combat_impact_feedback(attacker:CharacterBody3D,victim:CharacterBody3D,spec:Dictionary,point:Vector3,_direction:Vector3,hit_area:Area3D,result:Dictionary) -> void:
+	var zone:String=result.zone
+	var q:float=result.charge
+	var impulse:Vector3=result.impulse
+	var shattered:bool=result.shattered
 	if get("training_mode")==true and spec.effect=="melee" and attacker.team==0 and hit_area!=null and hit_area.has_meta("calibration_dummy_index") and has_method("record_training_calibration_hit"):
 		call("record_training_calibration_hit",int(hit_area.get_meta("calibration_dummy_index")),zone)
 	if get("training_mode")==true and victim.team>0:
 		victim.velocity=Vector3.ZERO
 		victim.knockback=Vector3.ZERO
 		victim.drive_velocity=Vector3.ZERO
-	victim.receive_status(attacker,spec)
-	if is_instance_valid(spell_environment):spell_environment.damage_ice_near(point,amount,0.8)
-	if spec.effect=="melee":
-		attacker.melee_hits+=1
-		attacker.melee_damage+=health_before-victim.health
 	var key: String="%s/%s"%[element_name(attacker.team),spec.id]
 	hits[key]=hits.get(key,0)+1
 	var hit_label: String={"arm_l":"LEFT ARM","arm_r":"RIGHT ARM","leg_l":"LEFT LEG","leg_r":"RIGHT LEG","pelvis":"BODY"}.get(zone,zone.to_upper())
 	status="%s  •  %s  •  %s"%[element_name(attacker.team),spell_name(spec,attacker.team),hit_label]
-	events.append({"time":elapsed,"event":"hit","team":attacker.team,"victim":victim.team,"spell":spec.id,"zone":zone,"damage":health_before-victim.health,"charge":q,"impulse":impulse.length(),"shattered":shattered,"combo":spec.get("combo",false)})
-	GameDiagnostics.log_event("combat_hit", {"attacker":attacker.story_profile.get("name", "Fighter %d" % attacker.team), "victim":victim.story_profile.get("name", "Fighter %d" % victim.team), "action":spec.get("id", "unknown"), "zone":zone, "damage":health_before-victim.health, "impulse":impulse.length(), "guard_broken":shattered})
+	events.append({"time":elapsed,"event":"hit","team":attacker.team,"victim":victim.team,"spell":spec.id,"zone":zone,"damage":float(result.damage),"charge":q,"impulse":impulse.length(),"shattered":shattered,"combo":spec.get("combo",false)})
+	GameDiagnostics.log_event("combat_hit", {"attacker":attacker.story_profile.get("name", "Fighter %d" % attacker.team), "victim":victim.story_profile.get("name", "Fighter %d" % victim.team), "action":spec.get("id", "unknown"), "zone":zone, "damage":float(result.damage), "impulse":impulse.length(), "guard_broken":shattered})
 	impact_burst(point,attacker.team,true)
 	var sound: String="heavy" if impulse.length()>400 else ("ice" if attacker.team==1 and spec.effect!="melee" else ("kick" if spec.id in ["front_kick","round_kick","knee"] else "punch"))
 	audio.impact(sound,point,minf(1,impulse.length()/400))
 	shake=maxf(shake,0.08 if impulse.length()<400 else 0.20)
-	return true
 
 func update_camera(delta: float) -> void:
 	if review_camera:
@@ -771,28 +458,6 @@ func focus_camera_on(target: CharacterBody3D) -> void:
 		var profile: Variant=target.get("story_profile")
 		if profile is Dictionary:target_name=str(profile.get("name", "Fighter"))
 	GameDiagnostics.log_event("camera_focus", {"target":target_name, "focused":camera_focus_target!=null})
-
-func apply_melee_block(attacker: CharacterBody3D, defender: CharacterBody3D, point: Vector3) -> void:
-	if not story_mode:return
-	var cost:=6.0+float(attacker.get("melee_charge"))*4.0
-	attacker.spend_stamina(cost)
-	attacker.stamina_delay=0.9
-	attacker.minimum_stamina=minf(attacker.minimum_stamina,attacker.stamina)
-	defender.guard_energy=maxf(0,defender.guard_energy-8.0)
-	defender.guard_recovery=1.1
-	defender.blocks+=1
-	defender.shield_recoil=0.24
-	defender.clip=""
-	defender.play("duel/shield_hit_brace",1.25)
-	if defender.guard_energy<=0:
-		defender.guard_breaks+=1
-		defender.guard_cooldown=2.2
-		defender.mode="hit"
-		defender.mode_time=0
-		defender.mode_length=0.24
-	attacker.start_block_recoil(0.30)
-	GameDiagnostics.log_event("melee_block",{"attacker":attacker.story_profile.get("name","Fighter"),"defender":defender.story_profile.get("name","Rival"),"stamina_cost":cost,"guard_remaining":defender.guard_energy})
-	impact_burst(point,defender.team,false)
 
 func build_fight_ui() -> void:
 	var layer:=CanvasLayer.new()
@@ -933,3 +598,10 @@ func _story_heal_target(caster:CharacterBody3D) -> CharacterBody3D:
 	if story_mode and caster.player_controlled and is_instance_valid(camera_focus_target) and camera_focus_target.team==caster.team and camera_focus_target.health>0:
 		return camera_focus_target
 	return caster if caster.health>0 else null
+
+func projectile_visual(actor:CharacterBody3D,spec:Dictionary,radius:float) -> MeshInstance3D:
+	if spec.has("projectile_element"):return preload("res://scripts/basic_projectile.gd").visual(spec.projectile_element,radius,spec.get("appearance",{}))
+	return vfx.projectile(actor.team,"slash" if spec.effect=="slash" else "orb",radius)
+
+func orient_projectile(node:MeshInstance3D,spec:Dictionary,_origin:Vector3,_direction:Vector3) -> void:
+	if spec.effect=="slash":node.scale=Vector3.ONE*(1.0+clampf(float(spec.get("charge",0)),0,1)*0.6)

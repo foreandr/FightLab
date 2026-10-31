@@ -1,5 +1,15 @@
 SHARED CHARACTER MECHANICS
 
+Combat consolidation
+
+  See docs/combat-runtime.txt for the new-mode API and integration example.
+  CombatWorld is the reusable gameplay base; CombatRuntime owns actual casting,
+  projectile flight, impacts, actor/wall updates, beams and pulses. SpellBuilder
+  uses combat_spell_rules.gd to construct/preview specs and the same runtime to
+  commit casts. melee_contact.gd owns swept-limb resolution across actor adapters.
+  Story/Create share these implementations. The old visual-only SpellArena study
+  is now a sibling, not the parent of gameplay arenas.
+
 Ownership
 
 scripts/physical_momentum.gd
@@ -16,7 +26,7 @@ scripts/physical_momentum.gd
   use the same BattleArena.projectile_launch_state.
 
 Neutral spell physical damage
-  SpellBuilder calibrates damage speed against the full-power, one-second,
+  combat_spell_rules.gd calibrates damage speed against the full-power, one-second,
   50/50 size/speed, centered-timing setup: 8.35 m/s base x 1.125 = 9.39375 m/s.
   A neutral offensive elementless cast therefore costs 10 mana and 10 stamina,
   and applies 10 physical damage before defenses. Projectile size/speed and the
@@ -123,12 +133,15 @@ Contracts
   Existing Story calibration method names remain compatibility adapters.
   Native authoring, scrubbing and locomotion do not receive aim corrections unless
   an aim request is explicitly passed to the animation sampler.
-  Resource costs, damage, mana scaling and recovery remain in their existing
-  owners. This refactor deliberately does not retune them.
+  Authored costs/damage/allocation live in combat_spell_rules.gd; mana scaling
+  stays in animation_mana_scaling.gd. DuelActor owns atomic payment/recovery.
+  Runtime execution never repeats authoring or charges a second resource cost.
+  This consolidation preserves the neutral benchmark and existing balance curves.
 
 Adding a mode
 
-  Supply input, controlled actor, selected target, active camera and sampled pose.
+  Start with CombatWorld; see docs/combat-runtime.txt. Supply input, controlled
+  actor, selected target, active camera and sampled pose.
   Reuse these modules; do not copy Story or Create mechanics into the new screen.
   Keep mode-specific UI, saved preferences, calibration data and animation clocks
   outside the shared math. Use existing animation resources rather than rebuilding

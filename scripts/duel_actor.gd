@@ -405,30 +405,12 @@ func start_punch() -> void:
 	melee_previous = bone_point(melee_spec[2])
 	count_action(melee_spec[0])
 
-func resolve_melee(delta: float) -> void:
-	if mode != "punch" or melee_spec.is_empty() or health <= 0 or not arena.round_active:
-		return
-	var hand := bone_point(melee_spec[2])
-	var movement := hand - melee_previous
-	if not melee_connected and melee_clock >= melee_spec[3] and melee_clock <= melee_spec[4] and movement.length() / delta > 1.0 and movement.dot(flat_direction(position, rival.position)) > 0.0005:
-		var shape := SphereShape3D.new()
-		shape.radius = 0.105
-		var query := PhysicsShapeQueryParameters3D.new()
-		query.shape = shape
-		query.collision_mask = 8 << (1 - team)
-		query.collide_with_areas = true
-		query.collide_with_bodies = false
-		var samples := maxi(1, ceili(movement.length() / 0.04))
-		for i in range(samples + 1):
-			var point := melee_previous.lerp(hand, float(i) / samples)
-			query.transform = Transform3D(Basis.IDENTITY, point)
-			var contacts := get_world_3d().direct_space_state.intersect_shape(query, 4)
-			if not contacts.is_empty():
-				var victim = contacts[0].collider.get_meta("fighter")
-				melee_connected = arena.apply_impact(self, victim, {"id":melee_spec[0], "effect":"melee", "damage":8.0 if melee_spec[0] == "left_jab" else 11.0}, point, flat_direction(position, victim.position), contacts[0].collider, (movement / delta * 8.0).limit_length(120))
-				if melee_connected:
-					break
-	melee_previous = hand
+func resolve_melee(delta:float) -> void:
+	if mode!="punch" or melee_spec.is_empty():return
+	var limb:=bone_point(melee_spec[2])
+	var forward:=flat_direction(position,rival.position) if is_instance_valid(rival) else global_basis.z
+	melee_connected=preload("res://scripts/melee_contact.gd").resolve(self,{"id":melee_spec[0],"clock":melee_clock,"begin":melee_spec[3],"end":melee_spec[4],"previous":melee_previous,"limb":limb,"connected":melee_connected,"forward":forward,"require_forward":true,"min_speed":1.0,"dynamic_damage":false,"damage":8.0 if melee_spec[0]=="left_jab" else 11.0},delta) or melee_connected
+	melee_previous=limb
 
 func recover_resources(delta: float) -> void:
 	if practice_god_mode:
@@ -469,16 +451,14 @@ func recover_resources(delta: float) -> void:
 		if stamina <= 0:
 			story_block_held = false
 			story_block_time = 0.0
-	elif mana_delay <= 0 and not resource_busy:
-		mana = minf(MAX_MANA, mana + delta * RESOURCE_RECOVERY_RATE)
+	else:recover_resource_pools(delta,not resource_busy,false)
 	if mode=="chase" or (mode=="run" and (not player_controlled or sprinting)):
 		var drain := minf(stamina, delta * (8.0 if mode == "chase" else (12.0 if sprinting else 6.0)))
 		stamina -= drain
 		stamina_spent += drain
 		stamina_delay = 0.4
 		minimum_stamina = minf(minimum_stamina, stamina)
-	elif stamina_delay <= 0 and not resource_busy:
-		stamina = minf(MAX_STAMINA, stamina + delta * RESOURCE_RECOVERY_RATE)
+	else:recover_resource_pools(delta,false,not resource_busy)
 
 func recover_guard(delta:float) -> void:
 	guard_recovery=maxf(0.0,guard_recovery-delta)
@@ -946,3 +926,18 @@ func nearest_hurtbox(point: Vector3) -> Area3D:
 
 func arena_roam_radius() -> float:
 	return 8.0
+
+func recover_idle_resources(delta:float) -> void:
+	if practice_god_mode:
+		restore_god_resources()
+		recover_guard(delta)
+		return
+	mana_delay=maxf(0.0,mana_delay-delta)
+	stamina_delay=maxf(0.0,stamina_delay-delta)
+	if health<=0 or not arena.round_active:return
+	recover_resource_pools(delta)
+	recover_guard(delta)
+
+func recover_resource_pools(delta:float,mana_idle:bool=true,stamina_idle:bool=true) -> void:
+	if mana_idle and mana_delay<=0.0:mana=minf(MAX_MANA,mana+delta*RESOURCE_RECOVERY_RATE)
+	if stamina_idle and stamina_delay<=0.0:stamina=minf(MAX_STAMINA,stamina+delta*RESOURCE_RECOVERY_RATE)

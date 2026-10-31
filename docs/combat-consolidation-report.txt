@@ -1,0 +1,95 @@
+COMBAT, SPELL AND ANIMATION CONSOLIDATION
+Completed 2026-10-31
+
+RESULT
+
+Story and Create now execute gameplay through CombatWorld/CombatRuntime rather
+than maintaining separate projectile, impact, cast-payment and melee mechanics.
+A new mode can inherit CombatWorld directly, spawn the existing combatants and
+submit authored spells. It does not need either mode's UI or campaign scene.
+See docs/combat-runtime.txt for the integration example and ownership contracts.
+
+WORK COMPLETED
+
+- Shared cast eligibility and atomic mana/stamina payment, including casting
+  limb restrictions and per-character God Mode. Create's Play/release uses this
+  same path as gameplay.
+- Shared spell effect dispatch: projectiles, ground shots, healing, armor, haste,
+  burst, beam, ice beam, nova and earth summon. Target selection and presentation
+  remain hooks, not second implementations of damage or cost.
+- Shared projectile launch/prediction preparation, flight, world contacts, guard
+  absorption, area impacts, physical damage, status application and telemetry.
+  Caster movement is captured once at launch; one projectile cannot double-pay
+  costs or double-apply its movement bonus.
+- Shared actor updates, wall/structure impacts, hurtbox updates and melee steps.
+- Shared swept melee contacts, attack windows, limb-speed/charge rules, manual
+  blocking and impact dispatch. Removed the extra per-limb melee hit/damage
+  accounting after the common impact path had already recorded that hit.
+- Moved authored spell calculations and neutral elementless content out of UI:
+  duration, stamina, physical damage, release timing, mana, amp, size/speed/effect
+  allocation, and the reusable neutral 10/10/10 factory.
+- Shared idle resource-pool recovery and shared animation pose capture/blending.
+  Existing animation sampling, aim corrections and cached channel filtering are
+  reused; animation players and editing state remain independent per actor.
+- Explicit authored Fire/Ice/Lightning effects now work in Story. Its stage-one
+  hand-to-hand restriction still suppresses old implicit team effects; it no
+  longer suppresses an explicit elemental spell.
+- Separated old grassland presentation utilities and spell catalog from the
+  visual-only spell study. Gameplay no longer inherits that demo's simplified
+  projectile loop.
+- Made shared combat logging an optional host service, so importing the reusable
+  world does not require compiling against a UI/autoload global.
+- Added the new-mode contract test and documented the architecture in AGENTS.md.
+
+BOUNDARIES KEPT DELIBERATE
+
+Modes still own menus, preferences, camera/input routing, objectives, event
+presentation, editor undo/scrubbing and animation clocks/charge holds. They use
+the same mechanic modules. Existing authored assets were reused, not regenerated.
+The historical visual spell-study scene remains an asset demonstration, not a
+second gameplay engine. Older duel spell presets are data passed through the
+shared runtime, preserving their content values.
+
+VALIDATION
+
+Passed:
+  combat_runtime_contract_test: bare new mode, no Story/Create scene; actual
+    neutral projectile hit, payment failure without partial spending, immutable
+    authored specs, absolute mana-cost authoring, recovery, Story element status,
+    animation movement and transition, swept melee/one-hit accounting, healing,
+    armor/haste dispatch, actor simulation and God Mode.
+  neutral_spell_damage_test: actual 10 mana / 10 stamina / 10 unblocked damage.
+  physical_momentum_test: standing/walking/sprinting/amped movement, snapshots,
+    actual hits, no duplicate movement contribution, limiter independence.
+  spell_power_balance_test: size/speed/burn, fixed costs and actual effects.
+  spell_limiter_test: independent raw values and balanced restoration.
+  projectile_area_impact_test: multi-target hits, radius, deduplication and cover.
+  shared_character_mechanics_test: cached clips, aim, recovery, movement.
+  story_third_person_focus_test: real Story scene and shared camera/focus.
+  spell_demo_choices_test: five actual clips, smooth transitions, confirmation.
+  spell_projectile_entry_defaults_test: neutral entry defaults.
+  spell_cast_hotkey_test: Play [1], hitboxes [2], input guards.
+  spell_preview_mana_test: per-frame resource and displayed-bar synchronization.
+  character_god_mode_test: selection, independent actors, costs, effects, reset.
+  combat_hitbox_visibility_test: actual receiving/sending shapes and transforms.
+  creation_directional_movement_test: eight-way movement and Take Control.
+  spell_animation_test: ten distinct casts on both rigs with grounded feet.
+  Legacy duel scene: 12 simulated seconds with casts and actual hits.
+  Legacy spell-study scene: 12 simulated seconds with casts, hits and healing.
+
+Updated older tests to read spell data from its catalog, isolate saved God Mode
+preferences, use the agreed neutral-damage calibration, and distinguish normal
+follow-camera smoothing from resetting the user's zoom/orbit. No failing combat
+assertion was removed. Final verification logs contain no script errors.
+Godot still emits material/RID/ObjectDB shutdown warnings seen in the existing
+rendering checks; these are separate from their gameplay assertions.
+
+LINE ACCOUNTING (implementation and test files; documentation excluded)
+
+Implementation added: 1,168 lines.
+Implementation removed: 1,096 lines.
+Implementation net: +72 lines.
+Tests added: 114 lines; removed: 5 lines.
+Moved/refactored source: 747 original lines across extracted/reorganized methods.
+That last number measures the original methods reorganized, not byte-for-byte
+moves. Relocation/refactoring is already included in added/removed totals.

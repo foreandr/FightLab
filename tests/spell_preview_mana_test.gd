@@ -17,6 +17,7 @@ func run() -> void:
 	b.draft_path="user://logs/mana_test_draft.cfg"
 	b.preview_preferences_path="user://logs/mana_test_preview.cfg"
 	b.open_projectile_workspace()
+	b.set_character_god_mode(editor.actor,false)
 	b.set_process(false)
 	b.preview_repeating=false
 	b.preview_effect="None"
@@ -67,8 +68,9 @@ func run() -> void:
 	b.set_projectile_allocation("speed",1.0)
 	b.set_release_fraction(0.55)
 	if not check(is_equal_approx(float(b.demo_projectile_stats().base_velocity),15.7),"Full speed must equal the former 30 percent speed"):return
-	if not check(is_equal_approx(float(b.release_timing_stats().multiplier),1.25) and is_equal_approx(float(b.demo_projectile_stats().physical_damage),10.0*15.7/14.0*1.25),"Speed/amp stacked incorrectly"):return
-	if not check(b.demo_damage_breakdown.text.contains("10.0 base") and b.demo_damage_breakdown.text.contains("1.12 speed") and b.demo_damage_breakdown.text.contains("1.25 amp"),"Right panel lacks calculation breakdown"):return
+	var rules=preload("res://scripts/combat_spell_rules.gd")
+	if not check(is_equal_approx(float(b.release_timing_stats().multiplier),1.25) and is_equal_approx(float(b.demo_projectile_stats().physical_damage),10.0*15.7/rules.NEUTRAL_DAMAGE_VELOCITY*1.25),"Speed/amp stacked incorrectly"):return
+	if not check(b.demo_damage_breakdown.text.contains("10.0 base") and b.demo_damage_breakdown.text.contains("1.88 speed") and b.demo_damage_breakdown.text.contains("1.11 amp"),"Right panel lacks calculation breakdown"):return
 	b.demo_duration=1.0
 	var tag=editor.actor.get_node("OverheadHealthTag")
 	tag.update_tag()
