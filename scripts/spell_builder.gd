@@ -88,6 +88,13 @@ var demo_exit_elapsed:=0.0
 const DEMO_TRANSITION_SECONDS:=0.18
 var demo_confirm_button:Button
 const DELIVERY_TYPES:=["Projectile","Beam","Targeted","Touch","Barrier"]
+const DELIVERY_HELP:={
+ "Projectile":"Click to cast and launch the spell.",
+ "Beam":"Hold to keep casting while aiming the beam around the map.",
+ "Targeted":"Cast on a selected target.",
+ "Touch":"Requires physical contact with the target.",
+ "Barrier":"Blocks, reflections, amplifiers, and other barrier effects."
+}
 var delivery_type:=""
 var creation_step:="demo"
 var demo_screen:VBoxContainer
@@ -607,7 +614,7 @@ func setup(owner_editor:Node) -> void:
   node.name="SpellType"+type
   node.custom_minimum_size.y=40
   node.disabled=type!="Projectile"
-  if node.disabled:node.tooltip_text="Not available yet"
+  node.tooltip_text=DELIVERY_HELP[type]+("\nNot available yet." if node.disabled else "")
   delivery_choices[type]=node
  delivery_demo_label=editor.menu_label(delivery_screen,"",13)
  delivery_demo_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
