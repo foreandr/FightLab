@@ -192,6 +192,8 @@ func physics(delta:float) -> void:
 	direction=direction.limit_length(1)
 	moving=direction.length()>0.01
 	var sprinting:bool=held.get(KEY_SHIFT,false) or pad_sprint
+	sprinting=unit.use_sprint(delta,sprinting,moving)
+	unit.recover_idle_resources(delta)
 	var axes:=Vector2(direction.dot(right),direction.dot(forward))
 	var speed:float=(7.0 if sprinting else 4.0)*Movement.directional_speed(axes,sprinting)*unit.movement_multiplier()
 	var before:=unit.global_position

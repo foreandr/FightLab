@@ -1860,10 +1860,11 @@ func _physics_process(delta:float) -> void:
 
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  # Scriptable locomotion entry point; live input/focus checks remain above.
+ var caster=editor.actor
+ sprinting=caster.use_sprint(delta,sprinting,not axes.is_zero_approx())
  if (not axes.is_equal_approx(caster_move_axes) or sprinting!=caster_sprinting) and not playing:begin_demo_exit()
  caster_move_axes=axes
  caster_sprinting=sprinting
- var caster=editor.actor
  var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
  caster_moving=not direction.is_zero_approx()
  if caster_moving:

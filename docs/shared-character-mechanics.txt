@@ -162,6 +162,16 @@ scripts/character_movement.gd
   interpolate smoothly. Buffs still scale the result; diagonals are normalized.
   Applies to ordinary controlled locomotion, not authored jumps/dashes/knockback.
 
+scripts/character_exertion.gd
+  actor.use_sprint(delta, requested, moving) is the common sprint cost/gating API.
+  Create, Take Control (keyboard/gamepad) and Story spend 12 stamina per second,
+  with a 0.4-second recovery delay. Idle recovery cannot cancel ongoing drain.
+  Stationary Shift is free; walking retains ordinary recovery. God Mode bypasses
+  cost. Exhaustion falls back to walking and requires releasing sprint before
+  trying again after recovery, avoiding alternating walk/sprint every few frames.
+  Continuous drain updates resource bookkeeping without spawning per-frame cost
+  labels. Reset clears exhaustion. New movement controllers should call this API.
+
 scripts/third_person_camera.gd
   Camera adoption, lock/release, yaw calculation, orbit, zoom and follow framing.
   Story and Create use the same state operations. Take Control shares framing,

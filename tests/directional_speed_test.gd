@@ -40,6 +40,7 @@ func run() -> void:
 			actor.reset_fighter(Vector3(0,0.02,0))
 			actor.player_controlled=true
 			actor.mode="run"
+			var spent_before:float=actor.stamina_spent
 			key(sample[0],true)
 			if sprinting:key(KEY_SHIFT,true)
 			for frame in 40:
@@ -47,6 +48,7 @@ func run() -> void:
 				actor.tick(1.0/60.0)
 			var expected:float=(8.2 if sprinting else 4.8)*sample[2 if sprinting else 1]*actor.movement_multiplier()
 			if not check(absf(Vector2(actor.velocity.x,actor.velocity.z).length()-expected)<0.05,"Actual Story speed: key=%s sprint=%s expected=%s actual=%s"%[sample[0],sprinting,expected,actor.velocity]):return
+			if not check(is_equal_approx(actor.stamina_spent-spent_before,8.0 if sprinting else 0.0),"Story sprint cost is missing or charged twice"):return
 			key(sample[0],false)
 			key(KEY_SHIFT,false)
 	print("DIRECTIONAL SPEED PASSED: eight walk/sprint rates, analog interpolation and actual Story forward/strafe/backpedal speeds")

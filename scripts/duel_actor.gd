@@ -3,6 +3,10 @@ const Movement=preload("res://scripts/character_movement.gd")
 var last_logged_locomotion_state := ""
 var last_hit_zone:=""
 var practice_god_mode:=false
+var sprint_exhausted:=false
+
+func use_sprint(delta:float,requested:bool,moving:bool) -> bool:
+	return preload("res://scripts/character_exertion.gd").sprint(self,delta,requested,moving)
 
 func restore_god_resources() -> void:
 	health=MAX_HEALTH
@@ -120,6 +124,7 @@ func reset_fighter(location: Vector3) -> void:
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	impact_physics.reset(skeleton)
 	last_hit_zone=""
+	sprint_exhausted=false
 	position = location
 	ground_spawn = location
 	velocity = Vector3.ZERO
@@ -420,6 +425,7 @@ func resolve_melee(delta:float) -> void:
 	melee_previous=limb
 
 func recover_resources(delta: float) -> void:
+	use_sprint(delta,player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT),player_controlled and arena.round_active and mode=="run" and not _player_move_axes().is_zero_approx())
 	if practice_god_mode:
 		restore_god_resources()
 		recover_guard(delta)
@@ -459,8 +465,8 @@ func recover_resources(delta: float) -> void:
 			story_block_held = false
 			story_block_time = 0.0
 	else:recover_resource_pools(delta,not resource_busy,false)
-	if mode=="chase" or (mode=="run" and (not player_controlled or sprinting)):
-		var drain := minf(stamina, delta * (8.0 if mode == "chase" else (12.0 if sprinting else 6.0)))
+	if mode=="chase" or (mode=="run" and not player_controlled):
+		var drain := minf(stamina, delta * (8.0 if mode == "chase" else 6.0))
 		stamina -= drain
 		stamina_spent += drain
 		stamina_delay = 0.4
@@ -473,7 +479,7 @@ func recover_guard(delta:float) -> void:
 		guard_energy=minf(MAX_GUARD,guard_energy+delta*RESOURCE_RECOVERY_RATE)
 
 func _player_sprint_active() -> bool:
-	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and stamina>0
+	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and stamina>0 and not sprint_exhausted
 
 func shield_active() -> bool:
 	if arena.story_mode and player_controlled and story_block_held:

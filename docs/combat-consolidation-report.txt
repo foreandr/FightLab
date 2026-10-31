@@ -291,3 +291,17 @@ neck constraint release, repeated-call safety, source/reset integrity and all
 exclusions. Visually inspected the actual Create human finisher without stretched
 neck geometry. Physical-threshold and headshot/status regressions passed.
 Implementation: +145 / -1 lines.
+
+SHARED SPRINT STAMINA (2026-10-31)
+
+Fixed Create/Take Control applying sprint speed without the existing Story cost.
+Moved the 12-stamina-per-second rule into character_exertion, called through the
+same actor.use_sprint API by all three controllers. Recovery delay prevents idle
+resource updates from erasing active drain. Stationary Shift costs nothing, normal
+walking recovers, God Mode bypasses cost, and exhaustion drops to walking until
+sprint is released/retried after recovery. Reset clears the exhaustion state.
+Story's old separate sprint charge was removed to prevent double charging; AI
+jog/chase behavior is preserved. No per-frame floating-number spam is introduced.
+Verified actual Create/Take Control drain and recovery, standing/exhaustion/God
+cases, and actual Story walk/strafe/backpedal speeds with exactly one sprint cost.
+Implementation: +35 / -4 lines.
