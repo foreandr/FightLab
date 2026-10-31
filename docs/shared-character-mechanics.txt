@@ -11,7 +11,7 @@ scripts/projectile_allocation.gd
   controls remain independent, hiding the balanced budget row until restored.
   This controls allocation, not the existing animation/resource-cost formulas.
   Entering the projectile effect stage always starts elementless with 100 percent
-  Total power, a one-second demo cast, centered timing (30 percent release within
+  Total power, a 50/50 size/speed split, a one-second demo cast, centered timing (30 percent release within
   the 5..55 range), and Limiter on. Changes are retained while editing that stage;
   returning through delivery starts with these entry defaults again.
 

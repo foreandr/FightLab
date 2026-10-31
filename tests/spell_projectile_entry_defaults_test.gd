@@ -19,6 +19,7 @@ func run() -> void:
 	for unrestricted in [false,true]:
 		b.open_projectile_workspace()
 		b.set_total_power(0.15)
+		b.projectile_allocations["None"]={"size":1.0,"speed":0.0}
 		b.set_demo_duration(4)
 		b.set_release_fraction(0.55)
 		b.preview_projectile_effect("Fire")
@@ -29,6 +30,8 @@ func run() -> void:
 		b.choose_delivery_type("Projectile")
 		if not check(b.limiter_enabled and b.total_power==1 and b.demo_duration==1 and b.cast_duration()==1,"Entry did not reset balanced power/duration"):return
 		if not check(b.element=="None" and b.preview_effect=="None" and not b.projectile_effect_confirmed,"Entry did not reset to elementless projectile"):return
+		var mix:Dictionary=b.allocation_for("None")
+		if not check(mix.size==0.5 and mix.speed==0.5 and b.allocation_sliders.size.value==50.0 and b.allocation_sliders.speed.value==50.0,"Entry did not reset size/speed to 50/50"):return
 		var midpoint:float=(b.release_slider.min_value+b.release_slider.max_value)*0.5
 		if not check(is_equal_approx(float(b.release_slider.value),midpoint) and is_equal_approx(float(b.release_fraction),0.3),"Timing slider is not centered"):return
 		if not check(b.total_power_slider.value==100 and b.demo_duration_slider.value==1 and (not is_instance_valid(b.limiter_warning) or not b.limiter_warning.visible),"Default UI differs from values or leaves old modal open"):return

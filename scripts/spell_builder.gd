@@ -750,6 +750,7 @@ func open_projectile_workspace() -> void:
  if not limiter_enabled:set_limiter_enabled(true)
  if is_instance_valid(limiter_warning):limiter_warning.hide()
  total_power=1.0
+ projectile_allocations["None"]={"size":0.5,"speed":0.5}
  demo_duration=1.0
  casting_animation["duration"]=demo_duration
  release_fraction=(MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5
