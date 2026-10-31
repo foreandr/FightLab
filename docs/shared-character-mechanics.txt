@@ -46,6 +46,9 @@ scripts/third_person_camera.gd
 scripts/combat_pointer.gd
   Mouse-following pointer placement and mouse-input transparency. Story's cursor
   and Create's crosshair retain their drawings and inherit this common base.
+  dialog_open identifies visible embedded windows. Spell free aim yields to
+  dialogs: show the system cursor, hide the crosshair and suspend orbit/input;
+  normal arena pointer behavior resumes after dismissal.
 
 scripts/projectile_impact_predictor.gd
   Read-only forecast from the actual casting origin. Uses the same enemy sphere

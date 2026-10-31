@@ -22,6 +22,7 @@ var third_person_mouse_origin:=Vector2.ZERO
 var third_person_crosshair:Control
 const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const CombatAim=preload("res://scripts/combat_aim.gd")
+const CombatPointer=preload("res://scripts/combat_pointer.gd")
 const Movement=preload("res://scripts/character_movement.gd")
 var draft_path:="user://projectile_spell_draft.cfg"
 var category:="Projectiles"
@@ -924,6 +925,7 @@ func set_limiter_enabled(enabled:bool) -> void:
    limiter_warning.get_label().add_theme_color_override("font_color",Color("fff3db"))
    add_child(limiter_warning)
   limiter_warning.popup_centered()
+  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
 
 func set_test_value(key:String,value:float) -> void:
  if limiter_enabled:return
@@ -1535,6 +1537,7 @@ func toggle_third_person_focus(selected:CharacterBody3D) -> void:
 
 func handle_third_person_input(event:InputEvent) -> bool:
  if not is_visible_in_tree() or not demo_only_stage:return false
+ if CombatPointer.dialog_open(get_viewport()):return false
  var area:Control=editor.base_ui.get_node_or_null("ArenaUnitDrop")
  if event is InputEventMouseButton:
   if event.button_index==MOUSE_BUTTON_MIDDLE and not event.ctrl_pressed:
@@ -1559,6 +1562,12 @@ func handle_third_person_input(event:InputEvent) -> bool:
  return false
 
 func update_third_person_view(delta:float) -> void:
+ if CombatPointer.dialog_open(get_viewport()):
+  third_person_orbiting=false
+  movement_keys.clear()
+  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+  if is_instance_valid(third_person_crosshair):third_person_crosshair.hide()
+  return
  ensure_third_person_camera()
  var field=editor.field
  var locked:CharacterBody3D=field.camera_focus_target
@@ -1590,6 +1599,7 @@ func aim_at_screen(pointer:Vector2) -> void:
 
 func _input(event:InputEvent) -> void:
  if not is_visible_in_tree():return
+ if CombatPointer.dialog_open(get_viewport()):return
  if event is InputEventKey and not editor.camera_text_editing():
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
   if key in [KEY_1,KEY_KP_1] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":

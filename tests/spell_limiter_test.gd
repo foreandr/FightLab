@@ -29,7 +29,21 @@ func run() -> void:
 	if not check(b.limiter_enabled and b.limiter_toggle.button_pressed and not b.test_inputs.duration.visible,"Default limiter state incorrect"):return
 	b.limiter_toggle.set_pressed(false)
 	if not check(not b.limiter_enabled and b.limiter_warning.visible and b.limiter_notice.visible,"Warning or off state missing"):return
+	Input.mouse_mode=Input.MOUSE_MODE_HIDDEN
+	b.update_third_person_view(0.0)
+	if not check(Input.mouse_mode==Input.MOUSE_MODE_VISIBLE and (not is_instance_valid(b.third_person_crosshair) or not b.third_person_crosshair.visible),"Warning keeps cursor hidden or crosshair visible"):return
+	var modal_shots:int=editor.field.shot_serial
+	var cast_key:=InputEventKey.new()
+	cast_key.physical_keycode=KEY_1;cast_key.pressed=true
+	b._input(cast_key)
+	if not check(editor.field.shot_serial==modal_shots,"Casting hotkey passes through warning"):return
 	b.limiter_warning.hide()
+	if not check(not preload("res://scripts/combat_pointer.gd").dialog_open(b.get_viewport()),"Dismissed warning still owns cursor"):return
+	root.grab_focus()
+	root.warp_mouse(editor.base_ui.get_node("ArenaUnitDrop").get_global_rect().get_center())
+	await process_frame
+	b.update_third_person_view(0.0)
+	if not check(b.third_person_crosshair.visible and Input.mouse_mode==Input.MOUSE_MODE_HIDDEN,"Arena crosshair did not resume after dismissing warning"):return
 	for key in ["duration","release","mana","stamina","damage"]:
 		b.test_inputs[key].set_value(0.0)
 	for key in ["size","speed","effect"]:b.test_inputs[key].set_value(1000.0)
