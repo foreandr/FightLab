@@ -80,6 +80,12 @@ const PROJECTILE_EFFECTS:=["None","Fire","Ice","Lightning","Wind","Water","Earth
 var preview_effect:="None"
 var projectile_effect_confirmed:=false
 var effect_choices:Dictionary={}
+var effect_selection:VBoxContainer
+var fire_shape_screen:VBoxContainer
+var fire_shape_button:Button
+var fire_shape_popup:PopupPanel
+var fire_shape_choices:Dictionary={}
+var fire_shapes_open:=false
 var effect_confirm_button:Button
 var spell_playback_panel:PanelContainer
 var demo_timing_panel:PanelContainer
@@ -709,6 +715,8 @@ func setup(owner_editor:Node) -> void:
  var dummy_reset_button:Button=editor.button(projectile_screen,"Reset mannequin",reset_training_dummy)
  dummy_reset_button.name="ResetPracticeMannequin"
  dummy_reset_button.focus_mode=Control.FOCUS_ALL
+ build_fire_shape_panel()
+ preload("res://scripts/spell_timing_layout.gd").build(self,timing_column)
  refresh_dummy_controls()
  show_creation_step("demo")
  refresh_demo_choices()
@@ -721,6 +729,7 @@ func confirm_demo_choice() -> void:
  if DEMO_ANIMATIONS.has(str(casting_animation.get("demo_choice",""))):show_creation_step("delivery")
 
 func show_creation_step(step:String) -> void:
+ if step!="projectile" and is_instance_valid(fire_shape_popup):fire_shape_popup.hide()
  if creation_step=="projectile" and step!="projectile":
   stop_preview_controls()
   playing=false
@@ -768,6 +777,7 @@ func choose_delivery_type(value:String) -> void:
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
 
 func open_projectile_workspace() -> void:
+ fire_shapes_open=false
  stop_preview_controls()
  if not limiter_enabled:set_limiter_enabled(true)
  if is_instance_valid(limiter_warning):limiter_warning.hide()
@@ -800,9 +810,16 @@ func open_projectile_workspace() -> void:
 func preview_projectile_effect(value:String) -> void:
  if value not in ["None","Fire"]:return
  preview_effect=value
+ fire_shapes_open=value=="Fire"
+ if fire_shapes_open:
+  element="Fire"
+  projectile_effect_confirmed=true
+  stop_preview_controls()
+  begin_demo_exit()
  refresh_effect_choices()
  refresh_demo_timing()
- play_demo_preview()
+ if fire_shapes_open:save_draft()
+ else:play_demo_preview()
 
 func confirm_projectile_effect() -> void:
  if preview_effect not in ["None","Fire"]:return
@@ -813,12 +830,91 @@ func confirm_projectile_effect() -> void:
  save_draft()
 
 func refresh_effect_choices() -> void:
+ if is_instance_valid(effect_selection):effect_selection.visible=not fire_shapes_open
+ if is_instance_valid(fire_shape_screen):fire_shape_screen.visible=fire_shapes_open
+ refresh_fire_shape()
  projectile_name_label.text="Elementless projectile" if preview_effect=="None" else preview_effect+" projectile"
  for effect in effect_choices:
   effect_choices[effect].add_theme_color_override("font_color",Color("98703d") if effect==preview_effect else Color("382c1c"))
  effect_confirm_button.text="Confirmed" if projectile_effect_confirmed and element==preview_effect else "Confirm"
  effect_confirm_button.disabled=projectile_effect_confirmed and element==preview_effect
  refresh_projectile_allocation()
+
+func build_fire_shape_panel() -> void:
+ effect_selection=VBoxContainer.new()
+ effect_selection.add_theme_constant_override("separation",8)
+ projectile_screen.add_child(effect_selection)
+ for child in projectile_screen.get_children():
+  if child!=effect_selection:child.reparent(effect_selection)
+ fire_shape_screen=VBoxContainer.new()
+ fire_shape_screen.name="FireShapeWorkspace"
+ fire_shape_screen.add_theme_constant_override("separation",12)
+ projectile_screen.add_child(fire_shape_screen)
+ var title:Label=editor.menu_label(fire_shape_screen,"Fire",26)
+ title.add_theme_color_override("font_color",Color("b9652d"))
+ fire_shape_button=editor.button(fire_shape_screen,"Shape",open_fire_shape_picker)
+ fire_shape_button.name="FireShapePicker"
+ fire_shape_button.custom_minimum_size.y=52
+ fire_shape_button.tooltip_text="Choose the active shape. Press 1 to cast it using the size, speed and burn settings on the right."
+ editor.button(fire_shape_screen,"← Effects",func():fire_shapes_open=false;refresh_effect_choices())
+ fire_shape_popup=PopupPanel.new()
+ fire_shape_popup.name="FireShapeOptions"
+ fire_shape_popup.theme=editor._book_theme()
+ var popup_style:=StyleBoxFlat.new()
+ popup_style.bg_color=Color("f1e8d3")
+ popup_style.border_color=Color("b5a27f")
+ popup_style.set_border_width_all(1)
+ popup_style.set_corner_radius_all(5)
+ fire_shape_popup.theme.set_stylebox("panel","PopupPanel",popup_style)
+ add_child(fire_shape_popup)
+ var margin:=MarginContainer.new()
+ for side in ["left","top","right","bottom"]:margin.add_theme_constant_override("margin_"+side,6)
+ fire_shape_popup.add_child(margin)
+ var column:=VBoxContainer.new()
+ column.add_theme_constant_override("separation",6)
+ margin.add_child(column)
+ editor.menu_label(column,"Choose shape",18)
+ var grid:=GridContainer.new()
+ grid.columns=3
+ grid.add_theme_constant_override("h_separation",6)
+ grid.add_theme_constant_override("v_separation",6)
+ column.add_child(grid)
+ var group:=ButtonGroup.new()
+ for value in preload("res://scripts/spell_appearance.gd").SHAPES:
+  var shape:String=value
+  if shape in ["Element style","Drawn"]:continue
+  var button:Button=editor.button(grid,shape,func():set_fire_shape(shape))
+  button.custom_minimum_size=Vector2(88,44)
+  button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  button.add_theme_font_size_override("font_size",15)
+  button.toggle_mode=true
+  button.button_group=group
+  fire_shape_choices[shape]=button
+ fire_shape_screen.hide()
+ refresh_fire_shape()
+
+func open_fire_shape_picker() -> void:
+ refresh_fire_shape()
+ var rect:=fire_shape_button.get_global_rect()
+ fire_shape_popup.popup(Rect2i(Vector2i(rect.position+Vector2(0,rect.size.y+6)),Vector2i(maxf(300,rect.size.x),310)))
+ var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",appearances.get("Fire",{})).shape
+ if fire_shape_choices.has(shape):fire_shape_choices[shape].grab_focus()
+
+func set_fire_shape(shape:String) -> void:
+ if not fire_shape_choices.has(shape):return
+ var look:Dictionary=appearances.get("Fire",{}).duplicate(true)
+ look.erase("preset")
+ look["shape"]=shape
+ appearances["Fire"]=look
+ refresh_fire_shape()
+ fire_shape_popup.hide()
+ save_draft()
+
+func refresh_fire_shape() -> void:
+ if not is_instance_valid(fire_shape_button):return
+ var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",appearances.get("Fire",{})).shape
+ fire_shape_button.text="Shape: %s ▾"%shape
+ for value in fire_shape_choices:fire_shape_choices[value].set_pressed_no_signal(value==shape)
 
 func allocation_for(effect:String) -> Dictionary:
  var raw:Dictionary=projectile_allocations.get(effect,{})
@@ -1020,6 +1116,7 @@ func refresh_test_controls() -> void:
  demo_speed_bonus_label.text="Speed: %.1f m/s"%float(spec.projectile_velocity)
  demo_burn_label.visible=preview_effect=="Fire"
  demo_burn_label.text="Burn: %.1f/s"%(3.0*float(spec.potency))
+ preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
 
 func set_demo_duration(value:float) -> void:
  if not limiter_enabled:
@@ -1095,6 +1192,7 @@ func refresh_demo_timing() -> void:
  demo_burn_label.text="Burn: %.1f/s · %.1f total / 4 s"%[float(stats.burn_dps),float(stats.burn_dps)*4.0]
  if is_instance_valid(release_slider):
   release_slider.set_value_no_signal(release_fraction*100.0)
+ preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
 
 func refresh_demo_choices() -> void:
  for choice in demo_choices:

@@ -223,6 +223,15 @@ Adding a mode
 
 Regression checks
 
+  Fire shape authoring stays in spell_builder.gd; spell_timing_layout.gd only
+  arranges existing controls and exposes calculation details on hover. Shapes
+  use spell_appearance.gd and the shared CombatRuntime projectile path in every
+  mode. Selecting a shape saves appearance metadata without casting or deleting
+  in-flight projectiles. Press 1 uses the existing cast route; size, speed, burn,
+  costs and collision rules retain their shared owners.
+  tests/fire_shape_workspace_test.gd covers navigation, all 13 shapes, real
+  hotkey casts, preserved projectiles, saved metadata and the compact RHS.
+
   tests/shared_character_mechanics_test.gd
   tests/third_person_focus_test.gd
   tests/story_third_person_focus_test.gd

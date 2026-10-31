@@ -1,5 +1,5 @@
 extends RefCounted
-const SHAPES=["Element style","Orb","Lance","Shard","Ring","Wisp","Bolt","Flame","Drawn"]
+const SHAPES=["Element style","Orb","Lance","Shard","Ring","Wisp","Bolt","Flame","Cube","Cone","Disc","Capsule","Diamond","Star","Drawn"]
 static func defaults(element:String) -> Dictionary:
  var colors:Dictionary=load("res://scripts/basic_projectile.gd").COLORS
  return {"shape":{"Fire":"Flame","Ice":"Shard","Lightning":"Lance","Wind":"Ring","Water":"Orb","Earth":"Shard"}.get(element,"Orb"),"color":colors.get(element,Color.WHITE),"accent":Color("fff0a0") if element=="Fire" else colors.get(element,Color.WHITE).lerp(Color.WHITE,0.8),"glow":{"Fire":1.8,"Ice":0.8,"Lightning":2.3,"Wind":0.8,"Water":0.6,"Earth":0.15}.get(element,1.0),"trail_texture":"Element style","texture":"Element style","drawn_outline":PackedVector2Array(),"drawn_trail":PackedVector2Array(),"orbits":element=="Wind","opacity":0.75 if element=="Water" else 0.95,"trail_style":"Element style","trail":0.6,"pulse":0.15,"spin":1.4}
@@ -36,6 +36,36 @@ static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInst
  body.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var base:=Vector3.ONE
  match str(look.shape):
+  "Cube":
+   var cube:=BoxMesh.new()
+   cube.size=Vector3.ONE*radius*1.6
+   body.mesh=cube
+  "Cone":
+   var cone:=CylinderMesh.new()
+   cone.top_radius=0.0;cone.bottom_radius=radius;cone.height=radius*2.0
+   cone.radial_segments=20
+   body.mesh=cone
+   body.rotation.x=PI/2
+  "Disc":
+   var disc:=CylinderMesh.new()
+   disc.top_radius=radius;disc.bottom_radius=radius;disc.height=radius*0.22
+   disc.radial_segments=24
+   body.mesh=disc
+   body.rotation.x=PI/2
+  "Capsule":
+   var capsule:=CapsuleMesh.new()
+   capsule.radius=radius*0.6;capsule.height=radius*2.4
+   body.mesh=capsule
+   body.rotation.x=PI/2
+  "Diamond":
+   body.mesh=crystal_mesh(radius,4)
+   body.rotation.x=PI/2
+  "Star":
+   var points:=PackedVector2Array()
+   for index in 10:
+    var angle:float=TAU*index/10.0-PI/2
+    points.append(Vector2(cos(angle),sin(angle))*(1.0 if index%2==0 else 0.45))
+   body.mesh=preload("res://scripts/spell_draw_mesh.gd").mesh(points,radius)
   "Drawn":
    var custom_mesh=preload("res://scripts/spell_draw_mesh.gd").mesh(look.drawn_outline,radius)
    if custom_mesh!=null:body.mesh=custom_mesh
@@ -119,21 +149,21 @@ static func step(body:MeshInstance3D,age:float,delta:float) -> void:
  for child in body.get_children():
   if child is MeshInstance3D and child.has_meta("orbit"):child.rotate_z(delta*float(look.spin))
 
-static func crystal_mesh(radius:float) -> ArrayMesh:
+static func crystal_mesh(radius:float,sides:int=6) -> ArrayMesh:
  var vertices:=PackedVector3Array()
  var normals:=PackedVector3Array()
  var uvs:=PackedVector2Array()
  for side in 2:
   var tip:=Vector3(0,radius*(1.5 if side==0 else -1.0),0)
-  for i in 6:
-   var a:=Vector3(cos(i*TAU/6)*radius*0.65,0,sin(i*TAU/6)*radius*0.65)
-   var b:=Vector3(cos((i+1)*TAU/6)*radius*0.65,0,sin((i+1)*TAU/6)*radius*0.65)
+  for i in sides:
+   var a:=Vector3(cos(i*TAU/sides)*radius*0.65,0,sin(i*TAU/sides)*radius*0.65)
+   var b:=Vector3(cos((i+1)*TAU/sides)*radius*0.65,0,sin((i+1)*TAU/sides)*radius*0.65)
    var face:Array=[tip,a,b] if side==0 else [tip,b,a]
    var normal:Vector3=(face[1]-face[0]).cross(face[2]-face[0]).normalized()
    for j in 3:
     vertices.append(face[j])
     normals.append(normal)
-    uvs.append(Vector2(float(i)/6+float(j)*0.08,float(side)+float(j)*0.3))
+    uvs.append(Vector2(float(i)/sides+float(j)*0.08,float(side)+float(j)*0.3))
  var arrays:Array=[]
  arrays.resize(Mesh.ARRAY_MAX)
  arrays[Mesh.ARRAY_VERTEX]=vertices

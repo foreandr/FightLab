@@ -137,7 +137,7 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 	var velocity_:Vector3=launch.velocity
 	if node.has_meta("look") and not velocity_.is_zero_approx():
 		node.look_at_from_position(origin,origin+velocity_,Vector3.FORWARD if absf(velocity_.normalized().dot(Vector3.UP))>0.95 else Vector3.UP)
-		if node.get_meta("look").shape in ["Shard","Ring"]:node.rotate_object_local(Vector3.RIGHT,PI/2)
+		if node.get_meta("look").shape in ["Shard","Ring","Cone","Disc","Capsule","Diamond"]:node.rotate_object_local(Vector3.RIGHT,PI/2)
 	field.shot_serial += 1
 	field.shots.append({"max_age":preload("res://scripts/basic_projectile.gd").lifetime(origin.distance_to(target),radius,speed),"id":field.shot_serial,"node":node,"velocity":velocity_,"mass":float(spec.get("mass",(13.0 if spec.effect=="orb" else 10.0)*(1+q*1.8))),"caster":f,"age":0.0,"trail":0.0,"spec":launch.spec,"radius":radius})
 	preload("res://scripts/combat_diagnostics.gd").event(field,"projectile_launch",{"shot":field.shot_serial,"speed":speed,"movement_speed":launch.spec.movement_speed,"physical_damage":launch.spec.damage})
