@@ -178,6 +178,13 @@ func update_ribbon(node: MeshInstance3D, path: Array, width: float) -> void:
 	mesh_.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	node.mesh = mesh_
 
+func physical_contact(point:Vector3) -> void:
+	# Tight neutral contact marks, without flame, smoke or an expanding blast ring.
+	puff(point,"light_02",1,Vector2.ONE*0.22,Vector3.ZERO,0.10,Color("f4f0df"),0.0)
+	for index in 3:
+		var direction:=Vector3(rng.randf_range(-1,1),rng.randf_range(-0.3,1),rng.randf_range(-1,1)).normalized()
+		puff(point,"trace_02",1,Vector2(0.035,0.14),direction*0.65,0.14,Color("e5dfce"),0.0)
+
 func burst(point: Vector3, team: int, connected: bool) -> void:
 	var color := tint(team)
 	puff(point, "light_02", team, Vector2.ONE * (1.3 if connected else 0.7), Vector3.ZERO, 0.18, Color("fff1c3") if team == 0 else Color("e3fcff"), 0.8)

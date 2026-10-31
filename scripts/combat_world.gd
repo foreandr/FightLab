@@ -118,10 +118,16 @@ func orient_projectile(node:MeshInstance3D,spec:Dictionary,origin:Vector3,direct
 func combat_sound(sound:String,point:Vector3,volume:float) -> void:
 	if is_instance_valid(audio):audio.impact(sound,point,volume)
 
-func combat_impact_feedback(attacker:CharacterBody3D,victim:CharacterBody3D,spec:Dictionary,_point:Vector3,_direction:Vector3,_area:Area3D,result:Dictionary) -> void:
+func combat_impact_feedback(attacker:CharacterBody3D,victim:CharacterBody3D,spec:Dictionary,point:Vector3,_direction:Vector3,_area:Area3D,result:Dictionary) -> void:
 	var key:="%s/%s"%[attacker.team,spec.get("id","unknown")]
 	hits[key]=hits.get(key,0)+1
 	events.append({"time":elapsed,"event":"hit","team":attacker.team,"victim":victim.team,"spell":spec.get("id","unknown"),"zone":result.zone,"damage":result.damage})
+	spell_impact_burst(point,attacker.team,spec,true)
+
+func spell_impact_burst(point:Vector3,team:int,spec:Dictionary,connected:bool) -> void:
+	if str(spec.get("effect",""))=="melee" or str(spec.get("projectile_element",""))=="None":
+		if is_instance_valid(vfx):vfx.physical_contact(point)
+	else:impact_burst(point,team,connected)
 
 func projectile_aim_target(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,_speed:float) -> Vector3:
 	var direction:Vector3=spec.get("aim_direction",actor.global_basis.z)

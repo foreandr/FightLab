@@ -209,7 +209,7 @@ func step_shots(delta: float) -> void:
 					hit=true
 					break
 		if not hit and not ground.is_empty():
-			field.impact_burst(ground.position,shot.caster.team,false)
+			field.spell_impact_burst(ground.position,shot.caster.team,shot.spec,false)
 			impact_center=ground.position
 			hit=true
 		if hit:field.projectile_area_impact.apply(field,shot,impact_center,primary,primary_area)

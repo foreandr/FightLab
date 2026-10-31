@@ -391,7 +391,7 @@ func combat_impact_feedback(attacker:CharacterBody3D,victim:CharacterBody3D,spec
 	status="%s  •  %s  •  %s"%[element_name(attacker.team),spell_name(spec,attacker.team),hit_label]
 	events.append({"time":elapsed,"event":"hit","team":attacker.team,"victim":victim.team,"spell":spec.id,"zone":zone,"damage":float(result.damage),"charge":q,"impulse":impulse.length(),"shattered":shattered,"combo":spec.get("combo",false)})
 	GameDiagnostics.log_event("combat_hit", {"attacker":attacker.story_profile.get("name", "Fighter %d" % attacker.team), "victim":victim.story_profile.get("name", "Fighter %d" % victim.team), "action":spec.get("id", "unknown"), "zone":zone, "damage":float(result.damage), "impulse":impulse.length(), "guard_broken":shattered})
-	impact_burst(point,attacker.team,true)
+	spell_impact_burst(point,attacker.team,spec,true)
 	var sound: String="heavy" if impulse.length()>400 else ("ice" if attacker.team==1 and spec.effect!="melee" else ("kick" if spec.id in ["front_kick","round_kick","knee"] else "punch"))
 	audio.impact(sound,point,minf(1,impulse.length()/400))
 	shake=maxf(shake,0.08 if impulse.length()<400 else 0.20)

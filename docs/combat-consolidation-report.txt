@@ -207,3 +207,15 @@ Preserved clean arm source metadata makes the tool repeatable without cumulative
 edits. Verified opposite phases, amplitude, repeated edits, sampled skeletal poses
 and unchanged non-arm/unrelated tracks against the previous committed library.
 Implementation: +29 / -3 lines; updated three clips in the animation library.
+
+PHYSICAL CONTACT PRESENTATION (2026-10-31)
+
+Melee and elementless projectile hits now use a brief neutral contact flash and
+small marks instead of team-colored explosion/flame particles. Character impact
+response, contact sound, damage and costs are unchanged. Fire spells retain their
+elemental bursts. The shared spell_impact_burst API covers live hits and projectile
+ground contacts, including reusable CombatWorld modes and Story/Create adapters.
+Verified actual melee/elementless impacts, unchanged damage, bounded short-lived
+particles, no flame/smoke/blast ring, neutral ground contact, preserved fire burst
+and the independent-mode API.
+Implementation: +16 / -3 lines.

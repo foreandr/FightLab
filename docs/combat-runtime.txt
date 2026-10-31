@@ -83,6 +83,12 @@ Shared physical_momentum.gd uses horizontal speed equally for forward, backward,
 sideways and diagonal motion. Vertical velocity contributes nothing. Projectile
 speed increases along the existing aim direction, without sideways aim drift.
 
+spell_impact_burst selects contact presentation from the spell rather than the
+attacker's team. Melee and explicit elementless projectiles use a tight neutral
+flash/contact marks via ElementalVFX.physical_contact; no flame, smoke or blast
+ring. Elemental spells keep their existing bursts. Ground impacts use this same
+selection. This changes presentation only, not impact physics, damage or costs.
+
 AUTHORING A SPELL
 
 combat_spell_rules.gd owns physical cost/damage from animation duration, release
