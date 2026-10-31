@@ -20,6 +20,13 @@ Level independence
 
 Ownership
 
+scripts/combat_floating_numbers.gd
+  Optional per-world diagnostic presentation, enabled by set_combat_numbers.
+  Costs come from actual committed actor spending, physical hits from received
+  damage counters. Do not substitute RHS estimates or health loss on immortal
+  targets. Labels rise/fade, follow actors, respect actor visibility and have a
+  bounded lifetime/count. Spell Numbers [3] is a mode input adapter to this API.
+
 scripts/physical_momentum.gd
   Physical damage uses actual horizontal velocity toward the hit, not sprint
   flags or a character speed stat. Melee adds 3 percent per forward m/s. Older

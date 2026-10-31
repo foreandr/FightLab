@@ -351,6 +351,7 @@ func spend_mana(amount: float) -> bool:
 	mana_spent += amount
 	mana_delay = RESOURCE_RECOVERY_DELAY
 	minimum_mana = minf(minimum_mana, mana)
+	if is_instance_valid(arena):arena.show_combat_number(self,"magicka",amount)
 	return true
 
 func spend_stamina(amount: float) -> bool:
@@ -363,6 +364,7 @@ func spend_stamina(amount: float) -> bool:
 	stamina_spent += amount
 	stamina_delay = RESOURCE_RECOVERY_DELAY
 	minimum_stamina = minf(minimum_stamina, stamina)
+	if is_instance_valid(arena):arena.show_combat_number(self,"stamina",amount)
 	return true
 
 func spend_cast_resources(stamina_cost:float,mana_cost_:float) -> bool:

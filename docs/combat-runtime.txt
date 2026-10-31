@@ -119,6 +119,19 @@ clock/state and mark a returned successful contact connected.
 
 WORLD HOOKS
 
+Experimental floating numbers
+  CombatWorld.set_combat_numbers(enabled) enables a per-world presentation layer.
+  It defaults off; Spell creation exposes Numbers [3] and the unmodified 3/numpad
+  3 shortcut. Resource spending emits actual successful stamina/magicka costs,
+  including interrupted casts. Runtime impacts emit physical damage_taken deltas,
+  so immortal training targets still show the actual hit while retaining health.
+  Burn ticks, regeneration, failed transactions and unpaid God Mode costs do not
+  create misleading damage/cost text. Green stamina, blue magicka, red physical.
+  Labels follow their actor, rise, fade over 1.4 seconds and are capped at 32.
+  Disabling clears them immediately; battle/practice reset clears old labels.
+  combat_floating_numbers.gd owns this rendering; it never calculates or modifies
+  damage, costs, physics or actor state. clear_combat_numbers() is the reset hook.
+
 Override projectile_aim_target, combat_target and heal_target to choose targets.
 Reuse combat_aim.gd for free aim and focused chest anchors.
 Override projectile_visual, orient_projectile, combat_sound, impact_burst,

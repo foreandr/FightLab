@@ -16,6 +16,7 @@ var manual_aim_point:=Vector3.ZERO
 var manual_aim_valid:=false
 var preview_hitboxes:=false
 var projectile_hitbox_button:Button
+var combat_numbers_button:Button
 var third_person_ready:=false
 var third_person_orbiting:=false
 var third_person_mouse_origin:=Vector2.ZERO
@@ -670,7 +671,13 @@ func setup(owner_editor:Node) -> void:
  projectile_hitbox_button.set_pressed_no_signal(preview_hitboxes)
  projectile_hitbox_button.toggled.connect(set_preview_hitboxes)
  projectile_hitbox_button.tooltip_text="2 toggles both: cyan projectile hitboxes and pink character receiving hitboxes."
- for node in [projectile_preview_button,projectile_repeat_button,projectile_slow_button,projectile_hitbox_button]:
+ combat_numbers_button=editor.button(playback_row,"Numbers [3]",func():pass)
+ combat_numbers_button.name="CombatNumbersToggle"
+ combat_numbers_button.toggle_mode=true
+ combat_numbers_button.set_pressed_no_signal(editor.field.combat_numbers_visible)
+ combat_numbers_button.toggled.connect(set_combat_numbers)
+ combat_numbers_button.tooltip_text="3 · Experimental floating costs and physical damage. Green stamina, blue magicka, red physical damage."
+ for node in [projectile_preview_button,projectile_repeat_button,projectile_slow_button,projectile_hitbox_button,combat_numbers_button]:
   node.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
   node.custom_minimum_size.x=140
   node.focus_mode=Control.FOCUS_ALL
@@ -860,6 +867,10 @@ func set_preview_hitboxes(enabled:bool) -> void:
  if is_instance_valid(projectile_hitbox_button):projectile_hitbox_button.set_pressed_no_signal(enabled)
  if is_instance_valid(editor.field):editor.field.set_combat_hitboxes(enabled)
  save_demo_preferences()
+
+func set_combat_numbers(enabled:bool) -> void:
+ if is_instance_valid(combat_numbers_button):combat_numbers_button.set_pressed_no_signal(enabled)
+ if is_instance_valid(editor.field):editor.field.set_combat_numbers(enabled)
 
 func set_preview_repeat(enabled:bool) -> void:
  preview_repeating=enabled and creation_step=="projectile" and is_visible_in_tree()
@@ -1643,6 +1654,10 @@ func _input(event:InputEvent) -> void:
    return
   if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":
    set_preview_hitboxes(not preview_hitboxes)
+   get_viewport().set_input_as_handled()
+   return
+  if key in [KEY_3,KEY_KP_3] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":
+   set_combat_numbers(not editor.field.combat_numbers_visible)
    get_viewport().set_input_as_handled()
    return
   if key in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_SHIFT]:

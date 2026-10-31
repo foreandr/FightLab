@@ -144,3 +144,20 @@ focus rather than assuming focus is restored in a single frame.
 Implementation: +80 / -4 lines. Tests: +87 / -4 lines.
 Release-window refinement: +9 / -7 implementation lines; +18 / -7 test lines.
 Verified 70% cancellation costs against both early and late selected launch times.
+
+EXPERIMENTAL FLOATING COMBAT NUMBERS (2026-10-31)
+
+Added Numbers [3] in spell practice, with a matching keyboard/numpad toggle.
+Actual stamina/magicka payments float above the caster in green/blue; actual
+physical hit damage floats above the victim in red, including immortal dummies.
+Partial cancellation costs are included. Rendering is a shared optional per-world
+component, separate from cost/damage calculations, and defaults off. The preview
+launcher enables it for the current testing session.
+Labels follow the actor, rise and fade over 1.4 seconds. The count is capped at
+32; disabling or resetting removes them, and idle rendering stops when empty.
+Zero/unpaid/failed costs, regeneration and burn ticks do not create extra labels.
+
+Passed the actual UI toggle/cast/cancellation/damage integration test, visual
+inspection, fade/lifetime/cap/cleanup checks, normal 10/10/10 damage, interrupted
+cast accounting and multi-target projectile regression checks.
+Implementation: +95 / -1 lines. Tests: +79 / -0 lines.

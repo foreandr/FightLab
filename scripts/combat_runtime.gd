@@ -273,9 +273,11 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var zone: String=area.get_meta("zone","chest")
 	var bone: String=area.get_meta("bone","spine_03")
 	var health_before: float=victim.health
+	var damage_before:float=victim.damage_taken
 	if victim.has_method("set_hit_context"):victim.set_hit_context(q,shattered,bool(spec.get("launch",false)))
 	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400)):
 		return fraction>0
+	field.show_combat_number(victim,"physical",maxf(0.0,victim.damage_taken-damage_before))
 	if victim.has_method("receive_status"):victim.receive_status(attacker,spec)
 	if is_instance_valid(field.spell_environment):field.spell_environment.damage_ice_near(point,amount,0.8)
 	if spec.effect=="melee":

@@ -29,6 +29,23 @@ var round_active := false
 var shot_serial := 0
 var vfx: Node3D
 var shake := 0.0
+var combat_numbers_visible:=false
+var combat_numbers:Node3D
+
+func set_combat_numbers(enabled:bool) -> void:
+	combat_numbers_visible=enabled
+	if not enabled:clear_combat_numbers()
+
+func clear_combat_numbers() -> void:
+	if is_instance_valid(combat_numbers):combat_numbers.clear()
+
+func show_combat_number(actor:Node3D,kind:String,amount:float) -> void:
+	if not combat_numbers_visible or amount<=0.0001:return
+	if not is_instance_valid(combat_numbers):
+		combat_numbers=preload("res://scripts/combat_floating_numbers.gd").new()
+		combat_numbers.name="CombatNumbers"
+		add_child(combat_numbers)
+	combat_numbers.show_amount(actor,kind,amount)
 
 func fighter_hand(f: CharacterBody3D, hand: String) -> Vector3:
 	return (f.bone_point("hand_l") + f.bone_point("hand_r")) * 0.5 if hand == "both" else f.bone_point(hand)
