@@ -14,7 +14,7 @@ func build(point:Vector3,direction:Vector3,radius:float,potency:float) -> void:
  if forward.length_squared()<0.1:forward=Vector3.FORWARD
  rotation.y=atan2(forward.x,forward.z)
  var size:=Vector3(maxf(1.5,radius*2),maxf(1.8,radius*2.2),maxf(0.45,radius*0.4))
- position=Vector3(point.x,size.y/2,point.z)+forward*(size.z/2+0.5)
+ global_position=Vector3(point.x,point.y+size.y/2,point.z)+forward*(size.z/2+0.5)
  maximum_hp=70*potency
  hit_points=maximum_hp
  var collision:=CollisionShape3D.new()

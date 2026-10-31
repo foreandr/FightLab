@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat_level.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+bounds = 1
+radius = 30.0
+fallback_elevation = 0.0
+water_basin_radius = 30.0
+spawn_points = Array[Vector3]([Vector3(-10.392, 0.02, -6), Vector3(10.392, 0.02, -6), Vector3(0, 0.02, 12)])

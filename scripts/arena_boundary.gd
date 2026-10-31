@@ -4,6 +4,10 @@ const MapConfig=preload("res://scripts/gladiatorial_pit_config.gd")
 const RADIUS := MapConfig.FLOOR_RADIUS
 const HEIGHT := MapConfig.WALL_HEIGHT
 const SECTORS := MapConfig.SECTORS
+
+func combat_level_definition() -> Resource:
+	return preload("res://scenes/maps/gladiatorial_pit_combat.tres")
+
 var sectors: Array[MeshInstance3D]=[]
 var vertices:=PackedVector3Array()
 var normals:=PackedVector3Array()

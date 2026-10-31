@@ -1306,7 +1306,7 @@ func tick(delta: float) -> void:
 				twist_age=-1
 				model.rotation.y=0
 	# Airborne fighters must not treat another fighter's head as a landing platform.
-	if position.y>0.25 or velocity.y>0.2:
+	if not is_on_floor() or velocity.y>0.2:
 		air_body_passthrough=true
 	elif air_body_passthrough:
 		var overlapping:=false
@@ -1372,7 +1372,7 @@ func tick(delta: float) -> void:
 			drive_velocity=drive_velocity.move_toward(Vector3.ZERO,delta*65)
 			velocity.x=drive_velocity.x+knockback.x
 			velocity.z=drive_velocity.z+knockback.z
-			velocity.y=-0.1 if is_on_floor() and position.y<0.15 and velocity.y<=0 else velocity.y-GRAVITY*delta
+			velocity.y=-0.1 if is_on_floor() and velocity.y<=0 else velocity.y-GRAVITY*delta
 			move_and_slide()
 			if mode_time>=FLASH_CHARGE_TIME:
 				mode="burst_dash"
@@ -1390,7 +1390,7 @@ func tick(delta: float) -> void:
 			charge_value=melee_charge
 			velocity.x = 0
 			velocity.z = 0
-			velocity.y=-0.1 if is_on_floor() and position.y<0.15 and velocity.y<=0 else velocity.y-GRAVITY*delta
+			velocity.y=-0.1 if is_on_floor() and velocity.y<=0 else velocity.y-GRAVITY*delta
 			move_and_slide()
 			if mode_time >= editor_uppercut_charge_duration():
 				begin_strike(["uppercut", "battle/uppercut", "hand_r", 0.15, 0.52, 23.0, 0.0, 1.1])
@@ -1399,9 +1399,9 @@ func tick(delta: float) -> void:
 			var vertical:=velocity.y
 			var speed:=minf(combo_speed,maxf(0,flat_distance()-0.8)/delta)
 			velocity = burst_direction * speed
-			velocity.y = -0.1 if is_on_floor() and position.y<0.15 and vertical<=0 else vertical - GRAVITY * delta
+			velocity.y = -0.1 if is_on_floor() and vertical<=0 else vertical - GRAVITY * delta
 			move_and_slide()
-			position.y = maxf(0, position.y)
+			arena.settle_actor_on_ground(self)
 			drive_velocity = burst_direction * combo_speed
 			distance_run += before.distance_to(position)
 			arena.speed_trail(self)
@@ -1683,9 +1683,7 @@ func finish_ragdoll() -> void:
 	var pelvis_offset:=bone_point("pelvis")-global_position
 	position.x=location.x-pelvis_offset.x
 	position.z=location.z-pelvis_offset.z
-	var flat:=Vector2(position.x,position.z).limit_length(float(arena.Boundary.RADIUS)-0.4)
-	position.x=flat.x
-	position.z=flat.y
+	global_position=arena.constrain_to_level(global_position,0.4)
 	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/1.05
 	invulnerability=mode_length
 	recovery_source.clear()

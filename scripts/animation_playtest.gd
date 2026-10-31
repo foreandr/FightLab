@@ -194,8 +194,7 @@ func physics(delta:float) -> void:
 	var speed:=7.0 if held.get(KEY_SHIFT,false) or pad_sprint else 4.0
 	var before:=unit.global_position
 	var next:=before+direction*speed*delta
-	var flat:=Vector2(next.x,next.z).limit_length(float(editor.field.Boundary.RADIUS)-1.0)
-	next.x=flat.x;next.z=flat.y
+	next=editor.field.constrain_to_level(next,1.0)
 	for other in editor.added_units:
 		if other==unit or not is_instance_valid(other):continue
 		other.invulnerability=maxf(0,other.invulnerability-delta)
@@ -208,7 +207,9 @@ func physics(delta:float) -> void:
 	if not editor.timeline_playing:
 		jump_velocity-=18.0*delta
 		jump_height=maxf(0,jump_height+jump_velocity*delta)
-		next.y=float(unit.get_meta("editor_ground_y",0.02))+jump_height
+		var ground:float=editor.field.ground_height(next)+0.02
+		unit.set_meta("editor_ground_y",ground)
+		next.y=ground+jump_height
 	unit.global_position=next
 	var movement:=next-before
 	if editor.timeline_playing:

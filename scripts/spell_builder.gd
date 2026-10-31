@@ -1711,7 +1711,8 @@ func clear_shots() -> void:
 func positions_for_fighters() -> Array[Vector3]:
  var out:Array[Vector3]=[]
  for fighter in editor.field.fighters:
-  out.append(Vector3(-starting_distance/2,0.02,-starting_distance*sqrt(3.0)/6) if fighter==editor.actor else (Vector3(starting_distance/2,0.02,-starting_distance*sqrt(3.0)/6) if fighter==editor.target else Vector3(0,0.02,starting_distance*sqrt(3.0)/3)))
+  var offset:=Vector3(-starting_distance/2,0.02,-starting_distance*sqrt(3.0)/6) if fighter==editor.actor else (Vector3(starting_distance/2,0.02,-starting_distance*sqrt(3.0)/6) if fighter==editor.target else Vector3(0,0.02,starting_distance*sqrt(3.0)/3))
+  out.append(editor.field.surface_placement(editor.field.level_point(offset)))
  return out
 
 func prepare_preview_targets() -> void:
@@ -1734,7 +1735,7 @@ func prepare_preview_targets() -> void:
   fighter.practice_return_enabled=fighter!=editor.actor
   fighter.practice_home=positions[i]
   fighter.position=positions[i]
-  if demo_only_stage and fighter==editor.actor:fighter.position=Vector3(0,0.02,0)
+  if demo_only_stage and fighter==editor.actor:fighter.global_position=editor.field.surface_placement(editor.field.level_point())
   fighter.velocity=Vector3.ZERO
   fighter.editor_pose_locked=fighter==editor.actor
   fighter.practice_god_mode=bool(character_god_modes.get(god_mode_key(fighter),dummy_god_mode if fighter==editor.target else false))
@@ -1758,7 +1759,7 @@ func prepare_preview_targets() -> void:
   for item in dummy.targets:item[0].collision_layer=8<<dummy.team
   for item in dummy.limb_targets:item[0].collision_layer=8<<dummy.team
   editor.actor.collision_layer=128<<editor.actor.team
-  dummy.practice_home=editor.actor.position+editor.actor.global_basis.z*3.5
+  dummy.practice_home=editor.field.surface_placement(editor.actor.global_position+editor.actor.global_basis.z*3.5)
   dummy.position=dummy.practice_home
   dummy.rotation.y=editor.actor.rotation.y+PI
   dummy.health=dummy.MAX_HEALTH
@@ -1784,7 +1785,7 @@ func prepare_preview_targets() -> void:
    practice_human.practice_damageable_dummy=true
    practice_human.practice_god_mode=bool(character_god_modes.get("human",false))
    practice_human.practice_immortal=practice_human.practice_god_mode
-   practice_human.practice_home=dummy.practice_home+dummy.global_basis.x*3.0
+   practice_human.practice_home=editor.field.surface_placement(dummy.practice_home+dummy.global_basis.x*3.0)
    practice_human.position=practice_human.practice_home
    practice_human.rotation.y=dummy.rotation.y
    practice_human.health=practice_human.MAX_HEALTH
@@ -1824,12 +1825,8 @@ func _physics_process(delta:float) -> void:
  caster_moving=not direction.is_zero_approx()
  if caster_moving:
   var speed:=7.0 if movement_keys.get(KEY_SHIFT,false) else 4.0
-  caster.velocity=direction*speed*caster.movement_multiplier()
-  caster.move_and_slide()
-  var flat:=Vector2(caster.position.x,caster.position.z).limit_length(float(editor.field.Boundary.RADIUS)-1.0)
-  caster.position.x=flat.x
-  caster.position.z=flat.y
- else:caster.velocity=Vector3.ZERO
+  editor.field.move_character(caster,direction,speed*caster.movement_multiplier(),delta)
+ else:editor.field.move_character(caster,Vector3.ZERO,0.0,delta)
  # Face from the resolved position, including near-target collision/sprint steps.
  if not playing or is_instance_valid(spell_focus_target):
   Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)

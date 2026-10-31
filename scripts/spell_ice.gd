@@ -5,7 +5,7 @@ var maximum_hp:=45.0
 var trapped:Array[CharacterBody3D]=[]
 var visual:MeshInstance3D
 var environment:Node3D
-var cell:=Vector2i.ZERO
+var cell:Variant=Vector2i.ZERO
 var broken:=false
 var crack:MeshInstance3D
 
@@ -15,7 +15,7 @@ func build(point:Vector3,height:float,width:float,potency:float) -> void:
  collision_mask=0
  maximum_hp=45.0*maxf(0.5,potency)
  hit_points=maximum_hp
- position=Vector3(point.x,height*0.5,point.z)
+ global_position=Vector3(point.x,point.y+height*0.5,point.z)
  var box:=BoxShape3D.new()
  box.size=Vector3(width,height,width)
  var collision:=CollisionShape3D.new()

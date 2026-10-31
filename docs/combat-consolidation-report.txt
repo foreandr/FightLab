@@ -93,3 +93,29 @@ Tests added: 114 lines; removed: 5 lines.
 Moved/refactored source: 747 original lines across extracted/reorganized methods.
 That last number measures the original methods reorganized, not byte-for-byte
 moves. Relocation/refactoring is already included in added/removed totals.
+
+LEVEL-INDEPENDENCE FOLLOW-UP (2026-10-31)
+
+Added CombatLevel and CombatWorld.use_level: levels supply geometry, optional
+bounds, local spawns and terrain queries. Generic combat no longer imports the
+pit's radius, steers toward global zero, or invents a floor at height zero.
+The existing pit supplies its own saved level resource. Unspecified/generated
+maps default to unbounded play areas. See docs/combat-levels.txt.
+
+Updated movement, charge/air handling, generic wall impacts and ragdoll recovery;
+editor terrain picking, drops/drags and practice placement; and ground effects,
+water/ice floor separation and earth-wall grounding. The spell/resource/damage
+formulas were unchanged. Environmental surfaces retain the existing simplified
+patch/puddle model rather than gaining a new fluid or terrain-conforming solver.
+
+New tests passed on a translated, elevated, yaw-rotated rectangular generated
+map with sloped terrain and another floor below zero: actual 10/10/10 casting,
+independent bounds/spawns, elevated effects, separate water/ice floors, below-zero
+walking/charge/ragdoll recovery and an actual impact against an untagged wall.
+A real Create scene also passed generated-terrain picking, unit placement and
+spell-practice placement. Existing pit, neutral damage, AoE, Story focus,
+movement momentum, eight-way movement, Take Control camera and spell hotkeys
+regressions passed. Bare new-mode combat still passes its runtime contract.
+
+Follow-up implementation: +232 / -115 lines (net +117).
+Follow-up tests: +176 / -0 lines. Saved level metadata: +11 lines.

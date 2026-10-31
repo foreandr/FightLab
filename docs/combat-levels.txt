@@ -1,0 +1,95 @@
+LEVELS ARE INDEPENDENT OF COMBAT
+
+CombatWorld/CombatRuntime do not require the gladiatorial pit. A level supplies
+ordinary geometry/collisions and a CombatLevel resource. Combat supplies actors,
+movement, attacks, spells, resources, impacts, statuses and animation playback.
+Changing the map does not change spell calculations or require a second engine.
+
+USING AN AUTHORED OR GENERATED LEVEL
+
+  var generated_map:Node3D=your_generator.build()
+  add_child(generated_map)
+  var definition=preload("res://scripts/combat_level.gd").new()
+  definition.bounds=definition.Bounds.BOX
+  definition.half_extents=Vector2(40,20)
+  definition.spawn_points=[Vector3(-4,0.02,0),Vector3(4,0.02,0)]
+  use_level(generated_map,definition)
+  var first=spawn_combatant(0,level_spawn(0))
+  var second=spawn_combatant(1,level_spawn(1))
+  round_active=true
+
+Generate spawn markers on the intended terrain surface. Spawn positions and
+bounds are local to the supplied map root; translation, elevation and yaw are
+resolved through its current transform. The resource is duplicated per world,
+so changing one map's configuration does not mutate other instances.
+
+A map can instead implement combat_level_definition() and return its saved
+resource. Call use_level(map) to obtain it. If it supplies no definition, the
+default is UNBOUNDED: no invisible pit circle or forced return to world zero.
+The map owner controls replacement/freeing of its map node; use_level only binds
+the interface and does not delete geometry or clear live projectiles.
+
+STANDARD PHYSICS CONTRACT
+
+Solid terrain, cover and walls use world collision layer 1. Actors/hurtboxes keep
+the shared combat layers. Real collision determines footing, cover and impacts.
+The simulation root stays in world space; transform the level root, not the
+CombatWorld root. The movement/gravity model is Y-up. Map-specific navigation, hazards,
+objectives, appearance and generators remain independent level/mode services.
+
+CombatLevel supports unbounded, circular and rectangular bounds. Bounds are
+optional authored movement limits, separate from physical walls. Generated
+levels can subclass CombatLevel for another constrain/inward implementation.
+CombatWorld's combat_radius property remains an old-script compatibility adapter;
+new mechanics must use the level methods, not assume a circle.
+
+TERRAIN AND PLACEMENT API
+
+level_spawn(index,fallback): map-local spawn transformed into world space.
+level_point(offset): map-local point relative to the configured center.
+ground_contact(point): actual world-geometry position/normal below the point.
+ground_height(point): height from that collision query.
+surface_placement(point,margin): bounds-aware grounded editor placement.
+pick_level_surface(camera,pointer): ray-pick real geometry, not a Y=0 plane.
+constrain_to_level(point,margin): respects optional bounds, preserving altitude.
+level_inward(point,ratio): bounds-aware steering; zero for unbounded maps.
+is_impact_wall(collider,normal): normal-based solid-wall classification; generated
+  walls do not need the pit's arena_wall tag. combat_no_wall_impact can opt a
+  collision object out of crash reactions without removing its collision.
+
+Ground queries search from probe_up above the requested position to probe_down
+below it. These distances are level data. A missed query is marked missing and
+does not invent a collision floor. Optional fallback_elevation is useful during
+initial authored-scene setup; otherwise it preserves the requested elevation.
+
+ENVIRONMENTAL EFFECTS
+
+Fire patches, ice columns and earth walls use the sampled terrain elevation.
+Water stores its own ground elevation and depth; pools on separate floors do not
+merge, and an upstairs pool does not wet a character beneath it. Frozen-water
+cells include the floor elevation so matching X/Z coordinates on different
+levels do not overwrite one another. Empty space has no implicit water at Y=0.
+
+Only a level that explicitly declares water_basin_radius may use the existing
+flat circular basin-filling shortcut. Other maps retain local puddles. The water
+and ground-effect model remains a bounded patch model, not a new fluid-flow or
+terrain-conforming surface simulation. These simplifications are independent
+of the combat engine and can be improved in the environment service later.
+
+THE EXISTING PIT
+
+scenes/maps/gladiatorial_pit.tscn remains the reusable geometry asset.
+scenes/maps/gladiatorial_pit_combat.tres supplies its bounds, spawns and basin.
+Both Story and Create bind that map through the same use_level interface.
+gladiatorial_pit_config.gd and arena_boundary.gd describe that map's geometry;
+they no longer define generic CombatWorld dimensions or actor recovery limits.
+
+VERIFICATION
+
+tests/combat_level_independence_test.gd builds a new translated, elevated,
+yaw-rotated rectangular level with a slope and a second floor below zero.
+It checks spawns/bounds, terrain support, generic wall classification, the same
+actual 10/10/10 spell, fire/earth/water/ice placement, floor isolation, unbounded
+defaults, below-zero locomotion/charged attacks and actual ragdoll recovery.
+The normal pit, Story, Create, aim/hitbox and movement checks cover existing-map
+compatibility. The test generates its geometry in memory and writes no assets.

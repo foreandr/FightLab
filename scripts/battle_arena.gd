@@ -45,7 +45,9 @@ func _ready() -> void:
 		if arg.begins_with("--report-file="):
 			report_file = arg.trim_prefix("--report-file=")
 	build_colosseum_stage()
-	add_child(GladiatorialPit.instantiate())
+	var map:=GladiatorialPit.instantiate()
+	add_child(map)
+	use_level(map)
 	hud.get_parent().queue_free()
 	vfx = BattleVFX.new()
 	add_child(vfx)
@@ -185,9 +187,8 @@ func begin_round() -> void:
 	intermission = 0
 	var positions := [Vector3(-0.50,0.02,0),Vector3(0.10,0.02,0)] if story_mode and bool(get("training_mode")) else [Vector3(-3.464,0.02,-2),Vector3(3.464,0.02,-2),Vector3(0,0.02,4)]
 	for i in fighter_count():
-		positions[i].x*=Boundary.RADIUS/10.0
-		positions[i].z*=Boundary.RADIUS/10.0
-		fighters[i].reset_fighter(positions[i])
+		var location:Vector3=level_frame()*Vector3(positions[i].x*3.0,positions[i].y,positions[i].z*3.0) if story_mode and bool(get("training_mode")) else level_spawn(i,positions[i])
+		fighters[i].reset_fighter(location)
 		if story_mode and bool(get("training_mode")):
 			fighters[i].collision_layer = 2 if i == 0 else 4
 			fighters[i].collision_mask = 1

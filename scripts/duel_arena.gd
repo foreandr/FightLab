@@ -40,6 +40,11 @@ func _ready() -> void:
 		if arg.begins_with("--report-file="):
 			report_file = arg.trim_prefix("--report-file=")
 	build_grassland()
+	var meadow=preload("res://scripts/combat_level.gd").new()
+	meadow.bounds=meadow.Bounds.CIRCLE
+	meadow.radius=10.0
+	meadow.fallback_elevation=0.0
+	use_level(null,meadow)
 	hud.get_parent().queue_free()
 	vfx = VFX.new()
 	add_child(vfx)

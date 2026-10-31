@@ -10,6 +10,14 @@ Combat consolidation
   Story/Create share these implementations. The old visual-only SpellArena study
   is now a sibling, not the parent of gameplay arenas.
 
+Level independence
+
+  See docs/combat-levels.txt. CombatLevel provides optional bounds, local spawns
+  and terrain queries through CombatWorld.use_level. The pit is one provider;
+  generated levels use the same interface. An unspecified level is unbounded.
+  Actor movement/recovery and editor placement must not assume world zero,
+  pit dimensions or a flat floor. Environmental patches retain terrain height.
+
 Ownership
 
 scripts/physical_momentum.gd

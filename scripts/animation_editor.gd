@@ -2058,16 +2058,9 @@ func save_workspace_layout() -> void:
 	config.save("user://animation_workspace_layout.cfg")
 
 func spawn_editor_unit_at_screen(screen_position:Vector2) -> CharacterBody3D:
-	var camera:Camera3D=field.camera
-	var origin:=camera.project_ray_origin(screen_position)
-	var direction:=camera.project_ray_normal(screen_position)
-	var hit:Variant=Plane(Vector3.UP,0.02).intersects_ray(origin,direction)
+	var hit:Variant=field.pick_level_surface(field.camera,screen_position)
 	if hit==null:return null
-	var location:Vector3=hit
-	var radius:=float(field.Boundary.RADIUS)-2.0
-	var flat:=Vector2(location.x,location.z).limit_length(radius)
-	location=Vector3(flat.x,0.02,flat.y)
-	return spawn_editor_unit(location)
+	return spawn_editor_unit(field.surface_placement(hit,2.0))
 
 func spawn_editor_unit(location:Vector3) -> CharacterBody3D:
 	var number:=next_editor_unit_number
@@ -2104,20 +2097,19 @@ func ensure_default_editor_unit() -> void:
 		if not is_instance_valid(added_units[index]):added_units.remove_at(index)
 	if added_units.is_empty():
 		next_editor_unit_number=1
-		var unit:=spawn_editor_unit(Vector3(0,0.02,0))
+		var unit:=spawn_editor_unit(field.surface_placement(field.level_point()))
 		if selected_group=="Spells" and spell_builder.demo_only_stage:unit.hide()
-		GameDiagnostics.log_event("editor_default_bot_created",{"name":str(unit.name),"position":[0,0.02,0],"selected":unit==focused_unit})
+		GameDiagnostics.log_event("editor_default_bot_created",{"name":str(unit.name),"position":str(unit.global_position),"selected":unit==focused_unit})
 	elif not is_instance_valid(focused_unit) and not selection_cleared:
 		focus_editor_unit(0)
 
 func arena_drag_point(screen_position:Vector2) -> Variant:
-	var camera:Camera3D=field.camera
-	return Plane(Vector3.UP,0.02).intersects_ray(camera.project_ray_origin(screen_position),camera.project_ray_normal(screen_position))
+	return field.pick_level_surface(field.camera,screen_position)
 
 func move_editor_unit(unit:CharacterBody3D,location:Vector3) -> void:
 	if not is_instance_valid(unit):return
-	var flat:=Vector2(location.x,location.z).limit_length(float(field.Boundary.RADIUS)-2.0)
-	unit.global_position=Vector3(flat.x,float(unit.get_meta("editor_ground_y",0.02)),flat.y)
+	unit.global_position=field.surface_placement(location,2.0)
+	unit.set_meta("editor_ground_y",unit.global_position.y)
 	if selected_group=="Spells":unit.practice_home=unit.global_position
 	elif unit==focused_unit:_capture_timeline_origin()
 
@@ -3604,7 +3596,7 @@ func open_custom_for(entry: Dictionary) -> void:
 		actor.custom_idle_frames=[]
 		actor.custom_motion_frames=[]
 		super.reset_setup()
-		actor.global_position.y=0.0
+		actor.global_position.y=field.ground_height(actor.global_position)+0.02
 		actor.velocity=Vector3.ZERO
 		actor.mode="idle"
 		actor.clip=""
@@ -3672,7 +3664,7 @@ func frame_custom_editor_camera() -> void:
 	# Keep the partner and its world-space nameplate out of the posing view.
 	if is_instance_valid(target):
 		target.global_position=actor.global_position-right*7.0-Vector3(back.x,0,back.z).normalized()*4.0
-		target.global_position.y=0.0
+		target.global_position.y=field.ground_height(target.global_position)+0.02
 		target.velocity=Vector3.ZERO
 	var distance:=7.6 if full_jump else 6.3
 	var aspect:float=get_viewport().get_visible_rect().size.aspect()
@@ -5029,7 +5021,7 @@ func apply_custom_source_pose(progress:float) -> void:
 	if custom_source_timing=="native_v1" and custom_source_step=="Jump":
 		var air_time:=maxf(0.0,progress*custom_source_duration-0.14)
 		actor.global_position.y=maxf(0.0,10.8*air_time-0.5*actor.GRAVITY*air_time*air_time)
-	if custom_source_step in ["Flip","Twist"]:actor.global_position.y=0.6+0.9*sin(PI*progress)
+	if custom_source_step in ["Flip","Twist"]:actor.global_position.y=float(actor.get_meta("editor_ground_y",field.ground_height(actor.global_position)+0.02))+0.6+0.9*sin(PI*progress)
 	actor.model.rotation.y=0.0
 	if custom_source_step=="Twist":
 		actor.model.rotation.y=TAU*smoothstep(0.0,1.0,clampf((progress*custom_source_duration-actor.TWIST_DELAY)/actor.TWIST_DURATION,0,1)) if custom_source_timing=="native_v1" else TAU*smoothstep(0.15,0.9,progress)

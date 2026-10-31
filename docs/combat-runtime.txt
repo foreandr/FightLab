@@ -12,6 +12,8 @@ STARTING A NEW MODE
 Inherit res://scripts/combat_world.gd, not BattleArena, DuelArena or SpellArena.
 CombatWorld is a Node3D with no menu, campaign or demo scene. It supplies actor
 registration, services, simulation, hitbox toggles, prediction and event hooks.
+Levels are separate geometry/data providers, bound through use_level; see
+docs/combat-levels.txt. The default world is unbounded and imports no pit size.
 
 Example GDScript (add your map, camera and light separately):
 
@@ -106,8 +108,9 @@ Reuse combat_aim.gd for free aim and focused chest anchors.
 Override projectile_visual, orient_projectile, combat_sound, impact_burst,
 combat_cast_feedback, combat_heal_feedback and combat_impact_feedback for visuals,
 UI and telemetry. These hooks must not apply damage or spend costs again.
-finish_round/combat_finished handle mode objectives. combat_radius configures
-the reusable actor's bounds; the default is the saved gladiatorial pit radius.
+finish_round/combat_finished handle mode objectives. CombatLevel supplies optional
+bounds, terrain queries and map-local spawns. combat_radius is only a compatibility
+adapter for older circular-map scripts, not the generic default.
 
 OWNERSHIP AND LEGACY SEPARATION
 

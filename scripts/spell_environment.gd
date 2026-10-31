@@ -14,7 +14,6 @@ var spark_clock:=0.0
 var spark_rng:=RandomNumberGenerator.new()
 var earth_walls:Array[StaticBody3D]=[]
 var flood:MeshInstance3D
-const ARENA_RADIUS:=15.0
 
 func _ready() -> void:
  spark_rng.seed=81537
@@ -37,7 +36,7 @@ func disc(point:Vector3,radius:float,color:Color) -> MeshInstance3D:
  material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
  node.material_override=material
  add_child(node)
- node.position=Vector3(point.x,0.035,point.z)
+ node.global_position=point+Vector3.UP*0.035
  return node
 
 func reset_environment() -> void:
@@ -99,22 +98,22 @@ func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
  if element=="Water":
   add_water(4.0/3.0*PI*pow(float(shot.radius),3),point)
   for p in patches:
-   if p.element=="Fire" and p.point.distance_to(Vector3(point.x,0,point.z))<radius+p.radius:p.life=0.0
+   if p.element=="Fire" and p.point.distance_to(ground_point(point))<radius+p.radius:p.life=0.0
  if element=="Ice":
   for pool in water:
-   if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<=pool.depth+0.2:
+   if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<=pool.point.y+pool.depth+0.2 and point.y+radius>=pool.point.y:
     freeze_water(point,radius,potency,pool.depth,pool.radius,pool.point)
- if element in ["Fire","Ice"] and not (element=="Fire" and water_height(point)>0):
+ if element in ["Fire","Ice"] and not (element=="Fire" and is_finite(water_height(ground_point(point)))):
   if patches.size()>=48:
    patches[0].node.queue_free()
    patches.pop_front()
   # Fire melts ice; ice extinguishes burning ground.
   for p in patches:
-   if p.point.distance_to(Vector3(point.x,0,point.z))<radius+p.radius and p.element!=element:p.life=0.0
-  patches.append({"point":Vector3(point.x,0,point.z),"radius":radius,"element":element,"life":8.0,"potency":potency,"source":shot.caster,"node":ground_fire(point,radius,shot.spec.get("appearance",{})) if element=="Fire" else disc(point,radius,Color(0.4,0.83,1,0.65))})
+   if p.point.distance_to(ground_point(point))<radius+p.radius and p.element!=element:p.life=0.0
+  patches.append({"point":ground_point(point),"radius":radius,"element":element,"life":8.0,"potency":potency,"source":shot.caster,"node":ground_fire(point,radius,shot.spec.get("appearance",{})) if element=="Fire" else disc(ground_point(point),radius,Color(0.4,0.83,1,0.65))})
  if element=="Lightning":
   for pool in water:
-   if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<pool.depth+0.1:
+   if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<pool.point.y+pool.depth+0.1 and point.y+radius>=pool.point.y:
     pool.electric=maxf(pool.electric,6.0*potency)
     pool["stun"]=maxf(float(pool.get("stun",0.0)),0.7*potency)
   update_water_summary()
@@ -127,12 +126,12 @@ func _physics_process(delta:float) -> void:
   draw_sparks()
  for body in debris:
   if not is_instance_valid(body):continue
-  var depth:float=water_height(body.position)-body.position.y
+  var depth:float=water_height(body.global_position)-body.global_position.y
   if depth>0:
    body.apply_central_force(Vector3.UP*body.mass*clampf(depth*24,0,22)-body.linear_velocity*body.mass*2)
  for fighter in arena.fighters:
-  var surface:float=water_height(fighter.position)
-  fighter.water_depth=maxf(0,surface-fighter.position.y)
+  var surface:float=water_height(fighter.global_position)
+  fighter.water_depth=maxf(0,surface-fighter.global_position.y)
   var head:Vector3=fighter.bone_point("Head")
   var head_wet:bool=head.y<water_height(head)-0.05
   fighter.update_breath(delta,head_wet)
@@ -143,16 +142,16 @@ func _physics_process(delta:float) -> void:
    if fighter.water_depth>1.1 and not fighter.ice_trapped: fighter.tick_swimming(delta)
   if fighter.water_depth>0: fighter.burn_time=0
   fighter.surface_slippery=false
-  var flat:=Vector3(fighter.position.x,0,fighter.position.z)
+  var foot:Vector3=fighter.global_position
   for patch in patches:
-   if patch.life<=0 or flat.distance_to(patch.point)>patch.radius or fighter.position.y>0.4:continue
+   if patch.life<=0 or flat_distance(foot,patch.point)>patch.radius or absf(foot.y-patch.point.y)>0.4:continue
    if patch.element=="Ice":fighter.surface_slippery=true
    elif patch.element=="Fire" and fighter.water_depth<0.15:
     fighter.burn_time=maxf(fighter.burn_time,0.6)
     fighter.burn_damage=1.5*patch.potency
     fighter.burn_source=patch.source
   for pool in water:
-   if pool.electric>0 and flat.distance_to(pool.point)<pool.radius and fighter.position.y<pool.depth:
+   if pool.electric>0 and flat_distance(foot,pool.point)<pool.radius and foot.y>=pool.point.y-0.1 and foot.y<pool.point.y+pool.depth:
     fighter.stun_time=maxf(fighter.stun_time,minf(pool.electric,float(pool.get("stun",0.7))))
  for pool in water:
   pool.electric=maxf(0,pool.electric-delta)
@@ -169,7 +168,7 @@ func flat_distance(a:Vector3,b:Vector3) -> float:
 
 func add_water(volume:float,impact:Vector3=Vector3.ZERO) -> void:
  if volume<=0:return
- var point:=Vector3(impact.x,0,impact.z)
+ var point:=ground_point(impact)
  var total:float=volume
  var absorbed:Array[Dictionary]=[]
  var radius:float=sqrt(total/(PI*0.12))
@@ -179,7 +178,7 @@ func add_water(volume:float,impact:Vector3=Vector3.ZERO) -> void:
   changed=false
   for pool in water:
    if pool in absorbed:continue
-   if flat_distance(point,pool.point)>radius+pool.radius:continue
+   if absf(point.y-pool.point.y)>0.15 or flat_distance(point,pool.point)>radius+pool.radius:continue
    point=(point*total+pool.point*pool.volume)/(total+pool.volume)
    total+=pool.volume
    radius=sqrt(total/(PI*0.12))
@@ -192,21 +191,23 @@ func add_water(volume:float,impact:Vector3=Vector3.ZERO) -> void:
   stun=maxf(stun,float(pool.get("stun",0.7)))
   pool.node.queue_free()
   water.erase(pool)
- # Only use an arena-wide level once the footprint already covers the arena.
- if radius>=ARENA_RADIUS+Vector2(point.x,point.z).length():
-  point=Vector3.ZERO
-  radius=ARENA_RADIUS
+ # A map can explicitly declare a flat circular basin; other maps stay local.
+ var basin_radius:float=arena.level.water_basin_radius
+ var basin_center:Vector3=arena.level_frame()*arena.level.center
+ if basin_radius>0.0 and absf(point.y-basin_center.y)<0.15 and radius>=basin_radius+flat_distance(point,basin_center):
+  point=basin_center
+  radius=basin_radius
  var depth:float=total/maxf(0.001,PI*radius*radius)
  var node:MeshInstance3D=disc(point,radius,Color(0.07,0.4,0.72,0.48))
  node.name="ImpactWaterVolume"
  node.mesh.height=maxf(0.01,depth)
- node.position.y=depth*0.5
+ node.global_position.y=point.y+depth*0.5
  node.material_override.shading_mode=BaseMaterial3D.SHADING_MODE_PER_PIXEL
  node.material_override.roughness=0.12
  node.material_override.cull_mode=BaseMaterial3D.CULL_DISABLED
  water.append({"point":point,"radius":radius,"depth":depth,"volume":total,"node":node,"electric":electric,"stun":stun})
  for patch in patches:
-  if patch.element=="Fire" and flat_distance(patch.point,point)<radius:patch.life=0.0
+  if patch.element=="Fire" and flat_distance(patch.point,point)<radius and absf(patch.point.y-point.y)<0.15:patch.life=0.0
  update_water_summary()
 
 func update_water_summary() -> void:
@@ -224,22 +225,23 @@ func update_water_summary() -> void:
   flood_radius=maxf(flood_radius,pool.radius)
 
 func water_height(point:Vector3) -> float:
- var height:=0.0
+ var height:float=-INF
  for pool in water:
-  if flat_distance(point,pool.point)<pool.radius:height=maxf(height,pool.depth)
+  if point.y>=pool.point.y-0.1 and flat_distance(point,pool.point)<pool.radius:height=maxf(height,pool.point.y+pool.depth)
  return height
 
 func water_contact(from:Vector3,to:Vector3,radius:float) -> Dictionary:
  var nearest:Dictionary={}
  var nearest_distance:=INF
  for pool in water:
-  if minf(from.y,to.y)-radius>pool.depth:continue
-  var fraction:float=clampf((from.y-radius-pool.depth)/maxf(0.0001,from.y-to.y),0,1) if from.y-radius>pool.depth else 0.0
+  var surface:float=pool.point.y+pool.depth
+  if minf(from.y,to.y)-radius>surface or maxf(from.y,to.y)+radius<pool.point.y:continue
+  var fraction:float=clampf((from.y-radius-surface)/maxf(0.0001,from.y-to.y),0,1) if from.y-radius>surface else 0.0
   var point:Vector3=from.lerp(to,fraction)
   if flat_distance(point,pool.point)>pool.radius:continue
   if from.distance_to(point)>=nearest_distance:continue
   nearest_distance=from.distance_to(point)
-  var cell:=Vector2i(floori(point.x/2.0),floori(point.z/2.0))
+  var cell:Variant=ice_cell(point.x,point.z,pool.point.y)
   nearest={"position":point,"collider":ice[cell]} if ice.has(cell) else {"position":point}
  return nearest
 
@@ -250,8 +252,8 @@ func freeze_water(point:Vector3,radius:float,potency:float,depth_override:float=
  var reach:float=maxf(radius,1.5)
  for x in range(floori((point.x-reach)/width),ceili((point.x+reach)/width)+1):
   for z in range(floori((point.z-reach)/width),ceili((point.z+reach)/width)+1):
-   var cell:=Vector2i(x,z)
-   var center:=Vector3((x+0.5)*width,0,(z+0.5)*width)
+   var cell:Variant=ice_cell((x+0.5)*width,(z+0.5)*width,bounds_center.y)
+   var center:=Vector3((x+0.5)*width,bounds_center.y,(z+0.5)*width)
    if Vector2(center.x-point.x,center.z-point.z).length()>reach or flat_distance(center,bounds_center)>bounds:continue
    if ice.has(cell):continue
    var block=preload("res://scripts/spell_ice.gd").new()
@@ -261,7 +263,7 @@ func freeze_water(point:Vector3,radius:float,potency:float,depth_override:float=
    block.build(center,maxf(0.18,depth),width,potency)
    ice[cell]=block
    for fighter in arena.fighters:
-    if absf(fighter.position.x-center.x)<=width*0.5 and absf(fighter.position.z-center.z)<=width*0.5 and fighter.position.y<depth-0.3 and fighter.health>0:
+    if absf(fighter.position.x-center.x)<=width*0.5 and absf(fighter.position.z-center.z)<=width*0.5 and fighter.position.y>=center.y-0.1 and fighter.position.y<center.y+depth-0.3 and fighter.health>0:
      block.trapped.append(fighter)
      block.add_collision_exception_with(fighter)
      fighter.ice_trapped=true
@@ -308,12 +310,12 @@ func draw_sparks() -> void:
  spark_mesh.mesh=mesh
 
 func support_height(point:Vector3) -> float:
- var height:=0.0
+ var height:float=arena.ground_height(point)
  for block in ice.values()+earth_walls:
   if not is_instance_valid(block) or block.broken:continue
   var half:Vector3=block.get_child(0).shape.size*0.5
   var relative:Vector3=block.to_local(point)
-  var top:float=block.position.y+half.y
+  var top:float=block.global_position.y+half.y
   if absf(relative.x)<=half.x and absf(relative.z)<=half.z and point.y>=top-0.4:height=maxf(height,top)
  return height
 
@@ -321,7 +323,7 @@ func summon_earth_wall(point:Vector3,direction:Vector3,radius:float,potency:floa
  var wall=preload("res://scripts/spell_earth_wall.gd").new()
  wall.environment=self
  add_child(wall)
- wall.build(point,direction,radius,potency)
+ wall.build(ground_point(point),direction,radius,potency)
  if centered:
   wall.position.x=point.x
   wall.position.z=point.z
@@ -368,12 +370,12 @@ func react_fire(point:Vector3,radius:float,potency:float,projectile_radius:float
  var evaporate:float=maxf(0.02,4.0/3.0*PI*pow(projectile_radius,3)*potency*0.6)
  var wet:=false
  for pool in water.duplicate():
-  if flat_distance(point,pool.point)>radius+pool.radius or point.y-radius>pool.depth+0.3:continue
+  if flat_distance(point,pool.point)>radius+pool.radius or point.y-radius>pool.point.y+pool.depth+0.3 or point.y+radius<pool.point.y:continue
   wet=true
   var removed:float=minf(pool.volume,evaporate)
   pool.volume-=removed
   evaporate-=removed
-  steam(Vector3(point.x,pool.depth,point.z),minf(radius,1.5))
+  steam(Vector3(point.x,pool.point.y+pool.depth,point.z),minf(radius,1.5))
   if pool.volume<=0.0001:
    pool.node.queue_free()
    water.erase(pool)
@@ -384,7 +386,7 @@ func react_fire(point:Vector3,radius:float,potency:float,projectile_radius:float
    pool.node.mesh.top_radius=pool.radius
    pool.node.mesh.bottom_radius=pool.radius
    pool.node.mesh.height=maxf(0.01,pool.depth)
-   pool.node.position.y=pool.depth*0.5
+   pool.node.global_position.y=pool.point.y+pool.depth*0.5
   if evaporate<=0:break
  for fighter in arena.fighters:
   if fighter.freeze_time<=0 or flat_distance(point,fighter.position)>radius:continue
@@ -404,6 +406,13 @@ func react_fire(point:Vector3,radius:float,potency:float,projectile_radius:float
 func ground_fire(point:Vector3,radius:float,appearance:Dictionary) -> Node3D:
  var fire=preload("res://scripts/spell_ground_fire.gd").new()
  add_child(fire)
- fire.position=Vector3(point.x,0,point.z)
+ fire.global_position=ground_point(point)
  fire.setup(radius,appearance)
  return fire
+
+func ground_point(point:Vector3) -> Vector3:
+ return arena.ground_contact(point).position
+
+func ice_cell(x:float,z:float,elevation:float) -> Variant:
+ var cell:=Vector2i(floori(x/2.0),floori(z/2.0))
+ return cell if absf(elevation)<0.01 else Vector3i(cell.x,roundi(elevation*10.0),cell.y)

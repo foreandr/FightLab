@@ -193,7 +193,79 @@ func incoming_threat(f: CharacterBody3D) -> int:
 	return -1
 
 signal combat_finished(winner:int)
-var combat_radius:float=preload("res://scripts/gladiatorial_pit_config.gd").FLOOR_RADIUS
+var level:Resource=preload("res://scripts/combat_level.gd").new()
+var level_root:Node3D
+# Compatibility adapter for older scripts; new code uses the level interface.
+var combat_radius:float:
+	get:return float(level.radius) if level.bounds==preload("res://scripts/combat_level.gd").Bounds.CIRCLE else INF
+	set(value):
+		level=level.duplicate(true)
+		level.bounds=preload("res://scripts/combat_level.gd").Bounds.CIRCLE
+		level.radius=value
+
+func use_level(root:Node3D,definition:Resource=null) -> void:
+	level_root=root
+	if definition==null and is_instance_valid(root) and root.has_method("combat_level_definition"):definition=root.combat_level_definition()
+	level=definition.duplicate(true) if definition!=null else preload("res://scripts/combat_level.gd").new()
+
+func level_frame() -> Transform3D:
+	return level_root.global_transform if is_instance_valid(level_root) else Transform3D.IDENTITY
+
+func ground_contact(point:Vector3) -> Dictionary:
+	return level.ground(self,point,level_frame())
+
+func ground_height(point:Vector3) -> float:
+	return float(ground_contact(point).position.y)
+
+func constrain_to_level(point:Vector3,margin:float=0.4) -> Vector3:
+	return level.constrain(point,level_frame(),margin)
+
+func level_inward(point:Vector3,ratio:float=1.0) -> Vector3:
+	return level.inward(point,level_frame(),2.0,ratio)
+
+func level_spawn(index:int,fallback:Vector3=Vector3.ZERO) -> Vector3:
+	return level.spawn(index,level_frame(),fallback)
+
+func level_point(offset:Vector3=Vector3.ZERO) -> Vector3:
+	return level_frame()*(level.center+offset)
+
+func surface_placement(point:Vector3,margin:float=0.4) -> Vector3:
+	var result:=constrain_to_level(point,margin)
+	result.y=ground_height(result)+0.02
+	return result
+
+func pick_level_surface(camera_:Camera3D,pointer:Vector2) -> Variant:
+	var origin:=camera_.project_ray_origin(pointer)
+	var end:=origin+camera_.project_ray_normal(pointer)*2000.0
+	var query:=PhysicsRayQueryParameters3D.create(origin,end,level.GROUND_COLLISION_MASK)
+	var hit:=get_world_3d().direct_space_state.intersect_ray(query)
+	return hit.position if not hit.is_empty() else null
+
+func move_character(actor:CharacterBody3D,direction:Vector3,speed:float,delta:float) -> void:
+	actor.velocity.x=direction.x*speed
+	actor.velocity.z=direction.z*speed
+	actor.velocity.y=-0.1 if actor.is_on_floor() and actor.velocity.y<=0 else actor.velocity.y-actor.GRAVITY*delta
+	actor.move_and_slide()
+	actor.global_position=constrain_to_level(actor.global_position,1.0)
+	settle_actor_on_ground(actor)
+
+func is_impact_wall(collider:Object,normal:Vector3) -> bool:
+	return collider is CollisionObject3D and (collider.collision_layer&int(level.GROUND_COLLISION_MASK))!=0 and absf(normal.y)<0.5 and not collider.get_meta("combat_no_wall_impact",false)
+
+func settle_actor_on_ground(actor:CharacterBody3D) -> void:
+	if actor.velocity.y>0:return
+	var contact:=ground_contact(actor.global_position)
+	var penetration:float=contact.position.y-actor.global_position.y
+	if not contact.get("missing",false) and contact.normal.y>0.7 and penetration>0.0 and penetration<0.08:
+		actor.global_position.y=contact.position.y
+		actor.velocity.y=0.0
+		actor.apply_floor_snap()
+
+func moving_surface_contact(point:Vector3,velocity:Vector3) -> Dictionary:
+	if velocity.length_squared()<0.0001:return ground_contact(point)
+	var direction:=velocity.normalized()
+	var query:=PhysicsRayQueryParameters3D.create(point-direction*0.65,point+direction*0.4,level.GROUND_COLLISION_MASK)
+	return get_world_3d().direct_space_state.intersect_ray(query)
 
 func _ready() -> void:
 	setup_combat_services()

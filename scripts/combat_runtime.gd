@@ -343,7 +343,7 @@ func step_actors(delta:float) -> void:
 				if (contact.get_collider().has_meta("spell_ice") or contact.get_collider().has_meta("spell_earth")):
 					var speed:float=maxf(0,-incoming.dot(contact.get_normal()))
 					if speed>2.5:contact.get_collider().take_damage(speed*speed*0.4)
-				elif contact.get_collider().has_meta("arena_wall"):
+				elif field.is_impact_wall(contact.get_collider(),contact.get_normal()):
 					var speed:=maxf(0,-incoming.dot(contact.get_normal()))
 					if f.has_method("wall_crash") and speed>4.5 and (f.knockback.length()>1.5 or not f.is_on_floor() or speed>10):
 						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming)

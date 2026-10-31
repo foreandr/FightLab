@@ -80,7 +80,10 @@ func open_case(index: int) -> void:
 	for f in field.fighters:
 		var active: bool=f==actor or f==target
 		f.brain_enabled=false
-		f.reset_fighter(Vector3(-distance/2,0.02,0) if f==actor else (Vector3(distance/2,0.02,0) if f==target else Vector3(32,0.02,-32)))
+		var offset:=Vector3(-distance/2,0.02,0) if f==actor else (Vector3(distance/2,0.02,0) if f==target else Vector3(32,0.02,-32))
+		var location:Vector3=field.level_point(offset)
+		if active:location=field.surface_placement(location)
+		f.reset_fighter(location)
 		f.visible=active
 		f.mode="review"
 		f.mode_length=999

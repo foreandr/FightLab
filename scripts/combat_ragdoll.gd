@@ -130,18 +130,19 @@ func step(delta: float) -> bool:
 		previous_average+=previous_velocities.get(body.get_instance_id(),body.linear_velocity)*body.mass/total_mass
 	for body in bodies.values():
 		for collider in body.get_colliding_bodies():
-			if collider.has_meta("arena_wall"):
-				var normal: Vector3=collider.get_meta("inward_normal")
-				var incoming: Vector3=previous_velocities.get(body.get_instance_id(),body.linear_velocity)
+			var incoming:Vector3=previous_velocities.get(body.get_instance_id(),body.linear_velocity)
+			var surface:Dictionary=fighter.arena.moving_surface_contact(body.global_position,incoming)
+			var normal:Vector3=surface.get("normal",Vector3.UP)
+			if surface.get("collider")==collider and fighter.arena.is_impact_wall(collider,normal):
 				if -previous_average.dot(normal)>-incoming.dot(normal):
 					incoming=previous_average
 				fighter.wall_crash(body.global_position,normal,maxf(0,-incoming.dot(normal)),incoming)
 			elif collider.collision_layer & 1:
 				if (collider.has_meta("spell_ice") or collider.has_meta("spell_earth")):
-					var incoming:Vector3=previous_velocities.get(body.get_instance_id(),body.linear_velocity)
 					if incoming.length()>3:collider.take_damage(body.mass*incoming.length_squared()*0.04)
-				floor_contacts+=1
-				current_floor_contacts+=1
+				if normal.y>0.5:
+					floor_contacts+=1
+					current_floor_contacts+=1
 		previous_velocities[body.get_instance_id()]=body.linear_velocity
 	if floor_contacts>0 and age>0.2 and not land_sounded:
 		land_sounded=true
