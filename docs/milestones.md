@@ -561,3 +561,12 @@ Spell preview ownership and live practice:
 ### Spell sound preference — noted for future work (2026-10-31)
 - User likes camera proximity affecting spell sound. Preserve that effect and add a player-facing toggle to enable or disable camera-distance influence on spell audio.
 - Apply the preference consistently through shared audio settings across modes. This records the request; the toggle is not implemented yet.
+
+### Combat mechanics checkpoint — accepted (2026-10-31)
+- User accepted the current build after verifying shared sprint stamina drain.
+- Preserve the current guarded strafe/backward-walk arm sway, neutral physical contact effects, physical-only headshot doubling, distinct hit reactions, optional region highlights and gold HEADSHOT damage numbers.
+- Armor is cosmetic. Nonlethal hit ragdolls currently use a provisional 40-physical-damage threshold; lethal physical headshots detach humanoid heads, and reset restores them. The RHS previews unblocked body/head ragdoll outcomes.
+- Create, Take Control and Story share sprint stamina accounting: 12 per second, ordinary recovery, exhaustion fallback and God Mode bypass.
+- Floating region captions and the mannequin's last-damage text are removed. Beam is listed but disabled; spell delivery types have descriptive tooltips.
+- Block/barrier redesign, shield-break presentation and a permanently blocking mannequin remain deferred. Camera-distance spell audio toggle is also noted for future work.
+- Working implementation baseline: 8080b76. Treat this as an accepted checkpoint and preserve its behavior when continuing development.
