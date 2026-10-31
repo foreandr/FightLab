@@ -104,6 +104,11 @@ motion, not the hit threshold. Cosmetic armor cannot absorb damage or impulse.
 The authoring panel uses the same pure rule for unblocked body/head predictions.
 Barrier/block changes, guard-break policy and a blocking dummy are deferred.
 
+After a successful lethal physical head impact, Runtime calls the actor's optional
+sever_head hook. BattleActor splits only that corpse's head skin and releases its
+existing ragdoll head. Reset restores intact source meshes. Status tick deaths
+never invoke this headshot-only hook, and God Mode/wooden dummies are excluded.
+
 AUTHORING A SPELL
 
 combat_spell_rules.gd owns physical cost/damage from animation duration, release

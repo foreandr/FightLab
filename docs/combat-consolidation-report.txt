@@ -274,3 +274,20 @@ without automatically ragdolling; reactivation requires a full bar; recovery use
 the other resources' rate; show a yellow shield-break badge. Ragdoll from damage
 getting through and blocked/effect-filtered predictions need to be finalized with
 that barrier implementation. A 10-physical-damage barrier was the example given.
+
+LETHAL HEADSHOT FINISHER (2026-10-31)
+
+Lethal physical headshots now separate humanoid heads while the body ragdolls.
+The shared impact path invokes a reusable mesh-splitting component only on the
+finishing head hit. It preserves source resources/material surfaces, removes neck
+bridge triangles and binds head skin rigidly to the existing ragdoll head body.
+The neck joint is released; that same body receives a small launch/spin. No extra
+physics bodies or continuously rebuilt meshes. Hair follows the detached head.
+Reset restores intact original meshes and normal neck constraints. Nonlethal
+headshots, body kills, later burn deaths, God Mode and wooden dummies are excluded.
+Already-ragdolled victims can also be finished this way. Corpse status says DEAD.
+Verified male training and female rigs, actual geometry split, independent motion,
+neck constraint release, repeated-call safety, source/reset integrity and all
+exclusions. Visually inspected the actual Create human finisher without stretched
+neck geometry. Physical-threshold and headshot/status regressions passed.
+Implementation: +145 / -1 lines.

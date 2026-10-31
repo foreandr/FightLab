@@ -212,6 +212,8 @@ func update_tag() -> void:
 	status_label.text=""
 	if fighter.get("drowned")==true:
 		status_label.text="DROWNED"
+	elif fighter.health<=0:
+		status_label.text="DEAD"
 	elif fighter.get("ice_trapped")==true:
 		status_label.text="TRAPPED IN ICE"
 	elif _fighter_number("freeze_time")>0:

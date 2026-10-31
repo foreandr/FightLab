@@ -91,6 +91,8 @@ var strike_reach := 1.0
 var charge_requested := -1.0
 var death_age := INF
 var death_impulse := Vector3.ZERO
+var head_severed:=false
+var head_severance:RefCounted
 var wall_crash_cooldown := 0.0
 var wall_crashes := 0
 const RECOVERY_BLEND := 0.45
@@ -233,6 +235,8 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	if head_severance!=null:head_severance.restore()
+	head_severed=false
 	story_strikes.clear()
 	story_punch_previews.clear()
 	story_calibration_aim_enabled=false
@@ -1606,6 +1610,15 @@ func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> v
 	arena.events.append({"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
 	GameDiagnostics.log_event("fighter_death", {"team":team, "name":story_profile.get("name", "Fighter"), "attacker_team":attacker.team if is_instance_valid(attacker) else -1, "fight":arena.story_stage if arena.story_mode else 0})
 	if not practice_immortal and not practice_damageable_dummy:arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
+
+func sever_head(impulse:Vector3) -> bool:
+	if head_severed or health>0 or practice_god_mode or practice_wooden_dummy:return false
+	if head_severance==null:head_severance=preload("res://scripts/combat_head_severance.gd").new()
+	if not head_severance.split(self):return false
+	head_severed=true
+	if not is_instance_valid(ragdoll):start_ragdoll(impulse,bone_point("Head"))
+	if is_instance_valid(ragdoll):ragdoll.sever_head(impulse)
+	return true
 
 func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -> void:
 	if wall_crash_cooldown>0 or speed<4.5:

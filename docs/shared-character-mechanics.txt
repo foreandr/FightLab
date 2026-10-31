@@ -41,6 +41,15 @@ scripts/combat_defense_rules.gd
   using these same rules; lethal hits and target-specific reductions are caveats.
   Barrier/block redesign and a permanently blocking test dummy are deferred.
 
+scripts/combat_head_severance.gd
+  Lethal physical head hits detach humanoid heads through the shared impact path.
+  Split corpse-local skinned mesh indices/weights at the head boundary, retaining
+  surface materials, hair and head accessories. Release the existing ragdoll neck
+  joint and launch that existing head body; no extra rigid bodies are created.
+  Sources remain immutable and reset restores original meshes. Nonlethal head
+  hits, body kills, burn deaths, God Mode and wooden practice dummies do not sever.
+  Also supports a lethal head hit on an already-ragdolled character.
+
 Guarded sideways strafe authoring
   scripts/vendor/copy_strafe_guard.gd copies both arm/finger channels from
   duel/walk_back into strafe_left/right via animation_channels.replace_channels.

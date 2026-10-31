@@ -15,6 +15,8 @@ var initial_impulse := Vector3.ZERO
 var initial_point := Vector3.ZERO
 var land_sounded := false
 var previous_velocities := {}
+var links:Dictionary={}
+var sever_impulse:=Vector3.ZERO
 var settled_time := 0.0
 
 func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
@@ -84,17 +86,32 @@ func joint(a: String, b: String, bone: String, swing: float, twist: float) -> vo
 		link.global_basis = Basis(Quaternion(Vector3.RIGHT, direction))
 	link.node_a = link.get_path_to(bodies[a])
 	link.node_b = link.get_path_to(bodies[b])
+	links[a+"/"+b]=link
 	link.set_param(ConeTwistJoint3D.PARAM_SWING_SPAN,swing)
 	link.set_param(ConeTwistJoint3D.PARAM_TWIST_SPAN,twist)
 	link.set_param(ConeTwistJoint3D.PARAM_BIAS,0.28)
 	link.set_param(ConeTwistJoint3D.PARAM_SOFTNESS,0.72)
 	link.set_param(ConeTwistJoint3D.PARAM_RELAXATION,1.0)
 
+func sever_head(impulse:Vector3) -> void:
+	sever_impulse=impulse
+	if links.has("chest/head") and is_instance_valid(links["chest/head"]):
+		links["chest/head"].node_a=NodePath()
+		links["chest/head"].node_b=NodePath()
+		links["chest/head"].queue_free()
+	links.erase("chest/head")
+	if setup_phase>=2:launch_severed_head()
+
+func launch_severed_head() -> void:
+	var head:RigidBody3D=bodies.head
+	head.linear_velocity+=sever_impulse.normalized()*4.0+Vector3.UP*2.0
+	head.angular_velocity+=Vector3(3,5,2)
+
 func step(delta: float) -> bool:
 	age += delta
 	if setup_phase==0:
 		joint("pelvis", "chest", "spine_01", 0.5, 0.4)
-		joint("chest", "head", "neck_01", 0.48, 0.35)
+		if not fighter.head_severed:joint("chest", "head", "neck_01", 0.48, 0.35)
 		for side in ["l", "r"]:
 			joint("chest", "arm_"+side, "upperarm_"+side, 0.9, 0.45)
 			joint("arm_"+side, "forearm_"+side, "lowerarm_"+side, 0.75, 0.14)
@@ -110,6 +127,7 @@ func step(delta: float) -> bool:
 			body.linear_velocity=initial_velocity+spin.cross(body.global_position-center)
 			body.angular_velocity=spin
 		setup_phase=2
+		if fighter.head_severed:launch_severed_head()
 		return false
 	peak_height = maxf(peak_height, bodies.pelvis.global_position.y)
 	for bone in bindings:
