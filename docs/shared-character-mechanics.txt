@@ -49,6 +49,8 @@ scripts/combat_floating_numbers.gd
   damage counters. Do not substitute RHS estimates or health loss on immortal
   targets. Labels rise/fade, follow actors, respect actor visibility and have a
   bounded lifetime/count. Spell Numbers [3] is a mode input adapter to this API.
+  Successful physical head hits display larger gold HEADSHOT <amount> text.
+  Keep the underlying event physical; do not emit a second ordinary damage label.
 
 scripts/physical_momentum.gd
   Physical damage uses actual horizontal speed in any direction, not sprint

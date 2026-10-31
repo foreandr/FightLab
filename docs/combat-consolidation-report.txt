@@ -236,3 +236,14 @@ potency and burn ticks, distinct sampled animation poses, exact highlight target
 expiry/toggle/reset, unchanged neutral 10/10/10, AoE and independent-mode runtime.
 Visually inspected the Create dummy head highlight and actual 20 physical readout.
 Implementation: +109 / -9 lines. Existing animation assets reused.
+
+HEADSHOT FLOATING TEXT (2026-10-31)
+
+Actual head hits now show larger gold HEADSHOT 20 text, without an extra physical
+damage number. Fractional damage retains one decimal; whole values omit .0.
+Ordinary physical/cost labels keep their existing text/colors and all labels
+retain bounded counts, floating/fading, toggle and reset behavior. Verified actual
+head/body text, critical styling and fade color, resource-label regression and a
+rendered Create preview. This presentation change adds no physics simulation;
+normal articulated impact reactions already use a reduced 13-joint spring model.
+Implementation: +12 / -9 lines.

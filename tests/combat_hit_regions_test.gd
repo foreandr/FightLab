@@ -27,12 +27,14 @@ func run() -> void:
 	actor.velocity=Vector3.ZERO
 	victim.practice_god_mode=true;victim.practice_immortal=true;victim.practice_damageable_dummy=true
 	field.set_combat_hitboxes(true)
+	field.set_combat_numbers(true)
 	var overlays=field.character_hitbox_overlays
 	var spell:Dictionary={"id":"region_fire_test","effect":"orb","projectile_element":"Fire","potency":2.0,"damage":10.0}
 	var spec_before:=spell.duplicate(true)
 	var reactions:Dictionary={}
 	for zone in ["chest","head","pelvis","arm_l","leg_r"]:
 		reset_victim(victim)
+		field.clear_combat_numbers()
 		overlays.clear_hits()
 		var area:=area_for(victim,zone)
 		if not check(is_instance_valid(area),"Missing receiving area: "+zone):return
@@ -40,6 +42,14 @@ func run() -> void:
 		if not check(field.apply_impact(actor,victim,spell,area.global_position,Vector3.BACK,area,Vector3.BACK*20),"Actual hit rejected: "+zone):return
 		var expected:=20.0 if zone=="head" else 10.0
 		if not check(is_equal_approx(victim.damage_taken-before,expected),"Wrong physical damage: "+zone):return
+		var numbers=field.combat_numbers
+		if not check(numbers.entries.size()==1,"Hit created duplicate physical numbers"):return
+		var entry:Dictionary=numbers.entries[0]
+		if not check(entry.label.text==("HEADSHOT 20" if zone=="head" else "10.0 physical"),"Wrong headshot/ordinary hit text"):return
+		if zone=="head":
+			if not check(entry.label.font_size==30 and entry.color==numbers.HEADSHOT_COLOR,"Headshot does not stand out like a critical hit"):return
+			numbers._process(0.6)
+			if not check(entry.label.modulate.r==entry.color.r and entry.label.modulate.a<1.0,"Headshot loses its color while fading"):return
 		if not check(victim.clip==Regions.reaction(zone),"Wrong head/body reaction clip: "+zone):return
 		if not check(victim.burn_damage==3.0 and victim.burn_time==4.0,"Head region changed Fire potency/duration"):return
 		victim.update_status(0.5)

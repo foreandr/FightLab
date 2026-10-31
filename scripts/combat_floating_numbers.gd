@@ -2,28 +2,31 @@ extends Node3D
 ## Experimental presentation only: values come from committed costs/actual hits.
 const LIFETIME:=1.4
 const MAX_LABELS:=32
+const HEADSHOT_COLOR:=Color("ffd36a")
 const COLORS={"stamina":Color("70d5a8"),"magicka":Color("71bfff"),"physical":Color("ff6969")}
 var entries:Array[Dictionary]=[]
 var serial:=0
 
-func show_amount(actor:Node3D,kind:String,amount:float) -> void:
+func show_amount(actor:Node3D,kind:String,amount:float,headshot:bool=false) -> void:
 	if not is_instance_valid(actor) or not COLORS.has(kind) or amount<=0.0001:return
+	headshot=headshot and kind=="physical"
+	var color:Color=HEADSHOT_COLOR if headshot else COLORS[kind]
 	while entries.size()>=MAX_LABELS:
 		entries.pop_front().label.queue_free()
 	var label:=Label3D.new()
 	label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test=true
-	label.font_size=24
+	label.font_size=30 if headshot else 24
 	label.pixel_size=0.0085
 	label.outline_size=5
-	label.modulate=COLORS[kind]
+	label.modulate=color
 	label.outline_modulate=Color("151b22")
-	label.text=("−" if kind!="physical" else "")+"%.1f %s"%[amount,kind]
+	label.text="HEADSHOT "+("%.1f"%amount).trim_suffix(".0") if headshot else (("−" if kind!="physical" else "")+"%.1f %s"%[amount,kind])
 	add_child(label)
 	var height:=0.65 if kind=="stamina" else (0.97 if kind=="magicka" else 0.8)
 	var offset:=Vector3((serial%3-1)*0.4,height,0)
 	serial+=1
-	var entry:Dictionary={"label":label,"actor":weakref(actor),"kind":kind,"amount":amount,"age":0.0,"offset":offset}
+	var entry:Dictionary={"label":label,"actor":weakref(actor),"kind":kind,"amount":amount,"headshot":headshot,"color":color,"age":0.0,"offset":offset}
 	entries.append(entry)
 	_place(entry)
 	set_process(true)
@@ -47,7 +50,7 @@ func _process(delta:float) -> void:
 			continue
 		_place(entry)
 		var alpha:=1.0-smoothstep(0.2,LIFETIME,float(entry.age))
-		entry.label.modulate=Color(COLORS[entry.kind],alpha)
+		entry.label.modulate=Color(entry.color,alpha)
 		entry.label.outline_modulate=Color(Color("151b22"),alpha)
 	if entries.is_empty():set_process(false)
 
