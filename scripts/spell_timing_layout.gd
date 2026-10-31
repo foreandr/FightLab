@@ -43,6 +43,14 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	headings["Spell timing"].add_theme_font_size_override("font_size",16)
 	b.release_slider.custom_minimum_size=Vector2(0,26)
 	b.release_slider.get_parent().reparent(casting)
+	var timeline:=preload("res://scripts/spell_cast_timeline.gd").new()
+	casting.add_child(timeline)
+	timeline.setup(b)
+	b.set_meta("cast_timeline",timeline)
+	b.set_meta("release_heading",headings["Spell timing"])
+	var hint:Label=b.editor.menu_label(casting,"Drag edge: duration · Drag Release: cast time",11)
+	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
+	b.set_meta("cast_timeline_hint",hint)
 	var power:=card(b,column,"Power balance")
 	b.power_balance_label.hide()
 	b.total_power_row.reparent(power)
@@ -66,6 +74,14 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	refresh_details(b)
 
 static func refresh_details(b:Node) -> void:
+	if b.has_meta("cast_timeline"):
+		b.get_meta("cast_timeline").visible=b.limiter_enabled
+		b.get_meta("cast_timeline_hint").visible=b.limiter_enabled
+		b.demo_duration_slider.get_parent().visible=not b.limiter_enabled
+		b.release_slider.get_parent().visible=not b.limiter_enabled
+		b.get_meta("release_heading").visible=not b.limiter_enabled
+		b.duration_endpoints.hide()
+		b.get_meta("cast_timeline").refresh()
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:
 		if is_instance_valid(label):label.hide()
 	if not is_instance_valid(b.demo_damage_label):return

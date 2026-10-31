@@ -231,6 +231,13 @@ Regression checks
   costs and collision rules retain their shared owners.
   tests/fire_shape_workspace_test.gd covers navigation, all 13 shapes, real
   hotkey casts, preserved projectiles, saved metadata and the compact RHS.
+  spell_cast_timeline.gd presents duration and release together as a clip with
+  an end handle and a movable release box. It writes the existing builder ranges,
+  preserving release limits, pricing, animation preview and persistence. Wheel
+  zooms time; focused handles support arrows and Shift for finer adjustments.
+  Limiter-off testing retains its independent sliders and numeric inputs.
+  tests/spell_cast_timeline_test.gd verifies stretch/release/keyboard edits,
+  shared timing calculations, apex limits and raw-mode zero duration.
 
   tests/shared_character_mechanics_test.gd
   tests/third_person_focus_test.gd
