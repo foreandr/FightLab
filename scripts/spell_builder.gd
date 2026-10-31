@@ -1843,8 +1843,10 @@ func _physics_process(delta:float) -> void:
   caster_move_axes=Vector2.ZERO
   caster_sprinting=false
   return
- var axes:=Locomotion.axes(movement_keys)
- var sprinting:bool=movement_keys.get(KEY_SHIFT,false)
+ move_caster(delta,Locomotion.axes(movement_keys),movement_keys.get(KEY_SHIFT,false))
+
+func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
+ # Scriptable locomotion entry point; live input/focus checks remain above.
  if (not axes.is_equal_approx(caster_move_axes) or sprinting!=caster_sprinting) and not playing:begin_demo_exit()
  caster_move_axes=axes
  caster_sprinting=sprinting
@@ -1852,7 +1854,8 @@ func _physics_process(delta:float) -> void:
  var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
  caster_moving=not direction.is_zero_approx()
  if caster_moving:
-  var speed:=7.0 if movement_keys.get(KEY_SHIFT,false) else 4.0
+  var speed:=7.0 if sprinting else 4.0
+  speed*=Movement.directional_speed(axes,sprinting)
   editor.field.move_character(caster,direction,speed*caster.movement_multiplier(),delta)
  else:editor.field.move_character(caster,Vector3.ZERO,0.0,delta)
  # Face from the resolved position, including near-target collision/sprint steps.

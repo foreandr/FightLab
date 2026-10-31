@@ -2,6 +2,14 @@ extends RefCounted
 ## Shared world-space movement and facing; modes supply input and animation poses.
 const TURN_SPEED:=14.0
 
+## Input uses positive Y forward. Interpolate by angle for analog controls.
+static func directional_speed(input:Vector2,sprinting:bool=false) -> float:
+	if input.is_zero_approx():return 1.0
+	var angle:=acos(clampf(input.normalized().y,-1.0,1.0))/(PI/4.0)
+	var rates:=[1.0,0.9,0.75,0.6,0.5] if sprinting else [1.0,0.9,0.8,0.7,0.6]
+	var index:=mini(int(angle),3)
+	return lerpf(rates[index],rates[index+1],angle-float(index))
+
 static func flat(direction:Vector3) -> Vector3:
 	direction.y=0.0
 	return direction.normalized()

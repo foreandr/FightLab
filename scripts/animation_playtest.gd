@@ -191,7 +191,9 @@ func physics(delta:float) -> void:
 		pad_sprint=Input.is_joy_button_pressed(pad,JOY_BUTTON_LEFT_STICK)
 	direction=direction.limit_length(1)
 	moving=direction.length()>0.01
-	var speed:=7.0 if held.get(KEY_SHIFT,false) or pad_sprint else 4.0
+	var sprinting:bool=held.get(KEY_SHIFT,false) or pad_sprint
+	var axes:=Vector2(direction.dot(right),direction.dot(forward))
+	var speed:float=(7.0 if sprinting else 4.0)*Movement.directional_speed(axes,sprinting)*unit.movement_multiplier()
 	var before:=unit.global_position
 	var next:=before+direction*speed*delta
 	next=editor.field.constrain_to_level(next,1.0)
@@ -217,7 +219,7 @@ func physics(delta:float) -> void:
 		editor.timeline_origin_position+=Vector3(movement.x,0,movement.z)
 	elif direction.length()>0.01:
 		var move_axes:=Vector2(direction.dot(right),direction.dot(forward)).limit_length(1.0)
-		Locomotion.pose(editor.actor,move_axes,elapsed,speed>4)
+		Locomotion.pose(editor.actor,move_axes,elapsed,sprinting)
 		editor._set_unit_pose_target(unit)
 	_update_camera()
 

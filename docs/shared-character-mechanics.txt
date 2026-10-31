@@ -112,6 +112,11 @@ scripts/character_aim_pose.gd
 scripts/character_movement.gd
   Camera-relative movement, flat direction, target-facing and root turning.
   Story, Create and Take Control keep their input adapters and use these rules.
+  directional_speed owns angle-based speed factors. Forward / forward diagonal /
+  side / backward diagonal / backward: walk 100/90/80/70/60 percent; sprint
+  100/90/75/60/50 percent of each controller's forward base speed. Analog angles
+  interpolate smoothly. Buffs still scale the result; diagonals are normalized.
+  Applies to ordinary controlled locomotion, not authored jumps/dashes/knockback.
 
 scripts/third_person_camera.gd
   Camera adoption, lock/release, yaw calculation, orbit, zoom and follow framing.

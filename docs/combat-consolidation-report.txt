@@ -161,3 +161,16 @@ Passed the actual UI toggle/cast/cancellation/damage integration test, visual
 inspection, fade/lifetime/cap/cleanup checks, normal 10/10/10 damage, interrupted
 cast accounting and multi-target projectile regression checks.
 Implementation: +95 / -1 lines. Tests: +79 / -0 lines.
+
+DIRECTIONAL LOCOMOTION SPEEDS (2026-10-31)
+
+Shared character_movement.directional_speed now owns ordinary controlled movement
+rates. Forward / forward diagonal / side / backward diagonal / backward use
+100/90/80/70/60 percent when walking and 100/90/75/60/50 percent when sprinting.
+Analog angles interpolate; existing speed boosts multiply these rates. Story,
+spell practice and Take Control use the same helper. Authored jump/dash and
+knockback velocities retain their existing behavior. Actual movement still drives
+the shared physical damage bonus. Spell practice exposes move_caster for scripts.
+Verified eight directional walk/sprint rates, analog angles, actual Story speeds,
+scripted spell-practice movement/poses and Take Control animation parity.
+Implementation: +21 / -5 lines.
