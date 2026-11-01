@@ -278,3 +278,5 @@ Regression checks
   tests/animation_playtest_camera_test.gd
   tests/spell_preview_mana_test.gd
   tests/spell_cast_hotkey_test.gd
+
+Cast eligibility: CombatRuntime.can_start_cast gates animation on the authored stamina cost (God Mode bypass). Mana is checked at release; a failed release displays Not enough mana above the actor while the animation continues and attempted stamina is charged. Resource notices are independent of the experimental number toggle.

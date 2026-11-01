@@ -1219,11 +1219,9 @@ func play_demo_preview() -> void:
  if cast_committed():return
  interrupt_preview_cast()
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
- var stamina_cost:=float(demo_physical_stats().stamina)
- if not editor.actor.practice_god_mode and stamina_cost>float(editor.actor.stamina)+0.0001:
+ if not editor.field.combat().can_start_cast(editor.actor,demo_preview_spec()):
   playing=false
   begin_demo_exit()
-  if not preview_repeating:editor._show_library_notice("Needs %.1f stamina · available %.1f"%[stamina_cost,float(editor.actor.stamina)])
   return
  if not demo_source_ready:
   if not editor._ensure_animation_source(casting_animation):return
@@ -1552,6 +1550,10 @@ func play_cast_preview() -> void:
  if not demo_source_ready:
   if not editor._ensure_animation_source(casting_animation):return
   demo_source_ready=true
+ if not editor.field.combat().can_start_cast(editor.actor,demo_preview_spec()):
+  playing=false
+  begin_demo_exit()
+  return
  reset_caster_pose()
  elapsed=0
  playing=true

@@ -23,14 +23,46 @@ func finish_cast(actor:CharacterBody3D) -> void:
 func _init(host:Node) -> void:
 	field=host
 
-func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:float,mode_owned:bool=true) -> void:
-	if cast_committed(actor):return
+func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:float,mode_owned:bool=true) -> bool:
+	if cast_committed(actor):return false
 	for key in cast_recoveries.keys():
 		if cast_recoveries[key].actor.get_ref()==null:cast_recoveries.erase(key)
 	interrupt_cast_attempt(actor)
+	if not can_start_cast(actor,spec):return false
 	for key in cast_attempts.keys():
 		if cast_attempts[key].actor.get_ref()==null:cast_attempts.erase(key)
 	cast_attempts[actor.get_instance_id()]={"actor":weakref(actor),"stamina":maxf(0.0,float(spec.get("stamina_cost",0.0))),"time_to_release":maxf(0.0,time_to_release),"elapsed":0.0,"mode_owned":mode_owned}
+
+	return true
+
+func resource_notice(actor:CharacterBody3D,message:String) -> void:
+	var label:=actor.get_node_or_null("CastResourceNotice") as Label3D
+	if label==null:
+		label=Label3D.new()
+		label.name="CastResourceNotice"
+		label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		label.no_depth_test=true
+		label.font_size=30
+		label.pixel_size=0.008
+		label.outline_size=6
+		actor.add_child(label)
+		label.position=Vector3(0,3.1,0)
+	label.text=message
+	label.modulate=Color("ffcf78")
+	label.visible=true
+	var serial:=int(label.get_meta("serial",0))+1
+	label.set_meta("serial",serial)
+	label.get_tree().create_timer(1.8).timeout.connect(func():
+		if is_instance_valid(label) and int(label.get_meta("serial",0))==serial:label.visible=false)
+	preload("res://scripts/combat_diagnostics.gd").event(field,"cast_resource_failure",{"actor":str(actor.name),"reason":message})
+
+func can_start_cast(actor:CharacterBody3D,spec:Dictionary) -> bool:
+	var required:=maxf(0.0,float(spec.get("stamina_cost",0.0)))
+	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement"):required=maxf(required,actor.flash_stamina_requirement())
+	if not actor.practice_god_mode and actor.stamina+0.0001<required:
+		resource_notice(actor,"Not enough stamina")
+		return false
+	return true
 
 func advance_cast_attempt(actor:CharacterBody3D,elapsed:float) -> void:
 	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
@@ -68,6 +100,9 @@ func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={})
 	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement") and not actor.practice_god_mode and actor.stamina<actor.flash_stamina_requirement():
 		interrupt_cast_attempt(actor)
 		return false
+	if not actor.practice_god_mode:
+		if actor.stamina+0.0001<float(spec.get("stamina_cost",0.0)):resource_notice(actor,"Not enough stamina")
+		elif actor.mana+0.0001<Rules.mana_cost(spec,actor.MAX_MANA,field.combat_defaults):resource_notice(actor,"Not enough mana")
 	var paid:bool=actor.spend_cast_resources(float(spec.get("stamina_cost",0.0)),Rules.mana_cost(spec,actor.MAX_MANA,field.combat_defaults))
 	if paid:cast_attempts.erase(actor.get_instance_id())
 	else:interrupt_cast_attempt(actor)

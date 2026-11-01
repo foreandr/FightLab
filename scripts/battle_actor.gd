@@ -384,12 +384,7 @@ func start_cast(air: bool) -> void:
 	if current_spell.effect=="burst" and stamina<flash_stamina_requirement():
 		start_recovery()
 		return
-	if mana < arena.mana_cost(current_spell):
-		set_close_combat(true)
-		mode = "air" if air else "idle"
-		mode_time = 0
-		mode_length = 0.08
-		return
+	if not arena.combat().can_start_cast(self,current_spell):return
 	if current_spell.effect!="burst":
 		tactics.attack(self,current_spell.id)
 	charge_goal = 0

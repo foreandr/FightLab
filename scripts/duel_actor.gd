@@ -175,15 +175,7 @@ func choose_spell(air: bool) -> Dictionary:
 func start_cast(air: bool) -> void:
 	arena.combat().interrupt_cast_attempt(self)
 	current_spell = choose_spell(air)
-	if mana < arena.mana_cost(current_spell):
-		# A cheap bolt is preferable to an unaffordable heavy cast.
-		current_spell = arena.SPELLS[5]
-		if mana < arena.mana_cost(current_spell):
-			set_close_combat(true)
-			mode = "air" if air else "idle"
-			mode_time = 0
-			mode_length = 0.08
-			return
+	if not arena.combat().can_start_cast(self,current_spell):return
 	mode = "cast"
 	mode_time = 0
 	cast_time = 0
