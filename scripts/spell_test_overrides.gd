@@ -7,7 +7,7 @@ func seed(spec:Dictionary,duration:float,release:float) -> void:
 func set_value(key:String,value:float) -> void:
 	if values.has(key) and is_finite(value):values[key]=maxf(0.0,value)
 func apply(spec:Dictionary) -> Dictionary:
-	var result:=spec.duplicate(true)
+	var result:=preload("res://scripts/combat_spec.gd").copy(spec)
 	result["unrestricted_preview"]=true
 	result["testing_only"]=true
 	result["mana"]=values.mana

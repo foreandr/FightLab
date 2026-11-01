@@ -34,6 +34,8 @@ var spell_kind:="Projectiles"
 var casting_animation:Dictionary={}
 var preview_preferences_path:="user://spell_preview_preferences.cfg"
 var demo_source_ready:=false
+var demo_source_cache:Dictionary={}
+var demo_sources_ready:=false
 var cast_attempt_actor:CharacterBody3D
 var committed_animation:Dictionary={}
 var committed_spec:Dictionary={}
@@ -1028,28 +1030,43 @@ func refresh_delivery_choices() -> void:
  for type in delivery_choices:
   delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==delivery_type else Color("382c1c"))
 
-func select_demo_choice(choice:String,save:=true) -> void:
- if not DEMO_ANIMATIONS.has(choice):return
- var source_name:String=str(DEMO_ANIMATIONS[choice].source).to_lower()
+func prepare_demo_sources() -> void:
+ if demo_sources_ready:return
+ demo_source_cache.clear()
  var candidates:Array[Dictionary]=[]
- if DEMO_ANIMATIONS[choice].has("profile"):candidates.append(DEMO_ANIMATIONS[choice].profile.duplicate(true))
+ # Collection lookup happens on workspace entry, never on each cast/click.
  for owned in editor.store_library.taken.values():
-  var owned_profile:Dictionary=owned.duplicate(true)
-  owned_profile["store_raw"]=true
-  candidates.append(owned_profile)
+  if DEMO_ANIMATIONS.values().any(func(choice:Dictionary):return str(choice.source).nocasecmp_to(str(owned.get("title","")))==0):
+   var profile:=preload("res://scripts/combat_spec.gd").copy(owned)
+   profile["store_raw"]=true
+   candidates.append(profile)
  for group in ["Motion","Attack"]:
   for folder in editor.category_store.names_for(group):candidates.append_array(editor.load_custom_motion(folder))
  candidates.append_array(preload("res://scripts/animation_catalog.gd").entries())
- for entry in candidates:
-  if str(entry.get("title","")).to_lower()==source_name:
-   var profile:Dictionary=entry.duplicate(true)
-   profile.title=str(DEMO_ANIMATIONS[choice].title)
-   profile["animation_type"]=str(DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))
-   profile["demo_choice"]=choice
-   profile["duration"]=demo_duration
-   if choose_demo_animation(profile,save) and is_visible_in_tree():play_demo_preview()
-   return
- GameDiagnostics.log_event("spell_demo_source_missing",{"choice":choice,"requested_source":source_name})
+ for choice in DEMO_ANIMATIONS:
+  if DEMO_ANIMATIONS[choice].has("profile"):
+   demo_source_cache[choice]=DEMO_ANIMATIONS[choice].profile.duplicate(true)
+   continue
+  for entry in candidates:
+   if str(entry.get("title","")).nocasecmp_to(str(DEMO_ANIMATIONS[choice].source))!=0:continue
+   var profile:=preload("res://scripts/combat_spec.gd").copy(entry)
+   if profile.has("provenance"):profile.provenance=Provenance.snapshot(profile.provenance)
+   demo_source_cache[choice]=profile
+   break
+ demo_sources_ready=true
+
+func select_demo_choice(choice:String,save:=true) -> void:
+ if not DEMO_ANIMATIONS.has(choice):return
+ prepare_demo_sources()
+ if demo_source_cache.has(choice):
+  var profile:=preload("res://scripts/combat_spec.gd").copy(demo_source_cache[choice])
+  profile.title=str(DEMO_ANIMATIONS[choice].title)
+  profile["animation_type"]=str(DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))
+  profile["demo_choice"]=choice
+  profile["duration"]=demo_duration
+  if choose_demo_animation(profile,save) and is_visible_in_tree():play_demo_preview()
+  return
+ GameDiagnostics.log_event("spell_demo_source_missing",{"choice":choice,"requested_source":DEMO_ANIMATIONS[choice].source})
  editor._show_library_notice("Demo animation not found in your folders: "+str(DEMO_ANIMATIONS[choice].source))
 
 func add_test_input(key:String,control:Control,suffix:String) -> void:
@@ -1334,7 +1351,7 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  var before:=capture_demo_pose()
  if is_instance_valid(editor.actor) and not editor._ensure_animation_source(entry):return false
  if not before.is_empty():blend_demo_pose(before,0.0)
- casting_animation=entry.duplicate(true)
+ casting_animation=preload("res://scripts/combat_spec.gd").copy(entry)
  var choice:=str(entry.get("demo_choice",""))
  if demo_animation_types.has(choice) and str(demo_animation_types[choice]) in CastType.TYPES:casting_animation["animation_type"]=demo_animation_types[choice]
  if is_instance_valid(demo_movement_control):demo_movement_control.set_value(CastType.kind(casting_animation))
@@ -1550,7 +1567,8 @@ func projectile_effect_spec(effect:String) -> Dictionary:
   spec=Rules.earth_spell(projectile_size,potency)
  spec["appearance"]=appearances.get(effect,{}).duplicate(true)
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
- spec["provenance"]=spell_provenance.duplicate(true)
+ if not spell_provenance.is_read_only():spell_provenance=Provenance.snapshot(spell_provenance)
+ spec["provenance"]=spell_provenance
  spec["animation_type"]=CastType.kind(casting_animation)
  spec["release"]=release_fraction
  spec["release_timing_multiplier"]=float(release_timing_stats().multiplier)
@@ -1629,8 +1647,8 @@ func launch_projectile() -> void:
   GameDiagnostics.log_event("spell_preview_insufficient_resources",{"mana_required":editor.field.mana_cost(spec),"mana_available":actor.mana,"stamina_required":spec.stamina_cost,"stamina_available":actor.stamina})
   return
  if cast_committed():
-  committed_animation=casting_animation.duplicate(true)
-  committed_spec=spec.duplicate(true)
+  committed_animation=preload("res://scripts/combat_spec.gd").copy(casting_animation)
+  committed_spec=preload("res://scripts/combat_spec.gd").copy(spec)
   committed_duration=cast_duration()
  var fired_damage:float=float(spec.get("damage",0))
  if spec.effect!="summon_earth" and not editor.field.shots.is_empty():fired_damage=float(editor.field.shots.back().spec.damage)
@@ -1869,6 +1887,9 @@ func _input(event:InputEvent) -> void:
   get_viewport().set_input_as_handled()
 
 func workspace_visibility_changed() -> void:
+ if is_visible_in_tree():
+  demo_sources_ready=false
+  prepare_demo_sources()
  if not is_visible_in_tree() and is_instance_valid(editor.actor):stop_preview_controls(true)
  third_person_ready=false
  if not is_visible_in_tree():
@@ -2177,7 +2198,7 @@ func save_draft() -> void:
  if signature!=spell_provenance_signature:
   var parents:Array=[]
   parents.append(spell_provenance if not spell_provenance.is_empty() else Provenance.source({"id":"fightlab_spell_"+element.to_lower(),"title":element+" spell"},"spell"))
-  spell_provenance=Provenance.derive(parents,"spell",element+" "+spell_kind,Provenance.creator_name(),"modified spell")
+  spell_provenance=Provenance.snapshot(Provenance.derive(parents,"spell",element+" "+spell_kind,Provenance.creator_name(),"modified spell"))
   spell_provenance_signature=signature
  cfg.set_value("credits","provenance",spell_provenance)
  cfg.set_value("credits","signature",spell_provenance_signature)
@@ -2202,7 +2223,7 @@ func load_draft() -> void:
  if draft_path.is_empty():return
  var cfg=ConfigFile.new()
  if cfg.load(draft_path)!=OK:return
- spell_provenance=cfg.get_value("credits","provenance",{}).duplicate(true)
+ spell_provenance=Provenance.snapshot(cfg.get_value("credits","provenance",{}))
  spell_provenance_signature=str(cfg.get_value("credits","signature",""))
  delivery_type=str(cfg.get_value("spell","delivery_type",""))
  projectile_initialized=bool(cfg.get_value("spell","projectile_initialized",false))

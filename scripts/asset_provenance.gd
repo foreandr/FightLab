@@ -40,3 +40,18 @@ static func inspect_text(metadata:Dictionary) -> String:
 		for citation in node.get("citations",[]):lines.append("Source: "+JSON.stringify(citation))
 		lines.append("")
 	return "\n".join(lines)
+
+## Freeze one revision once, keeping every citation and parent for live casts.
+static func snapshot(graph:Dictionary) -> Dictionary:
+	if graph.is_read_only():return graph
+	var result:=graph.duplicate(true)
+	_freeze(result)
+	return result
+
+static func _freeze(value:Variant) -> void:
+	if value is Dictionary:
+		for nested in value.values():_freeze(nested)
+		value.make_read_only()
+	elif value is Array:
+		for nested in value:_freeze(nested)
+		value.make_read_only()

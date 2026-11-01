@@ -1,0 +1,28 @@
+Cast-start performance investigation — 2026-11-01
+
+Measured on the current Radeon 610M machine, rendered Godot Compatibility build.
+Same scripted seven-demo sequence before/after. These are synchronous call times,
+not an FPS guarantee; render/GPU load and first-use asset/shader work are separate.
+
+Before (median across repeated calls, range across seven demos):
+- Selecting an existing demo: 410–517 ms.
+- Starting an already-selected cast: 32–52 ms.
+- Refreshing statistics: 64–80 ms.
+
+After:
+- Selecting an existing demo: 11–16 ms.
+- Starting an already-selected cast: 0.16–0.45 ms.
+- Refreshing statistics: 0.51–0.75 ms.
+
+Causes: full graph copies of a 335 KB spell draft's citation history during
+spec/stat construction and repeated scans/parses of custom-animation folders
+on every demo choice. Source poses themselves were not the primary stall.
+
+Changes: immutable provenance snapshots retain all revisions and citations;
+CombatSpec.copy shares those snapshots but deep-copies editable gameplay fields.
+The demo cache resolves sources on workspace entry, preserving owned/custom/base
+source precedence and refreshing when returning after editing the collection.
+No animation timing, movement policy, resource cost or balance formulas changed.
+
+Verification: 501-node citation graph/isolation test, actual rendered movement
+and type tests for all seven demos, and actual cast interruption/payment tests.

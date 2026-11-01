@@ -48,7 +48,7 @@ static func mana_cost(spec:Dictionary,capacity:float=100.0,defaults:Dictionary=B
 	return float(values.get(str(spec.get("effect","orb")),values.get("default",12.0)))*(1.0+float(spec.get("charge",0.0))*float(defaults.get("charge_mana",0.8)))
 
 static func motion(spec:Dictionary,defaults:Dictionary=BATTLE_DEFAULTS) -> Dictionary:
-	var resolved:=spec.duplicate(true)
+	var resolved:=preload("res://scripts/combat_spec.gd").copy(spec)
 	var presets:Dictionary=defaults.get("motion",{})
 	if not presets.is_empty():
 		var preset:Dictionary=presets.get(str(spec.get("effect","orb")),presets.default)
@@ -76,7 +76,7 @@ static func cast_timing_stats(duration:float,fraction:float) -> Dictionary:
 	return timing
 
 static func allocate(spec:Dictionary,mix:Dictionary,effect:String,total_power:float) -> Dictionary:
-	var result:=spec.duplicate(true)
+	var result:=preload("res://scripts/combat_spec.gd").copy(spec)
 	var shares:=Allocation.spend(mix,effect!="None",total_power)
 	result["projectile_radius"]=Projectile.MIN_RADIUS*pow(Projectile.MAX_RADIUS/Projectile.MIN_RADIUS,float(shares.size))
 	result["projectile_velocity"]=lerpf(Projectile.MIN_VELOCITY,Projectile.MAX_VELOCITY,float(shares.speed))
@@ -105,7 +105,7 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
-	var spec:=base.duplicate(true)
+	var spec:=preload("res://scripts/combat_spec.gd").copy(base)
 	spec["release"]=clampf(fraction,0.0,1.0)
 	var physical_stats:=physical(duration,offensive)
 	physical_stats.damage*=CastType.physical_multiplier(base)

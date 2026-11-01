@@ -12,7 +12,7 @@ static func melee_multiplier(movement:Vector3,_direction:Vector3,spec:Dictionary
 	return 1.0+horizontal_speed(movement)*MELEE_BONUS_PER_MPS
 
 static func projectile(spec:Dictionary,movement:Vector3,direction:Vector3,speed:float,damage:float) -> Dictionary:
-	var result:=spec.duplicate(true)
+	var result:=preload("res://scripts/combat_spec.gd").copy(spec)
 	if spec.get("movement_applied",false):
 		return {"spec":result,"velocity":direction.normalized()*float(spec.projectile_launch_speed),"speed":float(spec.projectile_launch_speed),"multiplier":float(spec.movement_damage_multiplier)}
 	var contribution:=0.0 if spec.get("unrestricted_preview",false) else horizontal_speed(movement)*PROJECTILE_TRANSFER

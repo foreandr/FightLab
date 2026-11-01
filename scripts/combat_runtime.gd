@@ -145,7 +145,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
 			if is_instance_valid(field.vfx):node.material_override=field.vfx.ribbon_materials[1 if spec.effect=="ice_beam" else actor.team]
 			node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			field.add_child(node)
-			field.channels.append({"node":node,"caster":actor,"age":0.0,"spec":spec.duplicate(true),"tick":0.0,"trail":0.0,"hit":false})
+			field.channels.append({"node":node,"caster":actor,"age":0.0,"spec":preload("res://scripts/combat_spec.gd").copy(spec),"tick":0.0,"trail":0.0,"hit":false})
 			field.combat_sound("ice",origin,0.5)
 		"nova":
 			var node:=MeshInstance3D.new()
@@ -154,7 +154,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
 			node.mesh=mesh
 			field.add_child(node)
 			node.position=actor.position+Vector3.UP*0.10
-			field.pulses.append({"node":node,"age":0.0,"trail":0.0,"caster":actor,"hit":false,"spec":spec.duplicate(true)})
+			field.pulses.append({"node":node,"age":0.0,"trail":0.0,"caster":actor,"hit":false,"spec":preload("res://scripts/combat_spec.gd").copy(spec)})
 		_:
 			if spec.effect=="ground" and actor.is_on_floor():origin=actor.position+Vector3.UP*0.30
 			spawn_projectile(actor,spec,origin)
