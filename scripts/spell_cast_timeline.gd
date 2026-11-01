@@ -7,6 +7,7 @@ var view_span:=2.0
 var dragging:=""
 var toolbar:HBoxContainer
 var drag_value:=0.0
+var last_playback_time:=-1.0
 
 func _get_minimum_size() -> Vector2:
 	return Vector2(0,(toolbar.get_combined_minimum_size().y if is_instance_valid(toolbar) else 26.0)+72.0)
@@ -53,6 +54,8 @@ func track_width() -> float:return maxf(1.0,size.x-28.0)
 func time_x(time:float) -> float:return 8.0+time/view_span*track_width()
 func ruler_y() -> float:return toolbar.size.y+25.0
 func lane_y() -> float:return ruler_y()+14.0
+func playback_time() -> float:return clampf(float(builder.elapsed),0.0,duration_value())
+func playback_position() -> Vector2:return Vector2(time_x(playback_time()),ruler_y())
 
 func fit_time() -> void:
 	view_span=maxf(0.2,duration_value()*1.25)
@@ -63,6 +66,11 @@ func zoom_time(factor:float) -> void:
 	refresh()
 
 func _process(delta:float) -> void:
+	if is_instance_valid(builder) and is_visible_in_tree():
+		var current_time:=playback_time()
+		if current_time!=last_playback_time:
+			last_playback_time=current_time
+			queue_redraw()
 	if dragging=="duration" and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and get_local_mouse_position().x>=size.x-20:
 		drag_value=clampf(drag_value+maxf(0.5,view_span*0.7)*delta,0.1,60.0)
 		builder.demo_duration_slider.value=drag_value
@@ -103,6 +111,8 @@ func _draw() -> void:
 		for minor in range(1,4):
 			var tick:=time_x(time+step_*minor/4.0)
 			if tick<right:draw_line(Vector2(tick,ruler-2),Vector2(tick,ruler+2),ink)
+	# Read the same clock that poses the character, including slow motion and restarts.
+	draw_circle(playback_position(),4.0,Color("d13b2f"),true,-1.0,true)
 	draw_rect(Rect2(8,lane,maxf(1,end-8),28),Color("f1e8d3"))
 	# Only the early-to-apex window accepts a release; recovery is blocked out.
 	var first_release:=time_x(duration_value()*float(builder.MIN_RELEASE_FRACTION))
