@@ -161,6 +161,11 @@ Experimental floating numbers
   once for the same full burn; standing in it does not refresh the timer each
   frame. Existing explicit burn_duration data can extend either duration later.
   Authoring stats, RHS readouts and execution use these shared rules.
+  Cleansing uses actor.cleanse_burn()/Burn.cleanse: clear the remaining duration,
+  partial tick clock and source. Already dealt ticks remain; no future burn damage
+  is prepaid or queued. Water and reset use the same call. Reapplication starts
+  a fresh half-second interval, with no fractional time carried from a cleansed
+  burn. The shared visual observes cleared burn state and fades out.
   tests/burn_behavior_test.gd covers actual collision, full totals, large/uneven
   steps, patch lifetime, walk-through ignition, continued burn after exit and amp.
   CombatWorld.set_combat_numbers(enabled) enables a per-world presentation layer.

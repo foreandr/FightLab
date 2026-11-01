@@ -141,7 +141,7 @@ func _physics_process(delta:float) -> void:
    fighter.update_status(delta)
    fighter.stun_time=maxf(0,fighter.stun_time-delta)
    if fighter.water_depth>1.1 and not fighter.ice_trapped: fighter.tick_swimming(delta)
-  if fighter.water_depth>0: fighter.burn_time=0
+  if fighter.water_depth>0:fighter.cleanse_burn()
   fighter.surface_slippery=false
   var foot:Vector3=fighter.global_position
   for patch in patches:

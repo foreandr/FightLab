@@ -285,9 +285,7 @@ func reset_fighter(location: Vector3) -> void:
 	flash_aura_time=0
 	collision_layer = 128 << team
 	get_child(0).set_deferred("disabled", false)
-	burn_time = 0
-	burn_clock=0
-	burn_source=null
+	cleanse_burn()
 	chill_time = 0
 	freeze_time = 0
 	freeze_immunity = 0
@@ -1488,6 +1486,9 @@ func _resolve_story_limb_strikes(delta: float) -> void:
 			story_strikes.erase(side)
 		else:
 			story_strikes[side] = strike
+
+func cleanse_burn() -> bool:
+	return Burn.cleanse(self)
 
 func update_status(delta: float) -> void:
 	tactics.tick(self,delta)
