@@ -2,7 +2,9 @@ extends RefCounted
 ## One burn definition for characters, ground ignition, authoring and previews.
 const DURATION:=5.0
 const TICK_INTERVAL:=0.5
-const TICK_DAMAGE:=1.0
+## Equal marginal damage to speed at a 1s body hit; see burn_balance_test.gd.
+const BASE_DPS:=0.782435129740519
+const TICK_DAMAGE:=BASE_DPS*TICK_INTERVAL
 static func dps(potency:float=1.0) -> float:return TICK_DAMAGE/TICK_INTERVAL*maxf(0.0,potency)
 static func cleanse(actor:CharacterBody3D) -> bool:
 	var active:bool=actor.burn_time>0.0

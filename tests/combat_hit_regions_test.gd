@@ -1,4 +1,5 @@
 extends SceneTree
+const Burn=preload("res://scripts/burn_rules.gd")
 const Regions=preload("res://scripts/combat_hit_regions.gd")
 const Pose=preload("res://scripts/spell_cast_motion.gd")
 func _initialize() -> void:call_deferred("run")
@@ -51,9 +52,9 @@ func run() -> void:
 			numbers._process(0.6)
 			if not check(entry.label.modulate.r==entry.color.r and entry.label.modulate.a<1.0,"Headshot loses its color while fading"):return
 		if not check(victim.clip==Regions.reaction(zone),"Wrong head/body reaction clip: "+zone):return
-		if not check(victim.burn_damage==2.0 and victim.burn_time==5.0,"Head region changed Fire potency/duration"):return
+		if not check(is_equal_approx(victim.burn_damage,2.0*Burn.TICK_DAMAGE) and victim.burn_time==5.0,"Head region changed Fire potency/duration"):return
 		victim.update_status(0.5)
-		if not check(is_equal_approx(victim.damage_taken-before-expected,2.0),"Burn tick received headshot multiplier"):return
+		if not check(is_equal_approx(victim.damage_taken-before-expected,2.0*Burn.TICK_DAMAGE),"Burn tick received headshot multiplier"):return
 		var flashed:=0
 		for record in overlays.outlines.values():
 			if not record.fill.visible:continue

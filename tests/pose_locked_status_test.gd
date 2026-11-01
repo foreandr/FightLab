@@ -1,4 +1,5 @@
 extends SceneTree
+const Burn=preload("res://scripts/burn_rules.gd")
 func _initialize() -> void:call_deferred("run")
 func run() -> void:
 	change_scene_to_file("res://scenes/combat_sandbox.tscn")
@@ -28,9 +29,9 @@ func run() -> void:
 	Engine.time_scale=1.0
 	assert(world.elapsed-start>=5.0)
 	assert(actor.burn_time==0.0 and dummy.burn_time==0.0,"Pose-locked burn did not expire")
-	assert(is_equal_approx(actor.damage_taken-caster_before,10.0) and is_equal_approx(dummy.damage_taken-dummy_before,10.0),"Status clock was skipped or double-stepped")
+	assert(is_equal_approx(actor.damage_taken-caster_before,10.0*Burn.TICK_DAMAGE) and is_equal_approx(dummy.damage_taken-dummy_before,10.0*Burn.TICK_DAMAGE),"Status clock was skipped or double-stepped")
 	assert(actor.stun_time==0 and actor.freeze_time==0 and actor.chill_time==0)
 	assert(not is_instance_valid(actor.burn_visual) and not is_instance_valid(dummy.burn_visual),"Expired burn visual remained")
 	assert(actor.editor_pose_locked,"Fix disabled editor pose ownership")
-	print("POSE-LOCKED STATUS PASSED: real Create caster and dummy expire after 5s, 10 damage each, no double ticks, visuals removed, other statuses expire and pose ownership retained")
+	print("POSE-LOCKED STATUS PASSED: real Create caster and dummy expire after 5s, ten calibrated ticks each, no double ticks, visuals removed, other statuses expire and pose ownership retained")
 	quit()

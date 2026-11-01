@@ -152,9 +152,11 @@ WORLD HOOKS
 
 Experimental floating numbers
 
-  Burn rules live in burn_rules.gd: 5 seconds, 0.5s tick interval, 1 base damage
-  per tick (10 total at potency 1). Potency/amplification scales damage, not the
-  default duration. Actor ticking consumes only remaining active time and catches
+  Burn rules live in burn_rules.gd: 5 seconds, 0.5s tick interval, ~0.3912 base damage
+  per tick (~0.7824 DPS / 3.9122 total at potency 1). This calibrates burn to the
+  same marginal damage per power point as projectile speed on a 1s body hit.
+  Potency/amplification scales damage, not the default duration.
+  Actor ticking consumes only remaining active time and catches
   up missed ticks, including the final tick, so frame size cannot change totals.
   Character projectile impacts apply body burn without spawning ground fire.
   Ground impacts leave a five-second fire patch. Each patch ignites a character

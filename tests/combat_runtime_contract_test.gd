@@ -1,4 +1,5 @@
 extends SceneTree
+const Burn=preload("res://scripts/burn_rules.gd")
 ## A new mode with no Create/Story scene inherits the actual combat pipeline.
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 const Pose=preload("res://scripts/spell_cast_motion.gd")
@@ -61,7 +62,7 @@ func run() -> void:
 	fire.projectile_element="Fire";fire.potency=2.0
 	world.story_mode=true
 	target.receive_status(actor,fire)
-	if not check(target.burn_time==5.0 and is_equal_approx(target.burn_damage,2.0),"Explicit elemental spells lost their effect in Story"):return
+	if not check(target.burn_time==5.0 and is_equal_approx(target.burn_damage,2.0*Burn.TICK_DAMAGE),"Explicit elemental spells lost their effect in Story"):return
 	world.story_mode=false
 	Pose.pose(actor,{"store_raw":true,"clip":"duel/run"},0.1)
 	var first:=Pose.capture(actor)

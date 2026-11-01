@@ -1,4 +1,5 @@
 extends SceneTree
+const Burn=preload("res://scripts/burn_rules.gd")
 func _initialize() -> void:call_deferred("run")
 func check(ok:bool,message:String) -> bool:
 	if ok:return true
@@ -65,7 +66,7 @@ func run() -> void:
 	editor.target.receive_status(actor,{"projectile_element":"Fire","potency":2.0})
 	field.round_active=true
 	editor.target.update_status(0.5)
-	if not check(numbers.entries.size()==4 and numbers.entries.back().kind=="burn" and numbers.entries.back().amount==2.0 and numbers.entries.back().label.text=="2.0 burn" and numbers.entries.back().color==numbers.COLORS.burn,"Actual burn tick is missing its red typed number"):return
+	if not check(numbers.entries.size()==4 and numbers.entries.back().kind=="burn" and is_equal_approx(numbers.entries.back().amount,2.0*Burn.TICK_DAMAGE) and numbers.entries.back().label.text=="%.1f burn"%(2.0*Burn.TICK_DAMAGE) and numbers.entries.back().color==numbers.COLORS.burn,"Actual burn tick is missing its red typed number"):return
 	var initial_y:float=numbers.entries[0].label.global_position.y
 	numbers._process(0.6)
 	if not check(numbers.entries[0].label.global_position.y>initial_y and numbers.entries[0].label.modulate.a<1 and numbers.entries[0].label.modulate.a>0,"Numbers do not float and fade"):return

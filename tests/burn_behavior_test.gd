@@ -19,16 +19,16 @@ func run() -> void:
 	for i in 100:
 		world.step_shots(1.0/60.0)
 		if world.shots.is_empty():break
-	assert(world.shots.is_empty() and victim.burn_time==Burn.DURATION and victim.burn_damage==1.0)
+	assert(world.shots.is_empty() and victim.burn_time==Burn.DURATION and is_equal_approx(victim.burn_damage,Burn.TICK_DAMAGE))
 	assert(world.spell_environment.patches.is_empty(),"Character impact created ground fire")
 	var before:float=victim.damage_taken
 	world.events.clear()
 	# Oversized and uneven updates must still produce exactly ten ticks.
 	for delta in [0.21,0.29,1.25,1.25,4.0]:victim.update_status(delta)
-	assert(is_equal_approx(victim.damage_taken-before,10.0) and victim.burn_time==0.0)
+	assert(is_equal_approx(victim.damage_taken-before,10.0*Burn.TICK_DAMAGE) and victim.burn_time==0.0)
 	assert(world.events.filter(func(event):return event.event=="burn_tick").size()==10)
 	victim.update_status(2.0)
-	assert(is_equal_approx(victim.damage_taken-before,10.0))
+	assert(is_equal_approx(victim.damage_taken-before,10.0*Burn.TICK_DAMAGE))
 	victim.reset_fighter(Vector3(2,0,3));victim.practice_god_mode=true
 	var env=world.spell_environment
 	var point:=Vector3(0,0,3)
@@ -41,7 +41,7 @@ func run() -> void:
 	before=victim.damage_taken
 	var applications:int=victim.burns_applied
 	env._physics_process(0.1)
-	assert(victim.burn_time==5.0 and victim.burn_damage==1.0)
+	assert(victim.burn_time==5.0 and is_equal_approx(victim.burn_damage,Burn.TICK_DAMAGE))
 	for i in 25:
 		victim.update_status(0.1)
 		env._physics_process(0.1)
@@ -50,26 +50,26 @@ func run() -> void:
 	for i in 35:
 		victim.update_status(0.1)
 		env._physics_process(0.1)
-	assert(is_equal_approx(victim.damage_taken-before,10.0) and victim.burn_time==0.0)
+	assert(is_equal_approx(victim.damage_taken-before,10.0*Burn.TICK_DAMAGE) and victim.burn_time==0.0)
 	assert(env.patches.is_empty(),"Default floor fire outlasted five seconds")
 	Burn.apply(victim,source,2.0)
 	before=victim.damage_taken
 	victim.update_status(5.1)
-	assert(is_equal_approx(victim.damage_taken-before,20.0),"Amplification did not scale burn")
+	assert(is_equal_approx(victim.damage_taken-before,20.0*Burn.TICK_DAMAGE),"Amplification did not scale burn")
 	Burn.apply(victim,source)
 	before=victim.damage_taken
 	victim.update_status(2.3)
-	assert(is_equal_approx(victim.damage_taken-before,4.0))
+	assert(is_equal_approx(victim.damage_taken-before,4.0*Burn.TICK_DAMAGE))
 	assert(victim.cleanse_burn())
 	assert(victim.burn_time==0.0 and victim.burn_clock==0.0 and victim.burn_source==null)
 	victim.update_status(10.0)
-	assert(is_equal_approx(victim.damage_taken-before,4.0),"Cleansed burn dealt future damage")
+	assert(is_equal_approx(victim.damage_taken-before,4.0*Burn.TICK_DAMAGE),"Cleansed burn dealt future damage")
 	assert(not victim.cleanse_burn())
 	Burn.apply(victim,source)
 	victim.update_status(0.2)
-	assert(is_equal_approx(victim.damage_taken-before,4.0),"New burn inherited old partial tick")
+	assert(is_equal_approx(victim.damage_taken-before,4.0*Burn.TICK_DAMAGE),"New burn inherited old partial tick")
 	victim.update_status(0.3)
-	assert(is_equal_approx(victim.damage_taken-before,5.0))
+	assert(is_equal_approx(victim.damage_taken-before,5.0*Burn.TICK_DAMAGE))
 	env.add_water(0.4,victim.global_position)
 	env._physics_process(0.1)
 	assert(victim.burn_time==0.0 and victim.burn_clock==0.0 and victim.burn_source==null,"Water bypassed the shared cleanse")
