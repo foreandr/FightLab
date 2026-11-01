@@ -93,13 +93,7 @@ static func refresh_details(b:Node) -> void:
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:
 		if is_instance_valid(label):label.hide()
 	if not is_instance_valid(b.demo_damage_label):return
-	if b.limiter_enabled:
-		b.demo_mana_cost_label.tooltip_text=b.demo_mana_base_label.text
-		b.demo_stamina_label.tooltip_text=b.demo_stamina_note.text
-		b.demo_damage_label.tooltip_text=b.demo_damage_breakdown.text+"\nHeadshots double physical damage. Burn is separate."
-		b.demo_amplifier_label.tooltip_text=b.demo_amp_breakdown.text
-	else:
-		for label in [b.demo_mana_cost_label,b.demo_stamina_label,b.demo_damage_label,b.demo_amplifier_label]:label.tooltip_text="Independent testing value · Limiter off"
+	preload("res://scripts/spell_stat_tooltips.gd").refresh(b)
 
 static func update_ragdoll(b:Node,damage:float) -> void:
 	var text:=preload("res://scripts/combat_defense_rules.gd").prediction(damage)
