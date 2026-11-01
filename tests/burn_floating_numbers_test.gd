@@ -18,7 +18,7 @@ func run() -> void:
 	assert(numbers.entries.size()==1)
 	var tick:Dictionary=numbers.entries.back()
 	assert(tick.kind=="burn" and tick.amount==3.0 and tick.actor.get_ref()==victim)
-	assert(tick.label.text=="3.0 burn" and tick.color==numbers.COLORS.physical and not tick.headshot)
+	assert(tick.label.text=="3.0 burn" and tick.color==numbers.COLORS.burn and not tick.headshot)
 	assert(is_equal_approx(before-victim.health,tick.amount) and attacker.damage_dealt==3.0)
 	victim.practice_god_mode=true
 	before=victim.health

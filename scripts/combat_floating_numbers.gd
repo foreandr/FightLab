@@ -3,7 +3,7 @@ extends Node3D
 const LIFETIME:=1.4
 const MAX_LABELS:=32
 const HEADSHOT_COLOR:=Color("ffd36a")
-const COLORS={"stamina":Color("70d5a8"),"magicka":Color("71bfff"),"physical":Color("ff6969"),"burn":Color("ff6969")}
+const COLORS={"stamina":Color("70d5a8"),"magicka":Color("71bfff"),"physical":Color("ff6969"),"burn":Color("ff3030")}
 var entries:Array[Dictionary]=[]
 var serial:=0
 
