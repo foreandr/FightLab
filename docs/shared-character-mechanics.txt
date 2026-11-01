@@ -182,13 +182,17 @@ scripts/character_movement.gd
   100/90/75/60/50 percent of each controller's forward base speed. Analog angles
   interpolate smoothly. Buffs still scale the result; diagonals are normalized.
   Applies to ordinary controlled locomotion, not authored jumps/dashes/knockback.
+  gait_speed shares stamina tiers: below 40 no sprint; below 10 forced walking
+  at half the controller's normal run pace, with a walking pose. Existing speed
+  buffs still apply. God Mode bypasses these limits.
 
 scripts/character_exertion.gd
   actor.use_sprint(delta, requested, moving) is the common sprint cost/gating API.
   Create, Take Control (keyboard/gamepad) and Story spend 12 stamina per second,
   with a 0.4-second recovery delay. Idle recovery cannot cancel ongoing drain.
   Stationary Shift is free; walking retains ordinary recovery. God Mode bypasses
-  cost. Exhaustion falls back to walking and requires releasing sprint before
+  cost and gait limits. Sprint drain stops at 40 stamina; reaching the threshold
+  falls back to running (walking below 10) and requires releasing sprint before
   trying again after recovery, avoiding alternating walk/sprint every few frames.
   Continuous drain updates resource bookkeeping without spawning per-frame cost
   labels. Reset clears exhaustion. New movement controllers should call this API.

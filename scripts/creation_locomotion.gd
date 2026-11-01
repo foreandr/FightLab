@@ -9,17 +9,18 @@ static func axes(held:Dictionary) -> Vector2:
 static func direction(input:Vector2,forward:Vector3) -> Vector3:
 	return Movement.direction_from_forward(input,forward)
 
-static func clips(input:Vector2,sprinting:bool) -> Array[String]:
+static func clips(input:Vector2,sprinting:bool,walking:bool=false) -> Array[String]:
 	var result:Array[String]=[]
-	if absf(input.y)>0.001:result.append(("duel/run" if sprinting else "ual1/Jog_Fwd") if input.y>0.0 else "duel/walk_back")
+	if absf(input.y)>0.001:result.append(("duel/walk_forward" if walking else ("duel/run" if sprinting else "ual1/Jog_Fwd")) if input.y>0.0 else "duel/walk_back")
 	if absf(input.x)>0.001:result.append("duel/strafe_left" if input.x<0.0 else "duel/strafe_right")
 	return result
 
 static func pose(actor:Node,input:Vector2,time:float,sprinting:bool) -> void:
-	var choices:=clips(input,sprinting)
+	var walking:=Movement.walking_only(actor)
+	var choices:=clips(input,sprinting,walking)
 	if choices.is_empty():return
 	var first:Array[Transform3D]=[]
-	var rate:=1.75 if sprinting else 1.0
+	var rate:=0.6 if walking else (1.75 if sprinting else 1.0)
 	for index in choices.size():
 		var clip:String=choices[index]
 		var length:float=actor.player.get_animation(clip).length

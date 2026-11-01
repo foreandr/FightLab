@@ -32,14 +32,15 @@ func run() -> void:
 	if not check(actor.stamina==100 and not b.caster_sprinting,"Stationary Shift drains stamina or uses sprint pose"):return
 	actor.stamina=1
 	b.move_caster(0.1,Vector2(0,1),true)
-	if not check(actor.stamina==0 and actor.sprint_exhausted and not b.caster_sprinting,"Exhaustion does not fall back to walking"):return
+	if not check(actor.stamina==1 and actor.sprint_exhausted and not b.caster_sprinting,"Low stamina did not refuse sprint without charging"):return
 	b.process_demo_preview(1.0)
 	var recovered:float=actor.stamina
 	b.move_caster(0.1,Vector2(0,1),true)
 	if not check(actor.stamina==recovered and not b.caster_sprinting,"Held Shift jitters back into sprint after exhaustion"):return
 	b.move_caster(0.1,Vector2.ZERO,false)
+	actor.stamina=42.0
 	b.move_caster(0.1,Vector2(0,1),true)
-	if not check(b.caster_sprinting and actor.stamina<recovered,"Releasing/repressing sprint cannot resume after recovery"):return
+	if not check(b.caster_sprinting and actor.stamina<42.0,"Releasing/repressing sprint cannot resume above 40"):return
 	actor.practice_god_mode=true;actor.stamina=100
 	before=actor.stamina_spent
 	b.move_caster(1.0,Vector2(0,1),true)

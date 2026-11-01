@@ -1,6 +1,18 @@
 extends RefCounted
 ## Shared world-space movement and facing; modes supply input and animation poses.
 const TURN_SPEED:=14.0
+const Exertion=preload("res://scripts/character_exertion.gd")
+
+static func walking_only(actor:Node) -> bool:return Exertion.walking_only(actor)
+
+static func gait_speed(actor:Node,sprinting:bool,run_speed:float,sprint_speed:float) -> float:
+	if walking_only(actor):return run_speed*0.5
+	return sprint_speed if sprinting and Exertion.can_sprint(actor) else run_speed
+
+static func walking_velocity(actor:Node,desired:Vector3,run_speed:float) -> Vector3:
+	if walking_only(actor) and actor.mode in ["idle","run","chase","strafe","retreat","approach","block_recoil"]:
+		return desired.limit_length(run_speed*0.5)
+	return desired
 
 ## Input uses positive Y forward. Interpolate by angle for analog controls.
 static func directional_speed(input:Vector2,sprinting:bool=false) -> float:

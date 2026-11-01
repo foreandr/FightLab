@@ -2005,7 +2005,7 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
  caster_moving=not direction.is_zero_approx()
  if caster_moving:
-  var speed:=7.0 if sprinting else 4.0
+  var speed:=Movement.gait_speed(caster,sprinting,4.0,7.0)
   speed*=Movement.directional_speed(axes,sprinting)
   editor.field.move_character(caster,direction,speed*caster.movement_multiplier(),delta)
  else:editor.field.move_character(caster,Vector3.ZERO,0.0,delta)

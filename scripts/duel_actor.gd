@@ -479,7 +479,7 @@ func recover_guard(delta:float) -> void:
 		guard_energy=minf(MAX_GUARD,guard_energy+delta*RESOURCE_RECOVERY_RATE)
 
 func _player_sprint_active() -> bool:
-	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and stamina>0 and not sprint_exhausted
+	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and preload("res://scripts/character_exertion.gd").can_sprint(self)
 
 func shield_active() -> bool:
 	if arena.story_mode and player_controlled and story_block_held:
@@ -595,7 +595,7 @@ func tick(delta: float) -> void:
 	elif mode == "block_recoil":
 		if rival!=null:face_rival(delta)
 		if player_controlled:
-			desired=_player_move_direction()*(8.2 if _player_sprint_active() else 4.8)
+			desired=_player_move_direction()*Movement.gait_speed(self,_player_sprint_active(),4.8,8.2)
 		if mode_time>=mode_length:
 			mode="run" if player_controlled and not desired.is_zero_approx() else "idle"
 			mode_time=0.0
@@ -647,7 +647,7 @@ func tick(delta: float) -> void:
 			mode_length = 0.08
 	elif mode == "run":
 		if player_controlled:
-			desired = _player_move_direction() * (8.2 if _player_sprint_active() else 4.8)
+			desired = _player_move_direction() * Movement.gait_speed(self,_player_sprint_active(),4.8,8.2)
 			if desired.is_zero_approx():
 				mode = "idle"
 				mode_time = 0
@@ -665,7 +665,7 @@ func tick(delta: float) -> void:
 				mode_length = 0.06
 	elif mode == "idle":
 		if player_controlled:
-			desired = _player_move_direction() * (8.2 if _player_sprint_active() else 4.8)
+			desired = _player_move_direction() * Movement.gait_speed(self,_player_sprint_active(),4.8,8.2)
 			if not desired.is_zero_approx():
 				mode = "run"
 				mode_time = 0
@@ -717,7 +717,10 @@ func tick(delta: float) -> void:
 			else:
 				direction_clip="duel/strafe_left";direction_name="left";strafe_side="left"
 			if absf(local_motion.z)<0.2:direction_name="right" if local_motion.x>0 else "left"
-			if not player_controlled:direction_clip="duel/run"
+			if Movement.walking_only(self):
+				if direction_name.begins_with("forward"):direction_clip="duel/walk_forward"
+				animation_speed=0.8
+			if not player_controlled:direction_clip="duel/walk_forward" if Movement.walking_only(self) else "duel/run"
 			play(direction_clip,animation_speed)
 			if player_controlled and arena.story_mode:
 				if has_method("update_story_strafe_hands"):call("update_story_strafe_hands",strafe_side)
@@ -731,6 +734,7 @@ func tick(delta: float) -> void:
 		if desired.dot(inward)<0:desired=desired.slide(inward.normalized())
 		desired+=inward.normalized()*minf(3.0,inward.length()*2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
+	desired = Movement.walking_velocity(self,desired,4.8)
 	desired = locomotion_velocity(desired)*clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
 	if player_controlled and mode in ["idle","run","block_recoil"] and is_on_floor():
 		var axes:=_player_move_axes()
