@@ -2011,9 +2011,9 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
   speed*=Movement.directional_speed(axes,sprinting)
   editor.field.move_character(caster,direction,speed*caster.movement_multiplier(),delta)
  else:editor.field.move_character(caster,Vector3.ZERO,0.0,delta)
+ # Demo playback never owns movement or facing, including knee animations.
  # Face from the resolved position, including near-target collision/sprint steps.
- if not playing or is_instance_valid(spell_focus_target):
-  Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
+ Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
 
 func update_training_dummy(_delta:float) -> void:
  refresh_dummy_controls()
