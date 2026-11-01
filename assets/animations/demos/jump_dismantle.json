@@ -1,0 +1,820 @@
+{
+	"author": "foreandr",
+	"operation": "Baked original saved JUMP DISMANTLE timeline at 60 Hz for spell demo; includes jump elevation; sources and credits retained.",
+	"source_timeline": {
+		"category": "AIR COMBAT",
+		"clips": [
+			{
+				"attack_bone": "",
+				"category": "Jump",
+				"clip": "duel/air",
+				"duration": 1.5,
+				"effort": 85.0,
+				"frame_count": 10,
+				"frames": [
+					{
+						"Head": "(0.0, 0.0, 0.0)",
+						"calf_l": "(0.0, 0.0, 0.0)",
+						"calf_r": "(0.0, 0.0, 0.0)",
+						"foot_l": "(0.0, 0.0, 0.0)",
+						"foot_r": "(0.0, 0.0, 0.0)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(0.0, 0.0, 0.0)",
+						"lowerarm_r": "(0.0, 0.0, 0.0)",
+						"neck_01": "(0.0, 0.0, 0.0)",
+						"pelvis": "(0.0, 0.0, 0.0)",
+						"pelvis_offset": "(0.0, 0.0, 0.0)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(0.0, 0.0, 0.0)",
+						"spine_03": "(0.0, 0.0, 0.0)",
+						"thigh_l": "(0.0, 0.0, 0.0)",
+						"thigh_r": "(0.0, 0.0, 0.0)",
+						"upperarm_l": "(0.0, 0.0, 0.0)",
+						"upperarm_r": "(0.0, 0.0, 0.0)"
+					},
+					{
+						"Head": "(0.0, 0.0, 0.0)",
+						"calf_l": "(0.0, 0.0, 0.0)",
+						"calf_r": "(0.0, 0.0, 0.0)",
+						"foot_l": "(0.0, 0.0, 0.0)",
+						"foot_r": "(0.0, 0.0, 0.0)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(0.0, 0.0, 0.0)",
+						"lowerarm_r": "(0.0, 0.0, 0.0)",
+						"neck_01": "(0.0, 0.0, 0.0)",
+						"pelvis": "(0.0, 0.0, 0.0)",
+						"pelvis_offset": "(0.0, 0.0, 0.0)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(0.0, 0.0, 0.0)",
+						"spine_03": "(0.0, 0.0, 0.0)",
+						"thigh_l": "(0.0, 0.0, 0.0)",
+						"thigh_r": "(0.0, 0.0, 0.0)",
+						"upperarm_l": "(0.0, 0.0, 0.0)",
+						"upperarm_r": "(0.0, 0.0, 0.0)"
+					},
+					{
+						"Head": "(9.236021, -0.940205, 4.852575)",
+						"calf_l": "(-70.35173, -2.129473, 21.44637)",
+						"calf_r": "(-47.53862, 143.5123, -163.6219)",
+						"foot_l": "(-8.301105, -25.2398, -19.06307)",
+						"foot_r": "(9.487051, 6.552942, -4.117626)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(23.45537, 42.56382, -47.66998)",
+						"lowerarm_r": "(49.28382, -9.259709, 31.71603)",
+						"neck_01": "(26.01052, -5.497883, -3.52594)",
+						"pelvis": "(9.763688, 4.787845, 2.346959)",
+						"pelvis_offset": "(0.012542, 0.0, -0.007797)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(-34.73178, -2.184453, 2.340319)",
+						"spine_03": "(-35.71262, 2.789716, 4.514875)",
+						"thigh_l": "(24.0441, 7.215969, 38.9402)",
+						"thigh_r": "(68.93792, -58.02095, -62.9634)",
+						"upperarm_l": "(-4.698684, -2.967368, 1.715158)",
+						"upperarm_r": "(-39.47025, 10.6716, 4.413866)"
+					},
+					{
+						"Head": "(8.610941, -1.480518, 4.522014)",
+						"calf_l": "(-69.86377, -1.831899, 18.62585)",
+						"calf_r": "(-48.48011, 142.172, -162.2593)",
+						"foot_l": "(-7.351478, -24.78004, -18.03683)",
+						"foot_r": "(9.647381, 6.826785, -3.887382)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(23.1118, 42.35191, -47.88355)",
+						"lowerarm_r": "(48.20533, -8.398121, 31.91664)",
+						"neck_01": "(25.56943, -5.963574, -3.988085)",
+						"pelvis": "(9.510695, 4.642751, 1.868448)",
+						"pelvis_offset": "(0.011414, 0.0, -0.00752)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(-34.21003, -2.211325, 3.169619)",
+						"spine_03": "(-35.302, 3.016147, 4.791116)",
+						"thigh_l": "(22.96731, 6.398337, 38.41609)",
+						"thigh_r": "(68.47337, -55.54703, -60.53086)",
+						"upperarm_l": "(-4.4736, -2.648911, 1.072941)",
+						"upperarm_r": "(-39.99402, 11.43914, 3.367852)"
+					},
+					{
+						"Head": "(7.785674, -2.014981, 4.200762)",
+						"calf_l": "(-69.37922, -1.49609, 15.29867)",
+						"calf_r": "(-49.02848, 140.5333, -160.9486)",
+						"foot_l": "(-6.297248, -24.27859, -16.82131)",
+						"foot_r": "(9.636144, 7.163603, -3.487839)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(22.61012, 42.10572, -48.28591)",
+						"lowerarm_r": "(46.63731, -7.664275, 32.18542)",
+						"neck_01": "(25.11935, -6.422855, -4.451748)",
+						"pelvis": "(9.096924, 4.397099, 1.091802)",
+						"pelvis_offset": "(0.009254, 0.0, -0.007019)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(-33.60922, -2.286812, 4.255383)",
+						"spine_03": "(-34.89979, 3.215162, 5.033892)",
+						"thigh_l": "(21.8029, 5.541567, 37.69889)",
+						"thigh_r": "(68.13602, -55.07698, -60.24202)",
+						"upperarm_l": "(-4.672204, -2.526894, 0.34291)",
+						"upperarm_r": "(-40.58316, 12.36638, 2.107052)"
+					},
+					{
+						"Head": "(6.841349, -2.494617, 3.92288)",
+						"calf_l": "(-68.9258, -1.166026, 11.87079)",
+						"calf_r": "(-49.04945, 138.9816, -160.0262)",
+						"foot_l": "(-5.26422, -23.78138, -15.5493)",
+						"foot_r": "(9.498978, 7.524387, -2.970286)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(22.01213, 41.84887, -48.80546)",
+						"lowerarm_r": "(44.94147, -7.115951, 32.4484)",
+						"neck_01": "(24.69777, -6.838787, -4.879298)",
+						"pelvis": "(8.588806, 4.081608, 0.149372)",
+						"pelvis_offset": "(0.006546, 0.0, -0.006467)",
+						"spine_01": "(-0.000001, 0.0, 0.0)",
+						"spine_02": "(-32.98935, -2.389126, 5.461201)",
+						"spine_03": "(-34.54102, 3.368337, 5.220821)",
+						"thigh_l": "(20.6825, 4.749039, 36.89766)",
+						"thigh_r": "(68.02142, -56.72231, -62.17654)",
+						"upperarm_l": "(-5.230836, -2.574453, -0.425257)",
+						"upperarm_r": "(-41.1468, 13.35731, 0.753593)"
+					},
+					{
+						"Head": "(5.879871, -2.916785, 3.688713)",
+						"calf_l": "(-68.55, -0.86626, 8.66421)",
+						"calf_r": "(-48.49155, 137.6985, -159.6841)",
+						"foot_l": "(-4.354084, -23.35249, -14.31112)",
+						"foot_r": "(9.258315, 7.896205, -2.354874)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(21.37656, 41.60559, -49.38432)",
+						"lowerarm_r": "(43.46286, -6.791899, 32.6691)",
+						"neck_01": "(24.34412, -7.177341, -5.233124)",
+						"pelvis": "(8.04278, 3.718498, -0.85074)",
+						"pelvis_offset": "(0.003703, 0.0, -0.005929)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(-32.40852, -2.500307, 6.656829)",
+						"spine_03": "(-34.25816, 3.469097, 5.338055)",
+						"thigh_l": "(19.72822, 4.104134, 36.07572)",
+						"thigh_r": "(68.11266, -60.45438, -66.25814)",
+						"upperarm_l": "(-6.019468, -2.738189, -1.164631)",
+						"upperarm_r": "(-41.60998, 14.30584, -0.557636)"
+					},
+					{
+						"Head": "(4.953975, -3.197399, 3.551838)",
+						"calf_l": "(-68.31149, -0.621962, 5.980418)",
+						"calf_r": "(-47.68601, 136.5676, -159.6438)",
+						"foot_l": "(-3.644559, -23.05113, -13.21685)",
+						"foot_r": "(8.984872, 8.256929, -1.690682)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(20.75981, 41.3926, -49.96415)",
+						"lowerarm_r": "(42.57331, -6.720163, 32.81968)",
+						"neck_01": "(24.10182, -7.40407, -5.473174)",
+						"pelvis": "(7.519771, 3.325281, -1.80132)",
+						"pelvis_offset": "(0.000932, 0.0, -0.005438)",
+						"spine_01": "(0.0, 0.0, 0.0)",
+						"spine_02": "(-31.93449, -2.611362, 7.711225)",
+						"spine_03": "(-34.07666, 3.514063, 5.373755)",
+						"thigh_l": "(19.0467, 3.666112, 35.35069)",
+						"thigh_r": "(68.21816, -64.99257, -71.12362)",
+						"upperarm_l": "(-6.929461, -2.981925, -1.805958)",
+						"upperarm_r": "(-41.90545, 15.08558, -1.665714)"
+					},
+					{
+						"Head": "(4.153528, -3.316651, 3.518287)",
+						"calf_l": "(-68.27114, -0.452276, 4.064145)",
+						"calf_r": "(-46.79243, 135.6106, -159.8055)",
+						"foot_l": "(-3.190457, -22.9318, -12.36005)",
+						"foot_r": "(8.713831, 8.572259, -1.007876)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(20.2284, 41.23684, -50.49697)",
+						"lowerarm_r": "(42.48735, -6.908239, 32.8841)",
+						"neck_01": "(24.05758, -7.444984, -5.516743)",
+						"pelvis": "(7.082933, 2.918378, -2.601027)",
+						"pelvis_offset": "(-0.001432, 0.0, -0.005096)",
+						"spine_01": "(-0.000001, 0.0, 0.0)",
+						"spine_02": "(-31.62775, -2.71564, 8.502429)",
+						"spine_03": "(-34.03837, 3.490971, 5.302598)",
+						"thigh_l": "(18.71918, 3.470308, 34.83488)",
+						"thigh_r": "(68.24957, -69.60374, -76.01261)",
+						"upperarm_l": "(-7.843718, -3.269308, -2.286568)",
+						"upperarm_r": "(-41.98167, 15.57734, -2.419721)"
+					},
+					{
+						"Head": "(3.589198, -3.187738, 3.632131)",
+						"calf_l": "(-68.49766, -0.378053, 3.185253)",
+						"calf_r": "(-45.90245, 134.9383, -160.1616)",
+						"foot_l": "(-3.058057, -23.05627, -11.8433)",
+						"foot_r": "(8.493236, 8.8082, -0.357828)",
+						"hands": {
+							"l": {
+								"absolute": 0.0,
+								"index": 100.0,
+								"middle": 100.0,
+								"palm_up": 0.0,
+								"pinky": 100.0,
+								"ring": 100.0,
+								"straight": 0.0,
+								"thumb": 100.0
+							},
+							"r": {
+								"absolute": 0.0,
+								"index": 0.0,
+								"middle": 0.0,
+								"palm_up": 0.0,
+								"pinky": 0.0,
+								"ring": 0.0,
+								"straight": 0.0,
+								"thumb": 0.0
+							}
+						},
+						"lowerarm_l": "(19.85628, 41.17337, -50.94596)",
+						"lowerarm_r": "(42.78792, -7.394895, 32.94722)",
+						"neck_01": "(24.121, -7.386276, -5.45422)",
+						"pelvis": "(6.800098, 2.510172, -3.150494)",
+						"pelvis_offset": "(-0.003053, 0.0, -0.004909)",
+						"spine_01": "(0.000001, 0.0, 0.0)",
+						"spine_02": "(-31.58997, -2.817974, 8.871157)",
+						"spine_03": "(-34.14817, 3.398874, 5.120738)",
+						"thigh_l": "(18.83825, 3.561437, 34.64648)",
+						"thigh_r": "(68.23893, -73.686, -80.27847)",
+						"upperarm_l": "(-8.744252, -3.647146, -2.455232)",
+						"upperarm_r": "(-41.76627, 15.60825, -2.592397)"
+					}
+				],
+				"group": "Motion",
+				"id": 1,
+				"kind": "custom_jump",
+				"mana_cost": 0.0,
+				"mirrored": false,
+				"parent_name": "Jump2",
+				"parent_path": "user://custom_animations/jump2.json",
+				"path": "user://custom_animations/jump2_variant.json",
+				"physical_damage": 0.0,
+				"priority": 1,
+				"provenance": {
+					"head": "source:563208f62a8a03de5a9509f758f2038d0f1361d5fa2ce0df91b2abcbd6122940",
+					"nodes": {
+						"source:563208f62a8a03de5a9509f758f2038d0f1361d5fa2ce0df91b2abcbd6122940": {
+							"asset_type": "animation",
+							"author": "",
+							"citations": [
+								{
+									"author": "Unspecified; consult source credits",
+									"clip": "duel/air",
+									"credits_file": "res://assets/combat/licenses/UPSTREAM-CREDITS.md",
+									"source": "FightLab project assets"
+								}
+							],
+							"id": "source:563208f62a8a03de5a9509f758f2038d0f1361d5fa2ce0df91b2abcbd6122940",
+							"legacy_parent_reference": {
+								"name": "Jump2",
+								"path": "user://custom_animations/jump2.json"
+							},
+							"operation": "original source",
+							"parents": [],
+							"title": "Jump"
+						}
+					},
+					"schema": 1
+				},
+				"source_duration": 1.12181818181818,
+				"source_in": 0.0,
+				"source_length": 1.12181818181818,
+				"source_timing": "native_v1",
+				"source_title": "Jump",
+				"speed": 0.747878787878787,
+				"spell_multiplier": 1.0,
+				"stamina_cost": 85.0,
+				"start": 0.0,
+				"step": "Jump",
+				"timeline_row_id": 1,
+				"title": "Jump2 Variant",
+				"track": "BODY"
+			},
+			{
+				"animation_resource": "user://authored_animations/inverted_hook_slash_1793337880_38_hang_backflip.tres",
+				"category": "Acrobatics",
+				"clip": "authored_demo/hang_backflip_8096053",
+				"duration": 0.88,
+				"effort": 3.0,
+				"group": "Motion",
+				"id": 2,
+				"mana_cost": 0.0,
+				"physical_damage": 0.0,
+				"priority": 2,
+				"provenance": {
+					"head": "revision:221e371ee786e3880f259b8eecb59728",
+					"nodes": {
+						"revision:221e371ee786e3880f259b8eecb59728": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:221e371ee786e3880f259b8eecb59728",
+							"operation": "retimed inverted backflip with attack body dynamics",
+							"parents": [
+								"revision:68ac2694653a5ccdd060177e68aa1241",
+								"revision:c8ae2079a4c730486499a3d55ce3b308"
+							],
+							"title": "Continuous corkscrew · leaned back"
+						},
+						"revision:68ac2694653a5ccdd060177e68aa1241": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:68ac2694653a5ccdd060177e68aa1241",
+							"operation": "Take 2: continuous rotation through descent, 35-degree whole-body lean, accented forward open-hand throw",
+							"parents": [
+								"revision:b7c641d1ecc0a9afb3e49c00b7576925"
+							],
+							"title": "Continuous corkscrew · leaned back"
+						},
+						"revision:b7c641d1ecc0a9afb3e49c00b7576925": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:b7c641d1ecc0a9afb3e49c00b7576925",
+							"operation": "Melee Hook variant: straight open right fingers, knee-directed vertical reach, extra 0.12s delay; continuous full corkscrew",
+							"parents": [
+								"revision:c8ae2079a4c730486499a3d55ce3b308",
+								"source:39490415eb3898c82b6d4dc9d4180b9cfefd62a64866b9ebe63b859030a6935d"
+							],
+							"title": "Backflip + continuous corkscrew"
+						},
+						"revision:c8ae2079a4c730486499a3d55ce3b308": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T02:40:50",
+							"id": "revision:c8ae2079a4c730486499a3d55ce3b308",
+							"operation": "added to personal library",
+							"parents": [
+								"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92"
+							],
+							"title": "Melee Hook"
+						},
+						"source:39490415eb3898c82b6d4dc9d4180b9cfefd62a64866b9ebe63b859030a6935d": {
+							"asset_type": "animation",
+							"author": "",
+							"citations": [
+								{
+									"author": "Unspecified; consult source credits",
+									"clip": "duel/backflip",
+									"credits_file": "res://assets/combat/licenses/UPSTREAM-CREDITS.md",
+									"source": "FightLab project assets"
+								}
+							],
+							"id": "source:39490415eb3898c82b6d4dc9d4180b9cfefd62a64866b9ebe63b859030a6935d",
+							"legacy_parent_reference": {
+								"name": "",
+								"path": ""
+							},
+							"operation": "original source",
+							"parents": [],
+							"title": "Backflip · airborne"
+						},
+						"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92": {
+							"asset_type": "animation",
+							"author": "Quaternius",
+							"citations": [
+								{
+									"author": "Quaternius",
+									"clip": "ual2/Melee_Hook",
+									"license": "CC0 1.0",
+									"url": "https://quaternius.itch.io/universal-animation-library-2"
+								}
+							],
+							"id": "source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92",
+							"operation": "original source",
+							"parents": [],
+							"title": "Melee Hook"
+						}
+					},
+					"schema": 1
+				},
+				"source_duration": 0.88,
+				"source_in": 0.0,
+				"source_length": 0.88,
+				"source_timing": "native_v1",
+				"speed": 1.0,
+				"spell_multiplier": 1.0,
+				"stamina_cost": 3.0,
+				"start": 0.3,
+				"step": "Flip",
+				"store_raw": true,
+				"timeline_row_id": 8,
+				"title": "Continuous corkscrew · leaned back",
+				"track": "BODY"
+			},
+			{
+				"animation_resource": "user://authored_animations/inverted_hook_slash_1793337880_38_melee_hook_to_right_slash.tres",
+				"category": "Pose layers",
+				"clip": "authored_demo/melee_hook_to_right_slash_8136744",
+				"duration": 0.46666667,
+				"effort": 0.0,
+				"group": "Motion",
+				"id": 3,
+				"mana_cost": 0.0,
+				"physical_damage": 0.0,
+				"priority": 3,
+				"provenance": {
+					"head": "revision:d9b09f846482c04873dde7048f09f252",
+					"nodes": {
+						"revision:65d03f6b99fb29534ee8e74a2b54dfb3": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:65d03f6b99fb29534ee8e74a2b54dfb3",
+							"operation": "Melee Hook variant: straight open right fingers, knee-directed vertical reach, extra 0.12s delay; continuous full corkscrew",
+							"parents": [
+								"revision:c8ae2079a4c730486499a3d55ce3b308"
+							],
+							"title": "Open hand Melee Hook · torso"
+						},
+						"revision:c8ae2079a4c730486499a3d55ce3b308": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T02:40:50",
+							"id": "revision:c8ae2079a4c730486499a3d55ce3b308",
+							"operation": "added to personal library",
+							"parents": [
+								"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92"
+							],
+							"title": "Melee Hook"
+						},
+						"revision:d9b09f846482c04873dde7048f09f252": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:d9b09f846482c04873dde7048f09f252",
+							"operation": "Take 2: continuous rotation through descent, 35-degree whole-body lean, accented forward open-hand throw",
+							"parents": [
+								"revision:65d03f6b99fb29534ee8e74a2b54dfb3"
+							],
+							"title": "Melee Hook body accent · Take 2"
+						},
+						"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92": {
+							"asset_type": "animation",
+							"author": "Quaternius",
+							"citations": [
+								{
+									"author": "Quaternius",
+									"clip": "ual2/Melee_Hook",
+									"license": "CC0 1.0",
+									"url": "https://quaternius.itch.io/universal-animation-library-2"
+								}
+							],
+							"id": "source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92",
+							"operation": "original source",
+							"parents": [],
+							"title": "Melee Hook"
+						}
+					},
+					"schema": 1
+				},
+				"source_duration": 0.72666667,
+				"source_in": 0.26,
+				"source_length": 0.72666667,
+				"source_timing": "native_v1",
+				"speed": 1.0,
+				"spell_multiplier": 1.0,
+				"stamina_cost": 0.0,
+				"start": 0.530094970703125,
+				"step": "Pose",
+				"store_raw": true,
+				"timeline_row_id": 3,
+				"title": "Melee Hook body accent · Take 2",
+				"track": "TORSO"
+			},
+			{
+				"animation_resource": "user://authored_animations/earlier_hook_arm_clearance_12651534.tres",
+				"attack_bone": "hand_r",
+				"category": "Punch",
+				"clip": "authored_demo/earlier_hook_arm_clearance_12671933",
+				"duration": 0.46666667,
+				"effort": 12.0,
+				"group": "Attack",
+				"id": 4,
+				"mana_cost": 0.0,
+				"physical_damage": 18.1,
+				"priority": 4,
+				"provenance": {
+					"head": "revision:995a421d647011e1afee74b4743a6d38",
+					"nodes": {
+						"revision:4e7c0fdee26246c40f64ec11aef5f317": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:4e7c0fdee26246c40f64ec11aef5f317",
+							"operation": "Melee Hook variant: straight open right fingers, knee-directed vertical reach, extra 0.12s delay; continuous full corkscrew",
+							"parents": [
+								"revision:c8ae2079a4c730486499a3d55ce3b308"
+							],
+							"title": "Open hand Melee Hook · right arm"
+						},
+						"revision:995a421d647011e1afee74b4743a6d38": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T06:07:39",
+							"id": "revision:995a421d647011e1afee74b4743a6d38",
+							"operation": "reroute right shoulder and elbow around torso; preserve user start time, speed and duration",
+							"parents": [
+								"revision:b432eea66a58b37e78e02263ee1f8691"
+							],
+							"title": "Open hand throw · Take 2"
+						},
+						"revision:b432eea66a58b37e78e02263ee1f8691": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T05:24:40",
+							"id": "revision:b432eea66a58b37e78e02263ee1f8691",
+							"operation": "Take 2: continuous rotation through descent, 35-degree whole-body lean, accented forward open-hand throw",
+							"parents": [
+								"revision:4e7c0fdee26246c40f64ec11aef5f317"
+							],
+							"title": "Open hand throw · Take 2"
+						},
+						"revision:c8ae2079a4c730486499a3d55ce3b308": {
+							"asset_type": "animation",
+							"author": "foreandr",
+							"citations": [],
+							"created_utc": "2026-10-30T02:40:50",
+							"id": "revision:c8ae2079a4c730486499a3d55ce3b308",
+							"operation": "added to personal library",
+							"parents": [
+								"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92"
+							],
+							"title": "Melee Hook"
+						},
+						"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92": {
+							"asset_type": "animation",
+							"author": "Quaternius",
+							"citations": [
+								{
+									"author": "Quaternius",
+									"clip": "ual2/Melee_Hook",
+									"license": "CC0 1.0",
+									"url": "https://quaternius.itch.io/universal-animation-library-2"
+								}
+							],
+							"id": "source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92",
+							"operation": "original source",
+							"parents": [],
+							"title": "Melee Hook"
+						}
+					},
+					"schema": 1
+				},
+				"source_duration": 0.72666667,
+				"source_in": 0.26,
+				"source_length": 0.72666667,
+				"source_timing": "native_v1",
+				"speed": 1.0,
+				"spell_multiplier": 1.44726923409648,
+				"stamina_cost": 12.0,
+				"start": 0.531522705078125,
+				"step": "Hook",
+				"store_raw": true,
+				"timeline_row_id": 5,
+				"title": "Open hand throw · Take 2",
+				"track": "RIGHT ARM"
+			}
+		],
+		"duration": 1.5,
+		"group": "Attack",
+		"name": "JUMP DISMANTLE",
+		"rows": [
+			{
+				"id": 1,
+				"priority": 1,
+				"track": "BODY"
+			},
+			{
+				"id": 8,
+				"priority": 2,
+				"track": "BODY"
+			},
+			{
+				"id": 2,
+				"priority": 3,
+				"track": "HEAD"
+			},
+			{
+				"id": 3,
+				"priority": 3,
+				"track": "TORSO"
+			},
+			{
+				"id": 4,
+				"priority": 3,
+				"track": "LEFT ARM"
+			},
+			{
+				"id": 5,
+				"priority": 4,
+				"track": "RIGHT ARM"
+			},
+			{
+				"id": 6,
+				"priority": 3,
+				"track": "LEFT LEG"
+			},
+			{
+				"id": 7,
+				"priority": 3,
+				"track": "RIGHT LEG"
+			}
+		]
+	},
+	"title": "Jump Dismantle"
+}

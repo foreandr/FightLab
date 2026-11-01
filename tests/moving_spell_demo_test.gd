@@ -74,5 +74,5 @@ func run() -> void:
     for bone in actual.size():
      if not check(actual[bone].is_equal_approx(cast[bone]),"Stationary demo changed (%s)"%choice):return
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all five demos run/sprint and turn in free aim in demo/projectile stages; visible legs keep cycling with the gait, casting upper body remains, stationary full-body demos return")
+ print("MOVING DEMOS PASS: all seven demos run/sprint and turn in free aim in demo/projectile stages; visible legs keep cycling with the gait, casting upper body remains, stationary full-body demos return")
  quit()

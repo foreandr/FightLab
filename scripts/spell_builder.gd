@@ -45,7 +45,15 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
-const DEMO_ANIMATIONS:={"cross":{"title":"Left cross","source":"Left cross"},"hook":{"title":"Melee hook","source":"Melee Hook"},"knee":{"title":"Left knee","source":"Left knee"},"block":{"title":"Block stand","source":"block stand"},"mend":{"title":"Self mend","source":"self mend"}}
+const DEMO_ANIMATIONS:={
+ "cross":{"title":"Left cross","source":"Left cross"},
+ "hook":{"title":"Melee hook","source":"Melee Hook"},
+ "knee":{"title":"Left knee","source":"Left knee"},
+ "roundhouse":{"title":"Right roundhouse","source":"Right roundhouse"},
+ "dismantle":{"title":"Jump Dismantle","source":"Jump Dismantle","profile":{"title":"Jump Dismantle","group":"Attack","category":"Air Combat","step":"Hook","clip":"spell_demos/jump_dismantle","animation_resource":"res://assets/animations/demos/jump_dismantle.res","source_duration":1.5,"store_raw":true,"attack_bone":"hand_r","source_timing":"native_v1"}},
+ "block":{"title":"Block stand","source":"block stand"},
+ "mend":{"title":"Self mend","source":"self mend"}
+}
 var demo_duration:=1.0
 var limiter_enabled:=true
 var limiter_toggle:CheckButton
@@ -1021,6 +1029,7 @@ func select_demo_choice(choice:String,save:=true) -> void:
  if not DEMO_ANIMATIONS.has(choice):return
  var source_name:String=str(DEMO_ANIMATIONS[choice].source).to_lower()
  var candidates:Array[Dictionary]=[]
+ if DEMO_ANIMATIONS[choice].has("profile"):candidates.append(DEMO_ANIMATIONS[choice].profile.duplicate(true))
  for owned in editor.store_library.taken.values():
   var owned_profile:Dictionary=owned.duplicate(true)
   owned_profile["store_raw"]=true
@@ -1166,7 +1175,7 @@ func demo_physical_stats() -> Dictionary:
  return physical
 
 func demo_offensive() -> bool:
- return str(casting_animation.get("demo_choice","cross")) in ["cross","hook","knee"]
+ return str(casting_animation.get("demo_choice","cross")) in ["cross","hook","knee","roundhouse","dismantle"]
 
 func demo_projectile_stats() -> Dictionary:
  var effect:=preview_effect if creation_step=="projectile" else element
@@ -1292,7 +1301,7 @@ func capture_demo_pose() -> Array[Transform3D]:
 
 func cast_pose_aim(progress:float) -> Dictionary:
  if creation_step!="projectile":return {}
- if str(casting_animation.get("demo_choice","cross")) not in ["cross","hook","knee"]:return {}
+ if str(casting_animation.get("demo_choice","cross")) not in ["cross","hook","knee","roundhouse","dismantle"]:return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
  elif manual_aim_valid:target=manual_aim_point

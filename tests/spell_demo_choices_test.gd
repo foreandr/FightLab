@@ -35,7 +35,7 @@ func run() -> void:
 	builder.draft_path="user://logs/spell_demo_test_draft.cfg"
 	builder.preview_preferences_path="user://logs/spell_demo_test_preferences.cfg"
 	editor.select_group("Spells")
-	if not check(visible_buttons(builder)==["Left cross","Melee hook","Left knee","Block stand","Self mend","Confirm"],"Spells must show the five requested demos and Confirm"):return
+	if not check(visible_buttons(builder)==["Left cross","Melee hook","Left knee","Right roundhouse","Jump Dismantle","Block stand","Self mend","Confirm"],"Spells must show the seven demos and Confirm"):return
 	if not check(builder.demo_duration_slider.min_value==0.1 and builder.demo_duration_slider.max_value==60.0,"Duration range is incorrect"):return
 	builder.set_demo_duration(1.0)
 	if not check(editor.actor.visible and not editor.animation_footer.visible,"Demo character/toolbar visibility is incorrect"):return
@@ -46,7 +46,7 @@ func run() -> void:
 	var original_spec:Dictionary=builder.projectile_spec().duplicate(true)
 	var original_text:=FileAccess.get_file_as_string(builder.draft_path)
 	var clips:Dictionary={}
-	for choice in ["cross","hook","knee","block","mend"]:
+	for choice in builder.DEMO_ANIMATIONS:
 		builder.reset_caster_pose()
 		var foot_bone:="foot_l" if choice=="knee" else "foot_r"
 		var knee_bone:="calf_l" if choice=="knee" else "calf_r"
@@ -95,7 +95,7 @@ func run() -> void:
 		if not check(builder.creation_step=="delivery" and visible_buttons(builder)==["Projectile","Beam","Targeted","Touch","Barrier","← Back"],"Confirm did not open the spell types and Back"):return
 		builder.delivery_back_button.pressed.emit()
 		if not check(builder.creation_step=="demo","Back did not return to demos"):return
-	if not check(clips.size()==5,"Demo choices do not use five distinct source clips"):return
+	if not check(clips.size()==7,"Demo choices do not use seven distinct source clips"):return
 	for duration in [0.1,1.0,2.0,4.0,8.0,10.0,12.0,16.0,24.0,40.0,60.0]:
 		builder.demo_duration_slider.value=duration
 		var stats:Dictionary=builder.demo_mana_stats()
@@ -135,7 +135,7 @@ func run() -> void:
 		var cfg:=ConfigFile.new()
 		cfg.load(builder.draft_path)
 		if not check(cfg.get_value("spell","delivery_type","")==type and builder.projectile_spec().get("delivery_type","")==type,"Spell type was not saved: "+type):return
-	print("SPELL DEMO PASSED: five exact clips, smooth entry/exit/switching, 100% mana saving after 10s before release, doubling-time Spell Amplifier, Confirm/Back, unchanged saved spell")
+	print("SPELL DEMO PASSED: seven exact clips, smooth entry/exit/switching, 100% mana saving after 10s before release, doubling-time Spell Amplifier, Confirm/Back, unchanged saved spell")
 	builder.draft_path=original_draft
 	builder.preview_preferences_path=original_preferences
 	builder.load_draft()
