@@ -1,4 +1,5 @@
 extends SceneTree
+const RigPose=preload("res://scripts/editor_rig_pose.gd")
 const Type=preload("res://scripts/animation_cast_type.gd")
 const Movement=preload("res://scripts/character_movement.gd")
 const Locomotion=preload("res://scripts/creation_locomotion.gd")
@@ -62,12 +63,13 @@ func run() -> void:
     elif not check(is_equal_approx(speed,initial_speed),"Arms cast stopped running during "+choice):return
     # Compare the displayed legs against the running gait, not just actor translation.
     var actual:Array=CastPose.capture(actor)
-    Locomotion.pose(actor,Vector2(0,1),b.idle_elapsed,sprinting)
+    if Type.owns_legs(b.playback_animation()):RigPose.idle(actor,b.idle_elapsed)
+    else:Locomotion.pose(actor,Vector2(0,1),b.idle_elapsed,sprinting)
     var gait:Array=CastPose.capture(actor)
     CastPose.pose(actor,b.playback_animation(),b.elapsed/b.playback_duration(),b.cast_pose_aim(b.elapsed/b.playback_duration()))
     var cast:Array=CastPose.capture(actor)
     for bone in actual.size():
-     var expected:Transform3D=cast[bone].interpolate_with(gait[bone],1.0-Locomotion.leg_takeover(b.playback_animation())) if Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone]
+     var expected:Transform3D=cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else gait[bone]
      if not check(actual[bone].is_equal_approx(expected),"Wrong displayed pose on %s (%s)"%[actor.skeleton.get_bone_name(bone),choice]):return
     Locomotion.cast_legs(actor,b.playback_animation(),Vector2(0,1),b.idle_elapsed,sprinting)
     var thigh:int=actor.skeleton.find_bone("thigh_l")
@@ -81,8 +83,11 @@ func run() -> void:
     actual=CastPose.capture(actor)
     CastPose.pose(actor,b.playback_animation(),b.elapsed/b.playback_duration(),b.cast_pose_aim(b.elapsed/b.playback_duration()))
     cast=CastPose.capture(actor)
+    RigPose.idle(actor,b.idle_elapsed)
+    var idle:Array=CastPose.capture(actor)
     for bone in actual.size():
-     if not check(actual[bone].is_equal_approx(cast[bone]),"Stationary demo changed (%s)"%choice):return
+     var expected:Transform3D=cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else idle[bone]
+     if not check(actual[bone].is_equal_approx(expected),"Stationary type mask changed (%s)"%choice):return
 
  b.stop_preview_controls(true)
  b.select_demo_choice("dismantle",false)
@@ -94,13 +99,14 @@ func run() -> void:
   if not check(Type.kind(b.casting_animation)==type_,"Demo type selector failed"):return
   CastPose.pose(actor,b.casting_animation,0.5)
   var cast:Array=CastPose.capture(actor)
-  Locomotion.pose(actor,Vector2(0,1),0.3,true)
+  if type_==Type.LEGS:RigPose.idle(actor,0.3)
+  else:Locomotion.pose(actor,Vector2(0,1),0.3,true)
   var gait:Array=CastPose.capture(actor)
   CastPose.pose(actor,b.casting_animation,0.5)
   Locomotion.cast_legs(actor,b.casting_animation,Vector2(0,1),0.3,true)
   var result:Array=CastPose.capture(actor)
   for bone in result.size():
-   var expected:Transform3D=gait[bone] if type_==Type.ARMS and Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone]
+   var expected:Transform3D=cast[bone] if Type.controls_bone(actor.skeleton,bone,type_) else gait[bone]
    if not check(result[bone].is_equal_approx(expected),"Type pose policy failed: "+type_):return
  b.save_demo_preferences()
  b.select_demo_choice("cross",false)
@@ -111,11 +117,14 @@ func run() -> void:
  var source:Dictionary={}
  for entry in preload("res://scripts/animation_catalog.gd").entries():
   if entry.title=="Left cross":source=entry
+ source["animation_resource"]="user://logs/type_custom_cross.res"
+ ResourceSaver.save(actor.player.get_animation(source.clip),source.animation_resource)
+ source["animation_components"]=[{"animation_type":Type.WHOLE_BODY},{"animation_type":Type.ARMS}]
  editor.open_custom_for(source)
  editor.custom_history_baseline=editor._custom_history_snapshot()
  editor.custom_undo_history.clear();editor.custom_redo_history.clear()
- editor.custom_movement_control.menu.select(2)
- editor.custom_movement_control.menu.item_selected.emit(2)
+ editor.custom_movement_control.menu.select(Type.TYPES.find(Type.LEGS)+1)
+ editor.custom_movement_control.menu.item_selected.emit(Type.TYPES.find(Type.LEGS)+1)
  if not check(editor.custom_animation_type==Type.LEGS,"Authoring type control failed"):return
  editor.undo_custom_edit()
  if not check(editor.custom_animation_type==Type.ARMS,"Undo did not restore type"):return
@@ -125,15 +134,16 @@ func run() -> void:
  editor.custom_name.text=name_
  editor.custom_animation_type=""
  editor.save_custom_jump()
- if not check(editor.custom_status.text.contains("Choose Arms"),"Undeclared custom animation was accepted"):return
+ if not check(editor.custom_status.text.contains("Choose Head"),"Undeclared custom animation was accepted"):return
  editor.set_custom_animation_type(Type.LEGS)
  editor.save_custom_jump()
  var saved_path:String=editor.custom_edit_path
  var found:=false
  for entry in editor.load_custom_motion("Punch"):
-  if entry.title==name_:found=Type.kind(entry)==Type.LEGS
+  if entry.title==name_:found=Type.kind(entry)==Type.LEGS and entry.get("animation_resource","")==source.animation_resource and Type.component_types(entry)==[Type.WHOLE_BODY,Type.ARMS]
  if not check(found,"Authored leg control did not survive save/reload"):return
  DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_path))
+ DirAccess.remove_absolute(ProjectSettings.globalize_path(source.animation_resource))
  editor.open_animation_type_dialog({"title":"Unclassified import","clip":"missing"},"Motion","Downloaded")
  var dialog:ConfirmationDialog=editor.get_child(editor.get_child_count()-1)
  if not check(dialog.get_ok_button().disabled,"Import did not require a declaration"):return

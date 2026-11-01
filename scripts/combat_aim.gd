@@ -2,9 +2,7 @@ extends RefCounted
 ## One source for cursor rays, target anchors and angle limits.
 ## Calibration deliberately uses its authored near-plane; live spells use physics.
 static func emitter(profile:Dictionary,fallback:String="hand_r") -> String:
-	var limb:=str(profile.get("attack_bone",fallback))
-	if limb.is_empty():limb=fallback
-	return "Head" if limb in ["mouth","head"] else limb
+	return preload("res://scripts/animation_cast_type.gd").emitter(profile,fallback)
 
 static func focused_chest(target:Node3D) -> Vector3:
 	if not is_instance_valid(target):return Vector3.ZERO

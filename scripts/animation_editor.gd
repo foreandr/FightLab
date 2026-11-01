@@ -186,9 +186,11 @@ var custom_action_group := "Motion"
 var custom_source_mirrored := false
 var custom_source_attack_bone := ""
 var custom_animation_type:=""
+var custom_animation_components:Array=[]
 var custom_movement_control:VBoxContainer
 var custom_source_step := "Jump"
 var custom_source_clip := "duel/air"
+var custom_source_animation_resource:=""
 var custom_source_title := "Jump"
 var custom_source_timing := "legacy"
 var custom_source_duration := 3.0
@@ -2822,13 +2824,18 @@ func toggle_timeline_repeat() -> void:
 	_set_button_accent(repeat_play_button,repeat_playing)
 
 func _apply_timeline_at(time:float,force:bool=false) -> void:
+	var types=preload("res://scripts/animation_cast_type.gd")
 	var winners:Dictionary={}
+	var regional_body:Array[Dictionary]=[]
 	for clip in timeline_clips:
 		var start:=float(clip.get("start",0.0))
 		if time<start or time>=start+float(clip.get("duration",1.0)):continue
 		var track:=str(clip.get("track","BODY"))
+		# A regional clip on EVERYTHING is still regional; it cannot erase a jump.
+		if track=="BODY" and types.kind(clip)!=types.WHOLE_BODY:
+			regional_body.append(clip)
+			continue
 		var previous:Dictionary=winners.get(track,{})
-		# Jump's height is a physical layer. Other authored poses can play over it.
 		var jump_pose:bool=track=="BODY" and str(clip.get("step",""))=="Jump"
 		var previous_jump:bool=track=="BODY" and str(previous.get("step",""))=="Jump"
 		if jump_pose and not previous.is_empty() and not previous_jump:continue
@@ -2837,27 +2844,25 @@ func _apply_timeline_at(time:float,force:bool=false) -> void:
 	if body_clip.is_empty():body_clip=_active_jump_pose(time)
 	if body_clip.is_empty():preload("res://scripts/editor_rig_pose.gd").idle(actor,idle_preview_elapsed)
 	_apply_effective_track("BODY",body_clip,time,force)
-	var channel_tracks:Dictionary={"face":"HEAD","torso":"TORSO","arm_l":"LEFT ARM","arm_r":"RIGHT ARM","leg_l":"LEFT LEG","leg_r":"RIGHT LEG"}
+	var channel_tracks:Dictionary={"root":"ROOT","face":"HEAD","torso":"TORSO","arm_l":"LEFT ARM","arm_r":"RIGHT ARM","leg_l":"LEFT LEG","leg_r":"RIGHT LEG"}
 	for channel in channel_tracks:
 		var limb_track:String=channel_tracks[channel]
-		var limb_clip:Dictionary=winners.get(limb_track,{})
-		var chosen:Dictionary=limb_clip
-		var chosen_track:=limb_track
+		var chosen:Dictionary=winners.get(limb_track,{})
+		if not chosen.is_empty() and not types.affects_channel(chosen,channel):chosen={}
+		for candidate in regional_body:
+			if not types.affects_channel(candidate,channel):continue
+			if chosen.is_empty() or int(candidate.get("priority",1))>int(chosen.get("priority",1)):chosen=candidate
 		var body_priority:=int(body_clip.get("priority",1)) if str(body_clip.get("step",""))!="Jump" else -1
-		if not body_clip.is_empty() and (limb_clip.is_empty() or body_priority>int(limb_clip.get("priority",1))):
-			chosen=body_clip
-			chosen_track="OVERRIDE:"+channel
-		if chosen_track.begins_with("OVERRIDE:"):
+		if not body_clip.is_empty() and (chosen.is_empty() or body_priority>int(chosen.get("priority",1))):
 			_apply_effective_track(limb_track,{},time,force)
-			_apply_effective_track(chosen_track,chosen,time,force)
+			_apply_effective_track("OVERRIDE:"+channel,body_clip,time,force)
 		else:
 			timeline_active.erase("OVERRIDE:"+channel)
 			_apply_effective_track(limb_track,chosen,time,force)
 	for key in timeline_active.keys():
-		if str(key) not in TIMELINE_TRACKS and not str(key).begins_with("OVERRIDE:"):timeline_active.erase(key)
+		if str(key) not in TIMELINE_TRACKS and str(key)!="ROOT" and not str(key).begins_with("OVERRIDE:"):timeline_active.erase(key)
 	_apply_timeline_root_motion(time)
-	if is_instance_valid(focused_unit):
-		_set_unit_pose_target(focused_unit)
+	if is_instance_valid(focused_unit):_set_unit_pose_target(focused_unit)
 
 func _active_jump_pose(time:float) -> Dictionary:
 	var chosen:Dictionary={}
@@ -2954,6 +2959,15 @@ func _apply_effective_track(track:String,clip:Dictionary,time:float,force:bool) 
 		_start_track(track,clip,time-float(clip.start))
 
 func _start_track(track:String,clip:Dictionary,offset:float) -> void:
+	var types=preload("res://scripts/animation_cast_type.gd")
+	if track!="BODY" or types.kind(clip)==types.WHOLE_BODY:
+		_sample_timeline_track(track,clip,offset)
+		return
+	var baseline:=preload("res://scripts/spell_cast_motion.gd").capture(actor)
+	_sample_timeline_track(track,clip,offset)
+	types.restore_outside(actor,baseline,clip)
+
+func _sample_timeline_track(track:String,clip:Dictionary,offset:float) -> void:
 	if track!="BODY":
 		var previous:Array[Transform3D]=[]
 		for bone in actor.skeleton.get_bone_count():previous.append(actor.skeleton.get_bone_pose(bone))
@@ -2995,6 +3009,7 @@ func _start_track(track:String,clip:Dictionary,offset:float) -> void:
 		player.seek(offset,true)
 
 func _bone_in_timeline_track(bone:String,track:String) -> bool:
+	if track=="ROOT":return bone in ["root","pelvis"]
 	if track=="HEAD":return bone in ["Head","neck_01","jaw","eye_l","eye_r"]
 	if track=="TORSO":return bone in ["spine_01","spine_02","spine_03"]
 	var side:="l" if track.begins_with("LEFT") else "r"
@@ -3040,6 +3055,8 @@ func save_timeline() -> void:
 	var name_:=timeline_name.text.strip_edges() if is_instance_valid(timeline_name) else "New animation"
 	if name_.is_empty():return
 	var snapshot:Dictionary={"name":name_,"duration":timeline_duration,"clips":timeline_clips.duplicate(true),"rows":timeline_rows.duplicate(true)}
+	snapshot["animation_components"]=preload("res://scripts/animation_cast_type.gd").components(timeline_clips)
+	snapshot["animation_type"]=preload("res://scripts/animation_cast_type.gd").composite_type(snapshot.animation_components)
 	for entry in store_library.taken.values():
 		if str(entry.get("title",""))==name_:
 			snapshot.group=entry.group
@@ -3593,10 +3610,13 @@ func open_custom_for(entry: Dictionary) -> void:
 	custom_random_pending.clear()
 	custom_source_mirrored=bool(entry.get("mirrored",false))
 	custom_source_attack_bone=str(entry.get("attack_bone",""))
-	custom_animation_type=str(entry.get("animation_type",""))
+	custom_animation_type=preload("res://scripts/animation_cast_type.gd").kind(entry) if preload("res://scripts/animation_cast_type.gd").declared(entry) else ""
+	custom_animation_components=entry.get("animation_components",preload("res://scripts/animation_cast_type.gd").components(entry.get("composed_timeline",{}).get("clips",[]))).duplicate(true)
+	custom_movement_control.set_components({"animation_components":custom_animation_components})
 	custom_movement_control.set_value(custom_animation_type)
 	custom_source_step=entry.step
 	custom_source_clip=entry.clip
+	custom_source_animation_resource=str(entry.get("animation_resource",""))
 	custom_source_title=entry.get("source_title",entry.title)
 	custom_source_timing=str(entry.get("source_timing","legacy" if entry.has("frames") else "native_v1"))
 	custom_source_duration=float(entry.get("source_duration",custom_duration if entry.has("frames") else SourcePose.duration(actor,custom_source_step,custom_source_clip)))
@@ -3667,7 +3687,7 @@ func create_custom_variant(entry:Dictionary={}) -> void:
 	if custom_recording or custom_randomizing:return
 	var parent:Dictionary=entry.duplicate(true)
 	if parent.is_empty():
-		parent={"group":custom_action_group,"category":custom_action_category,"title":custom_name.text.strip_edges(),"step":custom_source_step,"clip":custom_source_clip,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"source_timing":custom_source_timing,"source_duration":custom_source_duration,"duration":custom_duration,"frames":custom_frames.duplicate(true),"path":custom_edit_path}
+		parent={"group":custom_action_group,"category":custom_action_category,"title":custom_name.text.strip_edges(),"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"duration":custom_duration,"frames":custom_frames.duplicate(true),"path":custom_edit_path}
 		parent["provenance"]=custom_provenance.duplicate(true)
 		if not custom_store_source_animation.is_empty():parent["source_animation"]=custom_store_source_animation
 	if str(parent.get("title","")).is_empty():parent["title"]=custom_source_title
@@ -3885,7 +3905,7 @@ func build_custom_editor() -> void:
 	custom_movement_control=preload("res://scripts/animation_movement_control.gd").new()
 	movement_tab.add_child(custom_movement_control)
 	custom_movement_control.value_changed.connect(set_custom_animation_type)
-	var movement_hint:=menu_label(movement_tab,"Required for every animation. Arms blend with running; Legs and Whole body take over and slow your movement.",14)
+	var movement_hint:=menu_label(movement_tab,"Required: Head, Arm, Leg or Movement. Regional layers can sit over a Movement base.",14)
 	movement_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	build_custom_random_tools(tools_tabs)
 	var playback_tab:=VBoxContainer.new()
@@ -4075,7 +4095,7 @@ func set_custom_animation_type(value:String) -> void:
 	_capture_custom_history()
 
 func _custom_history_snapshot() -> Dictionary:
-	return {"frames":custom_frames.duplicate(true),"duration":custom_duration,"mirrored":custom_source_mirrored,"timing":custom_source_timing,"source_duration":custom_source_duration,"animation_type":custom_animation_type,"index":custom_frame_index}
+	return {"frames":custom_frames.duplicate(true),"duration":custom_duration,"mirrored":custom_source_mirrored,"timing":custom_source_timing,"source_duration":custom_source_duration,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"index":custom_frame_index}
 
 func _capture_custom_history() -> void:
 	if custom_history_baseline.is_empty() or custom_recording or custom_randomizing:return
@@ -4101,6 +4121,8 @@ func _restore_custom_history(state:Dictionary) -> void:
 	custom_source_timing=str(state.timing)
 	custom_source_duration=float(state.source_duration)
 	custom_animation_type=str(state.get("animation_type",""))
+	custom_animation_components=state.get("animation_components",[]).duplicate(true)
+	custom_movement_control.set_components({"animation_components":custom_animation_components})
 	custom_movement_control.set_value(custom_animation_type)
 	custom_frame_index=clampi(int(state.index),0,custom_frames.size()-1)
 	custom_frame_count_input.set_value_no_signal(custom_frames.size())
@@ -5158,7 +5180,7 @@ func encode_custom_source_frames() -> Array:
 
 func save_custom_jump() -> void:
 	if custom_animation_type not in preload("res://scripts/animation_cast_type.gd").TYPES:
-		custom_status.text="Choose Arms, Legs or Whole body in the Movement tab before saving."
+		custom_status.text="Choose Head, Arm, Leg or Movement in the Movement tab before saving."
 		return
 	var name_: String=custom_name.text.strip_edges()
 	if name_.is_empty():
@@ -5182,7 +5204,7 @@ func save_custom_jump() -> void:
 			encoded_pose[bone]=[angles.x,angles.y,angles.z]
 		encoded_frames.append(encoded_pose)
 	custom_provenance=AssetProvenance.derive([custom_provenance],"animation",name_,AssetProvenance.creator_name(),"modified animation")
-	file.store_string(JSON.stringify({"version":2,"name":name_,"group":custom_action_group,"category":custom_action_category,"step":custom_source_step,"clip":custom_source_clip,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"source_timing":custom_source_timing,"source_duration":custom_source_duration,"source_frames":encode_custom_source_frames(),"based_on":{"name":custom_parent_name,"path":custom_parent_path},"provenance":custom_provenance,"source_animation":custom_store_source_animation,"duration":custom_duration,"frame_count":encoded_frames.size(),"frames":encoded_frames},"\t"))
+	file.store_string(JSON.stringify({"version":2,"name":name_,"group":custom_action_group,"category":custom_action_category,"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"source_frames":encode_custom_source_frames(),"based_on":{"name":custom_parent_name,"path":custom_parent_path},"provenance":custom_provenance,"source_animation":custom_store_source_animation,"duration":custom_duration,"frame_count":encoded_frames.size(),"frames":encoded_frames},"\t"))
 	file.close()
 	custom_edit_path=path
 	custom_status.text="Saved %s on this device."%name_
@@ -5225,6 +5247,8 @@ func load_custom_motion(category: String) -> Array[Dictionary]:
 						var loaded_entry:Dictionary=result.back()
 						loaded_entry["provenance"]=AssetProvenance.source(parsed)
 						loaded_entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").legacy_type(parsed)
+						loaded_entry["animation_components"]=parsed.get("animation_components",[]).duplicate(true)
+						if not str(parsed.get("animation_resource","")).is_empty():loaded_entry["animation_resource"]=str(parsed.animation_resource)
 						if not str(parsed.get("source_animation","")).is_empty():loaded_entry["source_animation"]=str(parsed.source_animation)
 		filename=dir.get_next()
 	dir.list_dir_end()

@@ -62,4 +62,16 @@ static func leg_takeover(profile:Dictionary) -> float:
 	return 1.0 if preload("res://scripts/animation_cast_type.gd").owns_legs(profile) else 0.0
 
 static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,sprinting:bool) -> void:
-	moving_legs(actor,input,time,sprinting,1.0-leg_takeover(profile))
+	var type_=preload("res://scripts/animation_cast_type.gd")
+	if type_.kind(profile)==type_.WHOLE_BODY:return
+	var cast:=CastPose.capture(actor)
+	var cast_clip:String=actor.clip
+	# A leg contribution coasts instead of borrowing a running pose.
+	if input.is_zero_approx() or type_.owns_legs(profile):preload("res://scripts/editor_rig_pose.gd").idle(actor,time)
+	else:pose(actor,input,time,sprinting)
+	var rig:Skeleton3D=actor.skeleton
+	var kind:String=type_.kind(profile)
+	for index in rig.get_bone_count():
+		if type_.controls_bone(rig,index,kind):rig.set_bone_pose(index,cast[index])
+	actor.clip=cast_clip
+	rig.force_update_all_bone_transforms()

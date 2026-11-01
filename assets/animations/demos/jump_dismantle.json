@@ -471,7 +471,8 @@
 				"step": "Jump",
 				"timeline_row_id": 1,
 				"title": "Jump2 Variant",
-				"track": "BODY"
+				"track": "BODY",
+				"animation_type": "Movement"
 			},
 			{
 				"animation_resource": "user://authored_animations/inverted_hook_slash_1793337880_38_hang_backflip.tres",
@@ -588,7 +589,8 @@
 				"store_raw": true,
 				"timeline_row_id": 8,
 				"title": "Continuous corkscrew \u00b7 leaned back",
-				"track": "BODY"
+				"track": "BODY",
+				"animation_type": "Movement"
 			},
 			{
 				"animation_resource": "user://authored_animations/inverted_hook_slash_1793337880_38_melee_hook_to_right_slash.tres",
@@ -671,7 +673,8 @@
 				"store_raw": true,
 				"timeline_row_id": 3,
 				"title": "Melee Hook body accent \u00b7 Take 2",
-				"track": "TORSO"
+				"track": "TORSO",
+				"animation_type": "Arm"
 			},
 			{
 				"animation_resource": "user://authored_animations/earlier_hook_arm_clearance_12651534.tres",
@@ -767,7 +770,8 @@
 				"store_raw": true,
 				"timeline_row_id": 5,
 				"title": "Open hand throw \u00b7 Take 2",
-				"track": "RIGHT ARM"
+				"track": "RIGHT ARM",
+				"animation_type": "Arm"
 			}
 		],
 		"duration": 1.5,
@@ -817,5 +821,43 @@
 		]
 	},
 	"title": "Jump Dismantle",
-	"animation_type": "Whole body"
+	"animation_type": "Movement",
+	"animation_components": [
+		{
+			"title": "Jump2 Variant",
+			"animation_type": "Movement",
+			"track": "BODY",
+			"clip": "duel/air",
+			"start": 0.0,
+			"duration": 1.5,
+			"priority": 1
+		},
+		{
+			"title": "Continuous corkscrew \u00b7 leaned back",
+			"animation_type": "Movement",
+			"track": "BODY",
+			"clip": "authored_demo/hang_backflip_8096053",
+			"start": 0.3,
+			"duration": 0.88,
+			"priority": 2
+		},
+		{
+			"title": "Melee Hook body accent \u00b7 Take 2",
+			"animation_type": "Arm",
+			"track": "TORSO",
+			"clip": "authored_demo/melee_hook_to_right_slash_8136744",
+			"start": 0.530094970703125,
+			"duration": 0.46666667,
+			"priority": 3
+		},
+		{
+			"title": "Open hand throw \u00b7 Take 2",
+			"animation_type": "Arm",
+			"track": "RIGHT ARM",
+			"clip": "authored_demo/earlier_hook_arm_clearance_12671933",
+			"start": 0.531522705078125,
+			"duration": 0.46666667,
+			"priority": 4
+		}
+	]
 }

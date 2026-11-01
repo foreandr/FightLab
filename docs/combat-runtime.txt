@@ -244,4 +244,6 @@ transitions, swept melee/one-hit behavior, heal/buff dispatch and God Mode.
 Run the normal Story/Create integration checks as well: they verify their
 adapters, not a separate set of combat calculations.
 
-Animation type contract: authored animation profiles declare animation_type as Arms, Legs or Whole body. Reuse AnimationCastType.begin/drift for cast inertia and CreationLocomotion.cast_legs for posing; do not create mode-specific tuning. Pass animation_type on the authored spell base so CombatSpellRules applies the same tentative Legs physical bonus to the UI and actual launch. New animations must declare type; legacy migration is conservative.
+Animation type contract: authored animation profiles declare animation_type as Head, Arm, Leg or Movement. Reuse AnimationCastType.begin/drift for cast inertia and CreationLocomotion.cast_legs for posing; do not create mode-specific tuning. Pass animation_type on the authored spell base so CombatSpellRules applies the same tentative Leg physical bonus to the UI and actual launch. New animations must declare type; legacy migration is conservative.
+
+Use AnimationCastType.controls_bone/affects_channel for typed layers and AnimationCastType.emitter for contact restrictions. Head contributions cannot alter torso/legs or emit from hands; Arm and Leg contact points stay in their region; Movement can retain its authored contact point. Composite metadata retains each contribution independently from the overall movement type.

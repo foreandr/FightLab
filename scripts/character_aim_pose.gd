@@ -79,6 +79,13 @@ static func apply(actor:Node,target:Vector3,emitter:String,weight:float) -> void
 		if not correction.is_empty():apply_torso(actor,float(correction.yaw)*weight,float(correction.pitch)*weight)
 		actor.skeleton.force_update_all_bone_transforms()
 		align_forearm(actor,emitter.right(1),target,weight)
+	elif emitter in ["Head","head","mouth"]:
+		var correction:=Aim.angles(actor,target-actor.bone_point("Head"))
+		var yaw:=clampf(float(correction.yaw),-deg_to_rad(80.0),deg_to_rad(80.0))*weight
+		var pitch:=-clampf(float(correction.pitch),-deg_to_rad(65.0),deg_to_rad(65.0))*weight
+		for part in ["neck_01","Head"]:
+			rotate_bone(actor,part,Vector3.UP,yaw*0.5)
+			rotate_bone(actor,part,actor.global_basis.x,pitch*0.5)
 	elif emitter.begins_with("thigh_") or emitter.begins_with("calf_") or emitter.begins_with("foot_") or emitter.begins_with("ball_"):
 		var correction:=Aim.angles(actor,target-actor.bone_point("spine_03"))
 		apply_torso(actor,float(correction.yaw)*weight,-float(correction.pitch)*weight)

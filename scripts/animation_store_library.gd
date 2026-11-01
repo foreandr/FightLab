@@ -42,6 +42,7 @@ func take(entry:Dictionary,group:String,category:String,existing_names:Array=[],
 	var id:=key(entry)
 	if taken.has(id):id=id+":"+Crypto.new().generate_random_bytes(6).hex_encode()
 	var local:Dictionary=entry.duplicate(true)
+	local["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(entry)
 	local.store_asset_id=id
 	local["store_source_id"]=str(entry.get("store_source_id",key(entry)))
 	local["original_title"]=entry.get("original_title",entry.get("title","Animation"))

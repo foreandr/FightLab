@@ -15,6 +15,8 @@ static func save(editor:Node,name_:String,group:String,category:String) -> Dicti
 		parents.append(Credits.source(clip))
 		if clip.get("group","")=="Attack":attack=clip
 	var entry:Dictionary={"title":name_,"clip":resource.clip,"animation_resource":resource.path,"duration":editor.timeline_duration,"source_duration":editor.timeline_duration,"source_timing":"native_v1","store_raw":true,"group":group,"category":category,"step":str(attack.get("step","Idle")) if group=="Attack" else "Idle","composed_timeline":snapshot}
+	entry["animation_components"]=preload("res://scripts/animation_cast_type.gd").components(editor.timeline_clips)
+	entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").composite_type(entry.animation_components)
 	if group=="Attack":
 		entry.attack_bone=attack.get("attack_bone","hand_r")
 		for key in ["physical_damage","stamina_cost","mana_cost"]:entry[key]=attack.get(key,0.0)

@@ -6,7 +6,7 @@ func run():
 	for frame in range(600):
 		await process_frame
 		editor=current_scene
-		if editor!=null and is_instance_valid(editor.get("slow_button")):break
+		if editor!=null and bool(editor.get("default_unit_ready")) and not is_instance_valid(editor.get("loading_layer")):break
 	var unit:CharacterBody3D=editor.spawn_editor_unit(Vector3(2,0.02,2))
 	editor.timeline_clips.assign([{"id":101,"group":"Motion","category":"Acrobatics","title":"Backflip","step":"Flip","clip":"duel/backflip","track":"BODY","start":0.0,"duration":0.68,"priority":2}])
 	editor.timeline_duration=0.68

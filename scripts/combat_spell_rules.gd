@@ -112,6 +112,7 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 	var resources:=resource_split(base,duration,offensive)
 	var timing:=cast_timing_stats(duration,fraction)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
+	spec["animation_type"]=CastType.kind(base)
 	spec["animation_type_multiplier"]=CastType.physical_multiplier(base)
 	spec["stamina_cost"]=resources.stamina
 	spec["mana"]=float(resources.base_mana)*float(timing.multiplier)
