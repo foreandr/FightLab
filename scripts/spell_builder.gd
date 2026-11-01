@@ -48,9 +48,11 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
+var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
 const DEMO_ANIMATIONS:={
+ "headbutt":{"title":"Headbutt","source":"Headbutt","animation_type":"Head","profile":{"title":"Headbutt","group":"Attack","category":"Punch","step":"Headbutt","clip":"spell_demos/headbutt","animation_resource":"res://assets/animations/demos/headbutt.res","source_duration":1.0,"store_raw":true,"attack_bone":"Head","animation_type":"Head"}},
  "cross":{"title":"Left cross","source":"Left cross","animation_type":"Arm"},
  "hook":{"title":"Melee hook","source":"Melee Hook","animation_type":"Arm"},
  "knee":{"title":"Left knee","source":"Left knee","animation_type":"Leg"},
@@ -486,7 +488,19 @@ func setup(owner_editor:Node) -> void:
  editor.menu_label(choices_column,"Choose a demo animation",20)
  for choice_key in DEMO_ANIMATIONS:
   var choice:String=choice_key
-  var node:Button=editor.button(choices_column,str(DEMO_ANIMATIONS[choice].title),func():select_demo_choice(choice))
+  var row:=HBoxContainer.new()
+  row.add_theme_constant_override("separation",6)
+  choices_column.add_child(row)
+  var node:Button=editor.button(row,str(DEMO_ANIMATIONS[choice].title),func():select_demo_choice(choice))
+  node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  node.clip_text=true
+  var badge:Label=editor.menu_label(row,"",12)
+  badge.name="DemoType"+choice.capitalize()
+  badge.custom_minimum_size.x=144
+  badge.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+  badge.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+  badge.add_theme_color_override("font_color",Color("775b34"))
+  demo_type_labels[choice]=badge
   node.name="Demo"+choice.capitalize()
   node.custom_minimum_size.y=40
   demo_choices[choice]=node
@@ -1196,7 +1210,7 @@ func demo_physical_stats() -> Dictionary:
  return physical
 
 func demo_offensive() -> bool:
- return str(casting_animation.get("demo_choice","cross")) in ["cross","hook","knee","roundhouse","dismantle"]
+ return str(casting_animation.get("demo_choice","cross")) in ["headbutt","cross","hook","knee","roundhouse","dismantle"]
 
 func demo_projectile_stats() -> Dictionary:
  var effect:=preview_effect if creation_step=="projectile" else element
@@ -1244,6 +1258,12 @@ func refresh_demo_choices() -> void:
  for choice in demo_choices:
   var selected:bool=str(casting_animation.get("demo_choice","cross"))==choice
   demo_choices[choice].add_theme_color_override("font_color",Color("98703d") if selected else Color("382c1c"))
+  var profile:Dictionary=demo_source_cache.get(choice,DEMO_ANIMATIONS[choice].get("profile",DEMO_ANIMATIONS[choice]))
+  var type_:=CastType.normalize(str(demo_animation_types.get(choice,DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))))
+  var parts:=CastType.component_types(profile)
+  demo_type_labels[choice].text=" + ".join(parts) if parts.size()>1 and type_==CastType.composite_type(profile.get("animation_components",[])) else type_
+  demo_type_labels[choice].tooltip_text=CastType.description(type_)
+  if not parts.is_empty():demo_type_labels[choice].tooltip_text+="\nSource layers: "+" + ".join(parts)
 
 func play_demo_preview() -> void:
  if cast_committed():return
@@ -1323,7 +1343,7 @@ func capture_demo_pose() -> Array[Transform3D]:
 
 func cast_pose_aim(progress:float) -> Dictionary:
  if creation_step!="projectile":return {}
- if str(casting_animation.get("demo_choice","cross")) not in ["cross","hook","knee","roundhouse","dismantle"]:return {}
+ if str(casting_animation.get("demo_choice","cross")) not in ["headbutt","cross","hook","knee","roundhouse","dismantle"]:return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
  elif manual_aim_valid:target=manual_aim_point
@@ -1378,6 +1398,7 @@ func set_demo_animation_type(value:String) -> void:
  var choice:=str(casting_animation.get("demo_choice",""))
  if not choice.is_empty():demo_animation_types[choice]=value
  if is_instance_valid(demo_movement_control):demo_movement_control.set_value(value)
+ refresh_demo_choices()
  if playing:CastType.begin(editor.actor,casting_animation)
  refresh_demo_timing()
  save_demo_preferences()

@@ -155,5 +155,5 @@ func run() -> void:
  dialog.canceled.emit()
 
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all seven demos run/sprint and turn in free aim in demo/projectile stages; required animation types, pose ownership, initial-direction momentum decay and Arms running respected, casting upper body remains, stationary full-body demos return")
+ print("MOVING DEMOS PASS: all eight demos run/sprint and turn in free aim in demo/projectile stages; required animation types, pose ownership, initial-direction momentum decay and Arms running respected, casting upper body remains, stationary full-body demos return")
  quit()
