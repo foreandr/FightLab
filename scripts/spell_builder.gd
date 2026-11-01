@@ -710,12 +710,9 @@ func setup(owner_editor:Node) -> void:
  reset_scene_button.custom_minimum_size.x=140
  reset_scene_button.focus_mode=Control.FOCUS_ALL
  reset_scene_button.tooltip_text="Heal and restore the practice scene; keep your spell settings."
- var movement_hint:Label=editor.menu_label(playback_row,"WASD · Move   F · Focus",14)
- movement_hint.tooltip_text="W forward · A/D strafe · S backpedal · Combine keys for diagonals · Shift runs · F focuses the camera."
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
- editor.menu_label(projectile_screen,"Selected character",18)
- dummy_god_button=editor.button(projectile_screen,"God mode: On",func():pass)
+ dummy_god_button=editor.button(playback_row,"God mode: On",func():pass)
  dummy_god_button.name="MannequinGodMode"
  dummy_god_button.toggle_mode=true
  dummy_god_button.focus_mode=Control.FOCUS_ALL
