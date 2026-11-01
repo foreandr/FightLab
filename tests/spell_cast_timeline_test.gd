@@ -82,6 +82,11 @@ func run() -> void:
 	timeline.refresh()
 	timeline.fit_time()
 	await process_frame
+	for damage in [19.9,20.0,40.0]:
+		preload("res://scripts/spell_timing_layout.gd").update_ragdoll(b,damage)
+		assert(b.demo_ragdoll_label.get_parsed_text()==preload("res://scripts/combat_defense_rules.gd").prediction(damage))
+		assert(("[color=" in b.demo_ragdoll_label.text)==(damage==20.0))
+	b.refresh_demo_timing()
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/cast_timeline.png")
 	print("CAST TIMELINE PASSED: 60s stretch stays visible during drag, fine mouse drag, length input, Fit/zoom buttons, release/apex, keyboard, shared timing and limiter")

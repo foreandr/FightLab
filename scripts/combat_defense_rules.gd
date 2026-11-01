@@ -4,4 +4,6 @@ const RAGDOLL_DAMAGE:=40.0
 static func ragdolls(physical_damage:float) -> bool:
 	return physical_damage>=RAGDOLL_DAMAGE
 static func prediction(damage:float) -> String:
-	return "Ragdoll: %s · Headshot: %s\nThreshold: %.0f physical · unblocked"%["YES" if ragdolls(damage) else "No","YES" if ragdolls(damage*preload("res://scripts/combat_hit_regions.gd").HEAD_PHYSICAL_MULTIPLIER) else "No",RAGDOLL_DAMAGE]
+	if ragdolls(damage):return "Ragdoll: Yes"
+	if ragdolls(damage*preload("res://scripts/combat_hit_regions.gd").HEAD_PHYSICAL_MULTIPLIER):return "Ragdoll: Yes (head only)"
+	return "Ragdoll: No"

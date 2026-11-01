@@ -74,7 +74,7 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	for label in [b.demo_stamina_label,b.demo_damage_label,b.demo_ragdoll_label,b.demo_amplifier_label,b.demo_size_bonus_label,b.demo_speed_bonus_label,b.demo_burn_label]:
 		label.reparent(results)
 		label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-		label.add_theme_font_size_override("font_size",12 if label==b.demo_ragdoll_label else 16)
+		label.add_theme_font_size_override("normal_font_size" if label is RichTextLabel else "font_size",12 if label==b.demo_ragdoll_label else 16)
 	# Keep detailed values available to tooling, with their explanations on hover.
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:label.hide()
 	refresh_details(b)
@@ -100,3 +100,8 @@ static func refresh_details(b:Node) -> void:
 		b.demo_amplifier_label.tooltip_text=b.demo_amp_breakdown.text
 	else:
 		for label in [b.demo_mana_cost_label,b.demo_stamina_label,b.demo_damage_label,b.demo_amplifier_label]:label.tooltip_text="Independent testing value · Limiter off"
+
+static func update_ragdoll(b:Node,damage:float) -> void:
+	var text:=preload("res://scripts/combat_defense_rules.gd").prediction(damage)
+	if "(head only)" in text:text=text.replace("Yes","[color=#b38a21]Yes[/color]")
+	b.demo_ragdoll_label.text=text

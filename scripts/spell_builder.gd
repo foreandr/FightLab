@@ -73,7 +73,7 @@ var projectile_scroll:ScrollContainer
 var demo_stamina_label:Label
 var demo_damage_label:Label
 var demo_damage_breakdown:Label
-var demo_ragdoll_label:Label
+var demo_ragdoll_label:RichTextLabel
 var demo_stamina_note:Label
 var demo_amp_breakdown:Label
 const PROJECTILE_EFFECTS:=["None","Fire","Ice","Lightning","Wind","Water","Earth"]
@@ -585,9 +585,15 @@ func setup(owner_editor:Node) -> void:
  demo_damage_label.tooltip_text="1 s, 50/50 size/speed and centered timing = 10 damage. Speed and amp scale relative to that default. Burn is separate."
  demo_damage_breakdown=editor.menu_label(timing_column,"",13)
  demo_damage_breakdown.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
- demo_ragdoll_label=editor.menu_label(timing_column,"",13)
+ demo_ragdoll_label=RichTextLabel.new()
+ demo_ragdoll_label.bbcode_enabled=true
+ demo_ragdoll_label.fit_content=true
+ demo_ragdoll_label.scroll_active=false
+ demo_ragdoll_label.add_theme_color_override("default_color",Color("382c1c"))
+ demo_ragdoll_label.add_theme_font_size_override("normal_font_size",13)
+ timing_column.add_child(demo_ragdoll_label)
  demo_ragdoll_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
- demo_ragdoll_label.tooltip_text="Prediction for a nonlethal hit on an unblocked target without damage reduction. Headshot uses twice the physical damage. Lethal hits ragdoll regardless. Barrier predictions will come with barrier mechanics."
+ demo_ragdoll_label.tooltip_text="40 physical damage ragdolls an unblocked target. Headshots double physical damage. Lethal hits ragdoll regardless."
  demo_amplifier_label=editor.menu_label(timing_column,"",19)
  demo_amplifier_label.add_theme_color_override("font_color",Color("8154a5"))
  demo_amplifier_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -1109,7 +1115,7 @@ func refresh_test_controls() -> void:
  demo_mana_cost_label.text="Mana cost: %.1f"%float(values.mana)
  demo_stamina_label.text="Stamina depletion: %.1f"%float(values.stamina)
  demo_damage_label.text="Physical damage: %.1f"%float(values.damage)
- demo_ragdoll_label.text=preload("res://scripts/combat_defense_rules.gd").prediction(float(values.damage))
+ preload("res://scripts/spell_timing_layout.gd").update_ragdoll(self,float(values.damage))
  demo_ragdoll_label.show()
  var spec:Dictionary=test_overrides.apply(projectile_effect_spec(preview_effect))
  demo_size_bonus_label.text="Diameter: %.2f m"%(float(spec.projectile_radius)*2.0)
@@ -1178,7 +1184,7 @@ func refresh_demo_timing() -> void:
   demo_stamina_note.text="Needs %.1f stamina · maximum %.0f"%[float(physical.stamina),max_stamina]
  var stats:=demo_projectile_stats()
  demo_damage_label.text="Physical damage: %.1f"%float(stats.physical_damage)
- demo_ragdoll_label.text=preload("res://scripts/combat_defense_rules.gd").prediction(float(stats.physical_damage))
+ preload("res://scripts/spell_timing_layout.gd").update_ragdoll(self,float(stats.physical_damage))
  demo_damage_breakdown.text="%.1f base × %.2f speed × %.2f amp"%[float(physical.damage),float(stats.base_velocity)/NEUTRAL_DAMAGE_BASE_VELOCITY,float(stats.amplifier)/NEUTRAL_DAMAGE_AMP]
  if float(stats.movement_multiplier)>1.0001:demo_damage_breakdown.text+=" × %.2f movement"%float(stats.movement_multiplier)
  demo_damage_breakdown.tooltip_text="Damage factors are relative to the default 50/50 allocation and centered timing."
