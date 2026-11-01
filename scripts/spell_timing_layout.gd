@@ -41,6 +41,7 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	b.demo_duration_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	b.demo_duration_label.add_theme_font_size_override("font_size",22)
 	var length_input:=SpinBox.new()
+	length_input.add_theme_icon_override("updown",preload("res://scripts/animation_row_icons.gd").get_icon("length_arrows"))
 	length_input.min_value=0.1
 	length_input.max_value=60.0
 	length_input.step=0.1
