@@ -34,6 +34,7 @@ func _ready() -> void:
 	header.gui_input.connect(header_input)
 	column.add_child(header)
 	heading=Label.new()
+	heading.text="Calculation"
 	heading.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	heading.clip_text=true
@@ -59,8 +60,7 @@ func _ready() -> void:
 	explanation.add_theme_color_override("default_color",Color("382c1c"))
 	column.add_child(explanation)
 
-func show_calculation(title:String,calculation:String) -> void:
-	heading.text=title
+func show_calculation(_title:String,calculation:String) -> void:
 	explanation.text=readable_equations(calculation)
 	explanation.scroll_to_line(0)
 	var available:Vector2=get_parent().get_viewport_rect().size
@@ -69,9 +69,8 @@ func show_calculation(title:String,calculation:String) -> void:
 	grab_focus()
 	close_button.grab_focus()
 
-func update_calculation(title_text:String,calculation:String) -> void:
+func update_calculation(_title_text:String,calculation:String) -> void:
 	# Do not recenter, resize or reset reading position during a slider adjustment.
-	heading.text=title_text
 	var formatted:=readable_equations(calculation)
 	if explanation.text==formatted:return
 	var reading_position:=explanation.get_v_scroll_bar().value
