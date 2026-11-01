@@ -23,7 +23,7 @@ func show_amount(actor:Node3D,kind:String,amount:float,headshot:bool=false) -> v
 	label.outline_modulate=Color("151b22")
 	label.text="HEADSHOT "+("%.1f"%amount).trim_suffix(".0") if headshot else (("−" if kind in ["stamina","magicka"] else "")+"%.1f %s"%[amount,kind])
 	add_child(label)
-	var height:=0.65 if kind=="stamina" else (0.97 if kind=="magicka" else 0.8)
+	var height:=0.2 if kind=="burn" else (0.65 if kind=="stamina" else (0.97 if kind=="magicka" else 0.8))
 	var offset:=Vector3((serial%3-1)*0.4,height,0)
 	serial+=1
 	var entry:Dictionary={"label":label,"actor":weakref(actor),"kind":kind,"amount":amount,"headshot":headshot,"color":color,"age":0.0,"offset":offset}
