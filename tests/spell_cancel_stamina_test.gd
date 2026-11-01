@@ -52,6 +52,9 @@ func run() -> void:
 	if not check(is_equal_approx(actor.stamina,86.5) and is_equal_approx(actor.mana,100.0-float(b.demo_preview_spec().mana)) and editor.field.shots.size()==1,"Completed release did not pay its ordinary full cost once"):return
 	press_one(b)
 	if not check(is_equal_approx(actor.stamina,86.5) and is_equal_approx(actor.mana,100.0-float(b.demo_preview_spec().mana)),"Restarting after a paid release charged stamina twice"):return
+	if not check(is_equal_approx(b.elapsed,0.55),"Pressing 1 canceled the released animation"):return
+	b.process_demo_preview(0.45)
+	press_one(b)
 	b.process_demo_preview(0.11)
 	b.set_demo_duration(2.0)
 	if not check(is_equal_approx(actor.stamina,84.5),"Changing duration recalculated an interrupted cast using the new duration/cost"):return

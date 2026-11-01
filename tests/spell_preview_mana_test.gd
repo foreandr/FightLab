@@ -123,6 +123,7 @@ func run() -> void:
 	if not check(is_equal_approx(editor.actor.mana,100.0-27.3352876875) and is_equal_approx(editor.actor.stamina,71.4) and editor.field.shots.size()==1,"4s spell did not pay 27.335 mana at 1.2s release"):return
 	b.clear_shots()
 	b.casting_animation["demo_choice"]="block"
+	b.stop_preview_controls(true) # Explicit fixture reset before testing a different cast.
 	b.set_release_fraction(0.5)
 	b.set_demo_duration(20.0)
 	editor.actor.mana=0.0

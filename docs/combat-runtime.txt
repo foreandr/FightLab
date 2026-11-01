@@ -144,6 +144,14 @@ still applies. Execution does not recouple independent testing values.
 
 ANIMATION API
 
+After an animated cast successfully releases, CombatRuntime.cast_committed(actor)
+blocks voluntary restart/actions until finish_cast(actor). Create preserves the
+released animation's duration/profile while draft sliders remain editable for
+the next cast. Native actor tick_cast clears commitment on completion. Forced
+hit/death mode exits can interrupt; explicit practice reset/scene teardown clears
+the lock. Failed releases do not commit, and pre-release cancellation still pays
+the completed fraction of stamina. Follow-through is not a second resource fee.
+
 spell_cast_motion.gd samples native or imported animation profiles by normalized
 progress. It preserves ice restrictions and supports explicit shared aim-pose
 corrections. capture(actor) and blend_from(actor,pose,weight) are shared by cast

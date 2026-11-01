@@ -6,11 +6,27 @@ const Projectile=preload("res://scripts/basic_projectile.gd")
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 var field:Node
 var cast_attempts:Dictionary={}
+var cast_recoveries:Dictionary={}
+
+func cast_committed(actor:CharacterBody3D) -> bool:
+	var key:=actor.get_instance_id()
+	var recovery:Dictionary=cast_recoveries.get(key,{})
+	if recovery.is_empty():return false
+	if recovery.actor.get_ref()!=actor or actor.health<=0 or actor.mode!=recovery.mode:
+		cast_recoveries.erase(key)
+		return false
+	return true
+
+func finish_cast(actor:CharacterBody3D) -> void:
+	cast_recoveries.erase(actor.get_instance_id())
 
 func _init(host:Node) -> void:
 	field=host
 
 func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:float,mode_owned:bool=true) -> void:
+	if cast_committed(actor):return
+	for key in cast_recoveries.keys():
+		if cast_recoveries[key].actor.get_ref()==null:cast_recoveries.erase(key)
 	interrupt_cast_attempt(actor)
 	for key in cast_attempts.keys():
 		if cast_attempts[key].actor.get_ref()==null:cast_attempts.erase(key)
@@ -39,8 +55,10 @@ func _cancel_exited_cast(actor:CharacterBody3D) -> void:
 
 func discard_cast_attempt(actor:CharacterBody3D) -> void:
 	cast_attempts.erase(actor.get_instance_id())
+	finish_cast(actor)
 
 func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={}) -> bool:
+	if cast_committed(actor):return false
 	if not field.round_active or actor.health<=0:
 		interrupt_cast_attempt(actor)
 		return false
@@ -56,7 +74,10 @@ func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={})
 	return paid
 
 func release(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dictionary={}) -> bool:
+	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
+	var animated:bool=not attempt.is_empty() and (not attempt.mode_owned or actor.mode=="cast")
 	if not authorize_cast(actor,spec,profile):return false
+	if animated:cast_recoveries[actor.get_instance_id()]={"actor":weakref(actor),"mode":actor.mode}
 	field.combat_cast_feedback(actor,spec)
 	dispatch(actor,spec,origin)
 	return true

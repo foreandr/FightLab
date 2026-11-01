@@ -54,11 +54,11 @@ func track_width() -> float:return maxf(1.0,size.x-28.0)
 func time_x(time:float) -> float:return 8.0+time/view_span*track_width()
 func ruler_y() -> float:return toolbar.size.y+25.0
 func lane_y() -> float:return ruler_y()+14.0
-func playback_time() -> float:return clampf(float(builder.elapsed),0.0,duration_value())
+func playback_time() -> float:return clampf(float(builder.elapsed),0.0,float(builder.playback_duration()))
 func playback_position() -> Vector2:return Vector2(time_x(playback_time()),ruler_y())
 
 func fit_time() -> void:
-	view_span=maxf(0.2,duration_value()*1.25)
+	view_span=maxf(0.2,maxf(duration_value(),float(builder.playback_duration()))*1.25)
 	refresh()
 
 func zoom_time(factor:float) -> void:
@@ -79,7 +79,7 @@ func _process(delta:float) -> void:
 func refresh() -> void:
 	if not is_instance_valid(builder) or not is_instance_valid(release_handle):return
 	# Grow the scale during a drag, not only when the mouse is released.
-	view_span=maxf(view_span,maxf(0.2,duration_value()*1.12))
+	view_span=maxf(view_span,maxf(0.2,maxf(duration_value(),float(builder.playback_duration()))*1.12))
 	toolbar.size.x=size.x
 	var end:=time_x(duration_value())
 	duration_handle.position=Vector2(end-8,lane_y())

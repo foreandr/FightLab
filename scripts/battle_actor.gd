@@ -242,6 +242,7 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	last_physical_impact_damage=0.0
 	if has_meta("melee_surface_contacts"):remove_meta("melee_surface_contacts")
 	if is_instance_valid(burn_visual):burn_visual.queue_free()
@@ -371,6 +372,7 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 func start_cast(air: bool) -> void:
+	if arena.combat().cast_committed(self):return
 	arena.combat().interrupt_cast_attempt(self)
 	if arena.story_mode:
 		set_close_combat(true)
@@ -456,6 +458,7 @@ func tick_cast(delta: float) -> bool:
 			charged_casts += 1
 		release = true
 	if cast_time >= mode_length:
+		arena.combat().finish_cast(self)
 		mode = "idle" if is_on_floor() else "air"
 		mode_time = 0
 		mode_length = 0.12
@@ -892,6 +895,7 @@ func select_action() -> void:
 		start_jump("air_dash" if choice == 7 else "flip")
 
 func start_jump(kind: String) -> void:
+	if arena.combat().cast_committed(self):return
 	if water_depth>0.5:
 		swim_up()
 		return
@@ -902,6 +906,7 @@ func start_jump(kind: String) -> void:
 	super.start_jump(kind)
 
 func start_punch() -> void:
+	if arena.combat().cast_committed(self):return
 	melee_charge=0
 	var index := melee_sequence % 6
 	if team==2 and haste_time>0:
@@ -921,6 +926,7 @@ func has_story_ability(ability: String) -> bool:
 	return abilities is Array and abilities.has(ability)
 
 func start_story_punch(side: String, charge: float=0.0, charge_profile:Dictionary={}, aim_direction:Vector3=Vector3.ZERO, aim_pitch:float=0.0) -> void:
+	if arena.combat().cast_committed(self):return
 	if not arena.story_mode:
 		start_punch()
 		return
@@ -971,6 +977,7 @@ func story_limb_busy(limb: String) -> bool:
 	return false
 
 func start_story_limb_animation(limb: String, animation: String, speed: float = 1.0) -> bool:
+	if arena.combat().cast_committed(self):return false
 	var channel: String={"left_arm":"arm_l","right_arm":"arm_r","left_leg":"leg_l","right_leg":"leg_r","face":"face"}.get(limb,limb)
 	if not story_limb_players.has(channel) or story_limb_busy(limb):return false
 	if not _play_story_limb_animation(channel,animation,speed):return false
@@ -980,6 +987,7 @@ func start_story_limb_animation(limb: String, animation: String, speed: float = 
 	return true
 
 func start_story_block() -> bool:
+	if arena.combat().cast_committed(self):return false
 	if not player_controlled or story_block_held or story_limb_busy("left_arm") or story_limb_busy("right_arm"):return false
 	if not spend_stamina(7.0):return false
 	story_block_held = true
@@ -990,6 +998,7 @@ func start_story_block() -> bool:
 	return true
 
 func start_story_front_kick(charge_profile:Dictionary={},aim_direction:Vector3=Vector3.ZERO,aim_pitch:float=0.0) -> void:
+	if arena.combat().cast_committed(self):return
 	if not has_story_ability("front_kick"):
 		return
 	if player_controlled:
@@ -1009,6 +1018,7 @@ func start_story_front_kick(charge_profile:Dictionary={},aim_direction:Vector3=V
 	begin_strike(["front_kick", "boxing/front_kick_r", "ball_r", 0.25, 0.48, 15.0, 15.0, 1.35])
 
 func start_motion_dash(direction_index: int) -> bool:
+	if arena.combat().cast_committed(self):return false
 	if health<=0 or freeze_time>0 or is_instance_valid(ragdoll) or not is_on_floor():
 		return false
 	if not spend_stamina(12):
@@ -1030,6 +1040,7 @@ func start_motion_dash(direction_index: int) -> bool:
 	return true
 
 func start_motion_jump() -> bool:
+	if arena.combat().cast_committed(self):return false
 	if water_depth>0.5:
 		swim_up()
 		return not ice_trapped and freeze_time<=0 and stun_time<=0 and not drowned
@@ -1041,6 +1052,7 @@ func start_motion_jump() -> bool:
 	return mode=="takeoff"
 
 func start_editor_motion(kind: String) -> bool:
+	if arena.combat().cast_committed(self):return false
 	if not is_on_floor() or health<=0 or freeze_time>0 or is_instance_valid(ragdoll):return false
 	if kind in ["Run","Sprint"]:
 		if not spend_stamina(6 if kind=="Run" else 10):return false
@@ -1144,6 +1156,7 @@ func tick_motion_dash(delta: float) -> void:
 		velocity.z=0
 
 func start_air_trick(kind: String) -> bool:
+	if arena.combat().cast_committed(self):return false
 	if kind not in ["Flip","Twist"] or is_on_floor() or health<=0 or freeze_time>0 or is_instance_valid(ragdoll):
 		return false
 	if not spend_stamina(8 if kind=="Flip" else 6):
@@ -1185,6 +1198,7 @@ func tick_air_trick(delta: float) -> void:
 			arena.movement_burst(self,true)
 
 func begin_strike(spec: Array, charge: float=0.0) -> void:
+	if arena.combat().cast_committed(self):return
 	if editor_animation_profile.get("category","") in ["Punch","Kick","Knee","Elbow","Uppercut","Sweep","Slash"]:
 		spec=spec.duplicate()
 		spec[1]=editor_animation_profile.clip
@@ -1235,6 +1249,7 @@ func begin_strike(spec: Array, charge: float=0.0) -> void:
 	count_action(spec[0])
 
 func start_uppercut(charged:=false) -> void:
+	if arena.combat().cast_committed(self):return
 	if not charged:
 		melee_charge=0
 		melee_sequence+=1
@@ -1259,6 +1274,7 @@ func flash_stamina_requirement() -> float:
 	return 14+13.0*(0.75 if team==2 and haste_time>0 else 1.0)
 
 func start_burst(paid := false) -> void:
+	if arena.combat().cast_committed(self):return
 	if stamina<flash_stamina_requirement() or (not paid and mana<9):
 		return
 	if not paid:
