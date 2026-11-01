@@ -59,7 +59,8 @@ func reset_environment() -> void:
    fighter.water_depth=0
    fighter.ice_trapped=false
    fighter.air_remaining=8.0
- for p in patches:p.node.queue_free()
+ for p in patches:
+  if is_instance_valid(p.node):p.node.queue_free()
  patches.clear()
  for body in debris:
   if is_instance_valid(body):body.queue_free()
@@ -99,20 +100,28 @@ func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
  if element=="Water":
   add_water(4.0/3.0*PI*pow(float(shot.radius),3),point)
   for p in patches:
-   if p.element=="Fire" and p.point.distance_to(ground_point(point))<radius+p.radius:p.life=0.0
+   if p.element=="Fire" and p.point.distance_to(point)<radius+p.radius:p.life=0.0
  if element=="Ice":
   for pool in water:
    if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<=pool.point.y+pool.depth+0.2 and point.y+radius>=pool.point.y:
     freeze_water(point,radius,potency,pool.depth,pool.radius,pool.point)
- if element in ["Fire","Ice"] and not (element=="Fire" and (shot.get("hit_character",false) or is_finite(water_height(ground_point(point))))):
+ if element in ["Fire","Ice"] and not (element=="Fire" and (shot.get("hit_character",false) or (is_finite(water_height(point)) and point.y<=water_height(point)+0.05))):
   if patches.size()>=48:
-   patches[0].node.queue_free()
+   if is_instance_valid(patches[0].node):patches[0].node.queue_free()
    patches.pop_front()
   # Fire melts ice; ice extinguishes burning ground.
   for p in patches:
-   if p.point.distance_to(ground_point(point))<radius+p.radius and p.element!=element:p.life=0.0
+   if p.point.distance_to(point)<radius+p.radius and p.element!=element:p.life=0.0
   var burn_duration:float=float(shot.spec.get("burn_duration",preload("res://scripts/burn_rules.gd").DURATION))
-  patches.append({"point":ground_point(point),"radius":radius,"element":element,"life":burn_duration if element=="Fire" else 8.0,"burn_duration":burn_duration,"ignited":{},"potency":potency,"source":shot.caster,"node":ground_fire(point,radius,shot.spec.get("appearance",{})) if element=="Fire" else disc(ground_point(point),radius,Color(0.4,0.83,1,0.65))})
+  var patch_point:=ground_point(point)
+  var patch_normal:=Vector3.UP
+  var surface:CollisionObject3D=shot.get("impact_surface") as CollisionObject3D
+  if element=="Fire" and is_instance_valid(surface):
+   var contact:=preload("res://scripts/surface_impact_marks.gd").visual_contact(surface,point,shot.get("impact_normal",Vector3.UP))
+   patch_point=contact.position
+   patch_normal=contact.normal
+  var patch_node:Node3D=surface_fire(patch_point,patch_normal,radius,shot.spec.get("appearance",{}),surface) if element=="Fire" else disc(patch_point,radius,Color(0.4,0.83,1,0.65))
+  patches.append({"point":patch_point,"normal":patch_normal,"normal_local":patch_node.global_basis.inverse()*patch_normal,"radius":radius,"element":element,"life":burn_duration if element=="Fire" else 8.0,"burn_duration":burn_duration,"ignited":{},"potency":potency,"source":shot.caster,"node":patch_node})
  if element=="Lightning":
   for pool in water:
    if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<pool.point.y+pool.depth+0.1 and point.y+radius>=pool.point.y:
@@ -131,6 +140,10 @@ func _physics_process(delta:float) -> void:
   var depth:float=water_height(body.global_position)-body.global_position.y
   if depth>0:
    body.apply_central_force(Vector3.UP*body.mass*clampf(depth*24,0,22)-body.linear_velocity*body.mass*2)
+ for patch in patches:
+  if is_instance_valid(patch.node):
+   patch.point=patch.node.global_position
+   patch.normal=(patch.node.global_basis*patch.get("normal_local",Vector3.UP)).normalized()
  for fighter in arena.fighters:
   var surface:float=water_height(fighter.global_position)
   fighter.water_depth=maxf(0,surface-fighter.global_position.y)
@@ -143,7 +156,8 @@ func _physics_process(delta:float) -> void:
   fighter.surface_slippery=false
   var foot:Vector3=fighter.global_position
   for patch in patches:
-   if patch.life<=0 or flat_distance(foot,patch.point)>patch.radius or absf(foot.y-patch.point.y)>0.4:continue
+   if patch.life<=0 or not is_instance_valid(patch.node):continue
+   if not touches_patch(fighter,patch):continue
    if patch.element=="Ice":fighter.surface_slippery=true
    elif patch.element=="Fire" and fighter.water_depth<0.15:
     var id:int=fighter.get_instance_id()
@@ -158,11 +172,24 @@ func _physics_process(delta:float) -> void:
   pool.node.material_override.albedo_color=Color(0.1,0.45,0.65,0.55)
  update_water_summary()
  for i in range(patches.size()-1,-1,-1):
+  if not is_instance_valid(patches[i].node):
+   patches.remove_at(i)
+   continue
   patches[i].life-=delta
   if patches[i].element=="Fire":patches[i].node.fade(patches[i].life)
   if patches[i].life<=0:
    patches[i].node.queue_free()
    patches.remove_at(i)
+
+func touches_patch(fighter:CharacterBody3D,patch:Dictionary) -> bool:
+ var normal:Vector3=patch.get("normal",Vector3.UP)
+ var foot:Vector3=fighter.global_position
+ if absf(normal.dot(Vector3.UP))>0.7:
+  return flat_distance(foot,patch.point)<=patch.radius and absf(foot.y-patch.point.y)<=0.4
+ var nearest:=Geometry3D.get_closest_point_to_segment(patch.point,foot+Vector3.UP*0.15,fighter.bone_point("Head"))
+ var offset:Vector3=nearest-patch.point
+ var depth:=offset.dot(normal)
+ return absf(depth)<=0.4 and (offset-normal*depth).length()<=patch.radius+0.3
 
 func flat_distance(a:Vector3,b:Vector3) -> float:
  return Vector2(a.x-b.x,a.z-b.z).length()
@@ -409,6 +436,14 @@ func ground_fire(point:Vector3,radius:float,appearance:Dictionary) -> Node3D:
  add_child(fire)
  fire.global_position=ground_point(point)
  fire.setup(radius,appearance)
+ return fire
+
+func surface_fire(point:Vector3,normal:Vector3,radius:float,appearance:Dictionary,surface:Node3D=null) -> Node3D:
+ var fire=preload("res://scripts/spell_ground_fire.gd").new()
+ if is_instance_valid(surface):surface.add_child(fire)
+ else:add_child(fire)
+ fire.global_transform=Transform3D(Basis.IDENTITY,point)
+ fire.setup(radius,appearance,normal)
  return fire
 
 func ground_point(point:Vector3) -> Vector3:

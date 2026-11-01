@@ -207,6 +207,9 @@ func step_shots(delta: float) -> void:
 					hit=true
 					break
 		if not hit and not ground.is_empty():
+			shot["impact_position"]=ground.position
+			shot["impact_normal"]=ground.get("normal",Vector3.UP)
+			shot["impact_surface"]=ground.get("collider")
 			field.spell_impact_burst(ground.position,shot.caster.team,shot.spec,false)
 			if ground.has("normal") and ground.get("collider") is CollisionObject3D:
 				field.surface_impact(ground.collider,ground.position,ground.normal,damage_for(shot.spec),shot.velocity*shot.mass)

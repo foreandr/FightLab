@@ -1,16 +1,17 @@
 extends Node3D
-## Grounded animated tongues, sparse embers/smoke, and a soft scorch base.
+## Surface-attached fire: scorch follows the surface; flames and smoke rise upward.
 const Plume=preload("res://scripts/fire_plume.gd")
 var flames:Array[MeshInstance3D]=[]
 var embers:CPUParticles3D
 var smoke:CPUParticles3D
-func setup(radius:float,appearance:Dictionary={}) -> void:
+func setup(radius:float,appearance:Dictionary={},normal:Vector3=Vector3.UP) -> void:
+ var surface_basis:=Basis(Quaternion(Vector3.UP,normal.normalized()))
  var scorch:=MeshInstance3D.new()
  var quad:=QuadMesh.new()
  quad.size=Vector2.ONE*radius*2
  scorch.mesh=quad
- scorch.rotation.x=-PI/2
- scorch.position.y=0.025
+ scorch.basis=surface_basis*Basis(Vector3.RIGHT,-PI/2)
+ scorch.position=normal*0.025
  var dark:=StandardMaterial3D.new()
  dark.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
  dark.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -25,13 +26,19 @@ func setup(radius:float,appearance:Dictionary={}) -> void:
   var height:float=minf(1.0,0.28+radius*0.45)*(0.7+float(i%4)*0.17)
   var flame:=Plume.flame(height*0.62,height,i*2.37,appearance)
   var r:float=radius*0.8*sqrt(float(i)/maxf(1,count-1))
-  flame.position=Vector3(cos(i*2.4)*r,height*0.5+0.02,sin(i*2.4)*r)
+  flame.position=surface_basis*Vector3(cos(i*2.4)*r,0,sin(i*2.4)*r)+normal*0.07+Vector3.UP*height*0.5
   add_child(flame)
   flames.append(flame)
  embers=Plume.particles(radius*0.5)
+ embers.emission_shape=CPUParticles3D.EMISSION_SHAPE_POINTS
+ var origins:=PackedVector3Array()
+ for flame in flames:origins.append(flame.position-Vector3.UP*float(flame.mesh.size.y)*0.5)
+ embers.emission_points=origins
  add_child(embers)
  smoke=Plume.particles(radius*0.4,true)
- smoke.position.y=0.2
+ smoke.emission_shape=CPUParticles3D.EMISSION_SHAPE_POINTS
+ smoke.emission_points=origins
+ smoke.position=Vector3.UP*0.2
  add_child(smoke)
 
 func fade(remaining:float) -> void:

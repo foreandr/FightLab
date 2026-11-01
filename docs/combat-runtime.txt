@@ -168,7 +168,12 @@ Experimental floating numbers
   Actor ticking consumes only remaining active time and catches
   up missed ticks, including the final tick, so frame size cannot change totals.
   Character projectile impacts apply body burn without spawning ground fire.
-  Ground impacts leave a five-second fire patch. Each patch ignites a character
+  Surface impacts leave a five-second fire patch on the actual struck face.
+  Wall fire/scorch stays at impact height and attaches to that wall; it is not
+  projected onto the ground below. Floor fire stays on the floor. Flame tongues
+  rise upward from surface-distributed anchors. Touching wall fire ignites the
+  character in 3D; a high patch does not burn someone standing beneath it.
+  Each patch ignites a character
   once for the same full burn; standing in it does not refresh the timer each
   frame. Existing explicit burn_duration data can extend either duration later.
   Authoring stats, RHS readouts and execution use these shared rules.
