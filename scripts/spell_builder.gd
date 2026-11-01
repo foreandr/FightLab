@@ -45,12 +45,14 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
+var demo_leg_takeovers:Dictionary={}
+var demo_movement_control:VBoxContainer
 const DEMO_ANIMATIONS:={
  "cross":{"title":"Left cross","source":"Left cross"},
  "hook":{"title":"Melee hook","source":"Melee Hook"},
  "knee":{"title":"Left knee","source":"Left knee"},
  "roundhouse":{"title":"Right roundhouse","source":"Right roundhouse"},
- "dismantle":{"title":"Jump Dismantle","source":"Jump Dismantle","profile":{"title":"Jump Dismantle","group":"Attack","category":"Air Combat","step":"Hook","clip":"spell_demos/jump_dismantle","animation_resource":"res://assets/animations/demos/jump_dismantle.res","source_duration":1.5,"store_raw":true,"attack_bone":"hand_r","source_timing":"native_v1"}},
+ "dismantle":{"title":"Jump Dismantle","source":"Jump Dismantle","profile":{"title":"Jump Dismantle","group":"Attack","category":"Air Combat","step":"Hook","clip":"spell_demos/jump_dismantle","animation_resource":"res://assets/animations/demos/jump_dismantle.res","source_duration":1.5,"store_raw":true,"attack_bone":"hand_r","source_timing":"native_v1","leg_takeover":1.0}},
  "block":{"title":"Block stand","source":"block stand"},
  "mend":{"title":"Self mend","source":"self mend"}
 }
@@ -1273,7 +1275,7 @@ func process_demo_preview(delta:float) -> void:
    var weight:=smoothstep(0.0,DEMO_TRANSITION_SECONDS,demo_exit_elapsed)
    blend_demo_pose(demo_exit_pose,weight)
    if demo_exit_elapsed>=DEMO_TRANSITION_SECONDS:demo_exit_pose.clear()
-   if caster_moving:Locomotion.moving_legs(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting)
+   if caster_moving:Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes,idle_elapsed,caster_sprinting)
   if creation_step=="projectile" and preview_repeating:
    repeat_wait=maxf(0.0,repeat_wait-delta)
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
@@ -1286,7 +1288,7 @@ func process_demo_preview(delta:float) -> void:
   var fade:=minf(DEMO_TRANSITION_SECONDS,cast_duration()*0.25)
   blend_demo_pose(demo_enter_pose,smoothstep(0.0,fade,elapsed))
   if elapsed>=fade:demo_enter_pose.clear()
- if caster_moving:Locomotion.moving_legs(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting)
+ if caster_moving:Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes,idle_elapsed,caster_sprinting)
  if creation_step=="projectile" and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
@@ -1330,6 +1332,9 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if is_instance_valid(editor.actor) and not editor._ensure_animation_source(entry):return false
  if not before.is_empty():blend_demo_pose(before,0.0)
  casting_animation=entry.duplicate(true)
+ var choice:=str(entry.get("demo_choice",""))
+ if demo_leg_takeovers.has(choice):casting_animation["leg_takeover"]=demo_leg_takeovers[choice]
+ if is_instance_valid(demo_movement_control):demo_movement_control.set_value(Locomotion.leg_takeover(casting_animation))
  if entry.has("animation_resource") or entry.has("bvh_source") or entry.has("source_animation"):casting_animation["store_raw"]=true
  demo_source_ready=is_instance_valid(editor.actor)
  demo_button.text=str(entry.get("title","Demo animation"))+"  ▾"
@@ -1341,11 +1346,19 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  GameDiagnostics.log_event("spell_demo_selected",{"title":entry.get("title",""),"clip":entry.get("clip",""),"preview_only":true})
  return true
 
+func set_demo_leg_takeover(value:float) -> void:
+ casting_animation["leg_takeover"]=clampf(value,0.0,1.0)
+ var choice:=str(casting_animation.get("demo_choice",""))
+ if not choice.is_empty():demo_leg_takeovers[choice]=casting_animation.leg_takeover
+ if is_instance_valid(demo_movement_control):demo_movement_control.set_value(Locomotion.leg_takeover(casting_animation))
+ save_demo_preferences()
+
 func save_demo_preferences() -> void:
  if preview_preferences_path.is_empty():return
  var cfg:=ConfigFile.new()
  cfg.set_value("preview","choice",str(casting_animation.get("demo_choice","cross")))
  cfg.set_value("preview","duration",demo_duration)
+ cfg.set_value("preview","leg_takeovers",demo_leg_takeovers)
  cfg.set_value("practice","dummy_god_mode",dummy_god_mode)
  cfg.set_value("practice","character_god_modes",character_god_modes)
  cfg.set_value("preview","hitboxes",preview_hitboxes)
@@ -1355,6 +1368,8 @@ func load_demo_preferences() -> void:
  if preview_preferences_path.is_empty():return
  var cfg:=ConfigFile.new()
  if cfg.load(preview_preferences_path)!=OK:return
+ var saved_takeovers:Variant=cfg.get_value("preview","leg_takeovers",{})
+ demo_leg_takeovers=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
  demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)
  dummy_god_mode=bool(cfg.get_value("practice","dummy_god_mode",true))
  character_god_modes=cfg.get_value("practice","character_god_modes",{})

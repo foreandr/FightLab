@@ -498,7 +498,7 @@
 								"revision:68ac2694653a5ccdd060177e68aa1241",
 								"revision:c8ae2079a4c730486499a3d55ce3b308"
 							],
-							"title": "Continuous corkscrew · leaned back"
+							"title": "Continuous corkscrew \u00b7 leaned back"
 						},
 						"revision:68ac2694653a5ccdd060177e68aa1241": {
 							"asset_type": "animation",
@@ -510,7 +510,7 @@
 							"parents": [
 								"revision:b7c641d1ecc0a9afb3e49c00b7576925"
 							],
-							"title": "Continuous corkscrew · leaned back"
+							"title": "Continuous corkscrew \u00b7 leaned back"
 						},
 						"revision:b7c641d1ecc0a9afb3e49c00b7576925": {
 							"asset_type": "animation",
@@ -555,7 +555,7 @@
 							},
 							"operation": "original source",
 							"parents": [],
-							"title": "Backflip · airborne"
+							"title": "Backflip \u00b7 airborne"
 						},
 						"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92": {
 							"asset_type": "animation",
@@ -587,7 +587,7 @@
 				"step": "Flip",
 				"store_raw": true,
 				"timeline_row_id": 8,
-				"title": "Continuous corkscrew · leaned back",
+				"title": "Continuous corkscrew \u00b7 leaned back",
 				"track": "BODY"
 			},
 			{
@@ -614,7 +614,7 @@
 							"parents": [
 								"revision:c8ae2079a4c730486499a3d55ce3b308"
 							],
-							"title": "Open hand Melee Hook · torso"
+							"title": "Open hand Melee Hook \u00b7 torso"
 						},
 						"revision:c8ae2079a4c730486499a3d55ce3b308": {
 							"asset_type": "animation",
@@ -638,7 +638,7 @@
 							"parents": [
 								"revision:65d03f6b99fb29534ee8e74a2b54dfb3"
 							],
-							"title": "Melee Hook body accent · Take 2"
+							"title": "Melee Hook body accent \u00b7 Take 2"
 						},
 						"source:d027dc11b30c091ff00ff14fa843a769af92bbe9b2e433d4a9fc80a06c0d2c92": {
 							"asset_type": "animation",
@@ -670,7 +670,7 @@
 				"step": "Pose",
 				"store_raw": true,
 				"timeline_row_id": 3,
-				"title": "Melee Hook body accent · Take 2",
+				"title": "Melee Hook body accent \u00b7 Take 2",
 				"track": "TORSO"
 			},
 			{
@@ -698,7 +698,7 @@
 							"parents": [
 								"revision:c8ae2079a4c730486499a3d55ce3b308"
 							],
-							"title": "Open hand Melee Hook · right arm"
+							"title": "Open hand Melee Hook \u00b7 right arm"
 						},
 						"revision:995a421d647011e1afee74b4743a6d38": {
 							"asset_type": "animation",
@@ -710,7 +710,7 @@
 							"parents": [
 								"revision:b432eea66a58b37e78e02263ee1f8691"
 							],
-							"title": "Open hand throw · Take 2"
+							"title": "Open hand throw \u00b7 Take 2"
 						},
 						"revision:b432eea66a58b37e78e02263ee1f8691": {
 							"asset_type": "animation",
@@ -722,7 +722,7 @@
 							"parents": [
 								"revision:4e7c0fdee26246c40f64ec11aef5f317"
 							],
-							"title": "Open hand throw · Take 2"
+							"title": "Open hand throw \u00b7 Take 2"
 						},
 						"revision:c8ae2079a4c730486499a3d55ce3b308": {
 							"asset_type": "animation",
@@ -766,7 +766,7 @@
 				"step": "Hook",
 				"store_raw": true,
 				"timeline_row_id": 5,
-				"title": "Open hand throw · Take 2",
+				"title": "Open hand throw \u00b7 Take 2",
 				"track": "RIGHT ARM"
 			}
 		],
@@ -816,5 +816,6 @@
 			}
 		]
 	},
-	"title": "Jump Dismantle"
+	"title": "Jump Dismantle",
+	"leg_takeover": 1.0
 }

@@ -281,6 +281,8 @@ Regression checks
 
 Cast eligibility: CombatRuntime.can_start_cast gates animation on the authored stamina cost (God Mode bypass). Mana is checked at release; a failed release displays Not enough mana above the actor while the animation continues and attempted stamina is charged. Resource notices are independent of the experimental number toggle.
 
-Spell demo locomotion: CreationLocomotion.moving_legs retains the current eight-way gait on root, pelvis and thigh descendants after the cast pose and entry/exit blend. All demo choices use this, including Left Knee. Stationary previews retain the full authored animation. No movement-lock eligibility or compatibility rules are inferred here.
+Spell demo locomotion: CreationLocomotion.cast_legs reads animation leg_takeover (0..1; legacy default 0). 0 retains the eight-way gait on root, pelvis and thigh descendants; 1 retains the cast pose there; intermediate values interpolate local bone transforms. Upper-body casting remains intact. Apply after the cast pose and entry/exit blend. Stationary previews retain the full authored animation. This policy controls pose authority, not travel, momentum, resource costs or cast compatibility. Jump Dismantle defaults to 1.
 
 Spell demos also include Right Roundhouse from the existing attack catalog and Jump Dismantle baked at 60 Hz from foreandr's saved JUMP DISMANTLE timeline. The portable demo resource contains skeletal jump elevation; its adjacent JSON retains the source timeline and credits. No momentum/slowdown mechanic was added.
+
+Animation authors edit Leg takeover in the custom editor Movement tab. It is stored in custom JSON, copied into variants and restored by undo/redo. The spell demo RHS exposes the same control; per-demo preview overrides persist separately from saved spell effects. Existing committed casts retain their captured animation settings until finished.

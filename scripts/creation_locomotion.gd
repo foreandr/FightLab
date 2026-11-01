@@ -56,3 +56,11 @@ static func moving_legs(actor:Node,input:Vector2,time:float,sprinting:bool,weigh
 	actor.clip=cast_clip
 	actor.model.rotation=model_rotation
 	rig.force_update_all_bone_transforms()
+
+## Animation-owned authority over locomotion; independent of movement speed/costs.
+static func leg_takeover(profile:Dictionary) -> float:
+	var value:=float(profile.get("leg_takeover",0.0))
+	return clampf(value,0.0,1.0) if is_finite(value) else 0.0
+
+static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,sprinting:bool) -> void:
+	moving_legs(actor,input,time,sprinting,1.0-leg_takeover(profile))
