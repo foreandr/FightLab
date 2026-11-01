@@ -3,11 +3,13 @@ extends Window
 var heading:Label
 var explanation:RichTextLabel
 var close_button:Button
+var dragging:=false
 const BODY_SIZE:=16
 const LINE_GAP:=4
 
 func _ready() -> void:
-	title="Calculation · drag to move"
+	title="Calculation"
+	borderless=true
 	transient=true
 	exclusive=false
 	unresizable=true
@@ -27,8 +29,12 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation",12)
 	panel.add_child(column)
 	var header:=HBoxContainer.new()
+	header.mouse_filter=Control.MOUSE_FILTER_STOP
+	header.mouse_default_cursor_shape=Control.CURSOR_MOVE
+	header.gui_input.connect(header_input)
 	column.add_child(header)
 	heading=Label.new()
+	heading.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	heading.clip_text=true
 	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -105,3 +111,29 @@ static func readable_equations(calculation:String) -> String:
 
 func _process(_delta:float) -> void:
 	if visible and has_focus():Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	if not visible:dragging=false
+
+func header_input(event:InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
+		dragging=event.pressed
+		get_viewport().set_input_as_handled()
+
+func _input(event:InputEvent) -> void:
+	if not dragging:return
+	if event is InputEventMouseMotion:
+		move_to(position+Vector2i(event.relative))
+		set_input_as_handled()
+	elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and not event.pressed:
+		dragging=false
+		set_input_as_handled()
+
+func move_to(destination:Vector2i) -> void:
+	var available:Vector2=get_parent().get_viewport_rect().size
+	position=Vector2i(Vector2(destination).clamp(Vector2.ZERO,(available-Vector2(size)).max(Vector2.ZERO)))
+
+func _unhandled_key_input(event:InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or not event.alt_pressed:return
+	var directions:Dictionary={KEY_LEFT:Vector2i.LEFT,KEY_RIGHT:Vector2i.RIGHT,KEY_UP:Vector2i.UP,KEY_DOWN:Vector2i.DOWN}
+	if directions.has(event.keycode):
+		move_to(position+directions[event.keycode]*10)
+		get_viewport().set_input_as_handled()
