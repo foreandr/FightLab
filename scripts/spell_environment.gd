@@ -138,10 +138,7 @@ func _physics_process(delta:float) -> void:
   var head_wet:bool=head.y<water_height(head)-0.05
   fighter.update_breath(delta,head_wet)
   if fighter.health<=0:continue
-  if fighter.editor_pose_locked and (fighter.water_depth>0 or fighter.stun_time>0 or fighter.freeze_time>0):
-   fighter.update_status(delta)
-   fighter.stun_time=maxf(0,fighter.stun_time-delta)
-   if fighter.water_depth>1.1 and not fighter.ice_trapped: fighter.tick_swimming(delta)
+  if fighter.editor_pose_locked and fighter.water_depth>1.1 and not fighter.ice_trapped:fighter.tick_swimming(delta)
   if fighter.water_depth>0:fighter.cleanse_burn()
   fighter.surface_slippery=false
   var foot:Vector3=fighter.global_position

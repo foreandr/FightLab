@@ -1288,11 +1288,11 @@ func tick(delta: float) -> void:
 	if drowned:
 		if is_instance_valid(ragdoll):ragdoll.step(delta)
 		return
-	# Preview and live-practice controllers own the rig while this is set.
-	if editor_pose_locked:return
 	update_status(delta)
-	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH
 	stun_time=maxf(0,stun_time-delta)
+	# Pose ownership never pauses combat status clocks or damage-over-time.
+	if editor_pose_locked:return
+	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH
 	if stun_time>0 and health>0 and not is_instance_valid(ragdoll):
 		invulnerability=maxf(0,invulnerability-delta)
 		return_state="STUNNED  -  trying to return" if practice_return_enabled else ""

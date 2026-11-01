@@ -20,6 +20,12 @@ health, resources, spell data, damage, timers or animation state.
 ElementalVFX also owns its own visual clock. Arena loops no longer advance it;
 bare modes and Create's manual combat preview therefore animate and expire the
 same motes without missing a mode-specific vfx.step call or double-stepping.
+Pose-lock follow-up: BattleActor.tick advances status timers and periodic damage
+before returning control of the rig to the editor. SpellEnvironment no longer
+conditionally ticks locked actors as a workaround. Pose ownership must not pause
+burn/stun/chill/freeze clocks. pose_locked_status_test exercises real Create for
+the complete five-second burn: caster and dummy each take ten ticks, expire and
+remove their flame visuals, while editor pose ownership remains enabled.
 
 Verification
 combat_presentation_contract_test instantiates actual Story, actual Create and a
