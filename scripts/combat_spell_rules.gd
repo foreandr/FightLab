@@ -7,6 +7,8 @@ const Allocation=preload("res://scripts/projectile_allocation.gd")
 const MIN_RELEASE_FRACTION:=0.05
 const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
+const PROJECTILE_BASE_MANA:=10.0
+const FIRE_MANA_SURCHARGE:=10.0
 const NEUTRAL_DAMAGE_BASE_VELOCITY:=(Projectile.MIN_VELOCITY+Projectile.MAX_VELOCITY)*0.5
 const NEUTRAL_DAMAGE_AMP:=1.0+MAX_RELEASE_BONUS*0.5
 const NEUTRAL_DAMAGE_VELOCITY:=NEUTRAL_DAMAGE_BASE_VELOCITY*NEUTRAL_DAMAGE_AMP
@@ -17,9 +19,12 @@ static func projectile_base(element:String,radius:float=0.16,potency:float=1.0,t
 	var spec:=Projectile.spec(element,radius,potency,testing,velocity)
 	if element=="None":
 		spec["name"]="Elementless projectile"
-		spec["mana"]=10.0
-		spec["mana_percent"]=10.0
-	elif element=="Fire":spec["name"]="Fireball"
+		spec["mana"]=PROJECTILE_BASE_MANA
+		spec["mana_percent"]=PROJECTILE_BASE_MANA
+	elif element=="Fire":
+		spec["name"]="Fireball"
+		spec["mana"]=PROJECTILE_BASE_MANA+FIRE_MANA_SURCHARGE
+		spec["mana_percent"]=spec.mana
 	return spec
 
 static func earth_spell(radius:float,potency:float) -> Dictionary:
