@@ -112,3 +112,10 @@ actual 10/10/10 spell, fire/earth/water/ice placement, floor isolation, unbounde
 defaults, below-zero locomotion/charged attacks and actual ragdoll recovery.
 The normal pit, Story, Create, aim/hitbox and movement checks cover existing-map
 compatibility. The test generates its geometry in memory and writes no assets.
+Visible impact surfaces
+
+Maps that use simplified collision proxies can tag the body with
+impact_visual_mesh = weakref(the_visible_mesh_instance). The shared surface-mark
+renderer projects strong impacts onto those triangles and aligns to the visible
+face. Untagged surfaces keep their collision contact. This changes presentation
+only; hit detection and physics remain independent of the map's render mesh.

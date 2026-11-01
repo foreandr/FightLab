@@ -38,7 +38,7 @@ func _ready() -> void:
 		var angle:=i*TAU/SECTORS
 		var half:=PI/SECTORS
 		var b:=Basis(Vector3.UP,angle)
-		build_collision(b*Vector3.BACK,angle)
+		var wall_collision:=build_collision(b*Vector3.BACK,angle)
 		for course in 6:
 			for block in 2:
 				var start:=angle-half+block*half+0.0015
@@ -85,6 +85,7 @@ func _ready() -> void:
 		node.mesh=mesh_
 		node.material_override=material
 		add_child(node)
+		wall_collision.set_meta("impact_visual_mesh",weakref(node))
 		sectors.append(node)
 
 func _process(_delta: float) -> void:
@@ -97,7 +98,7 @@ func _process(_delta: float) -> void:
 		var outward:=Vector3(sin(i*TAU/SECTORS),0,cos(i*TAU/SECTORS))
 		sectors[i].visible=inside_bowl or camera.global_position.y>17 or outward.dot(direction)<0.45
 
-func build_collision(outward: Vector3,angle: float) -> void:
+func build_collision(outward: Vector3,angle: float) -> StaticBody3D:
 	var wall:=StaticBody3D.new()
 	wall.name="ColosseumWall"
 	wall.collision_layer=1
@@ -116,6 +117,7 @@ func build_collision(outward: Vector3,angle: float) -> void:
 	add_child(wall)
 	wall.position=outward*(RADIUS+0.55)+Vector3.UP*(HEIGHT/2)
 	wall.rotation.y=angle
+	return wall
 
 func build_upper_ward() -> void:
 	# The bowl's upper containment is visible, rather than an unexplained air wall.

@@ -1153,7 +1153,10 @@ func set_release_fraction(value:float) -> void:
 
 func demo_physical_stats() -> Dictionary:
  if not limiter_enabled:return {"duration":test_overrides.values.duration,"stamina":test_overrides.values.stamina,"damage":test_overrides.values.damage,"effort":test_overrides.values.stamina}
- return Rules.physical(demo_duration,demo_offensive())
+ var physical:=Rules.physical(demo_duration,demo_offensive())
+ var effect:=preview_effect if creation_step=="projectile" else element
+ physical.stamina=Rules.resource_split(projectile_effect_spec(effect),demo_duration,demo_offensive()).stamina
+ return physical
 
 func demo_offensive() -> bool:
  return str(casting_animation.get("demo_choice","cross")) in ["cross","hook","knee"]

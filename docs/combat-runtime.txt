@@ -132,7 +132,10 @@ crafted offensive spell remains 1 s, 50/50 size/speed, centered timing and full
 power: 10 stamina and 10 damage against an unblocked stationary target.
 Mana discounts use only time before release: duration * release_fraction.
 The default 1s animation releases at 0.3s, costing ~16.25 mana from a 10 base.
-A 4s Fire animation releasing at 30% waits 1.2s and costs ~17.41 of its 20 base.
+A 4s Fire animation releasing at 30% waits 1.2s: ~17.41 mana before effect transfer.
+Effect power now transfers the same fraction of animation stamina into pre-discount
+mana. With 28.5% burn, that example transfers 11.4 of its 40 stamina: 28.6 stamina
+and (20 + 11.4) * 0.87055 = ~27.34 mana. Damage/amp formulas are unchanged.
 Follow-through earns no savings; one second before release is neutral and ten
 seconds before release is free. Physical cost/damage and amp keep their own
 existing duration rules. Authoring, payment and live calculation windows agree.

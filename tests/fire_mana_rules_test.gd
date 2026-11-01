@@ -10,7 +10,7 @@ func _initialize() -> void:
 		var spec:=Rules.author(allocated,duration,0.3,true)
 		var stats:=Rules.authored_stats(allocated,duration,0.3,true)
 		assert(is_equal_approx(Rules.mana_cost(spec),stats.mana))
-		assert(is_equal_approx(stats.mana,20.0*preload("res://scripts/animation_mana_scaling.gd").stats(duration*0.3).multiplier))
+		assert(is_equal_approx(stats.mana,(20.0+Rules.physical(duration,true).stamina*0.4)*preload("res://scripts/animation_mana_scaling.gd").stats(duration*0.3).multiplier))
 		assert(is_equal_approx(stats.burn_dps,preload("res://scripts/burn_rules.gd").dps(spec.potency)))
 	var early:=Rules.authored_stats(allocated,1.0,Rules.MIN_RELEASE_FRACTION,true)
 	var late:=Rules.authored_stats(allocated,1.0,Rules.MAX_RELEASE_FRACTION,true)

@@ -112,6 +112,7 @@ func run() -> void:
 	if not check(is_equal_approx(float(editor.actor.mana),9.0) and is_equal_approx(float(editor.actor.mana_spent),spent),"Insufficient mana still charged"):return
 	b.clear_shots()
 	b.preview_effect="Fire"
+	b.projectile_allocations["Fire"]={"size":0.344,"speed":0.371,"effect":0.285}
 	b.set_demo_duration(4.0)
 	b.set_release_fraction(0.3)
 	editor.actor.mana=100.0;editor.actor.stamina=100.0
@@ -119,7 +120,7 @@ func run() -> void:
 	b.process_demo_preview(1.19)
 	if not check(editor.actor.mana==100.0 and editor.field.shots.is_empty(),"4s spell paid or fired before 1.2s release"):return
 	b.process_demo_preview(0.02)
-	if not check(is_equal_approx(editor.actor.mana,100.0-17.4110112659) and is_equal_approx(editor.actor.stamina,60.0) and editor.field.shots.size()==1,"4s spell did not pay 17.411 mana at 1.2s release"):return
+	if not check(is_equal_approx(editor.actor.mana,100.0-27.3352876875) and is_equal_approx(editor.actor.stamina,71.4) and editor.field.shots.size()==1,"4s spell did not pay 27.335 mana at 1.2s release"):return
 	b.clear_shots()
 	b.casting_animation["demo_choice"]="block"
 	b.set_release_fraction(0.5)
@@ -131,5 +132,5 @@ func run() -> void:
 	b.clear_shots()
 	b.reset_practice_scene()
 	b.set_process(true)
-	print("RESOURCE SYNC PASSED: release-time mana paid at launch, 4s/30% example matches 17.411 mana, identical delays, per-frame equal recovery and HUD easing, common combat transaction/recovery gates")
+	print("RESOURCE SYNC PASSED: release-time mana paid at launch, 4s/30% example matches 27.335 mana, identical delays, per-frame equal recovery and HUD easing, common combat transaction/recovery gates")
 	if "--keep-open" not in OS.get_cmdline_user_args():quit()

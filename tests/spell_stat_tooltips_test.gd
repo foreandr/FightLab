@@ -13,7 +13,7 @@ func run() -> void:
 					var tips:=Tips.breakdown(base,duration,fraction,true,stats)
 					assert(tips.damage.contains("= %s"%Tips.number(float(stats.physical_damage))))
 					assert(tips.mana.contains("= %s"%Tips.number(float(stats.mana))))
-					assert(tips.stamina.contains("= %s"%Tips.number(float(Rules.physical(duration,true).stamina))))
+					assert(tips.stamina.contains("= %s"%Tips.number(float(stats.stamina))))
 					assert(tips.speed.contains("= %s m/s"%Tips.number(float(stats.velocity))))
 					assert(tips.size.contains("= %s m"%Tips.number(float(stats.radius)*2.0)))
 					assert(tips.burn.contains("= %s"%Tips.number(float(stats.burn_dps))))

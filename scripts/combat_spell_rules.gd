@@ -84,8 +84,15 @@ static func allocate(spec:Dictionary,mix:Dictionary,effect:String,total_power:fl
 	result["total_power"]=total_power
 	return result
 
+static func resource_split(base:Dictionary,duration:float,offensive:bool) -> Dictionary:
+	var original:float=physical(duration,offensive).stamina
+	var effect_share:=clampf(float(base.get("power_allocation",{}).get("effect",0.0)),0.0,1.0) if str(base.get("projectile_element","None"))!="None" else 0.0
+	var transfer:=original*effect_share
+	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer,"base_mana":float(base.get("mana",mana_cost(base)))+transfer}
+
 static func authored_stats(base:Dictionary,duration:float,fraction:float,offensive:bool,movement:=Vector3.ZERO,aim:=Vector3.BACK) -> Dictionary:
 	var timing:=cast_timing_stats(duration,fraction)
+	var resources:=resource_split(base,duration,offensive)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
 	var radius:float=float(base.get("projectile_radius",Projectile.MIN_RADIUS))*Projectile.CAST_RADIUS_SCALE
 	var speed:float=float(base.get("projectile_velocity",Projectile.DEFAULT_VELOCITY))
@@ -93,17 +100,18 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var impact:float=float(physical(duration,offensive).damage)*factor
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
+	return {"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=base.duplicate(true)
 	spec["release"]=clampf(fraction,0.0,1.0)
 	var physical_stats:=physical(duration,offensive)
+	var resources:=resource_split(base,duration,offensive)
 	var timing:=cast_timing_stats(duration,fraction)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
-	spec["stamina_cost"]=physical_stats.stamina
-	spec["mana"]=float(base.get("mana",mana_cost(base)))*float(timing.multiplier)
-	if base.has("mana_percent"):spec["mana_percent"]=float(base.mana_percent)*float(timing.multiplier)
+	spec["stamina_cost"]=resources.stamina
+	spec["mana"]=float(resources.base_mana)*float(timing.multiplier)
+	if base.has("mana_percent"):spec["mana_percent"]=(float(base.mana_percent)+float(resources.transfer))*float(timing.multiplier)
 	spec["damage"]=float(physical_stats.damage)*amp
 	spec["physical_damage"]=physical_stats.damage
 	spec["potency"]=float(base.get("potency",1.0))*amp

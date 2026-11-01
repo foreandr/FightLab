@@ -10,6 +10,9 @@ static func radius_for(damage:float) -> float:
 
 func add_impact(surface:CollisionObject3D,point:Vector3,normal:Vector3,damage:float) -> MeshInstance3D:
 	if not Rules.ragdolls(damage) or surface.get_meta("combat_no_surface_marks",false):return null
+	var contact:=visual_contact(surface,point,normal)
+	point=contact.position
+	normal=contact.normal
 	prune()
 	var radius:=radius_for(damage)
 	for mark in marks:
@@ -34,6 +37,30 @@ func add_impact(surface:CollisionObject3D,point:Vector3,normal:Vector3,damage:fl
 	marks.append({"surface":weakref(surface),"node":node,"radius":radius,"damage":damage})
 	serial+=1
 	return node
+
+static func visual_contact(surface:CollisionObject3D,point:Vector3,normal:Vector3) -> Dictionary:
+	# A level can associate visible geometry with its simpler collision proxy.
+	var result:={"position":point,"normal":normal}
+	if not surface.has_meta("impact_visual_mesh"):return result
+	var reference:WeakRef=surface.get_meta("impact_visual_mesh")
+	var visual:MeshInstance3D=reference.get_ref() as MeshInstance3D
+	if not is_instance_valid(visual) or visual.mesh==null:return result
+	var start:=point+normal.normalized()*2.0
+	var origin:=visual.to_local(start)
+	var direction:Vector3=(visual.global_basis.inverse()*-normal).normalized()
+	var faces:=visual.mesh.get_faces()
+	var best:=4.0
+	for i in range(0,faces.size(),3):
+		var contact:Variant=Geometry3D.ray_intersects_triangle(origin,direction,faces[i],faces[i+1],faces[i+2])
+		if contact==null:continue
+		var world_point:=visual.to_global(contact)
+		var distance:=start.distance_to(world_point)
+		if distance<best:
+			best=distance
+			var face_normal:Vector3=visual.global_basis.inverse().transposed()*(faces[i+1]-faces[i]).cross(faces[i+2]-faces[i]).normalized()
+			if face_normal.dot(normal)<0.0:face_normal=-face_normal
+			result={"position":world_point,"normal":face_normal.normalized()}
+	return result
 
 func configure(node:MeshInstance3D,point:Vector3,normal:Vector3,damage:float) -> void:
 	var radius:=radius_for(damage)
