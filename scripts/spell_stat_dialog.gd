@@ -1,5 +1,5 @@
-extends PopupPanel
-## A scrollable snapshot: reading a calculation never depends on keeping the mouse still.
+extends Window
+## A movable, nonmodal inspector. Sliders remain usable while its numbers update.
 var heading:Label
 var explanation:RichTextLabel
 var close_button:Button
@@ -7,16 +7,25 @@ const BODY_SIZE:=16
 const LINE_GAP:=4
 
 func _ready() -> void:
+	title="Calculation · drag to move"
+	transient=true
+	exclusive=false
+	unresizable=true
+	set_meta("nonmodal_calculation",true)
+	close_requested.connect(hide)
 	var paper:=StyleBoxFlat.new()
 	paper.bg_color=Color("f1e8d3")
 	paper.border_color=Color("aa7b32")
 	paper.set_border_width_all(2)
 	paper.set_corner_radius_all(6)
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:paper.set_content_margin(side,12)
-	add_theme_stylebox_override("panel",paper)
+	var panel:=PanelContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.add_theme_stylebox_override("panel",paper)
+	add_child(panel)
 	var column:=VBoxContainer.new()
 	column.add_theme_constant_override("separation",12)
-	add_child(column)
+	panel.add_child(column)
 	var header:=HBoxContainer.new()
 	column.add_child(header)
 	heading=Label.new()
@@ -51,7 +60,17 @@ func show_calculation(title:String,calculation:String) -> void:
 	var available:Vector2=get_parent().get_viewport_rect().size
 	popup_centered(content_size(calculation,available))
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	grab_focus()
 	close_button.grab_focus()
+
+func update_calculation(title_text:String,calculation:String) -> void:
+	# Do not recenter, resize or reset reading position during a slider adjustment.
+	heading.text=title_text
+	var formatted:=readable_equations(calculation)
+	if explanation.text==formatted:return
+	var reading_position:=explanation.get_v_scroll_bar().value
+	explanation.text=formatted
+	explanation.get_v_scroll_bar().set_deferred("value",reading_position)
 
 func content_size(calculation:String,available:Vector2) -> Vector2i:
 	var font:=explanation.get_theme_font("normal_font")
@@ -85,4 +104,4 @@ static func readable_equations(calculation:String) -> String:
 	return "\n".join(rows)
 
 func _process(_delta:float) -> void:
-	if visible:Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	if visible and has_focus():Input.mouse_mode=Input.MOUSE_MODE_VISIBLE

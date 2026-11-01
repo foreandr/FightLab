@@ -4,12 +4,15 @@ var stat:Control
 var hovered:=false
 var resting:StyleBoxFlat
 var highlighted:StyleBoxFlat
-var calculation_dialog:PopupPanel
+var calculation_dialog:Window
 var dialog_theme:Theme
 
-func setup(label:Control,book_theme:Theme=null) -> void:
+func setup(label:Control,book_theme:Theme=null,workspace:Control=null) -> void:
 	stat=label
 	dialog_theme=book_theme
+	if is_instance_valid(workspace):
+		workspace.visibility_changed.connect(func():
+			if not workspace.is_visible_in_tree() and is_instance_valid(calculation_dialog):calculation_dialog.hide())
 	mouse_filter=Control.MOUSE_FILTER_STOP
 	focus_mode=Control.FOCUS_ALL
 	resting=StyleBoxFlat.new()
@@ -54,9 +57,16 @@ func _gui_input(event:InputEvent) -> void:
 func open_calculation() -> void:
 	if not is_instance_valid(calculation_dialog):
 		calculation_dialog=preload("res://scripts/spell_stat_dialog.gd").new()
+		calculation_dialog.visible=false
 		calculation_dialog.theme=dialog_theme
 		add_child(calculation_dialog)
-		calculation_dialog.popup_hide.connect(func():
-			if is_visible_in_tree():grab_focus.call_deferred())
+	if calculation_dialog.visible:
+		calculation_dialog.grab_focus()
+		return
 	var title:String=stat.get_parsed_text() if stat is RichTextLabel else stat.text
 	calculation_dialog.show_calculation(title,stat.tooltip_text)
+
+func _process(_delta:float) -> void:
+	if not is_instance_valid(calculation_dialog) or not calculation_dialog.visible:return
+	var title_text:String=stat.get_parsed_text() if stat is RichTextLabel else stat.text
+	calculation_dialog.update_calculation(title_text,stat.tooltip_text)

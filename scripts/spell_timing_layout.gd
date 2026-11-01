@@ -25,7 +25,7 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	var mana_index:int=b.demo_mana_cost_label.get_index()
 	var mana_box:=preload("res://scripts/spell_stat_box.gd").new()
 	column.add_child(mana_box)
-	mana_box.setup(b.demo_mana_cost_label,b.editor._book_theme())
+	mana_box.setup(b.demo_mana_cost_label,b.editor._book_theme(),b)
 	column.move_child(mana_box,mana_index)
 	var headings:Dictionary={}
 	for child in column.get_children():
@@ -82,7 +82,7 @@ static func build(b:Node,column:VBoxContainer) -> void:
 		label.add_theme_font_size_override("normal_font_size" if label is RichTextLabel else "font_size",12 if label==b.demo_ragdoll_label else 16)
 		var box:=preload("res://scripts/spell_stat_box.gd").new()
 		results.add_child(box)
-		box.setup(label,b.editor._book_theme())
+		box.setup(label,b.editor._book_theme(),b)
 	# Keep detailed values available to tooling, with their explanations on hover.
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:label.hide()
 	refresh_details(b)

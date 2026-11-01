@@ -76,8 +76,27 @@ func run() -> void:
 	click.position=Vector2(1,1)
 	root.push_input(click,true)
 	await process_frame
-	assert(not dialog.visible,"Clicking outside must dismiss the calculation without reaching the arena")
+	assert(dialog.visible,"Calculation windows stay open when clicking outside")
+	assert(not preload("res://scripts/combat_pointer.gd").dialog_open(root),"Calculations must not block the workspace")
+	dialog.position+=Vector2i(-120,20)
+	var moved_position:Vector2i=dialog.position
+	var previous_text:String=dialog.explanation.get_parsed_text()
+	var slider_rect:Rect2=b.total_power_slider.get_global_rect()
+	click.position=slider_rect.position+Vector2(slider_rect.size.x*0.45,slider_rect.size.y*0.5)
+	root.push_input(click,true)
+	var release_click:InputEventMouseButton=click.duplicate()
+	release_click.pressed=false
+	root.push_input(release_click,true)
+	await process_frame
+	await process_frame
+	assert(dialog.explanation.get_parsed_text()!=previous_text,"Slider changes must update the open calculation")
+	assert(dialog.explanation.get_parsed_text()==b.demo_damage_label.tooltip_text)
+	assert(dialog.position==moved_position,"Live updates must preserve the window position")
+	dialog.close_button.pressed.emit()
+	assert(not dialog.visible)
+	damage_box.open_calculation()
 	b.hide()
+	assert(not dialog.visible,"Leaving spell creation closes its calculation windows")
 	b.set_limiter_enabled(false)
 	b.set_test_value("damage",123.0)
 	assert(b.demo_damage_label.tooltip_text.contains("independent testing value"))
