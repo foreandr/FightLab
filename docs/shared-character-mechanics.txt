@@ -64,6 +64,12 @@ Guarded sideways strafe authoring
 
 scripts/combat_floating_numbers.gd
 
+  CharacterStatusVisual is installed by BattleActor, observes all status fields,
+  and owns burn/frozen-leg attachments plus stun/chill/haste motes. It ignores
+  mode/editor flags. ElementalVFX owns the particle animation/expiry clock; modes
+  must not call vfx.step. The same presentation contract runs on actual Story,
+  actual Create and a bare CombatWorld; see combat-presentation-audit.txt.
+
   Shared fire presentation: fire_plume.gd/fire_plume.gdshader draw animated,
   upright tongues with capped CPU embers/smoke. spell_ground_fire.gd owns the
   stationary scorch patch; spell_environment drives its final 1.2s flame fade.

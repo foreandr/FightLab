@@ -4,7 +4,9 @@ The supported gameplay path is:
   mode input -> actor / authored spell -> CombatRuntime -> shared contacts,
   defenses, damage, statuses, resources and physical reactions.
 Story and Create both use this path. Modes own selection, camera input, menus,
-round objectives and presentation. They must not calculate their own hit damage,
+round objectives and UI. Combat-state presentation belongs to shared actors and
+world services, not mode loops: burn, stun, chill, haste and frozen legs must not
+branch on story_mode or editor_animation_only. Modes must not calculate hit damage,
 subtract a second cast cost or implement a second projectile simulation.
 
 STARTING A NEW MODE

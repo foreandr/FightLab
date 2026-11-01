@@ -6,7 +6,6 @@ const Boundary = preload("res://scripts/arena_boundary.gd")
 const GladiatorialPit=preload("res://scenes/maps/gladiatorial_pit.tscn")
 const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const OverdriveAura = preload("res://scripts/overdrive_aura.gd")
-const FrozenLegEffect = preload("res://scripts/frozen_leg_effect.gd")
 const BattleFighterTag = preload("res://scripts/fighter_overhead_tag.gd")
 const StoryRivals = preload("res://scripts/story_rivals.gd")
 const BodyBarrierOverlay = preload("res://scripts/body_barrier_overlay.gd")
@@ -102,10 +101,8 @@ func _ready() -> void:
 			add_child(piece)
 			pieces.append([piece,bone])
 		armor_meshes.append(pieces)
-		var freeze_visual:=FrozenLegEffect.new()
-		freeze_visual.fighter=f
-		add_child(freeze_visual)
-		freeze_effects.append(freeze_visual)
+		# Compatibility references for old diagnostic menus; the actor owns this.
+		freeze_effects.append(f.status_visual.ensure_frozen())
 	for f in fighters:
 		f.rival = fighters[(f.team+1)%fighters.size()]
 	if not story_mode:
@@ -292,22 +289,14 @@ func _physics_process(delta: float) -> void:
 			if piece[0].visible:
 				piece[0].position = f.bone_point(piece[1])
 				piece[0].scale = Vector3(1.4,1.2,0.7) if piece[1]=="spine_03" else Vector3.ONE
-		freeze_effects[i].step()
 		if not editor_animation_only and f.visible and int(elapsed*60)%8 == 0 and f.health > 0:
 			if f.mode=="punch" and f.strike_augmented:
 				vfx.puff(f.bone_point(f.melee_spec[2]),"flame_04" if i==0 else "spark_05",i,Vector2.ONE*0.4,Vector3.UP*0.4,0.2,Color(element_color(i),0.8),0.4)
-			if f.stun_time>0:
-				vfx.puff(f.bone_point("spine_03"),"spark_05",2,Vector2.ONE*0.5,Vector3.UP*0.2,0.2,Color("fff253"),0.25)
-			if f.chill_time > 0:
-				vfx.puff(f.bone_point("calf_l").lerp(f.bone_point("calf_r"),0.5),"smoke_04",1,Vector2.ONE*0.65,Vector3.UP*0.3,0.4,Color(0.6,0.9,1,0.4),0.3)
-			if f.haste_time > 0:
-				vfx.puff(f.bone_point("calf_r"),"trace_02",2,Vector2(0.2,0.8),Vector3.UP,0.16,Color("fff1a3"),0.3)
 	step_shots(delta)
 	if is_instance_valid(storm_aura):
 		storm_aura.step(delta)
 	step_channels(delta)
 	step_particles(delta)
-	vfx.step(delta)
 	update_camera(delta)
 	update_fight_ui()
 	peak_effects = maxi(peak_effects,shots.size()+channels.size()+vfx.motes.size()+vfx.chips.size())

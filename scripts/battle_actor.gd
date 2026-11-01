@@ -46,6 +46,7 @@ var burn_time := 0.0
 var burn_clock := 0.0
 var burn_source: CharacterBody3D
 var burn_visual:Node3D
+var status_visual:Node3D
 var chill_time := 0.0
 var freeze_time := 0.0
 var freeze_immunity := 0.0
@@ -209,6 +210,9 @@ func _ready() -> void:
 		team = 0
 	super._ready()
 	team = actual
+	status_visual=preload("res://scripts/character_status_visual.gd").new()
+	add_child(status_visual)
+	status_visual.setup(self)
 	rng.seed = 27531 + team * 1381
 	_create_story_limb_players()
 	player.add_animation_library("battle", load(BASE + "animations/battle.res"))
@@ -286,6 +290,7 @@ func reset_fighter(location: Vector3) -> void:
 	chill_time = 0
 	freeze_time = 0
 	freeze_immunity = 0
+	if is_instance_valid(status_visual):status_visual.reset()
 	frost = 0
 	armor_time = 0
 	armor_hp = 0
@@ -1484,10 +1489,6 @@ func _resolve_story_limb_strikes(delta: float) -> void:
 			story_strikes[side] = strike
 
 func update_status(delta: float) -> void:
-	if burn_time>0.0 and health>0.0 and not is_instance_valid(burn_visual):
-		burn_visual=preload("res://scripts/character_burn_visual.gd").new()
-		add_child(burn_visual)
-		burn_visual.setup(self)
 	tactics.tick(self,delta)
 	flash_aura_time=maxf(0,flash_aura_time-delta)
 	wall_crash_cooldown=maxf(0,wall_crash_cooldown-delta)

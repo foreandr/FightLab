@@ -162,7 +162,6 @@ func _physics_process(delta: float) -> void:
 	step_pulses(delta)
 	step_channels(delta)
 	step_particles(delta)
-	vfx.step(delta)
 	update_camera(delta)
 	update_fight_ui()
 	peak_effects = maxi(peak_effects, shots.size() + particles.size() + channels.size() + pulses.size())

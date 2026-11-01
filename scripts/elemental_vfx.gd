@@ -13,6 +13,10 @@ var ribbon_materials: Array = []
 var peak := 0
 var particle_shader: Shader
 
+func _process(delta:float) -> void:
+	# Own the visual clock; modes must not remember to advance or double-step it.
+	step(delta)
+
 func _ready() -> void:
 	rng.seed = 48271
 	particle_shader = load(ROOT + "particle.gdshader")

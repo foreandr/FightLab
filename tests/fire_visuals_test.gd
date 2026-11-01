@@ -20,6 +20,7 @@ func run() -> void:
 	human.practice_god_mode=true
 	human.receive_status(editor.actor,{"projectile_element":"Fire","potency":1.0})
 	human.update_status(0.0)
+	human.status_visual._process(0.0)
 	var visual=human.burn_visual
 	assert(is_instance_valid(visual) and visual.anchors.size()==6)
 	visual._process(0.2)
@@ -52,6 +53,7 @@ func run() -> void:
 	var dummy=editor.target
 	dummy.receive_status(editor.actor,{"projectile_element":"Fire","potency":1.0})
 	dummy.update_status(0.0)
+	dummy.status_visual._process(0.0)
 	for anchor in dummy.burn_visual.anchors:assert(dummy.practice_dummy_visual.markers.has(anchor.bone))
 	print("FIRE VISUALS PASSED: ground shader rendered, bounded flame/particle counts, six moving bone anchors, fade, expiry/reset and shared actor integration")
 	quit()

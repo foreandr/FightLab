@@ -1,0 +1,48 @@
+COMBAT PRESENTATION OWNERSHIP AUDIT
+
+Finding
+Story and Create already delegate projectile contact, damage and cast payment to
+CombatRuntime, but that did not prevent the surrounding arena from drawing status
+effects itself. Create sets editor_animation_only; BattleArena's old rendering
+loop used it to hide burn/stun/chill/haste effects. Sharing numerical simulation
+was not sufficient to guarantee shared combat presentation.
+
+Changes
+CharacterStatusVisual is installed by BattleActor itself, including actors spawned
+in a bare CombatWorld. It observes burn, freeze, stun, chill and haste directly.
+It contains no story_mode or editor_animation_only branch. Burn creation no longer
+depends on whether a mode happens to call update_status that frame. Burn follows
+the existing shared bone-following helper. Frozen legs are actor-owned; the old
+BattleArena.freeze_effects list is only a compatibility reference for diagnostics.
+The arena's duplicate status particle loop and duplicate freeze stepping are gone.
+Reset clears effects through the shared actor. Status rendering does not modify
+health, resources, spell data, damage, timers or animation state.
+ElementalVFX also owns its own visual clock. Arena loops no longer advance it;
+bare modes and Create's manual combat preview therefore animate and expire the
+same motes without missing a mode-specific vfx.step call or double-stepping.
+
+Verification
+combat_presentation_contract_test instantiates actual Story, actual Create and a
+bare new CombatWorld. It uses the same actor component and status values under
+all four story_mode/editor_animation_only flag combinations, checks identical
+burn/freeze attachments and stun/chill/haste emission, and verifies reset cleanup.
+It also verifies automatic particle expiry in all three real hosts.
+Ownership guards reject reintroducing status rendering into the arena physics
+loop or mode flags into CharacterStatusVisual. Runtime contract and burn tests
+remain separate checks of actual damage/payment and status ticking.
+
+Limits of this audit
+This closes the identified status-presentation gap. It is not evidence that every
+remaining legacy combat policy is mode-independent. Legacy branches still exist:
+BattleActor.has_story_barrier/start_cast; legacy receive_status team-inferred
+elemental behavior for specs lacking projectile_element; BattleArena's legacy
+charge/shield/armor/augmented-strike visuals and Overdrive aura. Story loadout/input
+policy may differ legitimately, but it must resolve to explicit actor/spell data
+before execution. The user has deferred barrier redesign; this change does not
+silently rebalance those abilities or change that policy. Do not describe the
+entire migration as complete while these boundaries remain.
+
+Required invariant
+Given the same actor state, authored ability and combat rules, combat simulation
+and its in-world effects must match regardless of mode or level. Modes own input,
+UI, selection and objectives, not alternate implementations of combat effects.
