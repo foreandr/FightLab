@@ -119,7 +119,7 @@ projectile specs. animation_mana_scaling.gd owns the existing mana/amp curve.
 
 Rules.allocate(base,mix,element,total_power) applies the chosen power shares.
 Rules.projectile_base builds elementless/elemental content without the UI;
-Rules.neutral_projectile() is a ready-to-use authored 10/10/10 default.
+Rules.neutral_projectile() is a ready-to-use authored default.
 Rules.author(base,duration,release_fraction,offensive) returns a new spec with
 final costs, damage, radius, velocity and potency. Rules.authored_stats returns
 the matching UI values, including optional moving-caster preview. Author once;
@@ -129,7 +129,13 @@ Explicit damage/mana/motion values take precedence. Legacy spell defaults are
 content dictionaries, not alternate combat engines. Older duel content keeps
 its original preset values while using the same execution pipeline. The neutral
 crafted offensive spell remains 1 s, 50/50 size/speed, centered timing and full
-power: 10 mana, 10 stamina, 10 damage against an unblocked stationary target.
+power: 10 stamina and 10 damage against an unblocked stationary target.
+Mana discounts use only time before release: duration * release_fraction.
+The default 1s animation releases at 0.3s, costing ~16.25 mana from a 10 base.
+A 4s Fire animation releasing at 30% waits 1.2s and costs ~17.41 of its 20 base.
+Follow-through earns no savings; one second before release is neutral and ten
+seconds before release is free. Physical cost/damage and amp keep their own
+existing duration rules. Authoring, payment and live calculation windows agree.
 Limiter-off overrides stay in spell_test_overrides.gd; the UI's save rejection
 still applies. Execution does not recouple independent testing values.
 

@@ -46,12 +46,12 @@ func run() -> void:
 	if not check(numbers.entries.size()==1 and numbers.entries[0].kind=="stamina" and is_equal_approx(numbers.entries[0].amount,7.0),"Canceled spell did not display its actual partial cost"):return
 	numbers.clear()
 	b.process_demo_preview(0.55)
-	if not check(numbers.entries.size()==2 and actor.stamina==83 and actor.mana==90,"Cast labels duplicate or disagree with committed resource costs"):return
+	if not check(numbers.entries.size()==2 and actor.stamina==83 and is_equal_approx(actor.mana,100.0-float(b.demo_preview_spec().mana)),"Cast labels duplicate or disagree with committed resource costs"):return
 	var kinds:Dictionary={}
 	for entry in numbers.entries:
 		kinds[entry.kind]=entry.amount
 		if not check(entry.actor.get_ref()==actor,"Cost floats over the wrong actor"):return
-	if not check(kinds=={"stamina":10.0,"magicka":10.0},"Successful spell cost labels are wrong"):return
+	if not check(is_equal_approx(kinds.stamina,10.0) and is_equal_approx(kinds.magicka,float(b.demo_preview_spec().mana)),"Successful spell cost labels are wrong"):return
 	var before:float=editor.target.damage_taken
 	var expected_damage:float=field.shots.back().spec.damage
 	for frame in 100:

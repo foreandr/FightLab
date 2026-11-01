@@ -69,7 +69,7 @@ func run() -> void:
 	for frame in 100:
 		world.step_shots(1.0/60.0)
 		if world.shots.is_empty():break
-	if not check(is_equal_approx(target.damage_taken-before,10.0) and actor.mana==90 and actor.stamina==90,"Same spell has different costs/damage on a generated level"):return
+	if not check(is_equal_approx(target.damage_taken-before,10.0) and is_equal_approx(actor.mana,100.0-Rules.mana_cost(spec)) and actor.stamina==90,"Same spell has different costs/damage on a generated level"):return
 	var env=world.spell_environment
 	var ground:Vector3=map.to_global(Vector3(-3,0,0))
 	var fire:Dictionary={"spec":{"projectile_element":"Fire","potency":1.0},"radius":0.2,"caster":actor,"velocity":Vector3.BACK}

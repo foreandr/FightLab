@@ -43,7 +43,7 @@ func run() -> void:
 	editor.actor.mana=100.0
 	editor.actor.mana_delay=0.0
 	editor.actor.stamina=100.0
-	if not check(is_equal_approx(float(b.demo_projectile_stats().mana),10.0),"One-second neutral spell must cost 10"):return
+	if not check(is_equal_approx(float(b.demo_projectile_stats().mana),10.0*pow(2.0,0.45)),"One-second animation must be priced from its 0.55s release wait"):return
 	for choice in ["cross","hook","knee"]:
 		b.casting_animation["demo_choice"]=choice
 		b.casting_animation["effort"]=73.0
@@ -75,14 +75,18 @@ func run() -> void:
 	var tag=editor.actor.get_node("OverheadHealthTag")
 	tag.update_tag()
 	tag._advance_resource_bars(1.0)
+	var cast_mana:float=b.demo_preview_spec().mana
 	b.play_demo_preview()
 	b.process_demo_preview(0.5)
 	if not check(is_equal_approx(float(editor.actor.mana),100.0) and is_equal_approx(float(editor.actor.stamina),100.0),"Resources spent before launch"):return
 	b.process_demo_preview(0.06)
-	if not check(is_equal_approx(float(editor.actor.mana),90.0) and is_equal_approx(float(editor.actor.stamina),90.0) and is_equal_approx(float(editor.actor.mana_delay),float(editor.actor.stamina_delay)),"Release did not spend matching costs in sync"):return
+	if not check(is_equal_approx(float(editor.actor.mana),100.0-cast_mana) and is_equal_approx(float(editor.actor.stamina),90.0) and is_equal_approx(float(editor.actor.mana_delay),float(editor.actor.stamina_delay)),"Release did not spend the displayed costs together"):return
 	b.process_demo_preview(0.44)
-	if not check(is_equal_approx(float(editor.actor.mana),90.0),"Mana charged more than once"):return
+	if not check(is_equal_approx(float(editor.actor.mana),100.0-cast_mana),"Mana charged more than once"):return
 	if not check(is_equal_approx(float(editor.actor.stamina),100.0-float(b.demo_physical_stats().stamina)),"Stamina deduction differs from displayed cost"):return
+	# Equal starting pools isolate shared recovery/HUD behavior from different prices.
+	editor.actor.mana=90.0;editor.actor.stamina=90.0
+	tag.update_tag();tag._advance_resource_bars(1.0)
 	for frame in 90:
 		b.process_demo_preview(1.0/60.0)
 		if not check(is_equal_approx(float(editor.actor.mana),float(editor.actor.stamina)),"Resource recovery diverged"):return
@@ -106,13 +110,26 @@ func run() -> void:
 	var spent:float=editor.actor.mana_spent
 	b.launch_projectile()
 	if not check(is_equal_approx(float(editor.actor.mana),9.0) and is_equal_approx(float(editor.actor.mana_spent),spent),"Insufficient mana still charged"):return
-	b.set_demo_duration(10.0)
+	b.clear_shots()
+	b.preview_effect="Fire"
+	b.set_demo_duration(4.0)
+	b.set_release_fraction(0.3)
+	editor.actor.mana=100.0;editor.actor.stamina=100.0
+	b.play_demo_preview()
+	b.process_demo_preview(1.19)
+	if not check(editor.actor.mana==100.0 and editor.field.shots.is_empty(),"4s spell paid or fired before 1.2s release"):return
+	b.process_demo_preview(0.02)
+	if not check(is_equal_approx(editor.actor.mana,100.0-17.4110112659) and is_equal_approx(editor.actor.stamina,60.0) and editor.field.shots.size()==1,"4s spell did not pay 17.411 mana at 1.2s release"):return
+	b.clear_shots()
+	b.casting_animation["demo_choice"]="block"
+	b.set_release_fraction(0.5)
+	b.set_demo_duration(20.0)
 	editor.actor.mana=0.0
 	b.launch_projectile()
-	if not check(is_zero_approx(float(editor.actor.mana)),"Free long cast changed mana"):return
+	if not check(is_zero_approx(float(editor.actor.mana)) and editor.field.shots.size()==1,"Ten seconds before release should allow the free spell"):return
 	b.set_demo_duration(1.0)
 	b.clear_shots()
 	b.reset_practice_scene()
 	b.set_process(true)
-	print("RESOURCE SYNC PASSED: 10/10 paid together at release, identical delays, per-frame equal recovery and HUD easing, common combat transaction/recovery gates")
+	print("RESOURCE SYNC PASSED: release-time mana paid at launch, 4s/30% example matches 17.411 mana, identical delays, per-frame equal recovery and HUD easing, common combat transaction/recovery gates")
 	if "--keep-open" not in OS.get_cmdline_user_args():quit()

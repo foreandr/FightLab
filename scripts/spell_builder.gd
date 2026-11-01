@@ -1136,7 +1136,7 @@ func set_demo_duration(value:float) -> void:
  save_demo_preferences()
 
 func demo_mana_stats() -> Dictionary:
- return preload("res://scripts/animation_mana_scaling.gd").stats(demo_duration)
+ return Rules.cast_timing_stats(demo_duration,release_fraction)
 
 func release_timing_stats() -> Dictionary:
  return Rules.release_timing(demo_duration,release_fraction)

@@ -64,6 +64,16 @@ static func release_timing(duration:float,fraction:float) -> Dictionary:
 	var bonus:=clampf((fraction-MIN_RELEASE_FRACTION)/(MAX_RELEASE_FRACTION-MIN_RELEASE_FRACTION),0.0,1.0)
 	return {"fraction":fraction,"seconds":duration*fraction,"bonus_percent":bonus*MAX_RELEASE_BONUS*100.0,"multiplier":1.0+bonus*MAX_RELEASE_BONUS}
 
+static func cast_timing_stats(duration:float,fraction:float) -> Dictionary:
+	var timing:=Mana.stats(duration)
+	var wait:=maxf(0.0,duration)*clampf(fraction,0.0,1.0)
+	var cost:=Mana.multiplier(wait)
+	timing["release_seconds"]=wait
+	timing["multiplier"]=cost
+	timing["cost_percent"]=cost*100.0
+	timing["saved_percent"]=(1.0-cost)*100.0
+	return timing
+
 static func allocate(spec:Dictionary,mix:Dictionary,effect:String,total_power:float) -> Dictionary:
 	var result:=spec.duplicate(true)
 	var shares:=Allocation.spend(mix,effect!="None",total_power)
@@ -75,7 +85,7 @@ static func allocate(spec:Dictionary,mix:Dictionary,effect:String,total_power:fl
 	return result
 
 static func authored_stats(base:Dictionary,duration:float,fraction:float,offensive:bool,movement:=Vector3.ZERO,aim:=Vector3.BACK) -> Dictionary:
-	var timing:=Mana.stats(duration)
+	var timing:=cast_timing_stats(duration,fraction)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
 	var radius:float=float(base.get("projectile_radius",Projectile.MIN_RADIUS))*Projectile.CAST_RADIUS_SCALE
 	var speed:float=float(base.get("projectile_velocity",Projectile.DEFAULT_VELOCITY))
@@ -83,12 +93,13 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var impact:float=float(physical(duration,offensive).damage)*factor
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
+	return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=base.duplicate(true)
+	spec["release"]=clampf(fraction,0.0,1.0)
 	var physical_stats:=physical(duration,offensive)
-	var timing:=Mana.stats(duration)
+	var timing:=cast_timing_stats(duration,fraction)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
 	spec["stamina_cost"]=physical_stats.stamina
 	spec["mana"]=float(base.get("mana",mana_cost(base)))*float(timing.multiplier)

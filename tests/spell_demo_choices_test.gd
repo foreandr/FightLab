@@ -92,14 +92,15 @@ func run() -> void:
 		if not check(FileAccess.get_file_as_string(builder.draft_path)==original_text,"Demo changed spell draft"):return
 		print("SPELL_DEMO_RENDERED ",choice," clip=",builder.casting_animation.clip," max_hand=",max_hand," foot_lift=",max_foot-base_foot," knee_lift=",max_knee-base_knee)
 		builder.demo_confirm_button.pressed.emit()
-		if not check(builder.creation_step=="delivery" and visible_buttons(builder)==["Projectile","Targeted","Touch","Barrier","← Back"],"Confirm did not open the four spell types and Back"):return
+		if not check(builder.creation_step=="delivery" and visible_buttons(builder)==["Projectile","Beam","Targeted","Touch","Barrier","← Back"],"Confirm did not open the spell types and Back"):return
 		builder.delivery_back_button.pressed.emit()
 		if not check(builder.creation_step=="demo","Back did not return to demos"):return
 	if not check(clips.size()==5,"Demo choices do not use five distinct source clips"):return
 	for duration in [0.1,1.0,2.0,4.0,8.0,10.0,12.0,16.0,24.0,40.0,60.0]:
 		builder.demo_duration_slider.value=duration
 		var stats:Dictionary=builder.demo_mana_stats()
-		var expected:=0.0 if duration>=10.0 else pow(2.0,1.0-duration)
+		var wait:float=duration*builder.release_fraction
+		var expected:=0.0 if wait>=10.0 else pow(2.0,1.0-maxf(0.05,wait))
 		if not check(is_equal_approx(float(builder.cast_duration()),duration) and is_equal_approx(float(stats.multiplier),expected),"Duration/mana scaling failed at "+str(duration)):return
 		if not check(builder.projectile_spec()==original_spec,"Changing demo duration altered the saved spell"):return
 		print("SPELL_DEMO_TIMING ",duration," mana_multiplier=",stats.multiplier," saved_percent=",stats.saved_percent)
@@ -124,7 +125,7 @@ func run() -> void:
 	if not check(str(builder.casting_animation.demo_choice)=="mend" and is_equal_approx(float(builder.demo_duration),2.0),"Demo choice/duration were not restored"):return
 	builder.demo_choices.cross.pressed.emit()
 	builder.demo_confirm_button.pressed.emit()
-	for type in ["Projectile","Targeted","Touch","Barrier"]:
+	for type in ["Projectile","Beam","Targeted","Touch","Barrier"]:
 		if type!="Projectile":
 			if not check(builder.delivery_choices[type].disabled,"Unavailable spell type is enabled: "+type):return
 			builder.choose_delivery_type(type)
@@ -134,7 +135,7 @@ func run() -> void:
 		var cfg:=ConfigFile.new()
 		cfg.load(builder.draft_path)
 		if not check(cfg.get_value("spell","delivery_type","")==type and builder.projectile_spec().get("delivery_type","")==type,"Spell type was not saved: "+type):return
-	print("SPELL DEMO PASSED: five exact clips, smooth entry/exit/switching, 100% mana saving at 10s, doubling-time Spell Amplifier, Confirm/Back, unchanged saved spell")
+	print("SPELL DEMO PASSED: five exact clips, smooth entry/exit/switching, 100% mana saving after 10s before release, doubling-time Spell Amplifier, Confirm/Back, unchanged saved spell")
 	builder.draft_path=original_draft
 	builder.preview_preferences_path=original_preferences
 	builder.load_draft()

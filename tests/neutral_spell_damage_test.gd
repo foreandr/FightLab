@@ -26,14 +26,14 @@ func run() -> void:
 	editor.actor.mana=100;editor.actor.stamina=100
 	editor.target.invulnerability=0.0;editor.target.guard_energy=0.0
 	var normal:Dictionary=b.demo_preview_spec()
-	if not check(normal.mana==10.0 and normal.stamina_cost==10.0 and is_equal_approx(float(normal.damage),10.0),"Neutral setup is not 10 mana / 10 stamina / 10 damage"):return
+	if not check(is_equal_approx(normal.mana,10.0*pow(2.0,0.7)) and normal.stamina_cost==10.0 and is_equal_approx(float(normal.damage),10.0),"Neutral damage/stamina benchmark or release-time mana price changed"):return
 	if not check(b.demo_damage_label.text=="Physical damage: 10.0" and "1.00 speed × 1.00 amp" in b.demo_damage_breakdown.text,"RHS does not show neutral damage factors"):return
 	if not check(is_equal_approx(float(normal.projectile_velocity),9.39375) and is_equal_approx(float(normal.projectile_radius),sqrt(0.2)/3.0*1.125),"Calibration changed actual projectile speed/size"):return
 	b.manual_aim=true;b.manual_aim_valid=true
 	b.manual_aim_point=editor.target.bone_point("spine_03")
 	var before:float=editor.target.damage_taken
 	b.launch_projectile()
-	if not check(editor.actor.mana==90 and editor.actor.stamina==90,"Neutral cast does not spend exactly 10/10"):return
+	if not check(is_equal_approx(editor.actor.mana,100.0-float(normal.mana)) and editor.actor.stamina==90,"Neutral cast does not pay its displayed release-time cost"):return
 	for frame in 100:
 		editor.field.step_shots(1.0/60.0)
 		if editor.field.shots.is_empty():break
@@ -51,5 +51,5 @@ func run() -> void:
 	b.playing=false
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/neutral_spell_damage.png")
-	print("NEUTRAL SPELL DAMAGE PASSED: 10 mana/10 stamina/10 damage on actual unblocked hit, neutral RHS factors, unchanged size/speed, responsive timing and speed")
+	print("NEUTRAL SPELL DAMAGE PASSED: release-time mana/10 stamina/10 damage on actual unblocked hit, neutral RHS factors, unchanged size/speed, responsive timing and speed")
 	quit()

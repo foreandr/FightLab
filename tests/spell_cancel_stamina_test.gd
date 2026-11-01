@@ -49,9 +49,9 @@ func run() -> void:
 	press_one(b)
 	if not check(is_equal_approx(actor.stamina,96.5),"Repeated restarts erased or duplicated prior costs"):return
 	b.process_demo_preview(0.55)
-	if not check(is_equal_approx(actor.stamina,86.5) and actor.mana==90 and editor.field.shots.size()==1,"Completed release did not pay its ordinary full cost once"):return
+	if not check(is_equal_approx(actor.stamina,86.5) and is_equal_approx(actor.mana,100.0-float(b.demo_preview_spec().mana)) and editor.field.shots.size()==1,"Completed release did not pay its ordinary full cost once"):return
 	press_one(b)
-	if not check(is_equal_approx(actor.stamina,86.5) and actor.mana==90,"Restarting after a paid release charged stamina twice"):return
+	if not check(is_equal_approx(actor.stamina,86.5) and is_equal_approx(actor.mana,100.0-float(b.demo_preview_spec().mana)),"Restarting after a paid release charged stamina twice"):return
 	b.process_demo_preview(0.11)
 	b.set_demo_duration(2.0)
 	if not check(is_equal_approx(actor.stamina,84.5),"Changing duration recalculated an interrupted cast using the new duration/cost"):return

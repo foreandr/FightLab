@@ -37,7 +37,7 @@ func run() -> void:
 	builder.set_demo_duration(0.5)
 	builder.set_release_fraction(0.55)
 	var example:Dictionary=builder.demo_preview_spec()
-	if not check(is_equal_approx(float(example.mana),10.0*sqrt(2.0)) and builder.demo_mana_cost_label.text=="Mana cost: 14.1","Half-second neutral spell does not cost 14.1 mana"):return
+	if not check(is_equal_approx(float(example.mana),10.0*pow(2.0,1.0-0.5*builder.release_fraction)) and builder.demo_mana_cost_label.text=="Mana cost: %.1f"%float(example.mana),"Half-second neutral spell ignores its release timing"):return
 	if not check(is_equal_approx(float(example.projectile_radius),float(base.projectile_radius)*1.25/3.0) and is_equal_approx(float(example.projectile_velocity),float(base.projectile_velocity)*1.25),"Timing amp does not apply the new 25 percent bonus"):return
 	if not check(builder.demo_amplifier_label.text=="Spell amp: +25.0%" and "1.25 timing" in builder.demo_amp_breakdown.text,"Bonus readouts do not show reduced timing amp"):return
 	for effect in ["Ice","Lightning","Wind","Water","Earth"]:
@@ -71,7 +71,7 @@ func run() -> void:
 	base=builder.projectile_spec()
 	if not check(builder.spell_playback_panel.is_visible_in_tree() and builder.projectile_preview_button.get_parent().get_parent()==builder.spell_playback_panel,"Playback controls are not in the bottom bar"):return
 	builder.effect_choices.Fire.pressed.emit()
-	if not check(builder.element=="None" and builder.demo_preview_spec().projectile_element=="Fire","Effect preview changed saved selection or failed to preview"):return
+	if not check(builder.element=="Fire" and builder.demo_preview_spec().projectile_element=="Fire" and builder.fire_shape_screen.visible,"Fire did not open its confirmed shape workspace"):return
 	builder.effect_confirm_button.pressed.emit()
 	if not check(builder.element=="Fire" and builder.projectile_effect_confirmed,"Confirm did not save effect"):return
 	builder.effect_choices.None.pressed.emit()
@@ -90,6 +90,8 @@ func run() -> void:
 		if not check(is_zero_approx(float(builder.demo_physical_stats().damage)),"Passive demo deals physical damage"):return
 	builder.select_demo_choice("cross")
 	builder.set_demo_duration(0.5)
+	# Playback/repeat controls are independent of resource-budget tests.
+	builder.set_character_god_mode(editor.actor,true)
 	var serial_before:int=editor.field.shot_serial
 	builder.projectile_preview_button.pressed.emit()
 	var fired:=false
@@ -135,7 +137,7 @@ func run() -> void:
 	base=builder.projectile_spec()
 	builder.set_demo_duration(16.0)
 	var amplified:Dictionary=builder.demo_preview_spec()
-	if not check(is_zero_approx(float(amplified.mana)) and is_equal_approx(float(amplified.potency),float(base.potency)*(34.0/9.0)),"Live preview does not match the mana/amp readout"):return
+	if not check(is_equal_approx(float(amplified.mana),float(base.mana)*pow(2.0,1.0-16.0*builder.release_fraction)) and is_equal_approx(float(amplified.potency),float(base.potency)*(34.0/9.0)),"Live preview does not match the mana/amp readout"):return
 	if not check(builder.projectile_spec()==base,"Demo timing modified the saved spell's base stats"):return
 	builder.projectile_back_button.pressed.emit()
 	if not check(builder.creation_step=="delivery" and builder.demo_timing_panel.is_visible_in_tree(),"Back hid the timing readout"):return

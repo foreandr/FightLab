@@ -47,7 +47,7 @@ func run() -> void:
 		else:assert(label.mouse_filter==Control.MOUSE_FILTER_PASS)
 		assert(label.tooltip_text.length()>20)
 	assert(b.demo_damage_label.tooltip_text.contains("Normal impact speed"))
-	assert(b.demo_mana_cost_label.tooltip_text.contains("Mana cost = (10 + 10) × 1 = 20"))
+	assert(b.demo_mana_cost_label.tooltip_text.contains("Wait before release = 1 × 0.3 = 0.3 seconds"))
 	b.set_process(false)
 	b.show()
 	await process_frame

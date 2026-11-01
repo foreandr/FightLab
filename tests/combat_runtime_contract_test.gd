@@ -38,7 +38,7 @@ func run() -> void:
 	base.mana=10.0;base.mana_percent=10.0
 	var absolute_cost:=base.duplicate(true)
 	absolute_cost.erase("mana_percent")
-	if not check(Rules.mana_cost(Rules.author(absolute_cost,1.0,0.3,true))==10.0,"Authoring replaced an absolute mana cost with zero percent"):return
+	if not check(is_equal_approx(Rules.mana_cost(Rules.author(absolute_cost,1.0,0.3,true)),10.0*pow(2.0,0.7)),"Authoring replaced an absolute mana cost with zero percent"):return
 	var spec:=Rules.author(base,1.0,0.3,true)
 	if not check(is_equal_approx(float(Rules.neutral_projectile().damage),10.0),"Reusable default factory lost the neutral benchmark"):return
 	spec.aim_direction=(target.bone_point("spine_03")-actor.bone_point("hand_r")).normalized()
@@ -47,12 +47,13 @@ func run() -> void:
 	if not check(not world.combat().release(actor,spec,actor.bone_point("hand_r")) and actor.stamina==9 and actor.mana==100 and world.shots.is_empty(),"Failed cast spent resources or spawned a shot"):return
 	actor.stamina=100
 	var before:float=target.damage_taken
-	if not check(world.combat().release(actor,spec,actor.bone_point("hand_r")) and actor.mana==90 and actor.stamina==90,"Independent mode does not use atomic 10/10 payment"):return
+	if not check(world.combat().release(actor,spec,actor.bone_point("hand_r")) and is_equal_approx(actor.mana,100.0-Rules.mana_cost(spec)) and actor.stamina==90,"Independent mode did not pay its authored release-time cost"):return
 	for frame in 100:
 		world.step_shots(1.0/60.0)
 		if world.shots.is_empty():break
 	if not check(is_equal_approx(target.damage_taken-before,10.0),"Independent mode's actual unblocked projectile did not deal 10"):return
 	if not check(spec==snapshot,"Execution mutated the authored spell"):return
+	actor.mana=90;actor.stamina=90
 	actor.mana_delay=0.5;actor.stamina_delay=0.5
 	actor.recover_idle_resources(0.25)
 	if not check(actor.mana==90 and actor.stamina==90,"Resource recovery ignored the shared delay"):return
@@ -99,5 +100,5 @@ func run() -> void:
 	var raw:=spec.duplicate(true)
 	raw.mana=1000;raw.mana_percent=1000;raw.stamina_cost=1000
 	if not check(world.combat().authorize_cast(actor,raw) and actor.mana==100 and actor.stamina==100,"God mode is not honored by the new-mode cast path"):return
-	print("COMBAT RUNTIME CONTRACT PASSED: independent mode, real 10/10/10 hit, atomic failure, immutable spell, shared recovery, Story elemental effect, moving animation and transitions, God mode")
+	print("COMBAT RUNTIME CONTRACT PASSED: independent mode, real 10/10/10 hit, release-time mana, atomic failure, immutable spell, shared recovery, Story elemental effect, moving animation and transitions, God mode")
 	quit()
