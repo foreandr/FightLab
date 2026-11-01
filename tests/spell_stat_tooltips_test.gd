@@ -39,7 +39,7 @@ func run() -> void:
 			var box=label.get_meta("stat_hover_box")
 			assert(label.mouse_filter==Control.MOUSE_FILTER_IGNORE)
 			assert(box.mouse_filter==Control.MOUSE_FILTER_STOP)
-			assert(box._get_tooltip(Vector2(1,1))==label.tooltip_text)
+			assert(box._get_tooltip(Vector2(1,1))=="Click to view calculation")
 			box.mouse_entered.emit()
 			assert(box.get_theme_stylebox("panel")==box.highlighted)
 			box.mouse_exited.emit()
@@ -48,6 +48,33 @@ func run() -> void:
 		assert(label.tooltip_text.length()>60)
 	assert(b.demo_damage_label.tooltip_text.contains("Default benchmark"))
 	assert(b.demo_mana_cost_label.tooltip_text.contains("10.0 projectile + 10.0 effect = 20.0"))
+	b.set_process(false)
+	b.show()
+	await process_frame
+	var damage_box=b.demo_damage_label.get_meta("stat_hover_box")
+	var click:=InputEventMouseButton.new()
+	click.button_index=MOUSE_BUTTON_LEFT
+	click.pressed=true
+	damage_box._gui_input(click)
+	await process_frame
+	var dialog=damage_box.calculation_dialog
+	assert(dialog.visible)
+	assert(dialog.explanation.text==b.demo_damage_label.tooltip_text)
+	assert(dialog.heading.text==b.demo_damage_label.text)
+	assert(dialog.close_button.has_focus())
+	dialog.close_button.pressed.emit()
+	assert(not dialog.visible)
+	var enter:=InputEventAction.new()
+	enter.action="ui_accept"
+	enter.pressed=true
+	damage_box._gui_input(enter)
+	assert(dialog.visible)
+	await process_frame
+	click.position=Vector2(1,1)
+	root.push_input(click,true)
+	await process_frame
+	assert(not dialog.visible,"Clicking outside must dismiss the calculation without reaching the arena")
+	b.hide()
 	b.set_limiter_enabled(false)
 	b.set_test_value("damage",123.0)
 	assert(b.demo_damage_label.tooltip_text.contains("independent testing value"))

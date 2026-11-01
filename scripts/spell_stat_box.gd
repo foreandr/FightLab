@@ -4,9 +4,12 @@ var stat:Control
 var hovered:=false
 var resting:StyleBoxFlat
 var highlighted:StyleBoxFlat
+var calculation_dialog:PopupPanel
+var dialog_theme:Theme
 
-func setup(label:Control) -> void:
+func setup(label:Control,book_theme:Theme=null) -> void:
 	stat=label
+	dialog_theme=book_theme
 	mouse_filter=Control.MOUSE_FILTER_STOP
 	focus_mode=Control.FOCUS_ALL
 	resting=StyleBoxFlat.new()
@@ -41,4 +44,19 @@ func refresh_highlight() -> void:
 	add_theme_stylebox_override("panel",highlighted if hovered or has_focus() else resting)
 
 func _get_tooltip(_at_position:Vector2) -> String:
-	return stat.tooltip_text
+	return "Click to view calculation"
+
+func _gui_input(event:InputEvent) -> void:
+	if (event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed) or event.is_action_pressed("ui_accept"):
+		accept_event()
+		open_calculation()
+
+func open_calculation() -> void:
+	if not is_instance_valid(calculation_dialog):
+		calculation_dialog=preload("res://scripts/spell_stat_dialog.gd").new()
+		calculation_dialog.theme=dialog_theme
+		add_child(calculation_dialog)
+		calculation_dialog.popup_hide.connect(func():
+			if is_visible_in_tree():grab_focus.call_deferred())
+	var title:String=stat.get_parsed_text() if stat is RichTextLabel else stat.text
+	calculation_dialog.show_calculation(title,stat.tooltip_text)
