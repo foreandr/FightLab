@@ -238,6 +238,11 @@ Regression checks
   Limiter-off testing retains its independent sliders and numeric inputs.
   tests/spell_cast_timeline_test.gd verifies stretch/release/keyboard edits,
   shared timing calculations, apex limits and raw-mode zero duration.
+  The spell timeline matches the animation editor's ruler/yellow-marker/outlined
+  clip/unused-time shading. Its scale expands during stretch and direct length
+  edits, including 60s clips, so handles stay inside the panel. Holding an end
+  drag at the panel's right edge extends time continuously. Fit and +/- buttons
+  control time zoom; small pointer deltas accumulate before range-step rounding.
 
   tests/shared_character_mechanics_test.gd
   tests/third_person_focus_test.gd

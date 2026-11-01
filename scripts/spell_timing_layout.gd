@@ -35,6 +35,15 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	b.demo_duration_label.reparent(duration)
 	b.demo_duration_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	b.demo_duration_label.add_theme_font_size_override("font_size",22)
+	var length_input:=SpinBox.new()
+	length_input.min_value=0.1
+	length_input.max_value=60.0
+	length_input.step=0.1
+	length_input.suffix=" s"
+	length_input.custom_minimum_size.x=96
+	length_input.value_changed.connect(func(value:float):b.demo_duration_slider.value=value)
+	duration.add_child(length_input)
+	b.set_meta("cast_length_input",length_input)
 	b.demo_duration_slider.custom_minimum_size=Vector2(0,26)
 	b.demo_duration_slider.get_parent().reparent(casting)
 	b.duration_endpoints.reparent(casting)
@@ -48,7 +57,7 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	timeline.setup(b)
 	b.set_meta("cast_timeline",timeline)
 	b.set_meta("release_heading",headings["Spell timing"])
-	var hint:Label=b.editor.menu_label(casting,"Drag edge: duration · Drag Release: cast time",11)
+	var hint:Label=b.editor.menu_label(casting,"Drag clip edge · Yellow marker: release",11)
 	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
 	b.set_meta("cast_timeline_hint",hint)
 	var power:=card(b,column,"Power balance")
@@ -75,6 +84,9 @@ static func build(b:Node,column:VBoxContainer) -> void:
 
 static func refresh_details(b:Node) -> void:
 	if b.has_meta("cast_timeline"):
+		b.get_meta("cast_length_input").visible=b.limiter_enabled
+		b.get_meta("cast_length_input").set_value_no_signal(b.demo_duration_slider.value)
+		b.demo_duration_label.visible=not b.limiter_enabled
 		b.get_meta("cast_timeline").visible=b.limiter_enabled
 		b.get_meta("cast_timeline_hint").visible=b.limiter_enabled
 		b.demo_duration_slider.get_parent().visible=not b.limiter_enabled

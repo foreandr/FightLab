@@ -38,11 +38,44 @@ func run() -> void:
 	assert(is_equal_approx(b.demo_duration,1.4))
 	timeline.handle_input(key,"release",timeline.release_handle)
 	assert(is_equal_approx(b.release_fraction,0.54))
+	# Many tiny pointer movements must accumulate rather than round to zero.
+	var down:=InputEventMouseButton.new()
+	down.button_index=MOUSE_BUTTON_LEFT;down.pressed=true
+	timeline.handle_input(down,"duration",timeline.duration_handle)
+	var motion:=InputEventMouseMotion.new()
+	motion.relative=Vector2(1,0)
+	var drag_start:float=b.demo_duration
+	for i in 40:timeline.handle_input(motion,"duration",timeline.duration_handle)
+	assert(b.demo_duration>drag_start)
+	down.pressed=false
+	timeline.handle_input(down,"duration",timeline.duration_handle)
+	# Stretch far beyond the original two-second viewport without releasing.
+	timeline.dragging="duration"
+	for seconds in [5.0,20.0,40.0,60.0]:
+		timeline.set_at_position("duration",timeline.time_x(seconds))
+		assert(is_equal_approx(b.demo_duration,seconds))
+		assert(timeline.duration_handle.position.x+timeline.duration_handle.size.x<=timeline.size.x)
+		assert(timeline.release_handle.position.x+timeline.release_handle.size.x<=timeline.size.x)
+	timeline.dragging=""
+	var zoom_out:Button=timeline.toolbar.get_child(1)
+	var zoom_in:Button=timeline.toolbar.get_child(2)
+	var original_span:float=timeline.view_span
+	zoom_out.pressed.emit()
+	assert(timeline.view_span>original_span)
+	zoom_in.pressed.emit()
+	assert(is_equal_approx(timeline.view_span,original_span))
+	b.get_meta("cast_length_input").value=30.0
+	assert(is_equal_approx(b.demo_duration,30.0))
+	timeline.toolbar.get_child(0).pressed.emit()
+	assert(is_equal_approx(timeline.view_span,37.5))
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("user://logs/cast_timeline_long.png")
 	b.set_limiter_enabled(false)
 	b.limiter_warning.hide()
 	assert(b.demo_duration_slider.get_parent().visible and b.release_slider.get_parent().visible and b.test_inputs.duration.visible)
 	b.set_test_value("duration",0.0)
 	timeline.refresh()
+	timeline.fit_time()
 	assert(is_finite(timeline.time_x(0.0)))
 	b.set_limiter_enabled(true)
 	b.hide();b.set_demo_duration(1.0);b.set_release_fraction(0.3);b.show()
@@ -50,5 +83,5 @@ func run() -> void:
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/cast_timeline.png")
-	print("CAST TIMELINE PASSED: stretch, release marker, apex limit, keyboard editing, linked timing, limiter inputs and zero duration")
+	print("CAST TIMELINE PASSED: 60s stretch stays visible during drag, fine mouse drag, length input, Fit/zoom buttons, release/apex, keyboard, shared timing and limiter")
 	quit()
