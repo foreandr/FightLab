@@ -9,12 +9,12 @@ var toolbar:HBoxContainer
 var drag_value:=0.0
 
 func _get_minimum_size() -> Vector2:
-	return Vector2(0,(toolbar.get_combined_minimum_size().y if is_instance_valid(toolbar) else 26.0)+84.0)
+	return Vector2(0,(toolbar.get_combined_minimum_size().y if is_instance_valid(toolbar) else 26.0)+72.0)
 
 func setup(owner_builder:Node) -> void:
 	builder=owner_builder
 	name="SpellCastTimeline"
-	custom_minimum_size=Vector2(0,140)
+	custom_minimum_size=Vector2(0,116)
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	mouse_filter=Control.MOUSE_FILTER_STOP
 	tooltip_text="Drag the right edge to stretch the animation. Drag Release to move the cast. Wheel zooms time. Arrow keys adjust the focused handle; Shift makes smaller adjustments."
@@ -52,7 +52,7 @@ func release_value() -> float:return float(builder.release_slider.value)/100.0
 func track_width() -> float:return maxf(1.0,size.x-28.0)
 func time_x(time:float) -> float:return 8.0+time/view_span*track_width()
 func ruler_y() -> float:return toolbar.size.y+25.0
-func lane_y() -> float:return ruler_y()+23.0
+func lane_y() -> float:return ruler_y()+14.0
 
 func fit_time() -> void:
 	view_span=maxf(0.2,duration_value()*1.25)
@@ -77,8 +77,8 @@ func refresh() -> void:
 	duration_handle.position=Vector2(end-8,lane_y())
 	duration_handle.size=Vector2(16,28)
 	var release_x:=time_x(duration_value()*release_value())
-	release_handle.position=Vector2(release_x-11,ruler_y()-11)
-	release_handle.size=Vector2(22,22)
+	release_handle.position=Vector2(release_x-6,lane_y())
+	release_handle.size=Vector2(12,28)
 	release_handle.tooltip_text="Release at %.2f s · Drag or use Left/Right arrows"%(duration_value()*release_value())
 	queue_redraw()
 
@@ -90,9 +90,8 @@ func _draw() -> void:
 	var right:=time_x(view_span)
 	var ruler:=ruler_y()
 	var lane:=lane_y()
-	draw_rect(Rect2(end,ruler-12,maxf(0,right-end),lane+42-ruler),Color("bdb49e"))
+	draw_rect(Rect2(end,ruler-12,maxf(0,right-end),lane+40-ruler),Color("bdb49e"))
 	draw_line(Vector2(8,ruler),Vector2(right,ruler),ink,2)
-	draw_line(Vector2(8,lane+14),Vector2(right,lane+14),ink,2)
 	var step_:float=pow(10.0,floor(log(view_span/3.0)/log(10.0)))
 	if view_span/step_>8:step_*=5
 	elif view_span/step_>4:step_*=2
@@ -106,12 +105,15 @@ func _draw() -> void:
 			if tick<right:draw_line(Vector2(tick,ruler-2),Vector2(tick,ruler+2),ink)
 	draw_rect(Rect2(8,lane,maxf(1,end-8),28),Color("f1e8d3"))
 	draw_rect(Rect2(8,lane,maxf(1,end-8),28),ink,false,2)
-	draw_string(font,Vector2(14,lane+19),"Animation",HORIZONTAL_ALIGNMENT_LEFT,maxf(0,end-34),12,ink)
 	for offset in [4,7]:draw_line(Vector2(end-offset,lane+5),Vector2(end-offset,lane+23),ink)
 	var marker:=time_x(duration_value()*release_value())
-	draw_line(Vector2(marker,ruler-17),Vector2(marker,lane+31),Color("b83d30"),2)
-	draw_circle(Vector2(marker,ruler),8,ink)
-	draw_circle(Vector2(marker,ruler),5.5,Color("dfba49"))
+	var label_x:float=14.0 if marker-17>end-marker-24 else marker+10
+	var available:float=marker-17 if label_x==14.0 else end-label_x-12
+	if available>=font.get_string_size("Animation",HORIZONTAL_ALIGNMENT_LEFT,-1,12).x:
+		draw_string(font,Vector2(label_x,lane+19),"Animation",HORIZONTAL_ALIGNMENT_LEFT,available,12,ink)
+	# Release is a small grip inside the animation, not a separate playhead row.
+	draw_rect(Rect2(marker-3,lane+3,6,22),Color("b5a27f"))
+	draw_rect(Rect2(marker-3,lane+3,6,22),ink,false,1)
 
 func set_at_position(kind:String,x:float) -> void:
 	var time:=maxf(0.0,(x-8.0)/track_width()*view_span)

@@ -80,6 +80,7 @@ func run() -> void:
 	b.set_limiter_enabled(true)
 	b.hide();b.set_demo_duration(1.0);b.set_release_fraction(0.3);b.show()
 	timeline.refresh()
+	timeline.fit_time()
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/cast_timeline.png")

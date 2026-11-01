@@ -57,9 +57,6 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	timeline.setup(b)
 	b.set_meta("cast_timeline",timeline)
 	b.set_meta("release_heading",headings["Spell timing"])
-	var hint:Label=b.editor.menu_label(casting,"Drag clip edge · Yellow marker: release",11)
-	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-	b.set_meta("cast_timeline_hint",hint)
 	var power:=card(b,column,"Power balance")
 	b.power_balance_label.hide()
 	b.total_power_row.reparent(power)
@@ -88,7 +85,6 @@ static func refresh_details(b:Node) -> void:
 		b.get_meta("cast_length_input").set_value_no_signal(b.demo_duration_slider.value)
 		b.demo_duration_label.visible=not b.limiter_enabled
 		b.get_meta("cast_timeline").visible=b.limiter_enabled
-		b.get_meta("cast_timeline_hint").visible=b.limiter_enabled
 		b.demo_duration_slider.get_parent().visible=not b.limiter_enabled
 		b.release_slider.get_parent().visible=not b.limiter_enabled
 		b.get_meta("release_heading").visible=not b.limiter_enabled
