@@ -26,6 +26,7 @@ func build_demo() -> void:
 	for clip in workspace.timeline_clips:parents.append(Credits.source(clip))
 	var entry:=derived_entry({},str(selected.name),resource,"Attack","Air Combat","Hook",parents,"combined editable timeline baked for reuse; source clips retained in metadata")
 	entry.attack_bone="hand_r"
+	entry["animation_type"]="Whole body"
 	entry.composed_timeline=selected.duplicate(true)
 	entry.tags=["airborne","corkscrew","melee","hook","open hand"]
 	var category:=""

@@ -1,4 +1,5 @@
 extends SceneTree
+const Type=preload("res://scripts/animation_cast_type.gd")
 const Movement=preload("res://scripts/character_movement.gd")
 const Locomotion=preload("res://scripts/creation_locomotion.gd")
 const CastPose=preload("res://scripts/spell_cast_motion.gd")
@@ -33,6 +34,7 @@ func run() -> void:
     b.select_demo_choice(choice,false)
     b.stop_preview_controls(true)
     b.set_demo_duration(2.0)
+    b.stop_preview_controls(true)
     b.move_caster(0.01,Vector2.ZERO,false)
     actor.global_position=editor.field.surface_placement(Vector3.ZERO)
     actor.collision_mask=1
@@ -49,7 +51,15 @@ func run() -> void:
     if not check(b.playing,"Movement cancelled "+choice):return
     if not check(actor.global_position.distance_to(position)>0.15,"Translation locked during "+choice):return
     if not check(actor.global_basis.z.dot(forward)>0.995,"Free-facing locked during "+choice):return
-    if not check(is_equal_approx(Vector2(actor.velocity.x,actor.velocity.z).length(),7.0 if sprinting else 4.0),"Run/sprint speed changed during "+choice):return
+    var speed:float=Vector2(actor.velocity.x,actor.velocity.z).length()
+    var initial_speed:=7.0 if sprinting else 4.0
+    if Type.owns_legs(b.playback_animation()):
+     if not check(speed>0.05 and speed<initial_speed*0.6,"Momentum did not coast and slow during "+choice):return
+     if not check(not b.caster_sprinting,"Sprint remained active during "+choice):return
+     var drift:Vector3=actor.velocity;drift.y=0
+     b.move_caster(0.02,Vector2(0,-1),true)
+     if not check(actor.velocity.dot(drift)>0 and actor.velocity.length()<drift.length()+0.001,"Held input redirected/reaccelerated a committed body animation"):return
+    elif not check(is_equal_approx(speed,initial_speed),"Arms cast stopped running during "+choice):return
     # Compare the displayed legs against the running gait, not just actor translation.
     var actual:Array=CastPose.capture(actor)
     Locomotion.pose(actor,Vector2(0,1),b.idle_elapsed,sprinting)
@@ -78,9 +88,10 @@ func run() -> void:
  b.select_demo_choice("dismantle",false)
  b.stop_preview_controls(true)
  if not check(Locomotion.leg_takeover(b.casting_animation)==1.0,"Dismantle must default to full leg takeover"):return
- for weight in [0.0,0.5,1.0]:
-  b.demo_movement_control.slider.value=weight*100.0
-  if not check(Locomotion.leg_takeover(b.casting_animation)==weight,"Demo slider did not change authority"):return
+ for type_ in Type.TYPES:
+  b.demo_movement_control.menu.select(Type.TYPES.find(type_)+1)
+  b.demo_movement_control.menu.item_selected.emit(Type.TYPES.find(type_)+1)
+  if not check(Type.kind(b.casting_animation)==type_,"Demo type selector failed"):return
   CastPose.pose(actor,b.casting_animation,0.5)
   var cast:Array=CastPose.capture(actor)
   Locomotion.pose(actor,Vector2(0,1),0.3,true)
@@ -89,36 +100,50 @@ func run() -> void:
   Locomotion.cast_legs(actor,b.casting_animation,Vector2(0,1),0.3,true)
   var result:Array=CastPose.capture(actor)
   for bone in result.size():
-   var expected:Transform3D=cast[bone].interpolate_with(gait[bone],1.0-weight) if Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone]
-   if not check(result[bone].is_equal_approx(expected),"0/50/100% blend failed"):return
+   var expected:Transform3D=gait[bone] if type_==Type.ARMS and Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone]
+   if not check(result[bone].is_equal_approx(expected),"Type pose policy failed: "+type_):return
  b.save_demo_preferences()
  b.select_demo_choice("cross",false)
  b.load_demo_preferences()
- if not check(Locomotion.leg_takeover(b.casting_animation)==1.0,"Demo policy did not survive preferences reload"):return
+ if not check(Type.kind(b.casting_animation)==Type.WHOLE_BODY,"Demo policy did not survive preferences reload"):return
  b.stop_preview_controls(true)
  editor.select_group("Attack")
  var source:Dictionary={}
  for entry in preload("res://scripts/animation_catalog.gd").entries():
   if entry.title=="Left cross":source=entry
  editor.open_custom_for(source)
- editor.set_custom_leg_takeover(0.0)
  editor.custom_history_baseline=editor._custom_history_snapshot()
  editor.custom_undo_history.clear();editor.custom_redo_history.clear()
- editor.custom_movement_control.slider.value=75.0
- if not check(editor.custom_leg_takeover==0.75,"Authoring control failed"):return
+ editor.custom_movement_control.menu.select(2)
+ editor.custom_movement_control.menu.item_selected.emit(2)
+ if not check(editor.custom_animation_type==Type.LEGS,"Authoring type control failed"):return
  editor.undo_custom_edit()
- if not check(editor.custom_leg_takeover==0.0,"Undo did not restore policy"):return
+ if not check(editor.custom_animation_type==Type.ARMS,"Undo did not restore type"):return
  editor.redo_custom_edit()
- if not check(editor.custom_leg_takeover==0.75,"Redo did not restore policy"):return
- var name_:="Leg Takeover Test "+str(Time.get_ticks_usec())
+ if not check(editor.custom_animation_type==Type.LEGS,"Redo did not restore type"):return
+ var name_:="Animation Type Test "+str(Time.get_ticks_usec())
  editor.custom_name.text=name_
+ editor.custom_animation_type=""
+ editor.save_custom_jump()
+ if not check(editor.custom_status.text.contains("Choose Arms"),"Undeclared custom animation was accepted"):return
+ editor.set_custom_animation_type(Type.LEGS)
  editor.save_custom_jump()
  var saved_path:String=editor.custom_edit_path
  var found:=false
  for entry in editor.load_custom_motion("Punch"):
-  if entry.title==name_:found=Locomotion.leg_takeover(entry)==0.75
+  if entry.title==name_:found=Type.kind(entry)==Type.LEGS
  if not check(found,"Authored leg control did not survive save/reload"):return
  DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_path))
+ editor.open_animation_type_dialog({"title":"Unclassified import","clip":"missing"},"Motion","Downloaded")
+ var dialog:ConfirmationDialog=editor.get_child(editor.get_child_count()-1)
+ if not check(dialog.get_ok_button().disabled,"Import did not require a declaration"):return
+ var control=dialog.get_child(0)
+ for child in dialog.get_children():
+  if child.name=="AnimationType":control=child
+ control.menu.select(3);control.menu.item_selected.emit(3)
+ if not check(not dialog.get_ok_button().disabled,"Choosing import type did not enable confirmation"):return
+ dialog.canceled.emit()
+
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all seven demos run/sprint and turn in free aim in demo/projectile stages; per-animation leg takeover respected, casting upper body remains, stationary full-body demos return")
+ print("MOVING DEMOS PASS: all seven demos run/sprint and turn in free aim in demo/projectile stages; required animation types, pose ownership, initial-direction momentum decay and Arms running respected, casting upper body remains, stationary full-body demos return")
  quit()

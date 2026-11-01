@@ -6,6 +6,7 @@ const CastPose=preload("res://scripts/spell_cast_motion.gd")
 const RigPose=preload("res://scripts/editor_rig_pose.gd")
 const Provenance=preload("res://scripts/asset_provenance.gd")
 const Allocation=preload("res://scripts/projectile_allocation.gd")
+const CastType=preload("res://scripts/animation_cast_type.gd")
 const Locomotion=preload("res://scripts/creation_locomotion.gd")
 var spell_provenance:Dictionary={}
 var spell_provenance_signature:=""
@@ -45,16 +46,16 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
-var demo_leg_takeovers:Dictionary={}
+var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
 const DEMO_ANIMATIONS:={
- "cross":{"title":"Left cross","source":"Left cross"},
- "hook":{"title":"Melee hook","source":"Melee Hook"},
- "knee":{"title":"Left knee","source":"Left knee"},
- "roundhouse":{"title":"Right roundhouse","source":"Right roundhouse"},
- "dismantle":{"title":"Jump Dismantle","source":"Jump Dismantle","profile":{"title":"Jump Dismantle","group":"Attack","category":"Air Combat","step":"Hook","clip":"spell_demos/jump_dismantle","animation_resource":"res://assets/animations/demos/jump_dismantle.res","source_duration":1.5,"store_raw":true,"attack_bone":"hand_r","source_timing":"native_v1","leg_takeover":1.0}},
- "block":{"title":"Block stand","source":"block stand"},
- "mend":{"title":"Self mend","source":"self mend"}
+ "cross":{"title":"Left cross","source":"Left cross","animation_type":"Arms"},
+ "hook":{"title":"Melee hook","source":"Melee Hook","animation_type":"Arms"},
+ "knee":{"title":"Left knee","source":"Left knee","animation_type":"Legs"},
+ "roundhouse":{"title":"Right roundhouse","source":"Right roundhouse","animation_type":"Legs"},
+ "dismantle":{"title":"Jump Dismantle","source":"Jump Dismantle","profile":{"title":"Jump Dismantle","group":"Attack","category":"Air Combat","step":"Hook","clip":"spell_demos/jump_dismantle","animation_resource":"res://assets/animations/demos/jump_dismantle.res","source_duration":1.5,"store_raw":true,"attack_bone":"hand_r","source_timing":"native_v1","animation_type":"Whole body"}},
+ "block":{"title":"Block stand","source":"block stand","animation_type":"Arms"},
+ "mend":{"title":"Self mend","source":"self mend","animation_type":"Arms"}
 }
 var demo_duration:=1.0
 var limiter_enabled:=true
@@ -1043,6 +1044,7 @@ func select_demo_choice(choice:String,save:=true) -> void:
   if str(entry.get("title","")).to_lower()==source_name:
    var profile:Dictionary=entry.duplicate(true)
    profile.title=str(DEMO_ANIMATIONS[choice].title)
+   profile["animation_type"]=str(DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))
    profile["demo_choice"]=choice
    profile["duration"]=demo_duration
    if choose_demo_animation(profile,save) and is_visible_in_tree():play_demo_preview()
@@ -1244,6 +1246,7 @@ func play_demo_preview() -> void:
  editor.actor.player.pause()
  blend_demo_pose(demo_enter_pose,0.0)
  elapsed=0
+ CastType.begin(editor.actor,casting_animation)
  playing=true
  released=false
  if creation_step=="projectile":
@@ -1333,8 +1336,8 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if not before.is_empty():blend_demo_pose(before,0.0)
  casting_animation=entry.duplicate(true)
  var choice:=str(entry.get("demo_choice",""))
- if demo_leg_takeovers.has(choice):casting_animation["leg_takeover"]=demo_leg_takeovers[choice]
- if is_instance_valid(demo_movement_control):demo_movement_control.set_value(Locomotion.leg_takeover(casting_animation))
+ if demo_animation_types.has(choice) and str(demo_animation_types[choice]) in CastType.TYPES:casting_animation["animation_type"]=demo_animation_types[choice]
+ if is_instance_valid(demo_movement_control):demo_movement_control.set_value(CastType.kind(casting_animation))
  if entry.has("animation_resource") or entry.has("bvh_source") or entry.has("source_animation"):casting_animation["store_raw"]=true
  demo_source_ready=is_instance_valid(editor.actor)
  demo_button.text=str(entry.get("title","Demo animation"))+"  ▾"
@@ -1346,11 +1349,17 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  GameDiagnostics.log_event("spell_demo_selected",{"title":entry.get("title",""),"clip":entry.get("clip",""),"preview_only":true})
  return true
 
-func set_demo_leg_takeover(value:float) -> void:
- casting_animation["leg_takeover"]=clampf(value,0.0,1.0)
+func set_demo_animation_type(value:String) -> void:
+ if value not in CastType.TYPES:return
+ if cast_committed():
+  demo_movement_control.set_value(CastType.kind(casting_animation))
+  return
+ casting_animation["animation_type"]=value
  var choice:=str(casting_animation.get("demo_choice",""))
- if not choice.is_empty():demo_leg_takeovers[choice]=casting_animation.leg_takeover
- if is_instance_valid(demo_movement_control):demo_movement_control.set_value(Locomotion.leg_takeover(casting_animation))
+ if not choice.is_empty():demo_animation_types[choice]=value
+ if is_instance_valid(demo_movement_control):demo_movement_control.set_value(value)
+ if playing:CastType.begin(editor.actor,casting_animation)
+ refresh_demo_timing()
  save_demo_preferences()
 
 func save_demo_preferences() -> void:
@@ -1358,7 +1367,7 @@ func save_demo_preferences() -> void:
  var cfg:=ConfigFile.new()
  cfg.set_value("preview","choice",str(casting_animation.get("demo_choice","cross")))
  cfg.set_value("preview","duration",demo_duration)
- cfg.set_value("preview","leg_takeovers",demo_leg_takeovers)
+ cfg.set_value("preview","animation_types",demo_animation_types)
  cfg.set_value("practice","dummy_god_mode",dummy_god_mode)
  cfg.set_value("practice","character_god_modes",character_god_modes)
  cfg.set_value("preview","hitboxes",preview_hitboxes)
@@ -1368,8 +1377,8 @@ func load_demo_preferences() -> void:
  if preview_preferences_path.is_empty():return
  var cfg:=ConfigFile.new()
  if cfg.load(preview_preferences_path)!=OK:return
- var saved_takeovers:Variant=cfg.get_value("preview","leg_takeovers",{})
- demo_leg_takeovers=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
+ var saved_takeovers:Variant=cfg.get_value("preview","animation_types",{})
+ demo_animation_types=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
  demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)
  dummy_god_mode=bool(cfg.get_value("practice","dummy_god_mode",true))
  character_god_modes=cfg.get_value("practice","character_god_modes",{})
@@ -1542,6 +1551,7 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  spec["appearance"]=appearances.get(effect,{}).duplicate(true)
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
  spec["provenance"]=spell_provenance.duplicate(true)
+ spec["animation_type"]=CastType.kind(casting_animation)
  spec["release"]=release_fraction
  spec["release_timing_multiplier"]=float(release_timing_stats().multiplier)
  if not delivery_type.is_empty():spec["delivery_type"]=delivery_type
@@ -1582,6 +1592,7 @@ func play_cast_preview() -> void:
   return
  reset_caster_pose()
  elapsed=0
+ CastType.begin(editor.actor,casting_animation)
  playing=true
  released=false
  cast_attempt_actor=editor.actor
@@ -2026,6 +2037,15 @@ func _physics_process(delta:float) -> void:
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  # Scriptable locomotion entry point; live input/focus checks remain above.
  var caster=editor.actor
+ if playing and CastType.owns_legs(playback_animation()):
+  caster.use_sprint(delta,false,false)
+  var drift:=CastType.drift(caster,playback_animation(),delta)
+  caster_move_axes=axes
+  caster_sprinting=false
+  caster_moving=drift.length_squared()>0.0001
+  editor.field.move_character(caster,drift.normalized(),drift.length(),delta)
+  Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
+  return
  sprinting=caster.use_sprint(delta,sprinting,not axes.is_zero_approx())
  if (not axes.is_equal_approx(caster_move_axes) or sprinting!=caster_sprinting) and not playing:begin_demo_exit()
  caster_move_axes=axes

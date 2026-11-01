@@ -243,3 +243,5 @@ resource recovery, explicit Story elemental effects, animation pose changes and
 transitions, swept melee/one-hit behavior, heal/buff dispatch and God Mode.
 Run the normal Story/Create integration checks as well: they verify their
 adapters, not a separate set of combat calculations.
+
+Animation type contract: authored animation profiles declare animation_type as Arms, Legs or Whole body. Reuse AnimationCastType.begin/drift for cast inertia and CreationLocomotion.cast_legs for posing; do not create mode-specific tuning. Pass animation_type on the authored spell base so CombatSpellRules applies the same tentative Legs physical bonus to the UI and actual launch. New animations must declare type; legacy migration is conservative.

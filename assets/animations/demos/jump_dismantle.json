@@ -817,5 +817,5 @@
 		]
 	},
 	"title": "Jump Dismantle",
-	"leg_takeover": 1.0
+	"animation_type": "Whole body"
 }

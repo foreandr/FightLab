@@ -223,6 +223,7 @@ func bake(name_:String,duration:float,sampler:Callable) -> Dictionary:
 
 func derived_entry(source:Dictionary,title:String,resource:Dictionary,group:String,category:String,step:String,parents:Array,operation:String) -> Dictionary:
 	var entry:Dictionary={"title":title,"clip":resource.clip,"animation_resource":resource.path,"duration":resource.duration,"source_duration":resource.duration,"group":group,"category":category,"step":step,"store_raw":true,"source_timing":"native_v1"}
+	entry["animation_type"]="Whole body" if step in ["Flip","Twist","Jump"] else "Arms"
 	entry.provenance=Credits.derive(parents,"animation",title,Credits.creator_name(),operation)
 	workspace._ensure_animation_source(entry)
 	return entry

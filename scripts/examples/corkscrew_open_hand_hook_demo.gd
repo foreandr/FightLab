@@ -104,6 +104,7 @@ func derived_entry(source:Dictionary,title:String,resource:Dictionary,group:Stri
 		title="Open hand Melee Hook · torso" if group=="Motion" else "Open hand Melee Hook · right arm"
 		if group=="Attack":step="Hook"
 	var entry:Dictionary={"title":title,"clip":resource.clip,"animation_resource":resource.path,"duration":resource.duration,"source_duration":resource.duration,"group":group,"category":category,"step":step,"store_raw":true,"source_timing":"native_v1"}
+	entry["animation_type"]="Whole body" if step in ["Flip","Twist","Jump"] else "Arms"
 	entry.provenance=Credits.derive(credits,"animation",title,Credits.creator_name(),"Melee Hook variant: straight open right fingers, knee-directed vertical reach, extra 0.12s delay; continuous full corkscrew")
 	workspace._ensure_animation_source(entry)
 	return entry

@@ -1,6 +1,7 @@
 extends RefCounted
 ## Shared authoring and execution rules. Defaults are content, never mode logic.
 const Projectile=preload("res://scripts/basic_projectile.gd")
+const CastType=preload("res://scripts/animation_cast_type.gd")
 const Mana=preload("res://scripts/animation_mana_scaling.gd")
 const Momentum=preload("res://scripts/physical_momentum.gd")
 const Allocation=preload("res://scripts/projectile_allocation.gd")
@@ -97,18 +98,21 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var radius:float=float(base.get("projectile_radius",Projectile.MIN_RADIUS))*Projectile.CAST_RADIUS_SCALE
 	var speed:float=float(base.get("projectile_velocity",Projectile.DEFAULT_VELOCITY))
 	var factor:=speed*amp/NEUTRAL_DAMAGE_VELOCITY
-	var impact:float=float(physical(duration,offensive).damage)*factor
+	var type_multiplier:=CastType.physical_multiplier(base)
+	var impact:float=float(physical(duration,offensive).damage)*factor*type_multiplier
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
+	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=base.duplicate(true)
 	spec["release"]=clampf(fraction,0.0,1.0)
 	var physical_stats:=physical(duration,offensive)
+	physical_stats.damage*=CastType.physical_multiplier(base)
 	var resources:=resource_split(base,duration,offensive)
 	var timing:=cast_timing_stats(duration,fraction)
 	var amp:float=float(timing.amplifier)*float(release_timing(duration,fraction).multiplier)
+	spec["animation_type_multiplier"]=CastType.physical_multiplier(base)
 	spec["stamina_cost"]=resources.stamina
 	spec["mana"]=float(resources.base_mana)*float(timing.multiplier)
 	if base.has("mana_percent"):spec["mana_percent"]=(float(base.mana_percent)+float(resources.transfer))*float(timing.multiplier)

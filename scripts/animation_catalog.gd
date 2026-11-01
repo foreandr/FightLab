@@ -51,7 +51,7 @@ static func entries() -> Array[Dictionary]:
 	return result
 static func item(group: String,category: String,title: String,step: String,clip: String,kind: String="ground") -> Dictionary:
 	if group=="Attack":category=category_for(category)
-	return {"group":group,"category":category,"title":title,"step":step,"clip":clip,"kind":kind}
+	return {"group":group,"category":category,"title":title,"step":step,"clip":clip,"kind":kind,"animation_type":"Legs" if category=="Kick" else ("Arms" if group=="Attack" and category in ["Punch","Block"] else "Whole body")}
 
 static func category_for(category:String) -> String:
 	if category in ["Uppercut","Elbow","Slash"]:return "Punch"

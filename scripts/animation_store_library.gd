@@ -18,6 +18,7 @@ func load_state() -> void:
 		taken=cfg.get_value("store","taken",{}).duplicate(true)
 		blocked=cfg.get_value("store","blocked",{}).duplicate(true)
 	_load_project_entries()
+	for entry in taken.values():entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").legacy_type(entry)
 
 func _load_project_entries() -> void:
 	if not FileAccess.file_exists(ProjectAssets.MANIFEST):return
@@ -37,6 +38,7 @@ func save() -> bool:
 	return cfg.save(path)==OK
 
 func take(entry:Dictionary,group:String,category:String,existing_names:Array=[],animation:Animation=null) -> bool:
+	if not preload("res://scripts/animation_cast_type.gd").declared(entry):return false
 	var id:=key(entry)
 	if taken.has(id):id=id+":"+Crypto.new().generate_random_bytes(6).hex_encode()
 	var local:Dictionary=entry.duplicate(true)

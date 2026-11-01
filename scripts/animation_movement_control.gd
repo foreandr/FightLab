@@ -1,27 +1,32 @@
 extends VBoxContainer
-## The same animation authoring control is used in the editor and demo workspace.
-signal value_changed(value:float)
-var slider:HSlider
-var caption:Label
+## Required animation declaration, shared by authoring, demo and import controls.
+signal value_changed(value:String)
+const Type=preload("res://scripts/animation_cast_type.gd")
+var menu:OptionButton
+var note:Label
 func _init() -> void:
- name="AnimationLegTakeover"
+ name="AnimationType"
  add_theme_constant_override("separation",4)
- caption=Label.new()
+ var caption:=Label.new()
+ caption.text="Animation type"
  caption.add_theme_font_size_override("font_size",15)
  add_child(caption)
- slider=HSlider.new()
- slider.name="LegTakeover"
- slider.min_value=0;slider.max_value=100;slider.step=1
- slider.custom_minimum_size.y=24
- slider.focus_mode=Control.FOCUS_ALL
- slider.tooltip_text="0%: keep running legs. 100%: this animation controls the legs and pelvis. Values between blend both. Does not change travel speed."
- add_child(slider)
- slider.value_changed.connect(func(value:float):
-  refresh(value/100.0)
-  value_changed.emit(value/100.0))
- set_value(0.0)
-func set_value(value:float) -> void:
- slider.set_value_no_signal(clampf(value,0.0,1.0)*100.0)
- refresh(slider.value/100.0)
-func refresh(value:float) -> void:
- caption.text="Leg takeover: %.0f%%"%(value*100.0)
+ menu=OptionButton.new()
+ menu.name="AnimationTypeChoice"
+ menu.add_item("Choose type…")
+ menu.set_item_disabled(0,true)
+ for type_ in Type.TYPES:menu.add_item(type_)
+ menu.focus_mode=Control.FOCUS_ALL
+ add_child(menu)
+ note=Label.new()
+ note.add_theme_font_size_override("font_size",13)
+ note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ add_child(note)
+ menu.item_selected.connect(func(index:int):
+  var type_:String=Type.TYPES[index-1]
+  set_value(type_)
+  value_changed.emit(type_))
+ set_value("")
+func set_value(type_:String) -> void:
+ menu.select(Type.TYPES.find(type_)+1)
+ note.text=Type.description(type_)

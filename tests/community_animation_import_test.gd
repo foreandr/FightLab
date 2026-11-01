@@ -34,6 +34,7 @@ func run():
 	assert(quality.ok,"Valid punch failed the clipping gate: "+str(quality.get("reason","")))
 	var project_manifest_existed:=FileAccess.file_exists(preload("res://scripts/animation_project_assets.gd").MANIFEST)
 	if not editor.store_library.is_taken(entry):
+		entry["animation_type"]="Whole body"
 		assert(editor.store_library.take(entry,"Motion","Downloaded",[],animation),"Could not save a selected animation as a project asset")
 		var saved_entry:Dictionary=editor.store_library.last_taken_entry
 		assert(str(saved_entry.animation_resource).begins_with("res://assets/animations/attached/"))
