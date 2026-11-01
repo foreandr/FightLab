@@ -45,6 +45,7 @@ var ragdoll: Node3D
 var burn_time := 0.0
 var burn_clock := 0.0
 var burn_source: CharacterBody3D
+var burn_visual:Node3D
 var chill_time := 0.0
 var freeze_time := 0.0
 var freeze_immunity := 0.0
@@ -235,6 +236,8 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	if is_instance_valid(burn_visual):burn_visual.queue_free()
+	burn_visual=null
 	if head_severance!=null:head_severance.restore()
 	head_severed=false
 	story_strikes.clear()
@@ -1481,6 +1484,10 @@ func _resolve_story_limb_strikes(delta: float) -> void:
 			story_strikes[side] = strike
 
 func update_status(delta: float) -> void:
+	if burn_time>0.0 and health>0.0 and not is_instance_valid(burn_visual):
+		burn_visual=preload("res://scripts/character_burn_visual.gd").new()
+		add_child(burn_visual)
+		burn_visual.setup(self)
 	tactics.tick(self,delta)
 	flash_aura_time=maxf(0,flash_aura_time-delta)
 	wall_crash_cooldown=maxf(0,wall_crash_cooldown-delta)

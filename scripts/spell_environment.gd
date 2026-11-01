@@ -159,6 +159,7 @@ func _physics_process(delta:float) -> void:
  update_water_summary()
  for i in range(patches.size()-1,-1,-1):
   patches[i].life-=delta
+  if patches[i].element=="Fire":patches[i].node.fade(patches[i].life)
   if patches[i].life<=0:
    patches[i].node.queue_free()
    patches.remove_at(i)

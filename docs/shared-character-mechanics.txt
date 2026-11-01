@@ -64,6 +64,15 @@ Guarded sideways strafe authoring
 
 scripts/combat_floating_numbers.gd
 
+  Shared fire presentation: fire_plume.gd/fire_plume.gdshader draw animated,
+  upright tongues with capped CPU embers/smoke. spell_ground_fire.gd owns the
+  stationary scorch patch; spell_environment drives its final 1.2s flame fade.
+  character_burn_visual.gd follows six torso/limb bone anchors on BattleActor,
+  created lazily on burn, fading on expiry/death and cleared on reset. Story's
+  duplicate chest-puff rendering is removed. Presentation does not set status,
+  damage, potency, costs or patch lifetime. tests/fire_visuals_test.gd verifies
+  Compatibility rendering, moving anchors, limits, extinction and reset.
+
   Burn ticks use the same Numbers [3] display: red, typed burn amounts every
   half-second, from actual applied damage including God-mode practice counters.
   battle_actor.update_status emits them for all modes. Turning numbers off

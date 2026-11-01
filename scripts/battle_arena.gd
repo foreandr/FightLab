@@ -296,8 +296,6 @@ func _physics_process(delta: float) -> void:
 		if not editor_animation_only and f.visible and int(elapsed*60)%8 == 0 and f.health > 0:
 			if f.mode=="punch" and f.strike_augmented:
 				vfx.puff(f.bone_point(f.melee_spec[2]),"flame_04" if i==0 else "spark_05",i,Vector2.ONE*0.4,Vector3.UP*0.4,0.2,Color(element_color(i),0.8),0.4)
-			if f.burn_time > 0:
-				vfx.puff(f.bone_point("spine_03"),"flame_04",0,Vector2(0.45,0.7),Vector3.UP,0.35,Color(1,0.5,0.1,0.65),0.5)
 			if f.stun_time>0:
 				vfx.puff(f.bone_point("spine_03"),"spark_05",2,Vector2.ONE*0.5,Vector3.UP*0.2,0.2,Color("fff253"),0.25)
 			if f.chill_time > 0:
