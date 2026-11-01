@@ -6,10 +6,12 @@ var resting:StyleBoxFlat
 var highlighted:StyleBoxFlat
 var calculation_dialog:Window
 var dialog_theme:Theme
+var calculation_workspace:Control
 
 func setup(label:Control,book_theme:Theme=null,workspace:Control=null) -> void:
 	stat=label
 	dialog_theme=book_theme
+	calculation_workspace=workspace if is_instance_valid(workspace) else get_parent()
 	if is_instance_valid(workspace):
 		workspace.visibility_changed.connect(func():
 			if not workspace.is_visible_in_tree() and is_instance_valid(calculation_dialog):calculation_dialog.hide())
@@ -55,6 +57,12 @@ func _gui_input(event:InputEvent) -> void:
 		open_calculation()
 
 func open_calculation() -> void:
+	var previous:Window=null
+	var active:WeakRef=calculation_workspace.get_meta("active_stat_calculation") if calculation_workspace.has_meta("active_stat_calculation") else null
+	if active!=null:previous=active.get_ref() as Window
+	var switching:=is_instance_valid(previous) and previous.visible and previous!=calculation_dialog
+	var previous_position:=previous.position if switching else Vector2i.ZERO
+	if switching:previous.hide()
 	if not is_instance_valid(calculation_dialog):
 		calculation_dialog=preload("res://scripts/spell_stat_dialog.gd").new()
 		calculation_dialog.visible=false
@@ -65,6 +73,8 @@ func open_calculation() -> void:
 		return
 	var title:String=stat.get_parsed_text() if stat is RichTextLabel else stat.text
 	calculation_dialog.show_calculation(title,stat.tooltip_text)
+	if switching:calculation_dialog.move_to(previous_position)
+	calculation_workspace.set_meta("active_stat_calculation",weakref(calculation_dialog))
 
 func _process(_delta:float) -> void:
 	if not is_instance_valid(calculation_dialog) or not calculation_dialog.visible:return
