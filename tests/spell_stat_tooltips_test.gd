@@ -59,7 +59,10 @@ func run() -> void:
 	await process_frame
 	var dialog=damage_box.calculation_dialog
 	assert(dialog.visible)
-	assert(dialog.explanation.text==b.demo_damage_label.tooltip_text)
+	assert(dialog.explanation.get_parsed_text()==b.demo_damage_label.tooltip_text)
+	var compact:Vector2i=dialog.content_size(b.demo_stamina_label.tooltip_text,Vector2(1280,720))
+	assert(compact.x<=560 and compact.y<350,"Short calculations should fit their contents")
+	assert(dialog.size.x<=560 and dialog.size.y<=520,"Long calculations should scroll within a compact window")
 	assert(dialog.heading.text==b.demo_damage_label.text)
 	assert(dialog.close_button.has_focus())
 	dialog.close_button.pressed.emit()

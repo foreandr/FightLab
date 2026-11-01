@@ -3,7 +3,8 @@ extends PopupPanel
 var heading:Label
 var explanation:RichTextLabel
 var close_button:Button
-var scroll:ScrollContainer
+const BODY_SIZE:=16
+const LINE_GAP:=4
 
 func _ready() -> void:
 	var paper:=StyleBoxFlat.new()
@@ -20,8 +21,9 @@ func _ready() -> void:
 	column.add_child(header)
 	heading=Label.new()
 	heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	heading.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	heading.add_theme_font_size_override("font_size",20)
+	heading.clip_text=true
+	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	heading.add_theme_font_size_override("font_size",21)
 	heading.add_theme_color_override("font_color",Color("382c1c"))
 	header.add_child(heading)
 	close_button=Button.new()
@@ -29,27 +31,56 @@ func _ready() -> void:
 	close_button.custom_minimum_size=Vector2(90,36)
 	close_button.pressed.connect(hide)
 	header.add_child(close_button)
-	scroll=ScrollContainer.new()
-	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
 	explanation=RichTextLabel.new()
-	explanation.fit_content=true
-	explanation.scroll_active=false
+	explanation.fit_content=false
+	explanation.scroll_active=true
 	explanation.selection_enabled=true
+	explanation.bbcode_enabled=true
 	explanation.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	explanation.add_theme_font_size_override("normal_font_size",16)
+	explanation.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	explanation.add_theme_font_size_override("normal_font_size",BODY_SIZE)
+	explanation.add_theme_font_size_override("bold_font_size",BODY_SIZE)
+	explanation.add_theme_constant_override("line_separation",LINE_GAP)
 	explanation.add_theme_color_override("default_color",Color("382c1c"))
-	scroll.add_child(explanation)
+	column.add_child(explanation)
 
 func show_calculation(title:String,calculation:String) -> void:
 	heading.text=title
-	explanation.text=calculation
-	scroll.scroll_vertical=0
+	explanation.text=readable_equations(calculation)
+	explanation.scroll_to_line(0)
 	var available:Vector2=get_parent().get_viewport_rect().size
-	popup_centered(Vector2i(Vector2(780,680).min(available*0.85)))
+	popup_centered(content_size(calculation,available))
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
 	close_button.grab_focus()
+
+func content_size(calculation:String,available:Vector2) -> Vector2i:
+	var font:=explanation.get_theme_font("normal_font")
+	var longest:=0.0
+	for line in calculation.split("\n"):
+		longest=maxf(longest,font.get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,BODY_SIZE).x)
+	var width:=minf(clampf(longest+44.0,340.0,560.0),available.x*0.9)
+	var measured:=font.get_multiline_string_size(calculation,HORIZONTAL_ALIGNMENT_LEFT,width-44.0,BODY_SIZE)
+	# Leave room for the header, margins and wrapped-line spacing. Long breakdowns scroll.
+	var lines:=maxf(calculation.split("\n").size(),measured.y/font.get_height(BODY_SIZE))
+	var height:=minf(measured.y+lines*LINE_GAP+80.0,minf(520.0,available.y*0.7))
+	return Vector2i(ceili(width),ceili(height))
+
+static func readable_equations(calculation:String) -> String:
+	var rows:=PackedStringArray()
+	for line in calculation.split("\n"):
+		# Preserve every number and literal bracket; styling changes presentation only.
+		# Escape brackets in one pass so BBCode's own escape tags stay intact.
+		var escaped:=""
+		for character in line:
+			escaped+="[lb]" if character=="[" else ("[rb]" if character=="]" else character)
+		var separator:=escaped.rfind(" = ")
+		if separator>=0:
+			escaped=escaped.left(separator+3)+"[b][color=#574016]"+escaped.substr(separator+3)+"[/color][/b]"
+		elif ":" in escaped:
+			var colon:=escaped.find(":")
+			escaped="[b]"+escaped.left(colon+1)+"[/b]"+escaped.substr(colon+1)
+		rows.append(escaped)
+	return "\n".join(rows)
 
 func _process(_delta:float) -> void:
 	if visible:Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
