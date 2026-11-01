@@ -32,3 +32,27 @@ static func pose(actor:Node,input:Vector2,time:float,sprinting:bool) -> void:
 		CastPose.blend_from(actor,first,weight)
 	actor.set_meta("creation_locomotion_clips",choices)
 	actor.set_meta("creation_locomotion_axes",input)
+
+## Keep the moving gait below the waist while retaining the active cast above it.
+## Sample the existing locomotion system; never edit either source animation.
+static func is_locomotion_bone(rig:Skeleton3D,index:int) -> bool:
+	var name_:=rig.get_bone_name(index)
+	if name_ in ["root","pelvis"]:return true
+	while index>=0:
+		if rig.get_bone_name(index).begins_with("thigh_"):return true
+		index=rig.get_bone_parent(index)
+	return false
+
+static func moving_legs(actor:Node,input:Vector2,time:float,sprinting:bool,weight:float=1.0) -> void:
+	if input.is_zero_approx() or weight<=0.0:return
+	var cast:=CastPose.capture(actor)
+	var cast_clip:String=actor.clip
+	var model_rotation:Vector3=actor.model.rotation
+	pose(actor,input,time,sprinting)
+	var rig:Skeleton3D=actor.skeleton
+	for index in rig.get_bone_count():
+		var gait:=rig.get_bone_pose(index)
+		rig.set_bone_pose(index,cast[index].interpolate_with(gait,clampf(weight,0.0,1.0)) if is_locomotion_bone(rig,index) else cast[index])
+	actor.clip=cast_clip
+	actor.model.rotation=model_rotation
+	rig.force_update_all_bone_transforms()

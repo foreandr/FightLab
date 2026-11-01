@@ -1,5 +1,6 @@
 extends SceneTree
 const Movement=preload("res://scripts/character_movement.gd")
+const Locomotion=preload("res://scripts/creation_locomotion.gd")
 const CastPose=preload("res://scripts/spell_cast_motion.gd")
 func _initialize() -> void:call_deferred("run")
 func check(ok:bool,message:String) -> bool:
@@ -38,7 +39,8 @@ func run() -> void:
     var forward:Vector3=Movement.camera_forward(editor.field.camera)
     actor.rotation.y=atan2(forward.x,forward.z)+PI*0.5
     var position:Vector3=actor.global_position
-    b.play_demo_preview()
+    b.move_caster(1.0/60.0,Vector2(0,1),sprinting)
+    b.demo_choices[choice].pressed.emit()
     if not check(b.playing,"Did not start "+choice):return
     for frame in 14:
      await physics_frame
@@ -48,12 +50,29 @@ func run() -> void:
     if not check(actor.global_position.distance_to(position)>0.15,"Translation locked during "+choice):return
     if not check(actor.global_basis.z.dot(forward)>0.995,"Free-facing locked during "+choice):return
     if not check(is_equal_approx(Vector2(actor.velocity.x,actor.velocity.z).length(),7.0 if sprinting else 4.0),"Run/sprint speed changed during "+choice):return
-    # The original full-body demo pose, including the knee, must remain intact.
+    # Compare the displayed legs against the running gait, not just actor translation.
     var actual:Array=CastPose.capture(actor)
+    Locomotion.pose(actor,Vector2(0,1),b.idle_elapsed,sprinting)
+    var gait:Array=CastPose.capture(actor)
     CastPose.pose(actor,b.playback_animation(),b.elapsed/b.playback_duration(),b.cast_pose_aim(b.elapsed/b.playback_duration()))
-    var expected:Array=CastPose.capture(actor)
+    var cast:Array=CastPose.capture(actor)
     for bone in actual.size():
-     if not check(actual[bone].is_equal_approx(expected[bone]),"Demo was masked or replaced on bone %d (%s)"%[bone,choice]):return
+     var expected:Transform3D=gait[bone] if Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone]
+     if not check(actual[bone].is_equal_approx(expected),"Wrong displayed pose on %s (%s)"%[actor.skeleton.get_bone_name(bone),choice]):return
+    Locomotion.moving_legs(actor,Vector2(0,1),b.idle_elapsed,sprinting)
+    var thigh:int=actor.skeleton.find_bone("thigh_l")
+    var first:Transform3D=actor.skeleton.get_bone_pose(thigh)
+    b.move_caster(1.0/60.0,Vector2(0,1),sprinting)
+    b.process_demo_preview(0.12)
+    if not check(not first.is_equal_approx(actor.skeleton.get_bone_pose(thigh)),"Leg cycle frozen while casting "+choice):return
+    # Stopping still restores the full original demo, including the knee motion.
+    b.move_caster(1.0/60.0,Vector2.ZERO,false)
+    b.process_demo_preview(0.05)
+    actual=CastPose.capture(actor)
+    CastPose.pose(actor,b.playback_animation(),b.elapsed/b.playback_duration(),b.cast_pose_aim(b.elapsed/b.playback_duration()))
+    cast=CastPose.capture(actor)
+    for bone in actual.size():
+     if not check(actual[bone].is_equal_approx(cast[bone]),"Stationary demo changed (%s)"%choice):return
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all five demos run/sprint and turn in free aim in demo/projectile stages; original full-body knee and other poses unchanged")
+ print("MOVING DEMOS PASS: all five demos run/sprint and turn in free aim in demo/projectile stages; visible legs keep cycling with the gait, casting upper body remains, stationary full-body demos return")
  quit()

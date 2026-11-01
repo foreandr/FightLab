@@ -280,3 +280,5 @@ Regression checks
   tests/spell_cast_hotkey_test.gd
 
 Cast eligibility: CombatRuntime.can_start_cast gates animation on the authored stamina cost (God Mode bypass). Mana is checked at release; a failed release displays Not enough mana above the actor while the animation continues and attempted stamina is charged. Resource notices are independent of the experimental number toggle.
+
+Spell demo locomotion: CreationLocomotion.moving_legs retains the current eight-way gait on root, pelvis and thigh descendants after the cast pose and entry/exit blend. All demo choices use this, including Left Knee. Stationary previews retain the full authored animation. No movement-lock eligibility or compatibility rules are inferred here.
