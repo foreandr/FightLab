@@ -712,7 +712,10 @@ func setup(owner_editor:Node) -> void:
  reset_scene_button.tooltip_text="Heal and restore the practice scene; keep your spell settings."
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
- dummy_god_button=editor.button(playback_row,"God mode: On",func():pass)
+ dummy_god_button=editor.button(playback_row,"God mode",func():pass)
+ dummy_god_button.custom_minimum_size.x=140
+ dummy_god_button.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
+ dummy_god_button.clip_text=true
  dummy_god_button.name="MannequinGodMode"
  dummy_god_button.toggle_mode=true
  dummy_god_button.focus_mode=Control.FOCUS_ALL
@@ -2026,11 +2029,11 @@ func refresh_dummy_controls() -> void:
  var valid:bool=is_instance_valid(unit) and unit.is_visible_in_tree()
  dummy_god_button.disabled=not valid
  if not valid:
-  dummy_god_button.text="Select a character · God mode"
+  dummy_god_button.tooltip_text="Click a character to enable this toggle."
   dummy_god_button.set_pressed_no_signal(false)
   return
  var label:String="You" if unit==editor.actor else ("Combat dummy" if unit==editor.target else ("Human target" if unit==practice_human else str(unit.name)))
- dummy_god_button.text="%s · God mode: %s"%[label,"On" if unit.practice_god_mode else "Off"]
+ dummy_god_button.tooltip_text="%s · God mode: %s\nUnlimited health, stamina and mana for this character. Hits and reactions still apply."%[label,"On" if unit.practice_god_mode else "Off"]
  dummy_god_button.set_pressed_no_signal(unit.practice_god_mode)
 
 func god_mode_key(unit:Node) -> String:

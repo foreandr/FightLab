@@ -24,7 +24,7 @@ func run() -> void:
 	b.set_character_god_mode(human,false)
 	editor.select_editor_unit(caster)
 	b.refresh_dummy_controls()
-	if not check(b.dummy_god_button.text.contains("You") and not b.dummy_god_button.button_pressed,"Self selection not reflected in toggle"):return
+	if not check(b.dummy_god_button.text=="God mode" and b.dummy_god_button.tooltip_text.contains("You") and not b.dummy_god_button.button_pressed,"Self selection not reflected in fixed-label toggle"):return
 	b.dummy_god_button.set_pressed(true)
 	if not check(caster.practice_god_mode and dummy.practice_god_mode and not human.practice_god_mode,"Self toggle changed another character"):return
 	if not check(caster.spend_cast_resources(600.0,600.0) and caster.stamina==caster.MAX_STAMINA and caster.mana==caster.MAX_MANA,"God resources not unlimited above max pool"):return
@@ -33,7 +33,7 @@ func run() -> void:
 	if not check(caster.stamina==caster.MAX_STAMINA,"Timeline drains God Mode stamina"):return
 	editor.select_editor_unit(human)
 	b.refresh_dummy_controls()
-	if not check(not b.dummy_god_button.button_pressed and b.dummy_god_button.text.contains("Human target"),"Selection shows wrong character state"):return
+	if not check(not b.dummy_god_button.button_pressed and b.dummy_god_button.text=="God mode" and b.dummy_god_button.tooltip_text.contains("Human target"),"Selection shows wrong character state"):return
 	b.dummy_god_button.set_pressed(true)
 	human.guard_energy=0.0
 	human.invulnerability=0.0
