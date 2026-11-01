@@ -75,6 +75,9 @@ static func build(b:Node,column:VBoxContainer) -> void:
 		label.reparent(results)
 		label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
 		label.add_theme_font_size_override("normal_font_size" if label is RichTextLabel else "font_size",12 if label==b.demo_ragdoll_label else 16)
+		var box:=preload("res://scripts/spell_stat_box.gd").new()
+		results.add_child(box)
+		box.setup(label)
 	# Keep detailed values available to tooling, with their explanations on hover.
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:label.hide()
 	refresh_details(b)

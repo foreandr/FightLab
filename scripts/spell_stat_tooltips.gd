@@ -51,7 +51,7 @@ static func refresh(b:Node) -> void:
 		texts.speed="Limiter off: %.3f maximum speed × %.3f%% ÷ 100 = %.1f m/s"%[Projectile.MAX_VELOCITY,float(b.test_overrides.values.speed),float(spec.projectile_velocity)]
 		texts.burn="Limiter off: %.1f tick damage ÷ %.1f s\n× (4 × %.3f%% ÷ 100) = %.1f burn damage/s"%[Burn.TICK_DAMAGE,Burn.TICK_INTERVAL,float(b.test_overrides.values.effect),Burn.dps(float(spec.potency))]
 	for key in controls:
-		controls[key].mouse_filter=Control.MOUSE_FILTER_PASS
+		controls[key].mouse_filter=Control.MOUSE_FILTER_IGNORE if controls[key].has_meta("stat_hover_box") else Control.MOUSE_FILTER_PASS
 		controls[key].tooltip_text=texts[key]
 	for key in b.allocation_labels:
 		b.allocation_labels[key].mouse_filter=Control.MOUSE_FILTER_PASS
