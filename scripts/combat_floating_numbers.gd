@@ -3,7 +3,7 @@ extends Node3D
 const LIFETIME:=1.4
 const MAX_LABELS:=32
 const HEADSHOT_COLOR:=Color("ffd36a")
-const COLORS={"stamina":Color("70d5a8"),"magicka":Color("71bfff"),"physical":Color("ff6969")}
+const COLORS={"stamina":Color("70d5a8"),"magicka":Color("71bfff"),"physical":Color("ff6969"),"burn":Color("ff6969")}
 var entries:Array[Dictionary]=[]
 var serial:=0
 
@@ -21,7 +21,7 @@ func show_amount(actor:Node3D,kind:String,amount:float,headshot:bool=false) -> v
 	label.outline_size=5
 	label.modulate=color
 	label.outline_modulate=Color("151b22")
-	label.text="HEADSHOT "+("%.1f"%amount).trim_suffix(".0") if headshot else (("−" if kind!="physical" else "")+"%.1f %s"%[amount,kind])
+	label.text="HEADSHOT "+("%.1f"%amount).trim_suffix(".0") if headshot else (("−" if kind in ["stamina","magicka"] else "")+"%.1f %s"%[amount,kind])
 	add_child(label)
 	var height:=0.65 if kind=="stamina" else (0.97 if kind=="magicka" else 0.8)
 	var offset:=Vector3((serial%3-1)*0.4,height,0)

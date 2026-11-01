@@ -154,8 +154,10 @@ Experimental floating numbers
   3 shortcut. Resource spending emits actual successful stamina/magicka costs,
   including interrupted casts. Runtime impacts emit physical damage_taken deltas,
   so immortal training targets still show the actual hit while retaining health.
-  Burn ticks, regeneration, failed transactions and unpaid God Mode costs do not
-  create misleading damage/cost text. Green stamina, blue magicka, red physical.
+  Burn ticks emit their actual damage as red typed burn numbers every half-second,
+  including immortal practice counters. Regeneration, failed transactions and
+  unpaid God Mode costs do not emit numbers. Stamina is green, magicka blue;
+  physical and burn damage are red and separately labeled.
   Labels follow their actor, rise, fade over 1.4 seconds and are capped at 32.
   Disabling clears them immediately; battle/practice reset clears old labels.
   combat_floating_numbers.gd owns this rendering; it never calculates or modifies

@@ -62,6 +62,10 @@ func run() -> void:
 	if not check(is_equal_approx(b.dummy_last_damage,received),"Removing duplicate popup broke last spell damage readout"):return
 	for child in field.get_children():
 		if not check(not (child is Label3D),"Dummy-only untyped damage popup still exists alongside typed physical number"):return
+	editor.target.receive_status(actor,{"projectile_element":"Fire","potency":2.0})
+	field.round_active=true
+	editor.target.update_status(0.5)
+	if not check(numbers.entries.size()==4 and numbers.entries.back().kind=="burn" and numbers.entries.back().amount==3.0 and numbers.entries.back().label.text=="3.0 burn" and numbers.entries.back().color==numbers.COLORS.physical,"Actual burn tick is missing its red typed number"):return
 	var initial_y:float=numbers.entries[0].label.global_position.y
 	numbers._process(0.6)
 	if not check(numbers.entries[0].label.global_position.y>initial_y and numbers.entries[0].label.modulate.a<1 and numbers.entries[0].label.modulate.a>0,"Numbers do not float and fade"):return

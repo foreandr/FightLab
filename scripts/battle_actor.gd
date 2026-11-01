@@ -1502,6 +1502,7 @@ func update_status(delta: float) -> void:
 			var damage := minf(health, burn_damage)
 			if not practice_god_mode:health -= damage
 			damage_taken += damage
+			arena.show_combat_number(self,"burn",damage)
 			if is_instance_valid(burn_source):
 				burn_source.damage_dealt += damage
 			arena.events.append({"time":arena.elapsed,"event":"burn_tick","victim":team,"damage":damage})

@@ -63,6 +63,12 @@ Guarded sideways strafe authoring
   res://scripts/vendor/copy_strafe_guard.gd to reproduce the edit.
 
 scripts/combat_floating_numbers.gd
+
+  Burn ticks use the same Numbers [3] display: red, typed burn amounts every
+  half-second, from actual applied damage including God-mode practice counters.
+  battle_actor.update_status emits them for all modes. Turning numbers off
+  suppresses presentation only. tests/burn_floating_numbers_test.gd checks ticks,
+  credit, color, God-mode counters and lethal damage capping.
   Optional per-world diagnostic presentation, enabled by set_combat_numbers.
   Costs come from actual committed actor spending, physical hits from received
   damage counters. Do not substitute RHS estimates or health loss on immortal
