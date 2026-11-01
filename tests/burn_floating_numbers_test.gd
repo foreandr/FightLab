@@ -17,16 +17,16 @@ func run() -> void:
 	var numbers=world.combat_numbers
 	assert(numbers.entries.size()==1)
 	var tick:Dictionary=numbers.entries.back()
-	assert(tick.kind=="burn" and tick.amount==3.0 and tick.actor.get_ref()==victim)
-	assert(tick.label.text=="3.0 burn" and tick.color==numbers.COLORS.burn and not tick.headshot)
-	assert(is_equal_approx(before-victim.health,tick.amount) and attacker.damage_dealt==3.0)
+	assert(tick.kind=="burn" and tick.amount==2.0 and tick.actor.get_ref()==victim)
+	assert(tick.label.text=="2.0 burn" and tick.color==numbers.COLORS.burn and not tick.headshot)
+	assert(is_equal_approx(before-victim.health,tick.amount) and attacker.damage_dealt==2.0)
 	victim.practice_god_mode=true
 	before=victim.health
 	victim.update_status(0.5)
-	assert(victim.health==before and numbers.entries.size()==2 and victim.damage_taken==6.0)
+	assert(victim.health==before and numbers.entries.size()==2 and victim.damage_taken==4.0)
 	world.set_combat_numbers(false)
 	victim.update_status(0.5)
-	assert(numbers.entries.is_empty() and victim.damage_taken==9.0)
+	assert(numbers.entries.is_empty() and victim.damage_taken==6.0)
 	world.set_combat_numbers(true)
 	victim.practice_god_mode=false
 	victim.health=1.0

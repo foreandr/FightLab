@@ -61,7 +61,7 @@ func run() -> void:
 	fire.projectile_element="Fire";fire.potency=2.0
 	world.story_mode=true
 	target.receive_status(actor,fire)
-	if not check(target.burn_time>0 and is_equal_approx(target.burn_damage,3.0),"Explicit elemental spells lost their effect in Story"):return
+	if not check(target.burn_time==5.0 and is_equal_approx(target.burn_damage,2.0),"Explicit elemental spells lost their effect in Story"):return
 	world.story_mode=false
 	Pose.pose(actor,{"store_raw":true,"clip":"duel/run"},0.1)
 	var first:=Pose.capture(actor)

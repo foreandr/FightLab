@@ -6,6 +6,7 @@ const FLASH_STEP_SPEED := 34.0
 const OVERDRIVE_MOVE_SPEED := FLASH_STEP_SPEED*0.75
 const FLASH_CHARGE_TIME := 0.28
 const CombatTactics = preload("res://scripts/combat_tactics.gd")
+const Burn=preload("res://scripts/burn_rules.gd")
 var tactics := CombatTactics.new()
 var flash_aura_time := 0.0
 var custom_jump_frames: Array = []
@@ -32,7 +33,7 @@ var ice_pose:Dictionary={}
 var swim_cooldown:=0.0
 var water_depth:=0.0
 var surface_slippery:=false
-var burn_damage:=1.5
+var burn_damage:=Burn.TICK_DAMAGE
 var stun_time:=0.0
 var practice_release_fraction:=0.35
 var custom_jump_elapsed := 0.0
@@ -1503,10 +1504,11 @@ func update_status(delta: float) -> void:
 	if armor_time <= 0:
 		armor_hp = 0
 	if burn_time > 0 and health > 0 and arena.round_active:
-		burn_time = maxf(0, burn_time - delta)
-		burn_clock += delta
-		if burn_clock >= 0.5:
-			burn_clock -= 0.5
+		var active_delta:=minf(delta,burn_time)
+		burn_time = maxf(0, burn_time - active_delta)
+		burn_clock += active_delta
+		while burn_clock+0.000001 >= Burn.TICK_INTERVAL and health>0:
+			burn_clock = maxf(0,burn_clock-Burn.TICK_INTERVAL)
 			var damage := minf(health, burn_damage)
 			if not practice_god_mode:health -= damage
 			damage_taken += damage
@@ -1525,10 +1527,7 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 		if potency<=0.0:return
 		match str(spec.projectile_element):
 			"Fire":
-				burn_damage=1.5*potency
-				burn_time=maxf(burn_time,4.0)
-				burn_source=attacker
-				burns_applied+=1
+				Burn.apply(self,attacker,potency,float(spec.get("burn_duration",Burn.DURATION)))
 			"Ice":
 				chill_time=3.5
 				frost=minf(1.2,frost+0.4*potency)
@@ -1541,9 +1540,7 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 		return
 	if arena.story_mode:return
 	if attacker.team == 0 and (spec.effect != "melee" or spec.get("augment",false)):
-		burn_time = minf(6, maxf(burn_time, 4.0 + float(spec.get("charge",0))*2))
-		burn_source = attacker
-		burns_applied += 1
+		Burn.apply(self,attacker,float(spec.get("potency",1.0)),float(spec.get("burn_duration",Burn.DURATION)))
 	if attacker.team == 1 and (spec.effect == "ice_beam" or (spec.effect=="melee" and spec.get("augment",false))):
 		chill_time = 3.5
 		frost = minf(1.2, frost + 0.38 + float(spec.get("charge",0))*0.5)

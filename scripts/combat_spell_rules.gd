@@ -4,6 +4,7 @@ const Projectile=preload("res://scripts/basic_projectile.gd")
 const Mana=preload("res://scripts/animation_mana_scaling.gd")
 const Momentum=preload("res://scripts/physical_momentum.gd")
 const Allocation=preload("res://scripts/projectile_allocation.gd")
+const Burn=preload("res://scripts/burn_rules.gd")
 const MIN_RELEASE_FRACTION:=0.05
 const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
@@ -82,7 +83,7 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var impact:float=float(physical(duration,offensive).damage)*factor
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":3.0*float(base.get("potency",0.0))*amp if effect=="Fire" else 0.0,"effect":effect}
+	return {"base_mana":float(base.mana),"mana":float(base.mana)*float(timing.multiplier),"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=base.duplicate(true)

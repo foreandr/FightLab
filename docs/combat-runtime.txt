@@ -151,6 +151,18 @@ clock/state and mark a returned successful contact connected.
 WORLD HOOKS
 
 Experimental floating numbers
+
+  Burn rules live in burn_rules.gd: 5 seconds, 0.5s tick interval, 1 base damage
+  per tick (10 total at potency 1). Potency/amplification scales damage, not the
+  default duration. Actor ticking consumes only remaining active time and catches
+  up missed ticks, including the final tick, so frame size cannot change totals.
+  Character projectile impacts apply body burn without spawning ground fire.
+  Ground impacts leave a five-second fire patch. Each patch ignites a character
+  once for the same full burn; standing in it does not refresh the timer each
+  frame. Existing explicit burn_duration data can extend either duration later.
+  Authoring stats, RHS readouts and execution use these shared rules.
+  tests/burn_behavior_test.gd covers actual collision, full totals, large/uneven
+  steps, patch lifetime, walk-through ignition, continued burn after exit and amp.
   CombatWorld.set_combat_numbers(enabled) enables a per-world presentation layer.
   It defaults off; Spell creation exposes Numbers [3] and the unmodified 3/numpad
   3 shortcut. Resource spending emits actual successful stamina/magicka costs,

@@ -211,6 +211,7 @@ func step_shots(delta: float) -> void:
 			impact_center=ground.position
 			hit=true
 		if hit:field.projectile_area_impact.apply(field,shot,impact_center,primary,primary_area)
+		shot["hit_character"]=is_instance_valid(primary)
 		if shot.spec.has("projectile_element") and is_instance_valid(field.spell_environment):
 			field.spell_environment.projectile_step(shot,from,to,hit)
 		if hit or shot.age>float(shot.get("max_age",2.2)):

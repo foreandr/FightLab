@@ -1121,7 +1121,7 @@ func refresh_test_controls() -> void:
  demo_size_bonus_label.text="Diameter: %.2f m"%(float(spec.projectile_radius)*2.0)
  demo_speed_bonus_label.text="Speed: %.1f m/s"%float(spec.projectile_velocity)
  demo_burn_label.visible=preview_effect=="Fire"
- demo_burn_label.text="Burn: %.1f/s"%(3.0*float(spec.potency))
+ demo_burn_label.text="Burn: %.1f/s"%preload("res://scripts/burn_rules.gd").dps(float(spec.potency))
  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
 
 func set_demo_duration(value:float) -> void:
@@ -1195,7 +1195,7 @@ func refresh_demo_timing() -> void:
  demo_size_bonus_label.text="Diameter: %.2f → %.2f m"%[float(stats.base_radius)*2.0,float(stats.radius)*2.0]
  demo_speed_bonus_label.text="Speed: %.1f → %.1f m/s"%[float(stats.base_velocity),float(stats.velocity)]
  demo_burn_label.visible=str(stats.effect)=="Fire"
- demo_burn_label.text="Burn: %.1f/s · %.1f total / 4 s"%[float(stats.burn_dps),float(stats.burn_dps)*4.0]
+ demo_burn_label.text="Burn: %.1f/s · %.1f total / %.0f s"%[float(stats.burn_dps),float(stats.burn_dps)*float(stats.burn_duration),float(stats.burn_duration)]
  if is_instance_valid(release_slider):
   release_slider.set_value_no_signal(release_fraction*100.0)
  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)

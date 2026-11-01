@@ -103,14 +103,15 @@ func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
   for pool in water:
    if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<=pool.point.y+pool.depth+0.2 and point.y+radius>=pool.point.y:
     freeze_water(point,radius,potency,pool.depth,pool.radius,pool.point)
- if element in ["Fire","Ice"] and not (element=="Fire" and is_finite(water_height(ground_point(point)))):
+ if element in ["Fire","Ice"] and not (element=="Fire" and (shot.get("hit_character",false) or is_finite(water_height(ground_point(point))))):
   if patches.size()>=48:
    patches[0].node.queue_free()
    patches.pop_front()
   # Fire melts ice; ice extinguishes burning ground.
   for p in patches:
    if p.point.distance_to(ground_point(point))<radius+p.radius and p.element!=element:p.life=0.0
-  patches.append({"point":ground_point(point),"radius":radius,"element":element,"life":8.0,"potency":potency,"source":shot.caster,"node":ground_fire(point,radius,shot.spec.get("appearance",{})) if element=="Fire" else disc(ground_point(point),radius,Color(0.4,0.83,1,0.65))})
+  var burn_duration:float=float(shot.spec.get("burn_duration",preload("res://scripts/burn_rules.gd").DURATION))
+  patches.append({"point":ground_point(point),"radius":radius,"element":element,"life":burn_duration if element=="Fire" else 8.0,"burn_duration":burn_duration,"ignited":{},"potency":potency,"source":shot.caster,"node":ground_fire(point,radius,shot.spec.get("appearance",{})) if element=="Fire" else disc(ground_point(point),radius,Color(0.4,0.83,1,0.65))})
  if element=="Lightning":
   for pool in water:
    if flat_distance(point,pool.point)<pool.radius+radius and point.y-radius<pool.point.y+pool.depth+0.1 and point.y+radius>=pool.point.y:
@@ -147,9 +148,10 @@ func _physics_process(delta:float) -> void:
    if patch.life<=0 or flat_distance(foot,patch.point)>patch.radius or absf(foot.y-patch.point.y)>0.4:continue
    if patch.element=="Ice":fighter.surface_slippery=true
    elif patch.element=="Fire" and fighter.water_depth<0.15:
-    fighter.burn_time=maxf(fighter.burn_time,0.6)
-    fighter.burn_damage=1.5*patch.potency
-    fighter.burn_source=patch.source
+    var id:int=fighter.get_instance_id()
+    if not patch.ignited.has(id):
+     preload("res://scripts/burn_rules.gd").apply(fighter,patch.source,patch.potency,patch.burn_duration)
+     patch.ignited[id]=true
   for pool in water:
    if pool.electric>0 and flat_distance(foot,pool.point)<pool.radius and foot.y>=pool.point.y-0.1 and foot.y<pool.point.y+pool.depth:
     fighter.stun_time=maxf(fighter.stun_time,minf(pool.electric,float(pool.get("stun",0.7))))

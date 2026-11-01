@@ -11,7 +11,7 @@ func _initialize() -> void:
 		var stats:=Rules.authored_stats(allocated,duration,0.3,true)
 		assert(is_equal_approx(Rules.mana_cost(spec),stats.mana))
 		assert(is_equal_approx(stats.mana,20.0*preload("res://scripts/animation_mana_scaling.gd").stats(duration).multiplier))
-		assert(is_equal_approx(stats.burn_dps,3.0*spec.potency))
+		assert(is_equal_approx(stats.burn_dps,preload("res://scripts/burn_rules.gd").dps(spec.potency)))
 	var early:=Rules.authored_stats(allocated,1.0,Rules.MIN_RELEASE_FRACTION,true)
 	var late:=Rules.authored_stats(allocated,1.0,Rules.MAX_RELEASE_FRACTION,true)
 	assert(is_equal_approx(late.burn_dps/early.burn_dps,1.25))
