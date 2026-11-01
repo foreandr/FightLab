@@ -58,7 +58,9 @@ func content_size(calculation:String,available:Vector2) -> Vector2i:
 	var longest:=0.0
 	for line in calculation.split("\n"):
 		longest=maxf(longest,font.get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,BODY_SIZE).x)
-	var width:=minf(clampf(longest+44.0,340.0,560.0),available.x*0.9)
+	var title_width:=heading.get_theme_font("font").get_string_size(heading.text,HORIZONTAL_ALIGNMENT_LEFT,-1,21).x
+	var header_width:=title_width+close_button.get_combined_minimum_size().x+36.0
+	var width:=minf(clampf(maxf(longest+44.0,header_width),340.0,560.0),available.x*0.9)
 	var measured:=font.get_multiline_string_size(calculation,HORIZONTAL_ALIGNMENT_LEFT,width-44.0,BODY_SIZE)
 	# Leave room for the header, margins and wrapped-line spacing. Long breakdowns scroll.
 	var lines:=maxf(calculation.split("\n").size(),measured.y/font.get_height(BODY_SIZE))
