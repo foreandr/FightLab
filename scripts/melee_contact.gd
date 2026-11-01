@@ -11,6 +11,7 @@ static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool
 	var forward:Vector3=strike.forward
 	if movement.length()/dt<float(strike.get("min_speed",0.8)):return false
 	if strike.get("require_forward",false) and movement.dot(forward)<=0.0005:return false
+	surface_contact(actor,strike,previous,limb,dt)
 	var shape:=SphereShape3D.new()
 	shape.radius=float(strike.get("radius",0.105))
 	var query:=PhysicsShapeQueryParameters3D.new()
@@ -48,3 +49,26 @@ static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool
 				return true
 			if actor.arena.apply_impact(actor,victim,spec,point,direction,area,impulse):return true
 	return false
+
+static func surface_contact(actor:CharacterBody3D,strike:Dictionary,previous:Vector3,limb:Vector3,dt:float) -> void:
+	var contacts:Dictionary=actor.get_meta("melee_surface_contacts",{})
+	var key:String=str(strike.id)
+	var entry:Dictionary=contacts.get(key,{"clock":INF,"marked":false})
+	if float(strike.clock)<float(entry.clock) or actor.arena.elapsed-float(entry.get("time",-INF))>dt*2.5:entry.marked=false
+	entry.clock=float(strike.clock)
+	entry.time=actor.arena.elapsed
+	contacts[key]=entry
+	actor.set_meta("melee_surface_contacts",contacts)
+	if entry.marked:return
+	var motion:=limb-previous
+	var query:=PhysicsRayQueryParameters3D.create(previous,limb+motion.normalized()*float(strike.get("radius",0.105)),1)
+	var hit:=actor.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():return
+	var speed:float=(motion/dt-actor.velocity).length()
+	speed=maxf(speed,float(strike.get("combo_speed",0.0)))
+	var multiplier:=1.0+clampf((speed-5.0)/8.0,0,2.5) if strike.get("dynamic_damage",true) else 1.0
+	var charge:=float(strike.get("charge",0.0))
+	var damage:float=float(strike.damage)*multiplier*(1.0 if strike.get("pre_scaled",false) else 1.0+charge*0.7)
+	damage*=preload("res://scripts/physical_momentum.gd").melee_multiplier(actor.velocity,motion,{"effect":"melee"})
+	actor.arena.surface_impact(hit.collider,hit.position,hit.normal,damage,motion/dt*8.0)
+	entry.marked=true

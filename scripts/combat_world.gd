@@ -31,6 +31,22 @@ var vfx: Node3D
 var shake := 0.0
 var combat_numbers_visible:=false
 var combat_numbers:Node3D
+var surface_marks:Node3D
+signal surface_impacted(surface:CollisionObject3D,point:Vector3,normal:Vector3,physical_damage:float,impulse:Vector3)
+
+func surface_impact(surface:CollisionObject3D,point:Vector3,normal:Vector3,physical_damage:float,impulse:=Vector3.ZERO) -> MeshInstance3D:
+	if not is_instance_valid(surface) or surface is CharacterBody3D or surface.has_meta("fighter") or normal.is_zero_approx() or not point.is_finite() or not normal.is_finite() or not is_finite(physical_damage):return null
+	var damage:=maxf(0.0,physical_damage)
+	surface_impacted.emit(surface,point,normal.normalized(),damage,impulse)
+	if not preload("res://scripts/combat_defense_rules.gd").ragdolls(damage):return null
+	if not is_instance_valid(surface_marks):
+		surface_marks=preload("res://scripts/surface_impact_marks.gd").new()
+		surface_marks.name="SurfaceImpactMarks"
+		add_child(surface_marks)
+	return surface_marks.add_impact(surface,point,normal,damage)
+
+func clear_surface_impacts() -> void:
+	if is_instance_valid(surface_marks):surface_marks.clear()
 
 func set_combat_numbers(enabled:bool) -> void:
 	combat_numbers_visible=enabled

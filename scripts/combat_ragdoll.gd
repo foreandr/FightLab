@@ -154,7 +154,7 @@ func step(delta: float) -> bool:
 			if surface.get("collider")==collider and fighter.arena.is_impact_wall(collider,normal):
 				if -previous_average.dot(normal)>-incoming.dot(normal):
 					incoming=previous_average
-				fighter.wall_crash(body.global_position,normal,maxf(0,-incoming.dot(normal)),incoming)
+				fighter.wall_crash(surface.get("position",body.global_position),normal,maxf(0,-incoming.dot(normal)),incoming,collider)
 			elif collider.collision_layer & 1:
 				if (collider.has_meta("spell_ice") or collider.has_meta("spell_earth")):
 					if incoming.length()>3:collider.take_damage(body.mass*incoming.length_squared()*0.04)

@@ -109,6 +109,7 @@ func finish_round(winner: int) -> void:
 	print("KNOCKOUT t=%.2f " % elapsed, element_name(winner))
 
 func clear_battle_effects() -> void:
+	clear_surface_impacts()
 	clear_combat_numbers()
 	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.clear_hits()
 	if vfx:

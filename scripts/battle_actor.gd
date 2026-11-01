@@ -48,6 +48,7 @@ var burn_clock := 0.0
 var burn_source: CharacterBody3D
 var burn_visual:Node3D
 var status_visual:Node3D
+var last_physical_impact_damage:=0.0
 var chill_time := 0.0
 var freeze_time := 0.0
 var freeze_immunity := 0.0
@@ -241,6 +242,8 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	last_physical_impact_damage=0.0
+	if has_meta("melee_surface_contacts"):remove_meta("melee_surface_contacts")
 	if is_instance_valid(burn_visual):burn_visual.queue_free()
 	burn_visual=null
 	if head_severance!=null:head_severance.restore()
@@ -1572,6 +1575,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	last_attacker = attacker.team
 	if team==2 and haste_time>0:
 		amount*=0.75
+	last_physical_impact_damage=amount
 	if is_instance_valid(ragdoll):
 		if invulnerability > 0 or health <= 0:
 			return false
@@ -1627,11 +1631,12 @@ func sever_head(impulse:Vector3) -> bool:
 	if is_instance_valid(ragdoll):ragdoll.sever_head(impulse)
 	return true
 
-func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3) -> void:
+func wall_crash(point: Vector3,normal: Vector3,speed: float,incoming: Vector3,surface:CollisionObject3D=null) -> void:
 	if wall_crash_cooldown>0 or speed<4.5:
 		return
 	wall_crash_cooldown=0.65
 	wall_crashes+=1
+	if is_instance_valid(surface):arena.surface_impact(surface,point,normal,last_physical_impact_damage,incoming*impact_physics.BODY_MASS)
 	arena.events.append({"time":arena.elapsed,"event":"wall_crash","team":team,"speed":speed,"point":[point.x,point.y,point.z]})
 	arena.audio.impact("heavy",point,clampf(speed/9,0.5,1.3))
 	for i in 8:

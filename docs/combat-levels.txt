@@ -5,6 +5,25 @@ ordinary geometry/collisions and a CombatLevel resource. Combat supplies actors,
 movement, attacks, spells, resources, impacts, statuses and animation playback.
 Changing the map does not change spell calculations or require a second engine.
 
+SURFACE IMPACT PRESENTATION
+CombatWorld.surface_impact(surface,point,normal,physical_damage,impulse) is the
+shared contact API. The caller supplies the actual surface and contact normal;
+it makes no assumptions about pit geometry, floor height, orientation or material.
+It emits surface_impacted with those values. Future surface/destruction systems
+can subscribe to that event; this implementation adds no new shattering behavior.
+Physical damage at the shared ragdoll threshold (40) creates a visual dent/crack.
+Radius grows with sqrt(damage/threshold), capped at 1.75m. No collision geometry or
+surface mesh is changed. Marks parent to the contacted surface, follow it when it
+moves, merge close repeat hits and are capped at 32 per combat world. Characters,
+dummy actors and fighter hurtboxes are excluded. A surface can opt out of marks
+with combat_no_surface_marks metadata; it still receives the impact signal.
+Projectile contacts, swept melee surface contacts and ragdoll wall crashes feed
+this API. Environment/round resets call clear_surface_impacts. Renderer ownership
+is surface_impact_marks.gd, not the level or a Story/Create loop.
+tests/surface_impact_marks_test.gd verifies actual floor/wall collision, rotated
+surfaces, threshold/scaling, surface following, actor exclusion, melee de-duplication,
+count bounds, reset and untouched collision shapes in a bare new CombatWorld.
+
 USING AN AUTHORED OR GENERATED LEVEL
 
   var generated_map:Node3D=your_generator.build()

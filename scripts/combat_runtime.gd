@@ -208,6 +208,8 @@ func step_shots(delta: float) -> void:
 					break
 		if not hit and not ground.is_empty():
 			field.spell_impact_burst(ground.position,shot.caster.team,shot.spec,false)
+			if ground.has("normal") and ground.get("collider") is CollisionObject3D:
+				field.surface_impact(ground.collider,ground.position,ground.normal,damage_for(shot.spec),shot.velocity*shot.mass)
 			impact_center=ground.position
 			hit=true
 		if hit:field.projectile_area_impact.apply(field,shot,impact_center,primary,primary_area)
@@ -395,7 +397,7 @@ func step_actors(delta:float) -> void:
 				elif field.is_impact_wall(contact.get_collider(),contact.get_normal()):
 					var speed:=maxf(0,-incoming.dot(contact.get_normal()))
 					if f.has_method("wall_crash") and speed>4.5 and (f.knockback.length()>1.5 or not f.is_on_floor() or speed>10):
-						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming)
+						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming,contact.get_collider())
 						break
 		f.update_targets()
 	for f in field.fighters:

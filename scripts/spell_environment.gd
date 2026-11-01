@@ -40,6 +40,7 @@ func disc(point:Vector3,radius:float,color:Color) -> MeshInstance3D:
  return node
 
 func reset_environment() -> void:
+ if is_instance_valid(arena):arena.clear_surface_impacts()
  for block in ice.values():block.shatter()
  ice.clear()
  if is_instance_valid(spark_mesh):spark_mesh.mesh=null
