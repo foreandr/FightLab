@@ -1,0 +1,371 @@
+Community Fire Artwork - credits and licence record
+Imported 2026-11-02
+
+All entries use original downloaded animation frames. Modifications: desaturated
+luminance/alpha masks; stable transparent cropping; aspect-preserving resizing
+and atlas packing. Shared in-game orange/yellow colouring and hitbox fitting.
+
+Magic plume (community_rubberduck_magic)
+Artist: rubberduck
+Source: https://opengameart.org/content/magic-flame
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_magic.png
+
+Curling fire comet (community_cethiel_comet)
+Artist: Cethiel
+Source: https://opengameart.org/content/fireball-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_comet.png
+
+Flame eruption (community_cethiel_wrath_1)
+Artist: Cethiel
+Source: https://opengameart.org/content/fire-wrath-magic-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_wrath_1.png
+
+Fire lash (community_cethiel_wrath_2)
+Artist: Cethiel
+Source: https://opengameart.org/content/fire-wrath-magic-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_wrath_2.png
+
+Fire crown burst (community_cethiel_wrath_3)
+Artist: Cethiel
+Source: https://opengameart.org/content/fire-wrath-magic-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_wrath_3.png
+
+Inferno surge (community_cethiel_wrath_4)
+Artist: Cethiel
+Source: https://opengameart.org/content/fire-wrath-magic-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_wrath_4.png
+
+Fire spray (community_cethiel_wrath_5)
+Artist: Cethiel
+Source: https://opengameart.org/content/fire-wrath-magic-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cethiel_wrath_5.png
+
+Billowing bonfire (community_mikodrak_burning)
+Artist: Mikodrak
+Source: https://opengameart.org/content/fire-fx-burning-fire-animation
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_burning.png
+
+Flame blade (community_mikodrak_fx2)
+Artist: Mikodrak
+Source: https://opengameart.org/content/2d-spell-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_fx2.png
+
+Trailing fireball (community_mikodrak_fx3)
+Artist: Mikodrak
+Source: https://opengameart.org/content/2d-spell-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_fx3.png
+
+Fire sigil (community_mikodrak_fx4)
+Artist: Mikodrak
+Source: https://opengameart.org/content/2d-spell-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_fx4.png
+
+Scissor flames (community_mikodrak_fx5)
+Artist: Mikodrak
+Source: https://opengameart.org/content/2d-spell-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_fx5.png
+
+Devouring flames (community_mikodrak_fx6)
+Artist: Mikodrak
+Source: https://opengameart.org/content/2d-spell-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_mikodrak_fx6.png
+
+Volumetric detonation (community_rubberduck_explosion)
+Artist: rubberduck
+Source: https://opengameart.org/content/25-special-effects-rendered-with-blender
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_explosion.png
+
+Volumetric plume (community_rubberduck_flame)
+Artist: rubberduck
+Source: https://opengameart.org/content/25-special-effects-rendered-with-blender
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_flame.png
+
+Flame sheet (community_rubberduck_flat_effect)
+Artist: rubberduck
+Source: https://opengameart.org/content/25-special-effects-rendered-with-blender
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_flat_effect.png
+
+Rolling fire ring (community_rubberduck_ring)
+Artist: rubberduck
+Source: https://opengameart.org/content/25-special-effects-rendered-with-blender
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_ring.png
+
+Fire shockwave (community_rubberduck_shockwave)
+Artist: rubberduck
+Source: https://opengameart.org/content/25-special-effects-rendered-with-blender
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_shockwave.png
+
+Sparkling fireball (community_rubberduck_particles_fireball)
+Artist: rubberduck
+Source: https://opengameart.org/content/sparkling-fireball-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_particles_fireball.png
+
+Wind-swept sparks (community_rubberduck_particles_fireball_wind)
+Artist: rubberduck
+Source: https://opengameart.org/content/sparkling-fireball-effect
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_rubberduck_particles_fireball_wind.png
+
+Painted flames (community_para_fire_01)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-2
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_fire_01.png
+
+Smoky flame column (community_para_fire_02)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-2
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_fire_02.png
+
+Candle flame (community_para_lighter_flame_01)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-2
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_lighter_flame_01.png
+
+Ember ring (community_para_particlefx_01)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-1
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_particlefx_01.png
+
+Beaded fire ring (community_para_particlefx_09)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-1
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_particlefx_09.png
+
+Smoke and embers (community_para_particlefx_10)
+Artist: para
+Source: https://opengameart.org/content/animated-particle-effects-1
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_para_particlefx_10.png
+
+Long-tail fireball (community_stealthix_fireball_68x9)
+Artist: stealthix
+Source: https://opengameart.org/content/animated-fires
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_stealthix_fireball_68x9.png
+
+Leaping flame (community_stealthix_jumping_small_fireball_14x45)
+Artist: stealthix
+Source: https://opengameart.org/content/animated-fires
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_stealthix_jumping_small_fireball_14x45.png
+
+Small licking flame (community_stealthix_small_fireball_10x26)
+Artist: stealthix
+Source: https://opengameart.org/content/animated-fires
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_stealthix_small_fireball_10x26.png
+
+Spitting flame (community_pixel_3_bluefire_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_3_bluefire_spritesheet.png
+
+Whipping fire lash (community_pixel_6_flamelash_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_6_flamelash_spritesheet.png
+
+Spinning crescent (community_pixel_7_firespin_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_7_firespin_spritesheet.png
+
+Bright torch (community_pixel_9_brightfire_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_9_brightfire_spritesheet.png
+
+Rising ember plume (community_pixel_11_fire_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_11_fire_spritesheet.png
+
+Solar fireball (community_pixel_16_sunburn_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_16_sunburn_spritesheet.png
+
+Ember swarm (community_pixel_17_felspell_spritesheet)
+Artist: CodeManu / Davit Masia
+Source: https://opengameart.org/content/free-pixel-effects-pack
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_pixel_17_felspell_spritesheet.png
+
+Dithered bonfire (community_codemanu_ditheredfire)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_ditheredfire.png
+
+Rapid flame (community_codemanu_fastpixelfire)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_fastpixelfire.png
+
+Magma spray (community_codemanu_magma)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_magma.png
+
+Cartoon detonation (community_codemanu_explosion)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_explosion.png
+
+Starfire burst (community_codemanu_explosion2)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_explosion2.png
+
+Swirling inferno (community_codemanu_thevortex)
+Artist: CodeManu
+Source: https://codemanu.itch.io/vfx-free-pack
+Licence: CC-BY-4.0
+Licence URL: https://creativecommons.org/licenses/by/4.0/
+Project asset: res://assets/combat/vfx/community_fire/community_codemanu_thevortex.png
+
+Churning fire cloud (community_indiedevs_2)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_2.png
+
+Jet of fire (community_indiedevs_21)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_21.png
+
+Four flame cores (community_indiedevs_24)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_24.png
+
+Expanding ignition ring (community_indiedevs_26)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_26.png
+
+Twisting fire vortex (community_indiedevs_36)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_36.png
+
+Starburst flare (community_indiedevs_55)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_55.png
+
+Cone of fire (community_indiedevs_64)
+Artist: IndieDevs
+Source: https://opengameart.org/content/70-animated-2d-game-effects
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_indiedevs_64.png
+
+Hand-drawn pixel flame (community_optimist_flame)
+Artist: Color Optimist
+Source: https://opengameart.org/content/2d-pixel-fire-sprite-strip
+Licence: CC-BY-3.0
+Licence URL: https://creativecommons.org/licenses/by/3.0/
+Project asset: res://assets/combat/vfx/community_fire/community_optimist_flame.png
+
+Cartoon pointed flame (community_cazlg_flare)
+Artist: cazlg
+Source: https://opengameart.org/content/fire-11
+Licence: CC0-1.0
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Project asset: res://assets/combat/vfx/community_fire/community_cazlg_flare.png
+
+CodeManu VFX Free Pack: the author description dedicates the art to public
+domain, while current itch metadata lists CC BY 4.0. This import retains
+attribution and the CC BY 4.0 licence notice. GIF source mirrors are pinned
+under the original file URLs recorded in community_fire_library.gd.
+
+Source archives and per-frame filenames/hashes are recorded in the library.
+Original free-pixel pack credits both @DavitMasia and @CodeManuPro.

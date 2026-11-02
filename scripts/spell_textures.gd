@@ -13,6 +13,8 @@ static func texture(name_:String) -> Texture2D:
   return output
  if name_ in ["ben_fire_01","ben_fire_02","ben_fire_03","ben_fire_04","ben_fire_05","ben_fire_06","ben_fire_07","ben_fire_08","soluna_fire"]:
   return load("res://assets/combat/vfx/external/"+name_+".png")
+ var community:Dictionary=preload("res://scripts/community_fire_library.gd").find(name_)
+ if not community.is_empty():return load(str(community.file))
  if name_ not in NAMES:return null
  return load("res://assets/combat/vfx/"+name_+".png")
 

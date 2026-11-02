@@ -1,8 +1,9 @@
 extends RefCounted
-## Fire structure, motion and texture presets; colour is deliberately fixed red.
+## Reviewed fire structures and downloaded animations, using a shared warm palette.
+const Community=preload("res://scripts/community_fire_library.gd")
 const Appearance=preload("res://scripts/spell_appearance.gd")
 const TEXTURES=["flame_01","flame_02","flame_03","flame_04","flame_05","flame_06","fire_01","fire_02"]
-const FORM_DEFAULTS={"flame_width":1.0,"flame_height":1.0,"flame_tongues":1,"flame_bend":0.0,"flame_turbulence":1.0,"flame_flow":1.0,"flame_structure":0,"flame_sheet_columns":1,"flame_sheet_rows":1,"flame_sheet_frames":1,"flame_sheet_fps":24.0}
+const FORM_DEFAULTS={"flame_width":1.0,"flame_height":1.0,"flame_tongues":1,"flame_bend":0.0,"flame_turbulence":1.0,"flame_flow":1.0,"flame_structure":0,"flame_sheet_columns":1,"flame_sheet_rows":1,"flame_sheet_frames":1,"flame_sheet_fps":24.0,"flame_thumbnail_time":0.8,"flame_soft_alpha":false}
 const FORMS=[
  {"id":"natural","title":"Natural"},
  {"id":"needle","title":"Needle","flame_width":0.45,"flame_turbulence":0.65,"flame_flow":1.15},
@@ -64,10 +65,16 @@ static func _add(entry:Dictionary) -> void:
  cached.append(entry);by_id[entry.id]=entry
 static func entries() -> Array[Dictionary]:
  if not cached.is_empty():return cached
- for source in EXTERNAL:
-  var entry:Dictionary={"id":source.id,"title":source.title,"shape":"Flame","texture":source.id,"author":source.author,"source":"https://opengameart.org/content/"+("lots-of-game-effects" if source.id=="soluna_fire" else "animated-fire"),"license":"CC0-1.0"}
+ for source in EXTERNAL+Community.ENTRIES:
+  var entry:Dictionary={"id":source.id,"title":source.title,"shape":"Flame","texture":source.id,"author":source.author,"source":source.get("source","https://opengameart.org/content/"+("lots-of-game-effects" if source.id=="soluna_fire" else "animated-fire")),"license":source.get("license","CC0-1.0")}
   entry.merge(FORM_DEFAULTS,false)
   entry.flame_sheet_columns=source.columns;entry.flame_sheet_rows=source.rows;entry.flame_sheet_frames=source.frames
+  entry.flame_sheet_fps=float(source.get("fps",24.0))
+  entry.flame_height=float(source.get("flame_height",1.0))
+  entry.flame_soft_alpha=bool(source.get("flame_soft_alpha",false))
+  entry.flame_thumbnail_time=float(source.get("flame_thumbnail_time",0.8))
+  if source.has("origin"):entry["origin"]=source.origin
+  if source.has("conversion"):entry["conversion"]=source.conversion
   _add(entry)
  for texture in TEXTURES:
   _add({"id":texture,"title":texture.replace("_"," ").capitalize(),"shape":"Flame","texture":texture})
@@ -83,6 +90,7 @@ static func entries() -> Array[Dictionary]:
     entry.flame_structure=structure.flame_structure
     _add(entry)
  var visible:Array[Dictionary]=[]
+ for source in Community.ENTRIES:visible.append(by_id[source.id])
  for selected in GALLERY_STYLES:
   var entry:Dictionary=by_id[selected.id]
   entry.title=selected.title
@@ -97,7 +105,7 @@ static func look(id:String,custom:Dictionary={}) -> Dictionary:
  var entry:=find(id)
  if entry.is_empty():return result
  result.erase("preset")
- for key in ["author","source","license"]:result.erase(key)
+ for key in ["author","source","license","origin","conversion"]:result.erase(key)
  result.merge(FORM_DEFAULTS,true)
  for key in entry:
   if key not in ["id","title"]:result[key]=entry[key]

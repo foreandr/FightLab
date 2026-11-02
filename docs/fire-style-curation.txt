@@ -1,7 +1,9 @@
 Fire gallery curation
 
-The gallery offers 23 reviewed structures, not hundreds of combinations of
-minor width, bend, turbulence, speed or colour changes.
+The original curated set contains 23 structures. Additional downloaded artwork
+is listed in community_fire_library.gd after source/licence/motion review.
+The gallery never expands through combinations of minor width, bend, turbulence,
+speed or colour changes.
 
 Audit: all 533 previous presets were rendered through SpellAppearance at
 0.0, 0.13, 0.29, 0.47, 0.71, 1.03, 1.47 and 2.13 seconds. Silhouette comparison
@@ -15,7 +17,8 @@ All styles use the same warm heat palette: orange #ff681c and yellow #ffe889,
 with the same glow and opacity. Source texture RGB cannot tint fire.
 Transparency and shape may vary; colour is not a selectable source of variety.
 
-FireStyleCatalog.GALLERY_STYLES is the explicit visible shortlist. Legacy
+FireStyleCatalog.GALLERY_STYLES is the original explicit shortlist; the community
+library adds reviewed downloaded art, not generated variations. Legacy
 IDs and original files remain readable for existing saved spells, but are
 not advertised as additional gallery options. Do not reintroduce a Cartesian
 product to inflate the count. New styles require structural/motion review.

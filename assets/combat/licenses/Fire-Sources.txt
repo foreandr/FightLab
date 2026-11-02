@@ -1,4 +1,4 @@
-Additional animated fire sources (original files; recoloured red at render time):
+Additional animated fire sources (original files; recoloured with the shared warm palette at render time):
 
 Animated Fire - Ben Hickling
 https://opengameart.org/content/animated-fire
@@ -17,3 +17,7 @@ Original: https://opengameart.org/sites/default/files/Fire01.png
 Existing particle masks: Kenney Particle Pack, CC0.
 See Kenney-Particle-Pack-CC0.txt.
 Procedural structure variants are FightLab shader treatments, not additional downloads.
+
+Expanded community collection: Community-Fire-Credits.txt.
+Per-asset source files, archive hashes and conversion metadata are preserved in
+scripts/community_fire_library.gd.

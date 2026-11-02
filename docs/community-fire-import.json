@@ -1,0 +1,26 @@
+{
+  "reviewed_candidates": 55,
+  "accepted": 51,
+  "retained_original_gallery": 23,
+  "total_gallery": 74,
+  "artists": [
+    "Cethiel",
+    "CodeManu",
+    "CodeManu / Davit Masia",
+    "Color Optimist",
+    "IndieDevs",
+    "Mikodrak",
+    "cazlg",
+    "para",
+    "rubberduck",
+    "stealthix"
+  ],
+  "rejected": {
+    "community_cethiel_fireball": "Near-identical comet structure to the first Cethiel fireball",
+    "community_codemanu_kabooms": "Contains KABOOM lettering, not a flame structure",
+    "community_indiedevs_45": "Near-duplicate radial fireburst silhouette and expansion; keep the more distinct starburst",
+    "community_indiedevs_57": "Near-duplicate glowing burst compared with the churning fire cloud and starburst"
+  },
+  "motion_review": "8 frames sampled over each full source cycle using shared Godot renderer; phase-shift comparisons plus manual review",
+  "normalisation": "Original frames only; no generated shape/palette variants counted"
+}

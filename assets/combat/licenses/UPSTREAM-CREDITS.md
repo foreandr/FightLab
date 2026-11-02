@@ -117,3 +117,11 @@ The 96 imported wearable models in `assets/characters/wardrobe/pavlov_imports/` 
 ## Expanded Clothing Pavlov library
 
 Downloaded model sources, author/licence attribution, duplicate handling and mesh conversions are documented in [Expanded clothing library credits](../../characters/wardrobe/library/CREDITS.md). Per-model source URLs and geometry hashes are retained in the library catalogs. Downloaded research garments preserve their original PLY meshes; the PVM representation and runtime bone weights are conversion/fitting changes.
+
+
+## Community fire artwork
+
+See [Community-Fire-Credits.txt](Community-Fire-Credits.txt) for per-asset author,
+source, licence and modification notices. Additional artists include rubberduck,
+Cethiel, Mikodrak, para, stealthix, CodeManu, Davit Masia, IndieDevs, Color Optimist
+and cazlg. The in-game warm colouring and atlas conversions retain these credits.

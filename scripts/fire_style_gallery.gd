@@ -89,10 +89,10 @@ func _preview(id:String) -> SubViewport:
  environment.environment.background_color=Color("382b21")
  viewport.add_child(environment)
  var camera:=Camera3D.new();camera.projection=Camera3D.PROJECTION_ORTHOGONAL
- camera.size=1.05;camera.position=Vector3(0.9,0.55,2)
+ camera.size=0.78;camera.position=Vector3(0.9,0.55,2)
  camera.basis=Basis.looking_at(-camera.position.normalized());camera.current=true;viewport.add_child(camera)
  var visual:=Appearance.visual("Fire",0.32,Catalog.look(id,base_look))
- if str(visual.get_meta("look",{}).get("shape",""))=="Flame":visual.material_override.set_shader_parameter("flame_preview_time",0.8)
+ if str(visual.get_meta("look",{}).get("shape",""))=="Flame":visual.material_override.set_shader_parameter("flame_preview_time",float(visual.get_meta("look",{}).get("flame_thumbnail_time",0.8)))
  viewport.add_child(visual)
  return viewport
 func select_style(id:String) -> void:

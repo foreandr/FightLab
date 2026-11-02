@@ -5,7 +5,7 @@ const Plume=preload("res://scripts/fire_plume.gd")
 func red(color:Color) -> bool:
  return color.r>color.b and color.g>color.b
 func _initialize() -> void:
- assert(Catalog.entries().size()==23)
+ assert(Catalog.entries().size()==Catalog.GALLERY_STYLES.size()+preload("res://scripts/community_fire_library.gd").ENTRIES.size())
  for entry in Catalog.entries():
   var look:=Catalog.look(entry.id)
   var resolved:=Appearance.settings("Fire",look)
@@ -36,5 +36,5 @@ func _initialize() -> void:
  assert(red(plume.material_override.get_shader_parameter("accent")))
  plume.free()
  assert(Appearance.settings("Ice",{"color":Color.BLUE}).color==Color.BLUE)
- print("WARM FIRE PALETTE PASS: 23 curated styles, legacy colors, projectile and plume materials; other elements unchanged")
+ print("WARM FIRE PALETTE PASS: ",Catalog.entries().size()," styles, legacy colors, projectile and plume materials; other elements unchanged")
  quit()

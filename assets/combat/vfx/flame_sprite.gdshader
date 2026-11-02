@@ -17,6 +17,7 @@ uniform int flame_sheet_rows=1;
 uniform int flame_sheet_frames=1;
 uniform float flame_sheet_fps=24.0;
 uniform float flame_preview_time=-1.0;
+uniform bool flame_soft_alpha=false;
 float flame_noise(vec2 p){return fract(sin(dot(floor(p),vec2(127.1,311.7)))*43758.5453);}
 void vertex(){
  MODELVIEW_MATRIX=VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0]*length(MODEL_MATRIX[0].xyz),INV_VIEW_MATRIX[1]*length(MODEL_MATRIX[1].xyz),INV_VIEW_MATRIX[2]*length(MODEL_MATRIX[2].xyz),MODEL_MATRIX[3]);
@@ -70,5 +71,5 @@ void fragment(){
  vec3 pigment=mix(primary.rgb,accent.rgb,smoothstep(0.2,0.95,heat));
  ALBEDO=pigment;
  EMISSION=pigment*(0.2+glow*0.25);
- ALPHA=pow(a,0.85)*opacity*(0.85+sin(t*2.3)*0.12);
+ ALPHA=(flame_soft_alpha?pow(raw,0.82):pow(a,0.85))*opacity*(0.85+sin(t*2.3)*0.12);
 }
