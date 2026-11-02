@@ -52,3 +52,20 @@ The card gallery shows at most 12 sound choices on a page, with Prev/Next and a
 keyboard-accessible page field. Reopening follows the saved sound to its page.
 Waveforms/streams load only for the requested page and cache for reuse. Burning
 still uses the single separate sustained loop; the default cast remains unchanged.
+
+Animation duration coupling
+
+combat_spell_rules.author stores animation_duration in the authored spec. Shared
+spell_audio_rules computes rate = 1 second / animation_duration (minimum audio
+duration 0.1 seconds). Normal is 1 second; 0.5 seconds = 2x; 2 seconds = 0.5x.
+An old spec with no duration uses its animation profile duration or defaults to 1s.
+Limiter-off previews use their explicit duration. Cast sounds still begin on actual
+release, and catalog auditions use the same timing. Ordinary audio resampling also
+changes pitch: shorter casts sound higher, longer casts sound deeper. Original
+sound files stay unchanged. A sound's original tail can extend past the animation.
+
+combat_audio captures each cast voice's base rate, then multiplies it by the global
+slow-motion time scale while playing. Different simultaneous casts retain their own
+rates; later slider edits do not alter them. Ordinary Foley keeps its existing pitch
+variation, and the sustained burning loop stays independent of cast duration.
+Test: spell_audio_timing_test.gd plus the actual Create sound-selection test.

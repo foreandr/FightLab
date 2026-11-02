@@ -114,13 +114,13 @@ func release(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dictio
 	if not authorize_cast(actor,spec,profile):return false
 	if animated:cast_recoveries[actor.get_instance_id()]={"actor":weakref(actor),"mode":actor.mode}
 	field.combat_cast_feedback(actor,spec)
-	dispatch(actor,spec,origin)
+	dispatch(actor,spec,origin,profile)
 	return true
 
 func cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={}) -> bool:
 	return release(actor,spec,field.fighter_hand(actor,str(spec.get("hand","hand_r"))),profile)
 
-func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
+func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dictionary={}) -> void:
 	match str(spec.get("effect","orb")):
 		"summon_earth":field.summon_earth(actor,spec)
 		"heal":
@@ -158,7 +158,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
 		_:
 			if spec.effect=="ground" and actor.is_on_floor():origin=actor.position+Vector3.UP*0.30
 			spawn_projectile(actor,spec,origin)
-			field.combat_sound(preload("res://scripts/spell_asset_library.gd").sound_for(spec),origin,0.45)
+			field.combat_sound(preload("res://scripts/spell_asset_library.gd").sound_for(spec),origin,0.45,preload("res://scripts/spell_audio_rules.gd").playback_rate(spec,profile))
 
 func aim_target(actor:CharacterBody3D) -> CharacterBody3D:
 	return field.combat_target(actor)

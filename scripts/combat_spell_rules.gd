@@ -130,6 +130,7 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=preload("res://scripts/combat_spec.gd").copy(base)
 	spec["release"]=clampf(fraction,0.0,1.0)
+	spec["animation_duration"]=maxf(0.0,duration) if is_finite(duration) else 1.0
 	var physical_stats:=physical(duration,offensive)
 	physical_stats.damage*=CastType.physical_multiplier(base)
 	var resources:=resource_split(base,duration,offensive)

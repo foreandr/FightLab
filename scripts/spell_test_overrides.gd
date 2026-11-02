@@ -9,6 +9,7 @@ func set_value(key:String,value:float) -> void:
 func apply(spec:Dictionary) -> Dictionary:
 	var result:=preload("res://scripts/combat_spec.gd").copy(spec)
 	result["unrestricted_preview"]=true
+	result["animation_duration"]=values.duration
 	result["testing_only"]=true
 	result["mana"]=values.mana
 	result.erase("mana_percent")

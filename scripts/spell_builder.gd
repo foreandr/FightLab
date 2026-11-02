@@ -1036,7 +1036,7 @@ func set_fire_sound(id:String) -> void:
 func preview_fire_sound(id:String) -> void:
  if preload("res://assets/spells/fire/sounds.gd").find(id).is_empty():return
  if not is_instance_valid(editor.field) or not is_instance_valid(editor.actor):return
- editor.field.combat_sound(id,editor.actor.global_position,0.65)
+ editor.field.combat_sound(id,editor.actor.global_position,0.65,preload("res://scripts/spell_audio_rules.gd").playback_rate(demo_preview_spec()))
 
 func confirm_fire_sound() -> void:
  if preload("res://assets/spells/fire/sounds.gd").find(fire_sound_preview_id).is_empty():return

@@ -61,6 +61,8 @@ func run():
  b.set_fire_sound("lentikula_fire_4")
  b.play_projectile_once();b.process_demo_preview(b.cast_duration()*b.release_fraction+0.001)
  if not check(e.field.audio.streams.has("lentikula_fire_4") and e.field.shots.back().spec.sound_id=="lentikula_fire_4","Downloaded sound not played on actual release"):return
+ var released_voice:AudioStreamPlayer3D=e.field.audio.voices[(e.field.audio.cursor-1)%e.field.audio.voices.size()]
+ if not check(is_equal_approx(released_voice.pitch_scale,1.0/b.cast_duration()),"Create sound speed ignores cast duration"):return
  b.confirm_fire_sound();cfg.load(b.draft_path)
  if not check(cfg.get_value("appearance","elements",{}).Fire.sound_id=="lentikula_fire_4","Downloaded sound does not save"):return
  b.fire_sound_gallery.set_page(b.fire_sound_gallery.page_count()-1)
