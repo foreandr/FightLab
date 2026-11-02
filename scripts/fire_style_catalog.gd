@@ -32,6 +32,32 @@ const EXTERNAL=[
  {"id":"ben_fire_02","title":"Thin flicker","author":"Ben Hickling","columns":10,"rows":6,"frames":60},
  {"id":"ben_fire_06","title":"Forked plume","author":"Ben Hickling","columns":10,"rows":6,"frames":60},
  {"id":"ben_fire_07","title":"Rising wisp","author":"Ben Hickling","columns":10,"rows":6,"frames":60}]
+# A reviewed gallery, not a Cartesian product of small parameter differences.
+# Hidden legacy records remain resolvable so existing spells keep loading.
+const GALLERY_STYLES=[
+ {"id":"soluna_fire","title":"Billowing jet"},
+ {"id":"ben_fire_01","title":"Dancing flame"},
+ {"id":"flame_04","title":"Soft flame"},
+ {"id":"style_flame_04_natural_gold","title":"Hollow flame"},
+ {"id":"style_flame_04_natural_white","title":"Spiral"},
+ {"id":"style_flame_04_natural_blue","title":"Halo"},
+ {"id":"style_flame_04_natural_violet","title":"Forked flame"},
+ {"id":"style_flame_04_natural_green","title":"Cinders"},
+ {"id":"style_flame_04_natural_rose","title":"Vortex"},
+ {"id":"style_flame_04_twins_ember","title":"Twin flames"},
+ {"id":"style_flame_04_crown_ember","title":"Flame crown"},
+ {"id":"fire_01","title":"Diffuse flare"},
+ {"id":"flame_06","title":"Wick flame"},
+ {"id":"style_flame_04_natural_crimson","title":"Torn flame"},
+ {"id":"shape_orb","title":"Orb"},
+ {"id":"shape_lance","title":"Lance"},
+ {"id":"shape_shard","title":"Shard"},
+ {"id":"shape_ring","title":"Ring"},
+ {"id":"shape_cube","title":"Cube"},
+ {"id":"shape_cone","title":"Cone"},
+ {"id":"shape_disc","title":"Disc"},
+ {"id":"shape_capsule","title":"Capsule"},
+ {"id":"shape_star","title":"Star"}]
 static var cached:Array[Dictionary]=[]
 static var by_id:Dictionary={}
 static func _add(entry:Dictionary) -> void:
@@ -56,11 +82,12 @@ static func entries() -> Array[Dictionary]:
     for key in FORM_DEFAULTS:entry[key]=form.get(key,FORM_DEFAULTS[key])
     entry.flame_structure=structure.flame_structure
     _add(entry)
- # Lead with visibly different structures rather than near-neighbour variations.
- var featured=["soluna_fire","ben_fire_01","ben_fire_03","style_flame_04_natural_gold","style_flame_04_natural_white","style_flame_04_natural_blue","style_flame_04_natural_violet","style_flame_04_natural_green","style_flame_04_natural_rose","style_flame_04_twins_ember","style_flame_04_crown_ember","style_flame_04_needle_ember"]
- for i in featured.size():
-  var entry:Dictionary=by_id[featured[i]]
-  cached.erase(entry);cached.insert(i,entry)
+ var visible:Array[Dictionary]=[]
+ for selected in GALLERY_STYLES:
+  var entry:Dictionary=by_id[selected.id]
+  entry.title=selected.title
+  visible.append(entry)
+ cached=visible
  return cached
 static func find(id:String) -> Dictionary:
  entries()

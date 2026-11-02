@@ -16,7 +16,7 @@ func run():
   var signature:=JSON.stringify(visual,"",true)
   if not check(not signatures.has(signature),"Duplicate preset settings"):return
   signatures[signature]=true
- if not check(ids.size()==533,"Expanded style catalog size wrong"):return
+ if not check(ids.size()==23,"Expanded style catalog size wrong"):return
  change_scene_to_file("res://scenes/combat_sandbox.tscn")
  var e:Node
  while true:
@@ -32,14 +32,14 @@ func run():
  b.effect_choices.Fire.pressed.emit()
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
- if not check(gallery.is_visible_in_tree() and gallery.choices.size()==12 and gallery.page_count()==45 and b.fire_style_confirm_button.is_visible_in_tree(),"Fire does not open inline paginated tier"):return
+ if not check(gallery.is_visible_in_tree() and gallery.choices.size()==12 and gallery.page_count()==2 and b.fire_style_confirm_button.is_visible_in_tree(),"Fire does not open inline paginated tier"):return
  if not check(e.get_viewport().get_embedded_subwindows().is_empty() and not preload("res://scripts/combat_pointer.gd").dialog_open(root),"Fire gallery is still modal"):return
  var original:Dictionary=b.demo_projectile_stats()
  var committed:Dictionary=b.appearances.get("Fire",{}).duplicate(true)
- gallery.page_input.value=45
+ gallery.page_input.value=2
  for i in 2:await process_frame
- if not check(gallery.page==44 and gallery.choices.size()==5 and gallery.previews.size()==5 and gallery.next_button.disabled,"Last page bounds or lazy preview count wrong"):return
- var chosen:Dictionary=Catalog.entries().back()
+ if not check(gallery.page==1 and gallery.choices.size()==11 and gallery.previews.size()==11 and gallery.next_button.disabled,"Last page bounds or lazy preview count wrong"):return
+ var chosen:Dictionary=Catalog.find("style_flame_04_natural_crimson")
  gallery.choices[chosen.id].pressed.emit()
  if not check(b.fire_style_preview_id==chosen.id and not b.fire_style_confirm_button.disabled and b.appearances.get("Fire",{})==committed,"Clicking preview commits or loses selection"):return
  b.save_draft()
@@ -59,12 +59,12 @@ func run():
  cfg.load(b.draft_path)
  if not check(Catalog.active_id(cfg.get_value("appearance","elements",{}).Fire)==chosen.id,"Saved structure/form preset fails round trip"):return
  b.stop_preview_controls(true)
- gallery.set_page(floori(Catalog.entries().find(Catalog.find("flame_01"))/12.0));gallery.choices.flame_01.pressed.emit()
+ gallery.set_page(floori(Catalog.entries().find(Catalog.find("flame_04"))/12.0));gallery.choices.flame_04.pressed.emit()
  if not check(e.field.shots.size()==1 and shot.node.get_meta("look").fire_style_id==chosen.id,"Preview mutates/removes existing shot"):return
  b.leave_fire_styles()
  if not check(not gallery.is_visible_in_tree() and Catalog.active_id(b.appearances.Fire)==chosen.id and not b.fire_style_editing,"Back does not discard unconfirmed choice"):return
  b.effect_choices.Fire.pressed.emit()
- if not check(gallery.page==44 and gallery.choices[chosen.id].button_pressed,"Reenter loses confirmed page/highlight"):return
+ if not check(gallery.page==1 and gallery.choices[chosen.id].button_pressed,"Reenter loses confirmed page/highlight"):return
  # Imported sheets are cast through the same preview and retain their origin.
  b.stop_preview_controls(true)
  gallery.set_page(0);gallery.choices.soluna_fire.pressed.emit()
@@ -85,5 +85,5 @@ func run():
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/inline_fire_gallery.png")
  if not check(b.fire_style_confirm_button.get_global_rect().end.y<b.spell_playback_panel.get_global_rect().position.y,"Gallery Confirm is below bottom toolbar"):return
- print("INLINE FIRE GALLERY PASS: 533 unique preset records, 45 pages, only 12 rendered previews, no modal, page jump, preview via Play without saving, Confirm persists structure/form, Back discards preview, existing shots and combat stats preserved, buttons fit left tier")
+ print("INLINE FIRE GALLERY PASS: 23 curated styles, 2 pages, only 12 rendered previews, no modal, page jump, preview via Play without saving, Confirm persists structure/form, Back discards preview, existing shots and combat stats preserved, buttons fit left tier")
  quit()

@@ -10,6 +10,8 @@ static func settings(element:String,custom:Dictionary) -> Dictionary:
   var palette:Dictionary=preload("res://scripts/fire_palette.gd").colors(out)
   out.color=palette.color
   out.accent=palette.accent
+  out.glow=1.8
+  out.opacity=0.95
   if not out.has("flame_structure") and str(out.get("fire_style_id","")).begins_with("style_"):
    out.flame_structure=preload("res://scripts/fire_palette.gd").legacy_structure(str(out.fire_style_id))
  if out.shape=="Element style":out.shape=defaults(element).shape

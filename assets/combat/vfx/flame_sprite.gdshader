@@ -65,8 +65,8 @@ void fragment(){
  }
  if(flame_structure==7){raw*=0.45+0.55*smoothstep(-0.2,0.35,sin(uv.y*23.0-t*3.0));}
  float a=clamp(pow(raw,0.55)*2.1,0.0,1.0);
- float heat=atlas?dot(sample_color.rgb,vec3(0.299,0.587,0.114)):clamp(raw*0.6+uv.y*0.4,0.0,1.0);
- vec3 pigment=mix(primary.rgb,accent.rgb,heat);
+ // Texture RGB must never introduce a second fire colour.
+ vec3 pigment=primary.rgb;
  ALBEDO=pigment;
  EMISSION=pigment*(0.2+glow*0.25);
  ALPHA=pow(a,0.85)*opacity*(0.85+sin(t*2.3)*0.12);

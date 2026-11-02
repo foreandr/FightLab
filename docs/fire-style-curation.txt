@@ -1,0 +1,21 @@
+Fire gallery curation
+
+The gallery offers 23 reviewed structures, not hundreds of combinations of
+minor width, bend, turbulence, speed or colour changes.
+
+Audit: all 533 previous presets were rendered through SpellAppearance at
+0.0, 0.13, 0.29, 0.47, 0.71, 1.03, 1.47 and 2.13 seconds. Silhouette comparison
+included temporal offsets so a shifted animation phase does not count as a
+new design. Near-neighbour imported plumes, repeated mask variants, and
+Cartesian combinations were removed from the visible choices. The retained
+3D shapes differ in actual geometry, not just their projection in one image.
+510 redundant or minor-variation choices are no longer offered.
+
+All styles use the same red (#e62917) for both primary and accent, with the
+same glow and opacity. Source texture RGB cannot tint fire. Transparency and
+shape may vary; colour is not a selectable source of variety.
+
+FireStyleCatalog.GALLERY_STYLES is the explicit visible shortlist. Legacy
+IDs and original files remain readable for existing saved spells, but are
+not advertised as additional gallery options. Do not reintroduce a Cartesian
+product to inflate the count. New styles require structural/motion review.

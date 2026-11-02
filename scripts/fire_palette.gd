@@ -1,6 +1,6 @@
 extends RefCounted
 ## Red-only fire palette. Legacy IDs remain stable for saved appearances.
-const PRESETS=[{"id":"ember","title":"Red","color":Color("e62917"),"accent":Color("ff5945")}]
+const PRESETS=[{"id":"ember","title":"Red","color":Color("e62917"),"accent":Color("e62917")}]
 static func colors(_appearance:Dictionary={}) -> Dictionary:
  # No colour variants: all fire presets use the same red.
  return PRESETS[0]
