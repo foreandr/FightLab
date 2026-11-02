@@ -1098,6 +1098,7 @@ func stop_preview_controls(force:=false) -> void:
  if preview_slow:set_preview_slow(false)
 
 func refresh_delivery_choices() -> void:
+ refresh_animation_type_visibility()
  if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type!="Projectile" or not demo_choice_selected
  for type in delivery_choices:
   delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
@@ -1277,11 +1278,12 @@ func demo_projectile_stats() -> Dictionary:
  var aim:=Vector3.BACK
  if is_instance_valid(editor.actor):
   movement=editor.actor.velocity
-  var origin:Vector3=editor.field.fighter_hand(editor.actor,CombatAim.emitter(casting_animation))+editor.actor.global_basis.z*0.12
+  var origin:Vector3=editor.field.fighter_hand(editor.actor,CombatAim.emitter(playback_animation()))+editor.actor.global_basis.z*0.12
   aim=preview_aim_direction(origin)
  return Rules.authored_stats(base,demo_duration,release_fraction,demo_offensive(),movement,aim)
 
 func refresh_demo_timing() -> void:
+ refresh_animation_type_visibility()
  if not is_instance_valid(demo_duration_slider):return
  if not limiter_enabled:
   refresh_test_controls()
@@ -1312,7 +1314,13 @@ func refresh_demo_timing() -> void:
   release_slider.set_value_no_signal(release_fraction*100.0)
  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
 
+func refresh_animation_type_visibility() -> void:
+ var relevant:=spell_delivery_type()=="Touch"
+ if spell_sections.has("Animation type"):spell_sections["Animation type"].visible=relevant
+ for badge in demo_type_labels.values():badge.visible=relevant
+
 func refresh_demo_choices() -> void:
+ refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
   var selected:bool=demo_choice_selected and str(casting_animation.get("demo_choice","cross"))==choice
@@ -1342,7 +1350,7 @@ func play_demo_preview() -> void:
  editor.actor.player.pause()
  blend_demo_pose(demo_enter_pose,0.0)
  elapsed=0
- CastType.begin(editor.actor,casting_animation)
+ CastType.begin(editor.actor,playback_animation())
  playing=true
  released=false
  if previews_projectile():
@@ -1419,7 +1427,7 @@ func cast_pose_aim(progress:float) -> Dictionary:
  elif manual_aim_valid:target=manual_aim_point
  else:return {}
  var weight:=smoothstep(0.0,0.12,progress)*(1.0-smoothstep(0.75,1.0,progress))
- return {"target":target,"emitter":CombatAim.emitter(casting_animation),"weight":weight}
+ return {"target":target,"emitter":CombatAim.emitter(playback_animation()),"weight":weight}
 
 func blend_demo_pose(from:Array[Transform3D],weight:float) -> void:
  CastPose.blend_from(editor.actor,from,weight)
@@ -1471,7 +1479,7 @@ func set_demo_animation_type(value:String) -> void:
  if not choice.is_empty():demo_animation_types[choice]=value
  if is_instance_valid(demo_movement_control):demo_movement_control.set_value(value)
  refresh_demo_choices()
- if playing:CastType.begin(editor.actor,casting_animation)
+ if playing:CastType.begin(editor.actor,playback_animation())
  refresh_demo_timing()
  save_demo_preferences()
 
@@ -1674,13 +1682,13 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  spec["animation_type"]=CastType.kind(casting_animation)
  spec["release"]=release_fraction
  spec["release_timing_multiplier"]=float(release_timing_stats().multiplier)
- spec["delivery_type"]=preview_delivery_type if creation_step=="delivery" and not preview_delivery_type.is_empty() else (delivery_type if not delivery_type.is_empty() else "Projectile")
+ spec["delivery_type"]=spell_delivery_type()
  return spec
 
 func demo_preview_spec() -> Dictionary:
  var base:=projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
- spec.hand=CombatAim.emitter(casting_animation)
+ spec.hand=CombatAim.emitter(playback_animation())
  return spec if limiter_enabled else test_overrides.apply(spec)
 
 func cast_duration() -> float:
@@ -1696,8 +1704,14 @@ func cast_committed() -> bool:
 func playback_duration() -> float:
  return committed_duration if cast_committed() else cast_duration()
 
+func spell_delivery_type() -> String:
+ if cast_committed() and not committed_spec.is_empty():return str(committed_spec.get("delivery_type","Projectile"))
+ return preview_delivery_type if creation_step=="delivery" and not preview_delivery_type.is_empty() else (delivery_type if not delivery_type.is_empty() else "Projectile")
+
 func playback_animation() -> Dictionary:
- return committed_animation if cast_committed() else casting_animation
+ var profile:Dictionary=(committed_animation if cast_committed() else casting_animation).duplicate(false)
+ profile["delivery_type"]=spell_delivery_type()
+ return profile
 
 func play_cast_preview() -> void:
  if cast_committed():return
@@ -1712,7 +1726,7 @@ func play_cast_preview() -> void:
   return
  reset_caster_pose()
  elapsed=0
- CastType.begin(editor.actor,casting_animation)
+ CastType.begin(editor.actor,playback_animation())
  playing=true
  released=false
  cast_attempt_actor=editor.actor

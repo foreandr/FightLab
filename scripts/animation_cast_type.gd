@@ -1,5 +1,5 @@
 extends RefCounted
-## One declaration controls pose ownership, cast travel and the physical tradeoff.
+## Animation metadata plus Touch-specific pose ownership and physical tradeoff.
 const HEAD:="Head"
 const ARMS:="Arm"
 const LEGS:="Leg"
@@ -32,14 +32,20 @@ static func legacy_type(profile:Dictionary) -> String:
  return WHOLE_BODY
 static func kind(profile:Dictionary) -> String:
  return normalize(str(profile.animation_type)) if declared(profile) else legacy_type(profile)
-static func owns_legs(profile:Dictionary) -> bool:return kind(profile) in [LEGS,WHOLE_BODY]
+## Standalone animation editing retains regional ownership. For spells, only
+## Touch interprets the type; other delivery methods share unrestricted movement.
+static func applies(profile:Dictionary) -> bool:
+ if profile.has("delivery_type"):return str(profile.delivery_type)=="Touch"
+ return not profile.has("projectile_element")
+static func owns_legs(profile:Dictionary) -> bool:return applies(profile) and kind(profile) in [LEGS,WHOLE_BODY]
 static func physical_multiplier(profile:Dictionary) -> float:
- return 1.0+LEG_PHYSICAL_BONUS if kind(profile)==LEGS else 1.0
+ return 1.0+LEG_PHYSICAL_BONUS if str(profile.get("delivery_type",""))=="Touch" and kind(profile)==LEGS else 1.0
 static func begin(actor:Node3D,profile:Dictionary) -> void:
  var velocity:Vector3=actor.velocity
  velocity.y=0.0
  actor.set_meta("animation_cast_momentum",velocity if owns_legs(profile) else Vector3.ZERO)
 static func drift(actor:Node3D,profile:Dictionary,delta:float) -> Vector3:
+ if not applies(profile):return Vector3.ZERO
  var velocity:Vector3=actor.get_meta("animation_cast_momentum",Vector3.ZERO)
  velocity*=exp(-(LEG_DRAG if kind(profile)==LEGS else BODY_DRAG)*maxf(0.0,delta))
  if velocity.length()<0.05:velocity=Vector3.ZERO
@@ -49,7 +55,7 @@ static func description(type_:String) -> String:
  match normalize(type_):
   HEAD:return "Head only · movement stays available."
   ARMS:return "Running legs + upper-body cast."
-  LEGS:return "Leg region · momentum slows · +20% physical damage."
+  LEGS:return "Leg region · Touch: momentum slows · +20% physical damage."
   WHOLE_BODY:return "Entire body · momentum carries forward and slows."
  return "Choose an animation type before saving."
 
@@ -69,6 +75,7 @@ static func controls_bone(rig:Skeleton3D,index:int,type_:String) -> bool:
  return false
 
 static func affects_channel(profile:Dictionary,channel:String) -> bool:
+ if not applies(profile):return true
  match kind(profile):
   HEAD:return channel=="face"
   ARMS:return channel in ["torso","arm_l","arm_r"]
@@ -76,7 +83,7 @@ static func affects_channel(profile:Dictionary,channel:String) -> bool:
  return true
 
 static func restore_outside(actor:Node,baseline:Array[Transform3D],profile:Dictionary) -> void:
- var type_:=kind(profile)
+ var type_:=kind(profile) if applies(profile) else WHOLE_BODY
  for index in mini(baseline.size(),actor.skeleton.get_bone_count()):
   if not controls_bone(actor.skeleton,index,type_):actor.skeleton.set_bone_pose(index,baseline[index])
  actor.skeleton.force_update_all_bone_transforms()
@@ -101,6 +108,7 @@ static func component_types(profile:Dictionary) -> Array[String]:
 static func emitter(profile:Dictionary,fallback:String="hand_r") -> String:
  var bone:=str(profile.get("attack_bone",fallback))
  if bone.is_empty():bone=fallback
+ if not applies(profile):return "Head" if bone in ["head","mouth"] else bone
  match kind(profile):
   HEAD:return "Head"
   ARMS:

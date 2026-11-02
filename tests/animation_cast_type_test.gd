@@ -30,9 +30,9 @@ func run() -> void:
    actor.stamina=100;actor.mana=100
    assert(world.combat().release(actor,spec,Vector3.UP))
    assert(is_equal_approx(world.shots.back().spec.damage,stats[kind].physical_damage))
-  assert(is_equal_approx(stats[Type.LEGS].physical_damage,stats[Type.ARMS].physical_damage*1.2))
+  assert(is_equal_approx(stats[Type.LEGS].physical_damage,stats[Type.ARMS].physical_damage))
   assert(is_equal_approx(stats[Type.WHOLE_BODY].physical_damage,stats[Type.ARMS].physical_damage))
   assert(stats[Type.LEGS].mana==stats[Type.ARMS].mana and stats[Type.LEGS].stamina==stats[Type.ARMS].stamina)
   assert(stats[Type.LEGS].burn_dps==stats[Type.ARMS].burn_dps)
- print("ANIMATION TYPES PASS: all catalog entries declared, import rejects undeclared, world-direction momentum and timestep-independent drag, leg +20% physical matches actual launch once, no extra mana/stamina/burn scaling")
+ print("ANIMATION TYPES PASS: all catalog entries declared, import rejects undeclared, world-direction momentum and timestep-independent drag, non-Touch ignores type bonuses during actual launch, no extra mana/stamina/burn scaling")
  world.queue_free();await process_frame;quit()

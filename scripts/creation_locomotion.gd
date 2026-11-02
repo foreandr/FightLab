@@ -63,6 +63,10 @@ static func leg_takeover(profile:Dictionary) -> float:
 
 static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,sprinting:bool) -> void:
 	var type_=preload("res://scripts/animation_cast_type.gd")
+	if not type_.applies(profile):
+		# Non-Touch casts keep their full pose while still; moving uses the gait.
+		moving_legs(actor,input,time,sprinting)
+		return
 	if type_.kind(profile)==type_.WHOLE_BODY:return
 	var cast:=CastPose.capture(actor)
 	var cast_clip:String=actor.clip

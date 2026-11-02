@@ -1,0 +1,19 @@
+Spell animation type policy
+
+Animation type is mechanically relevant only for Touch delivery.
+Projectile, Beam, Targeted and Barrier ignore Head/Arm/Leg/Movement metadata
+for type damage bonuses, regional cast restrictions, emitter remapping,
+momentum braking and recovery locks. All use the same movement blending:
+stationary previews show the complete pose; moving previews retain the gait.
+
+The type selector and demo badges are hidden outside Touch. Source animation
+metadata is retained for animation editing, composition and future Touch casts.
+Standalone animation editor clips keep their regional layering semantics.
+Touch retains the existing type policy (including the tentative Leg bonus).
+Touch remains disabled in the public spell wizard; this does not enable it.
+
+Shared policy: AnimationCastType.applies / physical_multiplier.
+Create adapter: playback_animation supplies delivery context without mutating
+the source profile; a released cast retains its committed delivery method.
+Checks: touch_only_animation_type_test.gd, animation_cast_type_test.gd and
+moving_spell_demo_test.gd.

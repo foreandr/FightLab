@@ -69,7 +69,7 @@ func run() -> void:
     CastPose.pose(actor,b.playback_animation(),b.elapsed/b.playback_duration(),b.cast_pose_aim(b.elapsed/b.playback_duration()))
     var cast:Array=CastPose.capture(actor)
     for bone in actual.size():
-     var expected:Transform3D=cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else gait[bone]
+     var expected:Transform3D=(cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else gait[bone]) if Type.applies(b.playback_animation()) else (gait[bone] if Locomotion.is_locomotion_bone(actor.skeleton,bone) else cast[bone])
      if not check(actual[bone].is_equal_approx(expected),"Wrong displayed pose on %s (%s)"%[actor.skeleton.get_bone_name(bone),choice]):return
     Locomotion.cast_legs(actor,b.playback_animation(),Vector2(0,1),b.idle_elapsed,sprinting)
     var thigh:int=actor.skeleton.find_bone("thigh_l")
@@ -86,7 +86,7 @@ func run() -> void:
     RigPose.idle(actor,b.idle_elapsed)
     var idle:Array=CastPose.capture(actor)
     for bone in actual.size():
-     var expected:Transform3D=cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else idle[bone]
+     var expected:Transform3D=(cast[bone] if Type.controls_bone(actor.skeleton,bone,Type.kind(b.playback_animation())) else idle[bone]) if Type.applies(b.playback_animation()) else cast[bone]
      if not check(actual[bone].is_equal_approx(expected),"Stationary type mask changed (%s)"%choice):return
 
  b.stop_preview_controls(true)
@@ -155,5 +155,5 @@ func run() -> void:
  dialog.canceled.emit()
 
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all eight demos run/sprint and turn in free aim in demo/projectile stages; required animation types, pose ownership, initial-direction momentum decay and Arms running respected, casting upper body remains, stationary full-body demos return")
+ print("MOVING DEMOS PASS: all eight demos run/sprint and turn in free aim in demo/projectile stages; non-Touch ignores type and preserves gait, stationary full-body demos return, source type editing and save/undo remain intact")
  quit()

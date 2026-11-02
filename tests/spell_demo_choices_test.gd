@@ -54,13 +54,16 @@ func run() -> void:
 	var types_seen:Dictionary={}
 	for choice in builder.DEMO_ANIMATIONS:
 		var badge:Label=builder.demo_type_labels[choice]
-		if not check(not badge.text.is_empty() and badge.is_visible_in_tree(),"Demo is missing visible type: "+choice):return
+		if not check(not badge.text.is_empty() and not badge.is_visible_in_tree(),"Non-Touch demo exposes type: "+choice):return
 		var profile:Dictionary=builder.demo_source_cache[choice]
 		types_seen[preload("res://scripts/animation_cast_type.gd").kind(profile)]=true
 	for type_ in preload("res://scripts/animation_cast_type.gd").TYPES:
 		if not check(types_seen.has(type_),"No demo for "+type_):return
 	if not check(builder.demo_type_labels.dismantle.text=="Movement + Arm","Composite label missing"):return
 	for choice in builder.DEMO_ANIMATIONS:
+		builder.save_draft()
+		original_spec=effect_only(builder.projectile_spec())
+		original_text=FileAccess.get_file_as_string(builder.draft_path)
 		builder.reset_caster_pose()
 		var foot_bone:="foot_l" if choice=="knee" else "foot_r"
 		var knee_bone:="calf_l" if choice=="knee" else "calf_r"
@@ -94,7 +97,7 @@ func run() -> void:
 				root.get_texture().get_image().save_png("user://logs/spell_demo_"+choice+".png")
 				captured=true
 		if not check(not builder.playing and not builder.released,"Demo repeated or launched a spell"):return
-		if preload("res://scripts/animation_cast_type.gd").owns_legs(builder.casting_animation):
+		if preload("res://scripts/animation_cast_type.gd").owns_legs(builder.playback_animation()):
 			if not check(builder.demo_exit_pose.is_empty(),"Recovery restarted a redundant exit fade"):return
 		elif not check(not builder.demo_exit_pose.is_empty(),"Demo did not start a smooth exit"):return
 		var settled:=Time.get_ticks_msec()+260
@@ -109,12 +112,13 @@ func run() -> void:
 		# Follow-camera smoothing may move the transform while the animation plays.
 		# The user's chosen zoom/orbit must remain unchanged.
 		if not check(Vector4(editor.field.camera_zoom,editor.field.camera_orbit_yaw,editor.field.camera_orbit_pitch,editor.field.story_camera_base_yaw).is_equal_approx(camera_settings),"Demo reset zoom/orbit settings"):return
-		if not check(effect_only(builder.projectile_spec())==original_spec,"Demo changed spell stats or metadata"):return
+		var actual_spec:=effect_only(builder.projectile_spec())
+		if not check(actual_spec==original_spec,"Demo changed spell stats or metadata"):return
 		builder.save_draft()
 		if not check(FileAccess.get_file_as_string(builder.draft_path)==original_text,"Demo changed spell draft"):return
 		print("SPELL_DEMO_RENDERED ",choice," clip=",builder.casting_animation.clip," max_hand=",max_hand," foot_lift=",max_foot-base_foot," knee_lift=",max_knee-base_knee)
 		builder.demo_confirm_button.pressed.emit()
-		if not check(builder.creation_step=="delivery" and visible_buttons(builder)==["Projectile","Beam","Targeted","Touch","Barrier","← Back"],"Confirm did not open the spell types and Back"):return
+		if not check(builder.creation_step=="delivery" and builder.delivery_choices.values().all(func(button):return button.is_visible_in_tree()) and builder.delivery_confirm_button.is_visible_in_tree() and builder.delivery_back_button.is_visible_in_tree(),"Confirm did not open the spell types and Back: "+builder.creation_step+" / "+str(visible_buttons(builder))):return
 		builder.delivery_back_button.pressed.emit()
 		if not check(builder.creation_step=="demo","Back did not return to demos"):return
 	if not check(clips.size()==8,"Demo choices do not use eight distinct source clips"):return
