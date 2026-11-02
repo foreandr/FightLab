@@ -6,12 +6,12 @@ func _initialize() -> void:call_deferred("run")
 func run() -> void:
  for type_ in [Type.LEGS,Type.WHOLE_BODY]:
   var profile={"animation_type":type_}
-  assert(Type.recovery_weight(profile,0.59 if type_==Type.LEGS else 0.74,1.0)==0)
-  assert(is_equal_approx(Type.recovery_weight(profile,0.80 if type_==Type.LEGS else 0.875,1.0),0.5))
+  assert(Type.recovery_weight(profile,0.0 if type_==Type.LEGS else 0.74,1.0)==0)
+  assert(is_equal_approx(Type.recovery_weight(profile,0.5 if type_==Type.LEGS else 0.875,1.0),0.5))
   assert(Type.recovery_weight(profile,1.0,1.0)==1)
   if type_==Type.LEGS:
-   assert(Type.recovery_weight(profile,6.0,10.0)==0)
-   assert(is_equal_approx(Type.recovery_weight(profile,8.0,10.0),0.5))
+   assert(Type.recovery_weight(profile,0.0,10.0)==0)
+   assert(is_equal_approx(Type.recovery_weight(profile,5.0,10.0),0.5))
   else:assert(Type.recovery_weight(profile,9.6,10.0)==0)
   assert(Type.recovery_weight(profile,0.9,1.0,0.95)==0)
   assert(is_equal_approx(Type.recovery_weight(profile,0.975,1.0,0.95),0.5))
@@ -32,12 +32,12 @@ func run() -> void:
  actor.practice_god_mode=true;actor.collision_mask=1
  for choice in ["knee","dismantle"]:
   b.stop_preview_controls(true);b.select_demo_choice(choice,false)
-  b.set_demo_duration(1.0);b.stop_preview_controls(true)
+  b.set_demo_duration(1.0);b.set_release_fraction(0.3);b.stop_preview_controls(true)
   actor.global_position=e.field.surface_placement(Vector3.ZERO)
   b.move_caster(0.01,Vector2.ZERO,false)
   b.move_caster(1.0/60.0,Vector2(0,1),true)
   b.play_demo_preview()
-  var early_frames:=36 if choice=="knee" else 45
+  var early_frames:=18 if choice=="knee" else 45
   for frame in early_frames:
    await physics_frame
    b.move_caster(1.0/60.0,Vector2(0,1),true)
@@ -76,5 +76,5 @@ func run() -> void:
   b.move_caster(1.0/60.0,Vector2(0,1),true)
   assert(absf(Vector2(actor.velocity.x,actor.velocity.z).length()-final_speed)<0.2,"Speed snapped on completion")
  b.stop_preview_controls(true)
- print("CAST RECOVERY PASS: uncapped 60% Leg recovery, unchanged capped Movement recovery, no pre-release recovery, early drift preserved, running speed and pose blend before completion, no end speed snap, post-release commitment retained")
+ print("CAST RECOVERY PASS: uncapped 0% Leg recovery, unchanged capped Movement recovery, no pre-release recovery, early drift preserved, running speed and pose blend before completion, no end speed snap, post-release commitment retained")
  quit()

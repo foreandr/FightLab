@@ -9,7 +9,7 @@ const LEGACY_TYPES:={"Arms":"Arm","Legs":"Leg","Whole body":"Movement"}
 const LEG_PHYSICAL_BONUS:=0.20
 const LEG_DRAG:=4.5
 const BODY_DRAG:=2.25
-const LEG_RECOVERY_START:=0.60
+const LEG_RECOVERY_START:=0.0
 const RECOVERY_FRACTION:=0.25
 const MAX_RECOVERY_SECONDS:=0.35
 static func normalize(value:String) -> String:return str(LEGACY_TYPES.get(value,value))
@@ -128,9 +128,9 @@ static func contribution_type(profile:Dictionary) -> String:
  return kind(profile)
 
 ## Restore movement during the recovery tail, without cancelling the cast.
-static func recovery_weight(profile:Dictionary,elapsed:float,duration:float,release_fraction:float=0.0,leg_start_fraction:float=LEG_RECOVERY_START) -> float:
+static func recovery_weight(profile:Dictionary,elapsed:float,duration:float,release_fraction:float=0.0) -> float:
  if not owns_legs(profile) or duration<=0.0:return 0.0
- var window:=duration*(1.0-clampf(leg_start_fraction,0.0,1.0)) if kind(profile)==LEGS else minf(MAX_RECOVERY_SECONDS,duration*RECOVERY_FRACTION)
+ var window:=duration*(1.0-LEG_RECOVERY_START) if kind(profile)==LEGS else minf(MAX_RECOVERY_SECONDS,duration*RECOVERY_FRACTION)
  var start:=maxf(duration-window,duration*clampf(release_fraction,0.0,1.0))
  if duration-start<=0.00001:return 0.0
  return smoothstep(start,duration,elapsed)
