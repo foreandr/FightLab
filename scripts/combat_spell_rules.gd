@@ -11,6 +11,8 @@ const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
 const PROJECTILE_BASE_MANA:=10.0
 const FIRE_MANA_SURCHARGE:=10.0
+const TOUCH_EXTRA_CONTACT_STAMINA:=0.25
+const TOUCH_CONTACT_BONES:=["hand_l","hand_r","upperarm_l","upperarm_r","lowerarm_l","lowerarm_r","thigh_l","thigh_r","calf_l","calf_r","foot_l","foot_r","Head"]
 const DELIVERY_MANA_MULTIPLIERS:={"Projectile":1.0,"Beam":0.75,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
 const NEUTRAL_DAMAGE_BASE_VELOCITY:=(Projectile.MIN_VELOCITY+Projectile.MAX_VELOCITY)*0.5
 const NEUTRAL_DAMAGE_AMP:=1.0+MAX_RELEASE_BONUS*0.5
@@ -93,11 +95,24 @@ static func allocate(spec:Dictionary,mix:Dictionary,effect:String,total_power:fl
 	result["total_power"]=total_power
 	return result
 
+static func touch_contact_count(spec:Dictionary) -> int:
+	if str(spec.get("delivery_type",""))!="Touch":return 1
+	var contacts:Variant=spec.get("touch_contacts",[])
+	if not contacts is Array:return 1
+	var unique:Dictionary={}
+	for value in contacts:
+		if not value is String:continue
+		var bone:String={"head":"Head","mouth":"Head","ball_l":"foot_l","ball_r":"foot_r"}.get(value,value)
+		if bone in TOUCH_CONTACT_BONES:unique[bone]=true
+	return maxi(1,unique.size())
+
 static func resource_split(base:Dictionary,duration:float,offensive:bool) -> Dictionary:
 	var original:float=physical(duration,offensive).stamina
 	var effect_share:=clampf(float(base.get("power_allocation",{}).get("effect",0.0)),0.0,1.0) if str(base.get("projectile_element","None"))!="None" else 0.0
 	var transfer:=original*effect_share
-	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer,"delivery_mana_multiplier":delivery_mana_multiplier(str(base.get("delivery_type","Projectile"))),"base_mana":(float(base.get("mana",unscaled_mana_cost(base)))+transfer)*delivery_mana_multiplier(str(base.get("delivery_type","Projectile")))}
+	var contact_count:=touch_contact_count(base)
+	var contact_surcharge:=original*TOUCH_EXTRA_CONTACT_STAMINA*(contact_count-1)
+	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer+contact_surcharge,"touch_contact_count":contact_count,"touch_contact_stamina":contact_surcharge,"delivery_mana_multiplier":delivery_mana_multiplier(str(base.get("delivery_type","Projectile"))),"base_mana":(float(base.get("mana",unscaled_mana_cost(base)))+transfer)*delivery_mana_multiplier(str(base.get("delivery_type","Projectile")))}
 
 static func authored_stats(base:Dictionary,duration:float,fraction:float,offensive:bool,movement:=Vector3.ZERO,aim:=Vector3.BACK) -> Dictionary:
 	var timing:=cast_timing_stats(duration,fraction)
@@ -110,7 +125,7 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var impact:float=float(physical(duration,offensive).damage)*factor*type_multiplier
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"delivery_type":str(base.get("delivery_type","Projectile")),"delivery_mana_multiplier":resources.delivery_mana_multiplier,"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
+	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"delivery_type":str(base.get("delivery_type","Projectile")),"delivery_mana_multiplier":resources.delivery_mana_multiplier,"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"touch_contact_count":resources.touch_contact_count,"touch_contact_stamina":resources.touch_contact_stamina,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=preload("res://scripts/combat_spec.gd").copy(base)
@@ -123,6 +138,8 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 	spec["animation_type"]=CastType.kind(base)
 	spec["animation_type_multiplier"]=CastType.physical_multiplier(base)
 	spec["stamina_cost"]=resources.stamina
+	if str(base.get("delivery_type",""))=="Touch":
+		spec["touch_contact_stamina"]=resources.touch_contact_stamina
 	spec["mana"]=float(resources.base_mana)*float(timing.multiplier)
 	spec["delivery_mana_priced"]=true
 	spec["delivery_mana_multiplier"]=resources.delivery_mana_multiplier

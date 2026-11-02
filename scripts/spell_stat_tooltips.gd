@@ -34,6 +34,10 @@ static func breakdown(base:Dictionary,seconds:float,fraction:float,offensive:boo
 	if float(stats.stamina_to_mana)>0.0:
 		stamina="Animation stamina = %s\nEffect power = %s%%\nMoved to mana = %s × %s = %s\n\nStamina depletion = %s − %s = %s"%[number(float(physical.stamina)),number(float(stats.effect_share)*100.0),number(float(physical.stamina)),number(float(stats.effect_share)),number(float(stats.stamina_to_mana)),number(float(physical.stamina)),number(float(stats.stamina_to_mana)),number(float(stats.stamina))]
 	if not offensive:stamina="Attack animation = No\n\nStamina depletion = 0"
+	if float(stats.get("touch_contact_stamina",0.0))>0.0:
+		var extra:int=int(stats.touch_contact_count)-1
+		stamina="Animation stamina = %s\nMoved to mana = %s\nExtra contact regions = %d\nExtra stamina = %s × %s × %d = %s\n\nStamina depletion = %s − %s + %s = %s"%[number(float(physical.stamina)),number(float(stats.stamina_to_mana)),extra,number(float(physical.stamina)),factor(Rules.TOUCH_EXTRA_CONTACT_STAMINA),extra,number(float(stats.touch_contact_stamina)),number(float(physical.stamina)),number(float(stats.stamina_to_mana)),number(float(stats.touch_contact_stamina)),number(float(stats.stamina))]
+
 	var amp:="Duration multiplier = %s×\nTiming multiplier = %s×\n\nSpell multiplier = %s × %s = %s×\nSpell amp = +%s%%"%[number(duration_amp),number(float(timing.multiplier)),number(duration_amp),number(float(timing.multiplier)),n_amp,number((float(stats.amplifier)-1.0)*100.0)]
 	var size:="Size power = %s%%\nBase diameter = %s m\nSpell multiplier = %s×\n\nDiameter = %s × %s = %s m"%[number(float(shares.get("size",0.0))*100.0),number(float(stats.base_radius)*2.0),n_amp,number(float(stats.base_radius)*2.0),n_amp,number(float(stats.radius)*2.0)]
 	var speed:="Speed power = %s%%\nBase spell speed = %s m/s\nSpell multiplier = %s×\nMovement bonus = %s m/s\n\nSpell speed = (%s × %s) + %s = %s m/s"%[number(float(shares.get("speed",0.0))*100.0),number(float(stats.base_velocity)),n_amp,number(movement_bonus),number(float(stats.base_velocity)),n_amp,number(movement_bonus),number(float(stats.velocity))]
