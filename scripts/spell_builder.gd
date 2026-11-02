@@ -659,11 +659,14 @@ func setup(owner_editor:Node) -> void:
  add_child(delivery_screen)
  editor.menu_label(delivery_screen,"Choose spell type",20)
  for type in DELIVERY_TYPES:
-  var node:Button=editor.button(delivery_screen,type,func():choose_delivery_type(type))
+  var cost_percent:=Rules.delivery_mana_multiplier(type)*100.0
+  var caption:="%s · %.0f%% mana"%[type,cost_percent]
+  if type=="Projectile":caption+=" · Default"
+  var node:Button=editor.button(delivery_screen,caption,func():choose_delivery_type(type))
   node.name="SpellType"+type
   node.custom_minimum_size.y=40
   node.disabled=type!="Projectile"
-  node.tooltip_text=DELIVERY_HELP[type]+("\nNot available yet." if node.disabled else "")
+  node.tooltip_text=DELIVERY_HELP[type]+"\nMana: %.0f%% of the standard cost."%cost_percent+("\nNot available yet." if node.disabled else "")
   delivery_choices[type]=node
  delivery_demo_label=editor.menu_label(delivery_screen,"",13)
  delivery_demo_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -778,7 +781,8 @@ func show_creation_step(step:String) -> void:
   playing=false
   begin_demo_exit()
   clear_shots()
- if step=="delivery" and creation_step!="delivery":preview_delivery_type=""
+ var default_type:=step=="delivery" and creation_step!="delivery"
+ if default_type:preview_delivery_type="Projectile"
  creation_step=step if step in ["demo","delivery","projectile"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
  demo_screen.visible=creation_step=="demo"
@@ -800,6 +804,7 @@ func show_creation_step(step:String) -> void:
   offset_right=0
  delivery_demo_label.text="Demo: %s · preview only"%str(casting_animation.get("title","Left cross"))
  refresh_delivery_choices()
+ if default_type and demo_choice_selected:open_projectile_workspace(false)
 
 func layout_connected_panels() -> void:
  var bottom:= -60.0
@@ -1641,7 +1646,7 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  spec["animation_type"]=CastType.kind(casting_animation)
  spec["release"]=release_fraction
  spec["release_timing_multiplier"]=float(release_timing_stats().multiplier)
- if not delivery_type.is_empty():spec["delivery_type"]=delivery_type
+ spec["delivery_type"]=preview_delivery_type if creation_step=="delivery" and not preview_delivery_type.is_empty() else (delivery_type if not delivery_type.is_empty() else "Projectile")
  return spec
 
 func demo_preview_spec() -> Dictionary:

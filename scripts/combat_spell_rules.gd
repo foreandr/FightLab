@@ -11,6 +11,7 @@ const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
 const PROJECTILE_BASE_MANA:=10.0
 const FIRE_MANA_SURCHARGE:=10.0
+const DELIVERY_MANA_MULTIPLIERS:={"Projectile":1.0,"Beam":0.75,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
 const NEUTRAL_DAMAGE_BASE_VELOCITY:=(Projectile.MIN_VELOCITY+Projectile.MAX_VELOCITY)*0.5
 const NEUTRAL_DAMAGE_AMP:=1.0+MAX_RELEASE_BONUS*0.5
 const NEUTRAL_DAMAGE_VELOCITY:=NEUTRAL_DAMAGE_BASE_VELOCITY*NEUTRAL_DAMAGE_AMP
@@ -41,7 +42,14 @@ static func damage(spec:Dictionary,defaults:Dictionary=BATTLE_DEFAULTS) -> float
 	var values:Dictionary=defaults.get("damage",BATTLE_DEFAULTS.damage)
 	return float(values.get(str(spec.get("effect","orb")),values.get("default",4.5)))*(1.0+float(spec.get("charge",0.0))*float(defaults.get("charge_damage",1.2)))
 
+static func delivery_mana_multiplier(delivery_type:String) -> float:
+	return float(DELIVERY_MANA_MULTIPLIERS.get(delivery_type,1.0))
+
 static func mana_cost(spec:Dictionary,capacity:float=100.0,defaults:Dictionary=BATTLE_DEFAULTS) -> float:
+	var multiplier:=1.0 if bool(spec.get("delivery_mana_priced",false)) else delivery_mana_multiplier(str(spec.get("delivery_type","Projectile")))
+	return unscaled_mana_cost(spec,capacity,defaults)*multiplier
+
+static func unscaled_mana_cost(spec:Dictionary,capacity:float=100.0,defaults:Dictionary=BATTLE_DEFAULTS) -> float:
 	if spec.has("mana_percent"):return maxf(0.0,float(spec.mana_percent)*capacity*0.01)
 	if spec.has("mana"):return maxf(0.0,float(spec.mana))
 	var values:Dictionary=defaults.get("mana",BATTLE_DEFAULTS.mana)
@@ -89,7 +97,7 @@ static func resource_split(base:Dictionary,duration:float,offensive:bool) -> Dic
 	var original:float=physical(duration,offensive).stamina
 	var effect_share:=clampf(float(base.get("power_allocation",{}).get("effect",0.0)),0.0,1.0) if str(base.get("projectile_element","None"))!="None" else 0.0
 	var transfer:=original*effect_share
-	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer,"base_mana":float(base.get("mana",mana_cost(base)))+transfer}
+	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer,"delivery_mana_multiplier":delivery_mana_multiplier(str(base.get("delivery_type","Projectile"))),"base_mana":(float(base.get("mana",unscaled_mana_cost(base)))+transfer)*delivery_mana_multiplier(str(base.get("delivery_type","Projectile")))}
 
 static func authored_stats(base:Dictionary,duration:float,fraction:float,offensive:bool,movement:=Vector3.ZERO,aim:=Vector3.BACK) -> Dictionary:
 	var timing:=cast_timing_stats(duration,fraction)
@@ -102,7 +110,7 @@ static func authored_stats(base:Dictionary,duration:float,fraction:float,offensi
 	var impact:float=float(physical(duration,offensive).damage)*factor*type_multiplier
 	var launch:=Momentum.projectile(base,movement,aim,speed*amp,impact)
 	var effect:=str(base.get("projectile_element","None"))
-	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
+	return {"animation_type":CastType.kind(base),"animation_type_multiplier":type_multiplier,"base_mana":resources.base_mana,"original_base_mana":float(base.mana),"delivery_type":str(base.get("delivery_type","Projectile")),"delivery_mana_multiplier":resources.delivery_mana_multiplier,"stamina":resources.stamina,"stamina_to_mana":resources.transfer,"effect_share":resources.effect_share,"mana":float(resources.base_mana)*float(timing.multiplier),"mana_multiplier":timing.multiplier,"mana_wait":timing.release_seconds,"cost_percent":float(timing.cost_percent),"amplifier":amp,"base_radius":radius,"base_velocity":speed,"radius":radius*amp,"velocity":launch.speed,"stationary_velocity":speed*amp,"speed_damage_multiplier":factor,"physical_damage":launch.spec.damage,"stationary_damage":impact,"movement_multiplier":launch.multiplier,"movement_speed":launch.spec.movement_speed,"burn_dps":Burn.dps(float(base.get("potency",0.0))*amp) if effect=="Fire" else 0.0,"burn_duration":float(base.get("burn_duration",Burn.DURATION)),"effect":effect}
 
 static func author(base:Dictionary,duration:float,fraction:float,offensive:bool) -> Dictionary:
 	var spec:=preload("res://scripts/combat_spec.gd").copy(base)
@@ -116,7 +124,9 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 	spec["animation_type_multiplier"]=CastType.physical_multiplier(base)
 	spec["stamina_cost"]=resources.stamina
 	spec["mana"]=float(resources.base_mana)*float(timing.multiplier)
-	if base.has("mana_percent"):spec["mana_percent"]=(float(base.mana_percent)+float(resources.transfer))*float(timing.multiplier)
+	spec["delivery_mana_priced"]=true
+	spec["delivery_mana_multiplier"]=resources.delivery_mana_multiplier
+	if base.has("mana_percent"):spec["mana_percent"]=(float(base.mana_percent)+float(resources.transfer))*float(resources.delivery_mana_multiplier)*float(timing.multiplier)
 	spec["damage"]=float(physical_stats.damage)*amp
 	spec["physical_damage"]=physical_stats.damage
 	spec["potency"]=float(base.get("potency",1.0))*amp

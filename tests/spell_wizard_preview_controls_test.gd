@@ -34,7 +34,9 @@ func run():
  if not check(b.playing and b.preview_repeating,"Repeat cannot replay initial demo"):return
  b.stop_preview_controls(true)
  b.demo_confirm_button.pressed.emit()
- if not check(b.creation_step=="delivery" and b.spell_playback_panel.is_visible_in_tree() and b.delivery_confirm_button.disabled,"Delivery controls/initial Confirm wrong"):return
+ if not check(b.creation_step=="delivery" and b.spell_playback_panel.is_visible_in_tree() and not b.delivery_confirm_button.disabled and b.preview_delivery_type=="Projectile","Default Projectile/initial Confirm wrong"):return
+ for type in b.DELIVERY_TYPES:
+  if not check(("%.0f%%"%(preload("res://scripts/combat_spell_rules.gd").delivery_mana_multiplier(type)*100.0)) in b.delivery_choices[type].text,"Type choice omits mana price"):return
  b.delivery_type=""
  b.save_draft()
  var before:=FileAccess.get_file_as_string(b.draft_path)
