@@ -28,6 +28,7 @@ func run() -> void:
 		if unrestricted:b.set_limiter_enabled(false)
 		b.show_creation_step("delivery")
 		b.choose_delivery_type("Projectile")
+		b.delivery_confirm_button.pressed.emit()
 		if not check(b.limiter_enabled and b.total_power==1 and b.demo_duration==4 and b.cast_duration()==4,"Entry did not reset balanced power while keeping chosen duration"):return
 		if not check(b.element=="None" and b.preview_effect=="None" and not b.projectile_effect_confirmed,"Entry did not reset to elementless projectile"):return
 		var mix:Dictionary=b.allocation_for("None")

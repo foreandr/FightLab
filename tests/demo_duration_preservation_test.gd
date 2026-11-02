@@ -32,6 +32,7 @@ func run() -> void:
   b.select_demo_choice("cross",false)
   b.demo_confirm_button.pressed.emit()
   b.delivery_choices.Projectile.pressed.emit()
+  b.delivery_confirm_button.pressed.emit()
   assert(b.creation_step=="projectile" and is_equal_approx(b.demo_duration,seconds) and is_equal_approx(b.cast_duration(),seconds))
   assert(is_equal_approx(timeline.view_span,span),"Confirm reset time zoom")
   b.stop_preview_controls(true)

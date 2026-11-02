@@ -121,6 +121,9 @@ const DELIVERY_HELP:={
  "Barrier":"Blocks, reflections, amplifiers, and other barrier effects."
 }
 var delivery_type:=""
+var preview_delivery_type:=""
+var delivery_confirm_button:Button
+var demo_choice_selected:=false
 var creation_step:="demo"
 var demo_screen:VBoxContainer
 var delivery_screen:VBoxContainer
@@ -664,6 +667,9 @@ func setup(owner_editor:Node) -> void:
   delivery_choices[type]=node
  delivery_demo_label=editor.menu_label(delivery_screen,"",13)
  delivery_demo_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ delivery_confirm_button=editor.button(delivery_screen,"Confirm",confirm_delivery_type)
+ delivery_confirm_button.name="ConfirmSpellType"
+ delivery_confirm_button.focus_mode=Control.FOCUS_ALL
  delivery_back_button=editor.button(delivery_screen,"← Back",func():show_creation_step("demo"))
  delivery_back_button.tooltip_text="Back to demo animation choices"
  projectile_screen=VBoxContainer.new()
@@ -762,23 +768,25 @@ func choose_default(save:=true) -> void:
  select_demo_choice("cross",save)
 
 func confirm_demo_choice() -> void:
- if DEMO_ANIMATIONS.has(str(casting_animation.get("demo_choice",""))):show_creation_step("delivery")
+ if demo_choice_selected and DEMO_ANIMATIONS.has(str(casting_animation.get("demo_choice",""))):show_creation_step("delivery")
 
 func show_creation_step(step:String) -> void:
  if step!="projectile" and cast_committed():return
  if step!="projectile" and is_instance_valid(fire_shape_popup):fire_shape_popup.hide()
- if creation_step=="projectile" and step!="projectile":
+ if previews_projectile() and step!="projectile":
   stop_preview_controls()
   playing=false
   begin_demo_exit()
   clear_shots()
+ if step=="delivery" and creation_step!="delivery":preview_delivery_type=""
  creation_step=step if step in ["demo","delivery","projectile"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
  demo_screen.visible=creation_step=="demo"
  delivery_screen.visible=creation_step=="delivery"
  if is_instance_valid(projectile_screen):projectile_screen.visible=creation_step=="projectile"
  if is_instance_valid(projectile_scroll):projectile_scroll.visible=creation_step=="projectile"
- if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree() and creation_step=="projectile"
+ if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree()
+ refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
   demo_timing_panel.visible=is_visible_in_tree()
@@ -794,7 +802,7 @@ func show_creation_step(step:String) -> void:
  refresh_delivery_choices()
 
 func layout_connected_panels() -> void:
- var bottom:= -60.0 if creation_step=="projectile" else 0.0
+ var bottom:= -60.0
  anchor_top=0.0
  anchor_bottom=1.0
  offset_top=54
@@ -805,15 +813,34 @@ func layout_connected_panels() -> void:
   demo_timing_panel.offset_top=54
   demo_timing_panel.offset_bottom=bottom
 
+func previews_projectile() -> bool:
+ return creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
+
+func refresh_playback_controls() -> void:
+ var ready:=demo_choice_selected and not casting_animation.is_empty()
+ if is_instance_valid(projectile_preview_button):projectile_preview_button.disabled=not ready
+ if is_instance_valid(projectile_repeat_button):projectile_repeat_button.disabled=not ready
+ if is_instance_valid(demo_confirm_button):demo_confirm_button.disabled=not ready
+
 func choose_delivery_type(value:String) -> void:
- if value!="Projectile":return
- delivery_type=value
+ if value!="Projectile" or not demo_choice_selected or cast_committed():return
+ var first_preview:=preview_delivery_type!=value
+ preview_delivery_type=value
+ if first_preview:open_projectile_workspace(false)
+ else:play_demo_preview()
  refresh_delivery_choices()
- if value=="Projectile":open_projectile_workspace()
- else:save_draft()
+ GameDiagnostics.log_event("spell_delivery_previewed",{"delivery_type":value})
+
+func confirm_delivery_type() -> void:
+ if preview_delivery_type!="Projectile" or not demo_choice_selected:return
+ delivery_type=preview_delivery_type
+ show_creation_step("projectile")
+ save_draft()
+ save_demo_preferences()
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
 
-func open_projectile_workspace() -> void:
+func open_projectile_workspace(advance:=true) -> void:
+ if advance and not casting_animation.is_empty():demo_choice_selected=true
  fire_shapes_open=false
  stop_preview_controls()
  if not limiter_enabled:set_limiter_enabled(true)
@@ -825,7 +852,8 @@ func open_projectile_workspace() -> void:
  release_fraction=(MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5
  category="Projectiles"
  spell_kind="Projectiles"
- delivery_type="Projectile"
+ preview_delivery_type="Projectile"
+ if advance:delivery_type="Projectile"
  if not projectile_initialized:
   projectile_initialized=true
   element="None"
@@ -839,9 +867,10 @@ func open_projectile_workspace() -> void:
  refresh()
  refresh_effect_choices()
  refresh_demo_timing()
- show_creation_step("projectile")
- save_draft()
- save_demo_preferences()
+ if advance:
+  show_creation_step("projectile")
+  save_draft()
+  save_demo_preferences()
  play_demo_preview()
 
 func preview_projectile_effect(value:String) -> void:
@@ -965,7 +994,7 @@ func set_total_power(value:float) -> void:
  refresh_projectile_allocation()
  refresh_demo_timing()
  save_draft()
- if is_visible_in_tree() and creation_step=="projectile":play_demo_preview()
+ if is_visible_in_tree() and previews_projectile():play_demo_preview()
 
 func set_projectile_allocation(key:String,value:float) -> void:
  if not limiter_enabled:
@@ -978,7 +1007,7 @@ func set_projectile_allocation(key:String,value:float) -> void:
  refresh_projectile_allocation()
  refresh_demo_timing()
  save_draft()
- if is_visible_in_tree() and creation_step=="projectile":
+ if is_visible_in_tree() and previews_projectile():
   play_demo_preview()
 
 func refresh_projectile_allocation() -> void:
@@ -1001,6 +1030,7 @@ func refresh_projectile_allocation() -> void:
   allocation_labels[key].text="%s: %.1f%%"%[title,percent] if limiter_enabled else title
 
 func play_projectile_once() -> void:
+ if not demo_choice_selected:return
  set_preview_repeat(false)
  play_demo_preview()
 
@@ -1015,7 +1045,7 @@ func set_combat_numbers(enabled:bool) -> void:
  if is_instance_valid(editor.field):editor.field.set_combat_numbers(enabled)
 
 func set_preview_repeat(enabled:bool) -> void:
- preview_repeating=enabled and creation_step=="projectile" and is_visible_in_tree()
+ preview_repeating=enabled and demo_choice_selected and is_visible_in_tree()
  if is_instance_valid(projectile_repeat_button):projectile_repeat_button.set_pressed_no_signal(preview_repeating)
  repeat_wait=REPEAT_DELAY
  if preview_repeating and not playing:play_demo_preview()
@@ -1041,8 +1071,9 @@ func stop_preview_controls(force:=false) -> void:
  if preview_slow:set_preview_slow(false)
 
 func refresh_delivery_choices() -> void:
+ if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type!="Projectile" or not demo_choice_selected
  for type in delivery_choices:
-  delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==delivery_type else Color("382c1c"))
+  delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
 
 func prepare_demo_sources() -> void:
  if demo_sources_ready:return
@@ -1199,13 +1230,13 @@ func set_release_fraction(value:float) -> void:
  release_fraction=clampf(value,MIN_RELEASE_FRACTION,MAX_RELEASE_FRACTION)
  refresh_demo_timing()
  save_draft()
- if creation_step=="projectile" and is_visible_in_tree():
+ if previews_projectile() and is_visible_in_tree():
   play_demo_preview()
 
 func demo_physical_stats() -> Dictionary:
  if not limiter_enabled:return {"duration":test_overrides.values.duration,"stamina":test_overrides.values.stamina,"damage":test_overrides.values.damage,"effort":test_overrides.values.stamina}
  var physical:=Rules.physical(demo_duration,demo_offensive())
- var effect:=preview_effect if creation_step=="projectile" else element
+ var effect:=preview_effect if previews_projectile() else element
  physical.stamina=Rules.resource_split(projectile_effect_spec(effect),demo_duration,demo_offensive()).stamina
  return physical
 
@@ -1213,7 +1244,7 @@ func demo_offensive() -> bool:
  return str(casting_animation.get("demo_choice","cross")) in ["headbutt","cross","hook","knee","roundhouse","dismantle"]
 
 func demo_projectile_stats() -> Dictionary:
- var effect:=preview_effect if creation_step=="projectile" else element
+ var effect:=preview_effect if previews_projectile() else element
  var base:=projectile_effect_spec(effect)
  var movement:=Vector3.ZERO
  var aim:=Vector3.BACK
@@ -1255,8 +1286,9 @@ func refresh_demo_timing() -> void:
  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
 
 func refresh_demo_choices() -> void:
+ refresh_playback_controls()
  for choice in demo_choices:
-  var selected:bool=str(casting_animation.get("demo_choice","cross"))==choice
+  var selected:bool=demo_choice_selected and str(casting_animation.get("demo_choice","cross"))==choice
   demo_choices[choice].add_theme_color_override("font_color",Color("98703d") if selected else Color("382c1c"))
   var profile:Dictionary=demo_source_cache.get(choice,DEMO_ANIMATIONS[choice].get("profile",DEMO_ANIMATIONS[choice]))
   var type_:=CastType.normalize(str(demo_animation_types.get(choice,DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))))
@@ -1266,7 +1298,7 @@ func refresh_demo_choices() -> void:
   if not parts.is_empty():demo_type_labels[choice].tooltip_text+="\nSource layers: "+" + ".join(parts)
 
 func play_demo_preview() -> void:
- if cast_committed():return
+ if not demo_choice_selected or cast_committed():return
  interrupt_preview_cast()
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
  if not editor.field.combat().can_start_cast(editor.actor,demo_preview_spec()):
@@ -1286,13 +1318,13 @@ func play_demo_preview() -> void:
  CastType.begin(editor.actor,casting_animation)
  playing=true
  released=false
- if creation_step=="projectile":
+ if previews_projectile():
   cast_attempt_actor=editor.actor
   var attempt_spec:=demo_preview_spec()
   editor.field.combat().begin_cast_attempt(cast_attempt_actor,attempt_spec,cast_duration()*float(attempt_spec.release),false)
 
  if not limiter_enabled and cast_duration()<=0.0:
-  if creation_step=="projectile":launch_projectile()
+  if previews_projectile():launch_projectile()
   editor.field.combat().finish_cast(editor.actor)
   released=true
   playing=false
@@ -1300,7 +1332,7 @@ func play_demo_preview() -> void:
 
 func process_demo_preview(delta:float) -> void:
  idle_elapsed+=delta
- if playing and creation_step=="projectile" and not editor.actor.can_cast_with(committed_spec if cast_committed() else demo_preview_spec(),playback_animation()):
+ if playing and previews_projectile() and not editor.actor.can_cast_with(committed_spec if cast_committed() else demo_preview_spec(),playback_animation()):
   editor.field.combat().finish_cast(editor.actor)
   playing=false
   repeat_wait=REPEAT_DELAY
@@ -1316,7 +1348,7 @@ func process_demo_preview(delta:float) -> void:
    blend_demo_pose(demo_exit_pose,weight)
    if demo_exit_elapsed>=DEMO_TRANSITION_SECONDS:demo_exit_pose.clear()
    if not CastType.owns_legs(playback_animation()):Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
-  if creation_step=="projectile" and preview_repeating:
+  if preview_repeating:
    repeat_wait=maxf(0.0,repeat_wait-delta)
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
   return
@@ -1330,7 +1362,7 @@ func process_demo_preview(delta:float) -> void:
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
  Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
- if creation_step=="projectile" and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
+ if previews_projectile() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
  if progress>=1.0:
@@ -1345,15 +1377,15 @@ func process_demo_preview(delta:float) -> void:
   else:begin_demo_exit()
 
 func cast_recovery_weight() -> float:
- if not playing or (creation_step=="projectile" and not released):return 0.0
+ if not playing or (previews_projectile() and not released):return 0.0
  var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else (release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0)
- return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if creation_step=="projectile" else 0.0)
+ return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if previews_projectile() else 0.0)
 
 func capture_demo_pose() -> Array[Transform3D]:
  return CastPose.capture(editor.actor)
 
 func cast_pose_aim(progress:float) -> Dictionary:
- if creation_step!="projectile":return {}
+ if not previews_projectile():return {}
  if str(casting_animation.get("demo_choice","cross")) not in ["headbutt","cross","hook","knee","roundhouse","dismantle"]:return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
@@ -1383,6 +1415,7 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if is_instance_valid(editor.actor) and not editor._ensure_animation_source(entry):return false
  if not before.is_empty():blend_demo_pose(before,0.0)
  casting_animation=preload("res://scripts/combat_spec.gd").copy(entry)
+ demo_choice_selected=true
  casting_animation["duration"]=demo_duration
  var choice:=str(entry.get("demo_choice",""))
  if demo_animation_types.has(choice) and CastType.normalize(str(demo_animation_types[choice])) in CastType.TYPES:casting_animation["animation_type"]=CastType.normalize(str(demo_animation_types[choice]))
@@ -1612,7 +1645,7 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  return spec
 
 func demo_preview_spec() -> Dictionary:
- var base:=projectile_effect_spec(preview_effect) if creation_step=="projectile" else projectile_spec()
+ var base:=projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
  spec.hand=CombatAim.emitter(casting_animation)
  return spec if limiter_enabled else test_overrides.apply(spec)
@@ -1661,7 +1694,7 @@ func projectile_preview_launch() -> Dictionary:
  var actor=editor.actor
  var spec:Dictionary=demo_preview_spec()
  var origin:Vector3=editor.field.fighter_hand(actor,spec.hand)+actor.global_basis.z*0.12
- if demo_only_stage and creation_step=="projectile":
+ if demo_only_stage and previews_projectile():
   spec["aim_direction"]=preview_aim_direction(origin)
  return {"spec":spec,"origin":origin}
 
@@ -1698,7 +1731,7 @@ func _process(delta:float) -> void:
  if demo_only_stage:
   update_third_person_view(delta)
   process_demo_preview(delta)
-  if limiter_enabled and creation_step=="projectile" and (not editor.actor.velocity.is_equal_approx(last_damage_velocity) or not editor.actor.velocity.is_zero_approx()):refresh_demo_timing()
+  if limiter_enabled and previews_projectile() and (not editor.actor.velocity.is_equal_approx(last_damage_velocity) or not editor.actor.velocity.is_zero_approx()):refresh_demo_timing()
   last_damage_velocity=editor.actor.velocity
   return
  if not editor.actor.can_cast_with(demo_preview_spec(),casting_animation):
@@ -1889,15 +1922,15 @@ func _input(event:InputEvent) -> void:
  if CombatPointer.dialog_open(get_viewport()):return
  if event is InputEventKey and not editor.camera_text_editing():
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
-  if key in [KEY_1,KEY_KP_1] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":
+  if key in [KEY_1,KEY_KP_1] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    play_projectile_once()
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":
+  if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    set_preview_hitboxes(not preview_hitboxes)
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_3,KEY_KP_3] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and creation_step=="projectile":
+  if key in [KEY_3,KEY_KP_3] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    set_combat_numbers(not editor.field.combat_numbers_visible)
    get_viewport().set_input_as_handled()
    return
@@ -1952,7 +1985,7 @@ func workspace_visibility_changed() -> void:
   practice_human.collision_layer=0
   for item in practice_human.targets:item[0].collision_layer=0
   for item in practice_human.limb_targets:item[0].collision_layer=0
- if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree() and creation_step=="projectile"
+ if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree()
  if not is_visible_in_tree():stop_preview_controls()
  if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree()
  playing=false
@@ -1967,8 +2000,10 @@ func workspace_visibility_changed() -> void:
  if is_visible_in_tree():
   refresh()
   if demo_only_stage:
+   demo_choice_selected=false
+   preview_delivery_type=""
    show_creation_step("demo")
-   play_demo_preview()
+   refresh_demo_choices()
 
 func _exit_tree() -> void:
  stop_preview_controls()

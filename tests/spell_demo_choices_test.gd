@@ -154,6 +154,7 @@ func run() -> void:
 			if not check(builder.delivery_type=="Projectile","Unavailable type changed the draft"):return
 			continue
 		builder.delivery_choices[type].pressed.emit()
+		builder.delivery_confirm_button.pressed.emit()
 		var cfg:=ConfigFile.new()
 		cfg.load(builder.draft_path)
 		if not check(cfg.get_value("spell","delivery_type","")==type and builder.projectile_spec().get("delivery_type","")==type,"Spell type was not saved: "+type):return
