@@ -570,3 +570,9 @@ Spell preview ownership and live practice:
 - Floating region captions and the mannequin's last-damage text are removed. Beam is listed but disabled; spell delivery types have descriptive tooltips.
 - Block/barrier redesign, shield-break presentation and a permanently blocking mannequin remain deferred. Camera-distance spell audio toggle is also noted for future work.
 - Working implementation baseline: 8080b76. Treat this as an accepted checkpoint and preserve its behavior when continuing development.
+
+### Animation movement and pose safety checkpoint — accepted (2026-11-02)
+- User tested and accepted the current hook correction and requested a checkpoint. Implementation baseline: cf9ae2c.
+- Preserve the four declared animation types (Head, Arm, Leg, Movement), their regional pose ownership, momentum/braking rules, and layered composition. Leg recovery begins at 0% and blends toward locomotion across the animation; spell release still gates recovery. The temporary knee recovery slider has been removed after testing.
+- Preserve facing-based torso aim, bounded forearm correction, and shared capsule-proxy checks that reduce unsafe aim toward the native pose. Shared playback limits excessive local spine bending while retaining root/pelvis acrobatics. These are conservative safeguards, not exact mesh collision; existing imported source overlaps can still require correction.
+- Verified Hook/Cross frame continuity across steep, side and rear aim, repeatable reverse sampling, source spine limits, unchanged movement recovery and shared character mechanics. Preserve resource/damage formulas and the existing cast commitment rules.
