@@ -107,6 +107,10 @@ var fire_style_confirm_button:Button
 var fire_style_editing:=false
 var fire_style_preview_id:=""
 var fire_style_confirmed:=false
+var saved_spells=preload("res://scripts/saved_spell_library.gd").new()
+var spell_save_screen:VBoxContainer
+var spell_save_open:=false
+var active_spell_provenance:Dictionary={}
 var fire_sound_screen:VBoxContainer
 var fire_sound_gallery:VBoxContainer
 var fire_sound_choices:Dictionary={}
@@ -502,6 +506,8 @@ func setup(owner_editor:Node) -> void:
  choices_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  demo_columns.add_child(choices_column)
  editor.menu_label(choices_column,"Choose a demo animation",20)
+ var library_button:Button=editor.button(choices_column,"My spells",open_spell_library)
+ library_button.name="OpenSavedSpells"
  for choice_key in DEMO_ANIMATIONS:
   var choice:String=choice_key
   var row:=HBoxContainer.new()
@@ -800,7 +806,7 @@ func confirm_demo_choice() -> void:
 
 func show_creation_step(step:String) -> void:
  if step!="projectile" and cast_committed():return
- if step!="projectile":fire_style_editing=false;fire_style_preview_id=""
+ if step!="projectile":fire_style_editing=false;fire_style_preview_id="";spell_save_open=false
  if previews_projectile() and step!="projectile":
   stop_preview_controls()
   playing=false
@@ -870,6 +876,9 @@ func confirm_delivery_type() -> void:
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
 
 func open_projectile_workspace(advance:=true) -> void:
+ active_spell_provenance={}
+ if is_instance_valid(spell_save_screen):spell_save_screen.name_input.text=""
+ spell_save_open=false
  if advance and not casting_animation.is_empty():demo_choice_selected=true
  fire_shapes_open=false
  fire_style_editing=false;fire_style_preview_id="";fire_style_confirmed=false
@@ -905,6 +914,7 @@ func open_projectile_workspace(advance:=true) -> void:
  play_demo_preview()
 
 func preview_projectile_effect(value:String) -> void:
+ spell_save_open=false
  if value not in ["None","Fire"]:return
  preview_effect=value
  fire_shapes_open=value=="Fire"
@@ -929,11 +939,13 @@ func confirm_projectile_effect() -> void:
  refresh()
  refresh_effect_choices()
  save_draft()
+ if element=="None":open_spell_save()
 
 func refresh_effect_choices() -> void:
- if is_instance_valid(effect_selection):effect_selection.visible=not fire_shapes_open
- if is_instance_valid(fire_shape_screen):fire_shape_screen.visible=fire_shapes_open and not fire_sound_open
- if is_instance_valid(fire_sound_screen):fire_sound_screen.visible=fire_shapes_open and fire_sound_open
+ if is_instance_valid(effect_selection):effect_selection.visible=not fire_shapes_open and not spell_save_open
+ if is_instance_valid(fire_shape_screen):fire_shape_screen.visible=fire_shapes_open and not fire_sound_open and not spell_save_open
+ if is_instance_valid(fire_sound_screen):fire_sound_screen.visible=fire_shapes_open and fire_sound_open and not spell_save_open
+ if is_instance_valid(spell_save_screen):spell_save_screen.visible=spell_save_open
  refresh_fire_shape()
  projectile_name_label.text="Elementless projectile" if preview_effect=="None" else preview_effect+" projectile"
  for effect in effect_choices:
@@ -965,9 +977,11 @@ func build_fire_shape_panel() -> void:
  editor.button(fire_shape_screen,"← Effects",leave_fire_styles)
  fire_shape_screen.hide()
  build_fire_sound_panel()
+ build_spell_save_panel()
  refresh_fire_shape()
 
 func open_fire_shape_picker() -> void:
+ spell_save_open=false
  fire_sound_open=false
  refresh_effect_choices()
  fire_style_editing=true
@@ -1019,6 +1033,7 @@ func build_fire_sound_panel() -> void:
  fire_sound_screen.hide()
 
 func open_fire_sound_picker() -> void:
+ spell_save_open=false
  fire_sound_open=true
  fire_sound_confirmed=false
  fire_sound_preview_id=preload("res://assets/spells/fire/sounds.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
@@ -1047,11 +1062,86 @@ func confirm_fire_sound() -> void:
  fire_sound_confirmed=true
  refresh_fire_sound()
  save_draft()
+ open_spell_save()
 
 func refresh_fire_sound() -> void:
  fire_sound_gallery.select_sound(fire_sound_preview_id)
  fire_sound_confirm_button.text="Confirmed" if fire_sound_confirmed else "Confirm"
  fire_sound_confirm_button.disabled=fire_sound_confirmed or fire_sound_preview_id.is_empty()
+
+func build_spell_save_panel()->void:
+ spell_save_screen=preload("res://scripts/spell_save_panel.gd").new()
+ spell_save_screen.name="SpellSaveWorkspace"
+ projectile_screen.add_child(spell_save_screen)
+ spell_save_screen.setup(editor._book_theme())
+ spell_save_screen.name_input.focus_entered.connect(func():movement_keys.clear())
+ spell_save_screen.save_requested.connect(save_named_spell)
+ spell_save_screen.load_requested.connect(load_named_spell)
+ spell_save_screen.back_requested.connect(leave_spell_save)
+ spell_save_screen.hide()
+
+func current_spell_definition()->Dictionary:
+ return preload("res://scripts/spell_definition.gd").make(element,spell_delivery_type(),allocation_for(element),appearances.get(element,{}),active_spell_provenance)
+
+func open_spell_save()->void:
+ spell_save_open=true
+ refresh_effect_choices()
+ refresh_saved_spells()
+ spell_save_screen.name_input.grab_focus()
+
+func open_spell_library()->void:
+ if cast_committed():return
+ show_creation_step("projectile")
+ open_spell_save()
+
+func refresh_saved_spells()->void:
+ spell_save_screen.refresh(saved_spells.entries(),limiter_enabled)
+
+func leave_spell_save()->void:
+ spell_save_open=false
+ if not demo_choice_selected:show_creation_step("demo")
+ else:
+  if fire_sound_open:fire_sound_gallery.open_sounds(fire_sound_preview_id)
+  refresh_effect_choices()
+
+func save_named_spell(name:String)->Dictionary:
+ var result:Dictionary=saved_spells.save(name,current_spell_definition(),limiter_enabled)
+ if result.ok:
+  active_spell_provenance=result.record.provenance.duplicate(true)
+  spell_save_screen.name_input.text=result.record.name
+  refresh_saved_spells()
+  spell_save_screen.status.text="Saved: "+str(result.record.name)
+  GameDiagnostics.log_event("spell_definition_saved",{"id":result.record.id,"name":result.record.name})
+ else:spell_save_screen.status.text=result.error
+ return result
+
+func load_named_spell(id:String)->bool:
+ if cast_committed():return false
+ var record:Dictionary=saved_spells.find(id)
+ if record.is_empty():return false
+ stop_preview_controls(true)
+ if not limiter_enabled:set_limiter_enabled(true)
+ element=record.element;preview_effect=element
+ delivery_type=record.delivery_type;preview_delivery_type=delivery_type
+ category="Projectiles";spell_kind="Projectiles";projectile_initialized=true
+ projectile_effect_confirmed=true
+ projectile_allocations[element]=record.allocation.duplicate(true)
+ if element=="Fire":
+  appearances.Fire=preload("res://assets/spells/fire/library.gd").selection(record.appearance.fire_style_id,record.appearance.sound_id)
+ else:appearances["None"]={}
+ fire_shapes_open=element=="Fire"
+ fire_style_editing=false;fire_style_preview_id="";fire_style_confirmed=element=="Fire"
+ fire_sound_open=element=="Fire";fire_sound_confirmed=element=="Fire"
+ fire_sound_preview_id=str(record.appearance.get("sound_id",""))
+ refresh_fire_sound()
+ active_spell_provenance=record.provenance.duplicate(true)
+ show_creation_step("projectile")
+ open_spell_save()
+ spell_save_screen.name_input.text=record.name
+ spell_save_screen.status.text="Loaded: "+str(record.name)
+ refresh_demo_timing()
+ refresh_projectile_allocation()
+ return true
 
 func set_fire_shape(shape:String) -> void:
  if shape not in preload("res://scripts/spell_appearance.gd").SHAPES or shape in ["Element style","Drawn"]:return
@@ -1264,6 +1354,7 @@ func set_limiter_enabled(enabled:bool) -> void:
  for label in [demo_mana_base_label,demo_stamina_label,demo_damage_label,demo_ragdoll_label,demo_stamina_note,demo_damage_breakdown,demo_amplifier_label,demo_amp_breakdown]:label.visible=enabled
  refresh_projectile_allocation()
  refresh_demo_timing()
+ if spell_save_open:refresh_saved_spells()
  if not enabled:
   if not is_instance_valid(limiter_warning):
    limiter_warning=AcceptDialog.new()

@@ -1,0 +1,38 @@
+Reusable named spell definitions
+
+Flow: Fire styles Confirm -> Fire sounds Confirm -> Name / Save.
+No effect Confirm goes directly to Name / Save. My spells is also accessible from
+the demo chooser. Click a saved spell to load its choices. Enter saves the name.
+Repeated names become Name (1), Name (2), etc.; saves create new IDs/files and do
+not overwrite prior spells. Limiter-off experiments cannot be saved.
+
+Local definitions are ConfigFiles under user://spells, via saved_spell_library.gd.
+They contain schema, id, name, delivery_type, element, normalized size/speed/effect
+allocation, appearance IDs (fire_style_id and sound_id), and provenance. Source
+artists, URLs and licenses are merged into the existing contributor graph. The
+demo animation is not cited as a source of the spell itself.
+
+Not stored: total power, animation/duration, release/emitter binding, mana/stamina
+costs, damage, spell amp, absolute radius/velocity or other calculated preview
+numbers. Current workspace preferences/drafts remain separate from named assets.
+Loading a definition changes spell choices, preserving the current demo animation,
+duration, release timing and available-power setting.
+
+spell_definition.compile(definition, animation_profile, binding) builds a fresh
+combat spec using the shared combat_spell_rules. animation_profile.duration must
+be supplied from the actual animation; it is never taken from the demo. Binding
+supplies hand/emitter and release fraction. Compilation uses the normal available
+power budget and recalculates all costs/strength. Existing shared casting handles
+actual projectile appearance, sound and combat. The same asset works with different
+animation durations and emitters.
+
+Scope: Projectile is currently the only enabled delivery. Timeline attachment UI
+and scheduling are not wired by this change. The old attached_spell clip metadata
+hook in animation_editor.gd is not an executing spell scheduler. A later attachment
+workflow must select the animation/emitter/release and invoke shared combat; do not
+copy the combat rules or save a frozen preview result.
+
+Tests: saved_spell_definition_test.gd checks the on-disk schema, duplicate names,
+asset credits, limiter guard, independent animation-derived costs and an actual
+bare-mode cast. spell_save_workflow_test.gd exercises the inline name/save/load UI,
+keyboard route, no overwritten preview context, and source style/sound retention.

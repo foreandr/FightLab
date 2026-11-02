@@ -79,6 +79,7 @@ func run():
  world.round_active=true
  world.combat().release(actor,{"effect":"orb","projectile_element":"Fire","appearance":{"sound_id":"fire_hiss"},"mana":0,"damage":0},Vector3.UP)
  if not check(world.audio.played.get("fire_hiss",0)==1,"New mode bypasses shared fire selection"):return
+ b.open_fire_sound_picker()
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/fire_sound_selection.png")
