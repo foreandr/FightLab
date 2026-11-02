@@ -49,6 +49,9 @@ var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
 var demo_type_labels:Dictionary={}
+var knee_recovery_start:=CastType.LEG_RECOVERY_START
+var knee_recovery_slider:HSlider
+var knee_recovery_label:Label
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
 const DEMO_ANIMATIONS:={
@@ -501,6 +504,30 @@ func setup(owner_editor:Node) -> void:
   badge.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
   badge.add_theme_color_override("font_color",Color("775b34"))
   demo_type_labels[choice]=badge
+  if choice=="knee":
+   var recovery:=VBoxContainer.new()
+   recovery.name="KneeRecoveryTest"
+   recovery.custom_minimum_size.x=150
+   recovery.add_theme_constant_override("separation",0)
+   row.add_child(recovery)
+   row.move_child(recovery,badge.get_index())
+   knee_recovery_label=editor.menu_label(recovery,"",11)
+   var recovery_row:=HBoxContainer.new()
+   recovery_row.add_theme_constant_override("separation",3)
+   recovery.add_child(recovery_row)
+   editor.menu_label(recovery_row,"Early",10)
+   knee_recovery_slider=HSlider.new()
+   knee_recovery_slider.name="KneeRecoveryStart"
+   knee_recovery_slider.min_value=0
+   knee_recovery_slider.max_value=100
+   knee_recovery_slider.step=1
+   knee_recovery_slider.focus_mode=Control.FOCUS_ALL
+   knee_recovery_slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+   knee_recovery_slider.custom_minimum_size=Vector2(65,22)
+   knee_recovery_slider.tooltip_text="Temporary Left Knee test. Movement begins returning here and blends in until the animation ends. Adjust live or click Left Knee to replay. Arrow keys adjust."
+   recovery_row.add_child(knee_recovery_slider)
+   editor.menu_label(recovery_row,"Late",10)
+   knee_recovery_slider.value_changed.connect(func(value:float):set_knee_recovery_start(value/100.0))
   node.name="Demo"+choice.capitalize()
   node.custom_minimum_size.y=40
   demo_choices[choice]=node
@@ -1224,6 +1251,7 @@ func demo_projectile_stats() -> Dictionary:
  return Rules.authored_stats(base,demo_duration,release_fraction,demo_offensive(),movement,aim)
 
 func refresh_demo_timing() -> void:
+ refresh_knee_recovery_control()
  if not is_instance_valid(demo_duration_slider):return
  if not limiter_enabled:
   refresh_test_controls()
@@ -1264,6 +1292,19 @@ func refresh_demo_choices() -> void:
   demo_type_labels[choice].text=" + ".join(parts) if parts.size()>1 and type_==CastType.composite_type(profile.get("animation_components",[])) else type_
   demo_type_labels[choice].tooltip_text=CastType.description(type_)
   if not parts.is_empty():demo_type_labels[choice].tooltip_text+="\nSource layers: "+" + ".join(parts)
+
+ refresh_knee_recovery_control()
+
+func set_knee_recovery_start(value:float) -> void:
+ knee_recovery_start=clampf(value,0.0,1.0)
+ refresh_knee_recovery_control()
+
+func refresh_knee_recovery_control() -> void:
+ if not is_instance_valid(knee_recovery_slider):return
+ var type_:=CastType.normalize(str(demo_animation_types.get("knee",CastType.LEGS)))
+ knee_recovery_slider.editable=type_==CastType.LEGS
+ knee_recovery_slider.set_value_no_signal(knee_recovery_start*100.0)
+ knee_recovery_label.text="Recovery: %.0f%% · %.1fs"%[knee_recovery_start*100.0,knee_recovery_start*demo_duration] if knee_recovery_slider.editable else "Recovery: Leg type only"
 
 func play_demo_preview() -> void:
  if cast_committed():return
@@ -1347,7 +1388,8 @@ func process_demo_preview(delta:float) -> void:
 func cast_recovery_weight() -> float:
  if not playing or (creation_step=="projectile" and not released):return 0.0
  var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else (release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0)
- return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if creation_step=="projectile" else 0.0)
+ var leg_start:float=knee_recovery_start if str(playback_animation().get("demo_choice",""))=="knee" else CastType.LEG_RECOVERY_START
+ return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if creation_step=="projectile" else 0.0,leg_start)
 
 func capture_demo_pose() -> Array[Transform3D]:
  return CastPose.capture(editor.actor)

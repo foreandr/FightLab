@@ -128,9 +128,9 @@ static func contribution_type(profile:Dictionary) -> String:
  return kind(profile)
 
 ## Restore movement during the recovery tail, without cancelling the cast.
-static func recovery_weight(profile:Dictionary,elapsed:float,duration:float,release_fraction:float=0.0) -> float:
+static func recovery_weight(profile:Dictionary,elapsed:float,duration:float,release_fraction:float=0.0,leg_start_fraction:float=LEG_RECOVERY_START) -> float:
  if not owns_legs(profile) or duration<=0.0:return 0.0
- var window:=duration*(1.0-LEG_RECOVERY_START) if kind(profile)==LEGS else minf(MAX_RECOVERY_SECONDS,duration*RECOVERY_FRACTION)
+ var window:=duration*(1.0-clampf(leg_start_fraction,0.0,1.0)) if kind(profile)==LEGS else minf(MAX_RECOVERY_SECONDS,duration*RECOVERY_FRACTION)
  var start:=maxf(duration-window,duration*clampf(release_fraction,0.0,1.0))
  if duration-start<=0.00001:return 0.0
  return smoothstep(start,duration,elapsed)
