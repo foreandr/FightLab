@@ -7,8 +7,8 @@ const WHOLE_BODY:="Movement"
 const TYPES:=[HEAD,ARMS,LEGS,WHOLE_BODY]
 const LEGACY_TYPES:={"Arms":"Arm","Legs":"Leg","Whole body":"Movement"}
 const LEG_PHYSICAL_BONUS:=0.20
-const LEG_DRAG:=6.0
-const BODY_DRAG:=3.0
+const LEG_DRAG:=4.5
+const BODY_DRAG:=2.25
 static func normalize(value:String) -> String:return str(LEGACY_TYPES.get(value,value))
 static func declared(profile:Dictionary) -> bool:
  return normalize(str(profile.get("animation_type",""))) in TYPES
