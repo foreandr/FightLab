@@ -1,6 +1,7 @@
 extends VBoxContainer
 signal save_requested(name:String)
 signal back_requested
+signal start_requested
 var name_input:LineEdit
 var save_button:Button
 var status:Label
@@ -14,7 +15,10 @@ func setup(book_theme:Theme)->void:
  name_input.text_submitted.connect(func(_text:String):
   if not save_button.disabled:save_requested.emit(name_input.text))
  status=Label.new();status.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;add_child(status)
- var back:=Button.new();back.text="← Back";add_child(back);back.pressed.connect(func():back_requested.emit())
+ var nav:=HBoxContainer.new();nav.add_theme_constant_override("separation",6);add_child(nav)
+ var back:=Button.new();back.text="← Back";back.size_flags_horizontal=Control.SIZE_EXPAND_FILL;nav.add_child(back);back.pressed.connect(func():back_requested.emit())
+ var start:=Button.new();start.name="BackToSpellStart";start.text="Back to start";start.size_flags_horizontal=Control.SIZE_EXPAND_FILL;nav.add_child(start)
+ start.pressed.connect(func():start_requested.emit())
  name_input.text_changed.connect(func(value:String):save_button.disabled=value.strip_edges().is_empty())
  save_button.disabled=true
 func refresh(can_save:bool)->void:

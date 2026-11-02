@@ -21,12 +21,25 @@ func run():
  b.spell_save_screen.name_input.text="My flame"
  b.spell_save_screen.save_button.pressed.emit()
  var entries:Array=b.saved_spells.entries()
- if not check(entries.size()==1 and entries[0].name=="My flame" and b.spell_save_screen.status.text.contains("Saved:"),"Name/Save button failed"):return
+ if not check(entries.size()==1 and entries[0].name=="My flame" and b.creation_step=="demo" and b.demo_screen.is_visible_in_tree() and not b.spell_save_screen.is_visible_in_tree() and not b.demo_choice_selected,"Name/Save button failed"):return
  var saved:Dictionary=entries[0]
  if not check(not saved.has("total_power") and not saved.has("animation_duration") and not saved.has("release") and saved.appearance.sound_id=="lentikula_fire_4","Save retains demo context or drops assets"):return
+ # Start navigation is available on every later tier and restores the chooser.
+ for screen in [b.delivery_screen,b.effect_selection,b.fire_shape_screen,b.fire_sound_screen,b.spell_save_screen]:
+  if not check(screen.find_child("BackToSpellStart",true,false)!=null,"Missing Back to start navigation"):return
+ b.select_demo_choice("cross",false);b.open_projectile_workspace();b.stop_preview_controls(true)
+ b.open_spell_save()
+ b.spell_save_screen.find_child("BackToSpellStart",true,false).pressed.emit()
+ if not check(b.creation_step=="demo" and not b.demo_choice_selected and not b.preview_repeating,"Back to start did not reset wizard navigation"):return
+ b.select_demo_choice("cross",false);b.open_projectile_workspace();b.stop_preview_controls(true)
+ b.preview_projectile_effect("Fire");b.stop_preview_controls(true)
+ b.open_spell_save()
  # Enter key saves safely as another named definition rather than overwriting.
+ b.spell_save_screen.name_input.text="My flame"
+ b.spell_save_screen.name_input.text_changed.emit("My flame")
  b.spell_save_screen.name_input.text_submitted.emit("My flame")
  if not check(b.saved_spells.entries().size()==2 and b.saved_spells.entries()[1].name=="My flame (1)","Keyboard save or duplicate name suffix failed"):return
+ b.select_demo_choice("cross",false);b.stop_preview_controls(true)
  b.demo_duration=2.0;b.casting_animation.duration=2.0;b.total_power=0.7;b.release_fraction=0.1
  var profile:Dictionary=b.casting_animation.duplicate(true)
  b.projectile_allocations.Fire={"size":0.8,"speed":0.1,"effect":0.1}
@@ -45,5 +58,5 @@ func run():
  if not check(b.spell_save_screen.save_button.get_global_rect().end.y<b.spell_playback_panel.get_global_rect().position.y,"Save is below the toolbar"):return
  for record in b.saved_spells.entries():DirAccess.remove_absolute(b.saved_spells.directory.path_join(record.id+".cfg"))
  DirAccess.remove_absolute(b.saved_spells.directory)
- print("SPELL SAVE UI PASS: inline name/save after sound, keyboard save, unique names, load keeps animation/power/release, saved choices and limiter guard")
+ print("SPELL SAVE UI PASS: inline name/save after sound, Back to start on every tier, save returns to chooser, keyboard save, unique names, load keeps animation/power/release, saved choices and limiter guard")
  quit()

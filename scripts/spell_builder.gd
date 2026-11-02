@@ -705,6 +705,7 @@ func setup(owner_editor:Node) -> void:
  delivery_confirm_button.focus_mode=Control.FOCUS_ALL
  delivery_back_button=editor.button(delivery_screen,"← Back",func():show_creation_step("demo"))
  delivery_back_button.tooltip_text="Back to demo animation choices"
+ add_start_navigation(delivery_back_button)
  projectile_screen=VBoxContainer.new()
  projectile_screen.name="ProjectileWorkspace"
  projectile_screen.add_theme_constant_override("separation",8)
@@ -778,6 +779,7 @@ func setup(owner_editor:Node) -> void:
  reset_scene_button.tooltip_text="Heal and restore the practice scene; keep your spell settings."
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
+ add_start_navigation(projectile_back_button)
  dummy_god_button=editor.button(playback_row,"God mode",func():pass)
  dummy_god_button.custom_minimum_size.x=140
  dummy_god_button.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
@@ -796,6 +798,32 @@ func setup(owner_editor:Node) -> void:
  show_creation_step("demo")
  refresh_demo_choices()
  visibility_changed.connect(workspace_visibility_changed)
+
+func add_start_navigation(back:Button)->void:
+ var parent:=back.get_parent()
+ var index:=back.get_index()
+ var row:=HBoxContainer.new()
+ row.add_theme_constant_override("separation",6)
+ parent.remove_child(back);parent.add_child(row);parent.move_child(row,index)
+ row.add_child(back);back.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ var start:Button=editor.button(row,"Back to start",return_to_start)
+ start.name="BackToSpellStart";start.focus_mode=Control.FOCUS_ALL
+ start.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ start.tooltip_text="Return to choosing a demo animation"
+
+func return_to_start()->void:
+ stop_preview_controls(true)
+ begin_demo_exit()
+ movement_keys.clear()
+ demo_choice_selected=false
+ preview_delivery_type=""
+ fire_shapes_open=false;fire_sound_open=false;spell_save_open=false
+ active_spell_provenance.clear()
+ spell_save_screen.name_input.clear();spell_save_screen.status.text=""
+ show_creation_step("demo")
+ refresh_effect_choices()
+ refresh_demo_choices()
+ if not demo_choices.is_empty():demo_choices.values()[0].grab_focus()
 
 func choose_default(save:=true) -> void:
  select_demo_choice("cross",save)
@@ -973,7 +1001,7 @@ func build_fire_shape_panel() -> void:
  fire_style_confirm_button=editor.button(fire_shape_screen,"Confirm",confirm_fire_style)
  fire_style_confirm_button.name="ConfirmFireStyle"
  fire_style_confirm_button.focus_mode=Control.FOCUS_ALL
- editor.button(fire_shape_screen,"← Effects",leave_fire_styles)
+ add_start_navigation(editor.button(fire_shape_screen,"← Effects",leave_fire_styles))
  fire_shape_screen.hide()
  build_fire_sound_panel()
  build_spell_save_panel()
@@ -1028,7 +1056,7 @@ func build_fire_sound_panel() -> void:
  fire_sound_choices=fire_sound_gallery.choices
  fire_sound_confirm_button=editor.button(fire_sound_screen,"Confirm",confirm_fire_sound)
  fire_sound_confirm_button.name="ConfirmFireSound"
- editor.button(fire_sound_screen,"← Flame styles",open_fire_shape_picker)
+ add_start_navigation(editor.button(fire_sound_screen,"← Flame styles",open_fire_shape_picker))
  fire_sound_screen.hide()
 
 func open_fire_sound_picker() -> void:
@@ -1076,6 +1104,7 @@ func build_spell_save_panel()->void:
  spell_save_screen.name_input.focus_entered.connect(func():movement_keys.clear())
  spell_save_screen.save_requested.connect(save_named_spell)
  spell_save_screen.back_requested.connect(leave_spell_save)
+ spell_save_screen.start_requested.connect(return_to_start)
  spell_save_screen.hide()
 
 func current_spell_definition()->Dictionary:
@@ -1105,6 +1134,8 @@ func save_named_spell(name:String)->Dictionary:
   refresh_spell_save_controls()
   spell_save_screen.status.text="Saved: "+str(result.record.name)
   GameDiagnostics.log_event("spell_definition_saved",{"id":result.record.id,"name":result.record.name})
+  return_to_start()
+  editor._show_library_notice("Saved: "+str(result.record.name))
  else:spell_save_screen.status.text=result.error
  return result
 
