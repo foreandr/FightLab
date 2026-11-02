@@ -9,7 +9,7 @@ const LEGACY_TYPES:={"Arms":"Arm","Legs":"Leg","Whole body":"Movement"}
 const LEG_PHYSICAL_BONUS:=0.20
 const LEG_DRAG:=4.5
 const BODY_DRAG:=2.25
-const LEG_RECOVERY_START:=0.70
+const LEG_RECOVERY_START:=0.60
 const RECOVERY_FRACTION:=0.25
 const MAX_RECOVERY_SECONDS:=0.35
 static func normalize(value:String) -> String:return str(LEGACY_TYPES.get(value,value))
