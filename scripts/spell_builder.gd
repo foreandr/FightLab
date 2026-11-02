@@ -107,6 +107,8 @@ var fire_shape_choices:Dictionary={}
 var fire_shapes_open:=false
 var effect_confirm_button:Button
 var spell_playback_panel:PanelContainer
+var spell_sections:Dictionary={}
+var collapsed_spell_sections:Dictionary={}
 var demo_timing_panel:PanelContainer
 var demo_enter_pose:Array[Transform3D]=[]
 var demo_exit_pose:Array[Transform3D]=[]
@@ -1475,12 +1477,16 @@ func save_demo_preferences() -> void:
  cfg.set_value("practice","dummy_god_mode",dummy_god_mode)
  cfg.set_value("practice","character_god_modes",character_god_modes)
  cfg.set_value("preview","hitboxes",preview_hitboxes)
+ cfg.set_value("layout","collapsed_spell_sections",collapsed_spell_sections)
  cfg.save(preview_preferences_path)
 
 func load_demo_preferences() -> void:
  if preview_preferences_path.is_empty():return
  var cfg:=ConfigFile.new()
  if cfg.load(preview_preferences_path)!=OK:return
+ var saved_sections:Variant=cfg.get_value("layout","collapsed_spell_sections",{})
+ collapsed_spell_sections=saved_sections.duplicate() if saved_sections is Dictionary else {}
+ for title in spell_sections:spell_sections[title].set_collapsed(bool(collapsed_spell_sections.get(title,false)),false)
  var saved_takeovers:Variant=cfg.get_value("preview","animation_types",{})
  demo_animation_types=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
  demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)

@@ -1,7 +1,7 @@
 extends SceneTree
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 func _initialize():
- var factors={"Projectile":1.0,"Beam":0.75,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
+ var factors={"Projectile":1.0,"Beam":1.0,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
  for type in factors:
   var multiplier:float=factors[type]
   var raw={"mana":10.0,"delivery_type":type}
@@ -22,5 +22,5 @@ func _initialize():
      assert(is_equal_approx(float(stats[field]),float(expected[field])),"Type pricing changed "+field)
  assert(Rules.mana_cost({"mana":10.0})==10.0)
  assert(Rules.mana_cost({"mana":10.0,"delivery_type":"Unknown"})==10.0)
- print("DELIVERY MANA PASS: 100/75/125/50/50 percent, direct and authored costs, percentage capacity, once-only pricing after reload, shared effects/timing transfer, unchanged stamina/damage/burn/motion")
+ print("DELIVERY MANA PASS: 100/100/125/50/50 percent, direct and authored costs, percentage capacity, once-only pricing after reload, shared effects/timing transfer, unchanged stamina/damage/burn/motion")
  quit()

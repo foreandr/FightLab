@@ -1,32 +1,27 @@
 extends RefCounted
 ## Presentation only. The builder retains every value, signal and cost rule.
 static func card(builder:Node,parent:Control,title:String) -> VBoxContainer:
-	var panel:=PanelContainer.new()
-	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("f1e8d3")
-	style.border_color=Color("c9b58f")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(5)
-	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,8)
-	panel.add_theme_stylebox_override("panel",style)
+	var panel:=preload("res://scripts/spell_section_card.gd").new()
 	parent.add_child(panel)
-	var column:=VBoxContainer.new()
-	column.add_theme_constant_override("separation",4)
-	panel.add_child(column)
-	var label:Label=builder.editor.menu_label(column,title.to_upper(),12)
-	label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-	label.add_theme_color_override("font_color",Color("8b7658"))
-	return column
+	panel.setup(title,builder.editor._book_theme())
+	builder.spell_sections[title]=panel
+	panel.set_collapsed(bool(builder.collapsed_spell_sections.get(title,false)),false)
+	panel.collapsed_changed.connect(func(value:bool):
+		builder.collapsed_spell_sections[title]=value
+		builder.save_demo_preferences())
+	return panel.content
 
 static func build(b:Node,column:VBoxContainer) -> void:
 	column.add_theme_constant_override("separation",6)
 	b.demo_mana_cost_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
 	b.demo_mana_cost_label.add_theme_font_size_override("font_size",22)
-	var mana_index:int=b.demo_mana_cost_label.get_index()
+	var mana:=card(b,column,"Mana")
+	b.limiter_toggle.reparent(mana)
+	b.limiter_notice.reparent(mana)
 	var mana_box:=preload("res://scripts/spell_stat_box.gd").new()
-	column.add_child(mana_box)
+	mana.add_child(mana_box)
 	mana_box.setup(b.demo_mana_cost_label,b.editor._book_theme(),b)
-	column.move_child(mana_box,mana_index)
+	b.test_inputs.mana.get_parent().reparent(mana)
 	var headings:Dictionary={}
 	for child in column.get_children():
 		if child is Label and child.text in ["Animation duration","Spell timing"]:headings[child.text]=child
@@ -63,8 +58,10 @@ static func build(b:Node,column:VBoxContainer) -> void:
 	timeline.setup(b)
 	b.set_meta("cast_timeline",timeline)
 	b.set_meta("release_heading",headings["Spell timing"])
+	var animation_type:=card(b,column,"Animation type")
 	b.demo_movement_control=preload("res://scripts/animation_movement_control.gd").new()
-	casting.add_child(b.demo_movement_control)
+	animation_type.add_child(b.demo_movement_control)
+	b.demo_movement_control.get_child(0).hide()
 	b.demo_movement_control.set_value(preload("res://scripts/animation_cast_type.gd").kind(b.casting_animation))
 	b.demo_movement_control.value_changed.connect(b.set_demo_animation_type)
 	var power:=card(b,column,"Power balance")
@@ -80,7 +77,8 @@ static func build(b:Node,column:VBoxContainer) -> void:
 		b.allocation_labels[key].add_theme_font_size_override("font_size",14)
 		b.allocation_sliders[key].custom_minimum_size.y=20
 	var results:=card(b,column,"Results")
-	for row in b.test_extra_rows:row.reparent(results)
+	for row in b.test_extra_rows:
+		if row!=b.test_inputs.mana.get_parent():row.reparent(results)
 	for label in [b.demo_stamina_label,b.demo_damage_label,b.demo_ragdoll_label,b.demo_amplifier_label,b.demo_size_bonus_label,b.demo_speed_bonus_label,b.demo_burn_label]:
 		label.reparent(results)
 		label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT

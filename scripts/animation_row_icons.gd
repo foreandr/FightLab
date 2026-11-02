@@ -13,6 +13,8 @@ static func get_icon(action:String) -> Texture2D:
 		"simulation":"<circle cx='4' cy='5' r='2'/><circle cx='16' cy='5' r='2'/><circle cx='10' cy='16' r='2'/><path d='m6 5 8 0M5 7l4 7M15 7l-4 7'/>",
 		"story":"<path d='M10 5C7 2 3 3 2 4v13c3-2 6-1 8 1 2-2 5-3 8-1V4c-3-2-6-1-8 1Zm0 0v13'/>",
 		"store":"<path d='M3 8v10h14V8M2 8l2-6h12l2 6M2 8q2 4 4 0 2 4 4 0 2 4 4 0 2 4 4 0M8 18v-6h4v6'/>",
+		"section_open":"<path stroke='#775b34' d='m5 7 5 6 5-6'/>",
+		"section_closed":"<path stroke='#775b34' d='m7 5 6 5-6 5'/>",
 		"length_arrows":"<path fill='#382c1c' stroke='#382c1c' d='m5 7 5-5 5 5Z M5 13l5 5 5-5Z'/>",
 		"play":"<path fill='#eef4fa' d='m6 3 11 7-11 7Z'/>",
 		"favorite":"<path d='m10 2 2.5 5 5.5.8-4 3.9.95 5.5L10 14.6l-4.95 2.6.95-5.5-4-3.9L7.5 7Z'/>",
