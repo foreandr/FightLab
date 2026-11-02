@@ -31,6 +31,10 @@ func run():
  b.set_fire_style(preload("res://scripts/fire_style_catalog.gd").entries()[0].id)
  b.confirm_fire_style()
  if not check(b.fire_sound_screen.is_visible_in_tree() and not b.fire_shape_screen.is_visible_in_tree() and b.fire_sound_choices.size()==7,"Missing next-tier sounds"):return
+ for button in b.fire_sound_choices.values():
+  var image:TextureRect=button.find_child("PreviewImage",true,false)
+  if not check(image!=null and image.texture!=null and button.custom_minimum_size==Vector2(82,108) and button.focus_mode==Control.FOCUS_ALL,"Sound does not use the shared image card"):return
+ if not check(b.fire_sound_gallery.grid.columns==4 or b.fire_sound_gallery.grid.columns==3,"Sound gallery does not adapt columns"):return
  var stamina:float=e.actor.stamina;var mana:float=e.actor.mana
  for entry in Sounds.ENTRIES:
   b.fire_sound_choices[entry.id].pressed.emit()
@@ -56,5 +60,6 @@ func run():
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/fire_sound_selection.png")
+ if not check(b.fire_sound_confirm_button.get_global_rect().end.y<b.spell_playback_panel.get_global_rect().position.y,"Sound cards push Confirm below toolbar"):return
  print("FIRE SOUND PASS: 7 unique nonempty sounds; default Fire; next-tier preview/confirm/back/save; no audition costs; actual Create and new-mode releases")
  quit()

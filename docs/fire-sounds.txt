@@ -1,8 +1,8 @@
 Fire sound authoring
 
 Fire immediately resolves to Flame whoosh unless a valid saved fire sound is present.
-Confirming the flame style opens the inline Fire sound tier. The seven rows and their
-play buttons audition sound without casting or paying resources. Play [1] casts with
+Confirming the flame style opens the inline Fire sound tier. The seven waveform cards
+audition sound without casting or paying resources. Play [1] casts with
 the pending choice; Confirm saves appearance.sound_id in the existing spell draft.
 Back to Flame styles discards unconfirmed sound changes. Confirmed choices survive
 style changes and re-entry. Buttons support keyboard focus and activation.
@@ -31,3 +31,10 @@ Removing/resetting either effect frees its emitter, avoiding orphan loops. The
 shared audio mute is respected; cast/impact voice recycling cannot cut off a burn.
 Burn damage timing, potency, duration and ticks are unchanged.
 Validation: burning_audio_test.gd plus combat_presentation_contract_test.gd.
+
+Gallery layout
+
+Sound selection uses the same asset_preview_card.gd component as flame styles:
+image, caption, theme, 6 px padding, selection outline and keyboard focus. The
+sound image is an actual PCM waveform with a playback mark. Three/four columns
+adapt to width. Images/streams are built and cached only when entering Sounds.

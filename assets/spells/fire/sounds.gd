@@ -16,7 +16,9 @@ static func find(id:String)->Dictionary:
  return {}
 static func resolve(spec:Dictionary)->String:
  return preload("res://scripts/spell_asset_library.gd").sound_for(spec)
+static var streams:Dictionary={}
 static func synthesize(id:String)->AudioStreamWAV:
+ if streams.has(id):return streams[id]
  var entry:=find(id)
  if entry.is_empty():return null
  var rate:=22050
@@ -43,4 +45,5 @@ static func synthesize(id:String)->AudioStreamWAV:
   data.encode_s16(i*2,int(clampf(value,-0.9,0.9)*30000))
  var stream:=AudioStreamWAV.new()
  stream.format=AudioStreamWAV.FORMAT_16_BITS;stream.mix_rate=rate;stream.data=data
+ streams[id]=stream
  return stream

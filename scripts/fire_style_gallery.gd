@@ -55,24 +55,13 @@ func set_page(value:int) -> void:
  var entries:=Catalog.entries()
  for i in range(page*PAGE_SIZE,mini((page+1)*PAGE_SIZE,entries.size())):
   var entry:Dictionary=entries[i]
-  var button:=Button.new()
-  button.name="FireStyle_"+str(entry.id)
-  button.custom_minimum_size=Vector2(82,108)
-  button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  button.focus_mode=Control.FOCUS_ALL;button.toggle_mode=true;button.button_group=group
-  button.tooltip_text=str(entry.title)+("\n"+str(entry.author)+" · "+str(entry.license) if entry.has("author") else "")
+  var viewport:=_preview(str(entry.id))
+  var tooltip:=str(entry.title)+("\n"+str(entry.author)+" · "+str(entry.license) if entry.has("author") else "")
+  var button:=preload("res://scripts/asset_preview_card.gd").create("FireStyle_"+str(entry.id),str(entry.title),viewport.get_texture(),tooltip)
+  button.button_group=group
   button.set_pressed_no_signal(entry.id==selected_id)
   grid.add_child(button)
-  var margin:=MarginContainer.new();margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  for side in ["left","top","right","bottom"]:margin.add_theme_constant_override("margin_"+side,6)
-  margin.mouse_filter=Control.MOUSE_FILTER_IGNORE;button.add_child(margin)
-  var column:=VBoxContainer.new();column.mouse_filter=Control.MOUSE_FILTER_IGNORE;margin.add_child(column)
-  var viewport:=_preview(str(entry.id));button.add_child(viewport)
-  var image:=TextureRect.new();image.texture=viewport.get_texture()
-  image.custom_minimum_size.y=76;image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-  image.size_flags_vertical=Control.SIZE_EXPAND_FILL;image.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_child(image)
-  var caption:=Label.new();caption.text=str(entry.title);caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-  caption.add_theme_font_size_override("font_size",11);caption.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;caption.clip_text=true;caption.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_child(caption)
+  button.add_child(viewport)
   var id:String=entry.id
   button.pressed.connect(func():style_chosen.emit(id))
   choices[id]=button;previews.append(viewport)

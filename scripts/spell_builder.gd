@@ -108,6 +108,7 @@ var fire_style_editing:=false
 var fire_style_preview_id:=""
 var fire_style_confirmed:=false
 var fire_sound_screen:VBoxContainer
+var fire_sound_gallery:VBoxContainer
 var fire_sound_choices:Dictionary={}
 var fire_sound_preview_id:=""
 var fire_sound_confirmed:=false
@@ -1007,25 +1008,18 @@ func build_fire_sound_panel() -> void:
  projectile_screen.add_child(fire_sound_screen)
  var title:Label=editor.menu_label(fire_sound_screen,preload("res://assets/spells/fire/library.gd").SOUND_TITLE,26)
  title.add_theme_color_override("font_color",Color("b9652d"))
- for entry in preload("res://assets/spells/fire/sounds.gd").ENTRIES:
-  var id:String=entry.id
-  var row:=HBoxContainer.new()
-  row.add_theme_constant_override("separation",6)
-  fire_sound_screen.add_child(row)
-  var choice:Button=editor.button(row,str(entry.title),func():set_fire_sound(id))
-  choice.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  choice.name=id
-  choice.toggle_mode=true
-  fire_sound_choices[id]=choice
-  var preview:Button=editor.button(row,"▶",func():preview_fire_sound(id))
-  preview.tooltip_text="Preview sound"
-  preview.custom_minimum_size.x=38
+ fire_sound_gallery=preload("res://scripts/fire_sound_gallery.gd").new()
+ fire_sound_screen.add_child(fire_sound_gallery)
+ fire_sound_gallery.setup(editor._book_theme())
+ fire_sound_gallery.sound_chosen.connect(set_fire_sound)
+ fire_sound_choices=fire_sound_gallery.choices
  fire_sound_confirm_button=editor.button(fire_sound_screen,"Confirm",confirm_fire_sound)
  fire_sound_confirm_button.name="ConfirmFireSound"
  editor.button(fire_sound_screen,"← Flame styles",open_fire_shape_picker)
  fire_sound_screen.hide()
 
 func open_fire_sound_picker() -> void:
+ fire_sound_gallery.open_sounds()
  fire_sound_open=true
  fire_sound_confirmed=false
  fire_sound_preview_id=preload("res://assets/spells/fire/sounds.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
