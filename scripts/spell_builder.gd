@@ -104,6 +104,7 @@ var fire_shape_screen:VBoxContainer
 var fire_shape_button:Button
 var fire_shape_popup:PopupPanel
 var fire_shape_choices:Dictionary={}
+var fire_style_gallery:VBoxContainer
 var fire_shapes_open:=false
 var effect_confirm_button:Button
 var spell_playback_panel:PanelContainer
@@ -956,41 +957,42 @@ func build_fire_shape_panel() -> void:
  var margin:=MarginContainer.new()
  for side in ["left","top","right","bottom"]:margin.add_theme_constant_override("margin_"+side,6)
  fire_shape_popup.add_child(margin)
- var column:=VBoxContainer.new()
- column.add_theme_constant_override("separation",6)
- margin.add_child(column)
- editor.menu_label(column,"Choose shape",18)
- var grid:=GridContainer.new()
- grid.columns=3
- grid.add_theme_constant_override("h_separation",6)
- grid.add_theme_constant_override("v_separation",6)
- column.add_child(grid)
- var group:=ButtonGroup.new()
- for value in preload("res://scripts/spell_appearance.gd").SHAPES:
-  var shape:String=value
-  if shape in ["Element style","Drawn"]:continue
-  var button:Button=editor.button(grid,shape,func():set_fire_shape(shape))
-  button.custom_minimum_size=Vector2(88,44)
-  button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  button.add_theme_font_size_override("font_size",15)
-  button.toggle_mode=true
-  button.button_group=group
-  fire_shape_choices[shape]=button
+ fire_style_gallery=preload("res://scripts/fire_style_gallery.gd").new()
+ margin.add_child(fire_style_gallery)
+ fire_style_gallery.setup(editor._book_theme())
+ fire_style_gallery.style_chosen.connect(set_fire_style)
+ fire_style_gallery.close_requested.connect(func():fire_shape_popup.hide())
+ fire_shape_choices=fire_style_gallery.choices
  fire_shape_screen.hide()
  refresh_fire_shape()
 
 func open_fire_shape_picker() -> void:
- refresh_fire_shape()
  var rect:=fire_shape_button.get_global_rect()
- fire_shape_popup.popup(Rect2i(Vector2i(rect.position+Vector2(0,rect.size.y+6)),Vector2i(maxf(300,rect.size.x),310)))
- var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",appearances.get("Fire",{})).shape
- if fire_shape_choices.has(shape):fire_shape_choices[shape].grab_focus()
+ var screen:=get_viewport_rect().size
+ var width:=minf(640.0,screen.x-24.0)
+ fire_style_gallery.open_styles(appearances.get("Fire",{}),width)
+ var rows:=ceili(12.0/fire_style_gallery.columns)
+ var height:=minf(rows*144.0+88.0,screen.y-24.0)
+ var position:=rect.position+Vector2(0,rect.size.y+6)
+ position.x=clampf(position.x,12.0,maxf(12.0,screen.x-width-12.0))
+ position.y=clampf(position.y,12.0,maxf(12.0,screen.y-height-12.0))
+ fire_shape_popup.popup(Rect2i(Vector2i(position),Vector2i(width,height)))
+ fire_style_gallery.focus_selection()
+
+func set_fire_style(id:String) -> void:
+ var catalog=preload("res://scripts/fire_style_catalog.gd")
+ if catalog.find(id).is_empty():return
+ appearances["Fire"]=catalog.look(id,appearances.get("Fire",{}))
+ refresh_fire_shape()
+ fire_shape_popup.hide()
+ save_draft()
 
 func set_fire_shape(shape:String) -> void:
- if not fire_shape_choices.has(shape):return
+ if shape not in preload("res://scripts/spell_appearance.gd").SHAPES or shape in ["Element style","Drawn"]:return
  var look:Dictionary=appearances.get("Fire",{}).duplicate(true)
  look.erase("preset")
  look["shape"]=shape
+ look.erase("fire_style_id")
  appearances["Fire"]=look
  refresh_fire_shape()
  fire_shape_popup.hide()
@@ -998,9 +1000,13 @@ func set_fire_shape(shape:String) -> void:
 
 func refresh_fire_shape() -> void:
  if not is_instance_valid(fire_shape_button):return
- var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",appearances.get("Fire",{})).shape
- fire_shape_button.text="Shape: %s ▾"%shape
- for value in fire_shape_choices:fire_shape_choices[value].set_pressed_no_signal(value==shape)
+ var custom:Dictionary=appearances.get("Fire",{})
+ var catalog=preload("res://scripts/fire_style_catalog.gd")
+ var id:String=catalog.active_id(custom)
+ var entry:Dictionary=catalog.find(id)
+ var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",custom).shape
+ fire_shape_button.text="Shape: %s ▾"%str(entry.get("title",shape))
+ if is_instance_valid(fire_style_gallery):fire_style_gallery.select_style(id)
 
 func allocation_for(effect:String) -> Dictionary:
  var raw:Dictionary=projectile_allocations.get(effect,{})

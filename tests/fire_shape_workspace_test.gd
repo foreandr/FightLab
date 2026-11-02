@@ -28,12 +28,14 @@ func run() -> void:
 	b.effect_choices.Fire.pressed.emit()
 	if not check(b.fire_shape_screen.visible and not b.effect_selection.visible and b.preview_effect=="Fire" and b.element=="Fire","Fire click does not open its focused shape page"):return
 	if not check(not b.playing and editor.field.shots.is_empty(),"Choosing Fire casts before pressing Play"):return
-	if not check(b.fire_shape_choices.size()>=13 and b.spell_playback_panel.visible and b.demo_timing_panel.visible,"Shape options, playback or RHS disappeared"):return
+	if not check(preload("res://scripts/fire_style_catalog.gd").entries().size()>=20 and b.spell_playback_panel.visible and b.demo_timing_panel.visible,"Shape options, playback or RHS disappeared"):return
 	var stats:Dictionary=b.demo_projectile_stats()
-	for shape in b.fire_shape_choices:
+	for shape in Appearance.SHAPES:
+		if shape in ["Element style","Drawn"]:continue
+		b.stop_preview_controls(true)
 		var count:int=editor.field.shots.size()
-		b.fire_shape_choices[shape].pressed.emit()
-		if not check(b.fire_shape_button.text.contains(shape) and b.fire_shape_choices[shape].button_pressed,"Shape selection is not reflected by its controls"):return
+		b.set_fire_shape(shape)
+		if not check(Appearance.settings("Fire",b.appearances.Fire).shape==shape and b.fire_style_gallery.selected_id==preload("res://scripts/fire_style_catalog.gd").active_id(b.appearances.Fire),"Shape selection is not reflected by its controls"):return
 		if not check(editor.field.shots.size()==count,"Selecting shape deletes existing projectiles or casts automatically"):return
 		press_one(b)
 		b.process_demo_preview(b.cast_duration()*b.release_fraction+0.001)
@@ -49,7 +51,7 @@ func run() -> void:
 	b.appearances={}
 	b.load_draft();b.refresh_fire_shape()
 	if not check(b.appearances.Fire.shape=="Star" and b.demo_preview_spec().appearance.shape=="Star","Chosen shape does not persist in spell metadata"):return
-	if not check(not b.demo_damage_breakdown.visible and not b.demo_mana_base_label.visible and not b.demo_amp_breakdown.visible and b.demo_damage_label.tooltip_text.contains("base"),"Compact RHS loses calculation details or still shows clutter"):return
+	if not check(not b.demo_damage_breakdown.visible and not b.demo_mana_base_label.visible and not b.demo_amp_breakdown.visible and b.demo_damage_label.tooltip_text.to_lower().contains("base"),"Compact RHS loses calculation details or still shows clutter"):return
 	# Fresh cast sizes still come from the universal size/amp resolver.
 	var small:=Appearance.visual("Fire",0.1,{"shape":"Cube"})
 	var large:=Appearance.visual("Fire",0.2,{"shape":"Cube"})
