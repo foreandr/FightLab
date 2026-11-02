@@ -1,4 +1,5 @@
 extends Control
+const Settings=preload("res://scripts/game_settings_access.gd")
 ## Simple story staging area for spawning, selecting, and arranging characters.
 
 const CHARACTER_SCENE := preload("res://scripts/story_character.gd")
@@ -19,8 +20,15 @@ var camera_distance := 13.0
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_build_world()
+	_apply_zoom_settings()
+	Settings.service().changed.connect(_apply_zoom_settings)
 	_build_interface()
 	_load_layout()
+
+func _apply_zoom_settings() -> void:
+	camera_distance=Settings.service().clamp_camera_distance(camera_distance)
+	camera.position=Vector3(0,camera_distance*0.65,camera_distance)
+	_camera_look_at_center()
 
 func _build_world() -> void:
 	viewport_container = SubViewportContainer.new()
@@ -309,7 +317,7 @@ func _on_viewport_input(event: InputEvent) -> void:
 			else:
 				dragging = false
 		elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-			camera_distance = clampf(camera_distance + (-0.8 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 0.8), 8.0, 21.0)
+			camera_distance = Settings.service().clamp_camera_distance(camera_distance + (-0.8 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 0.8))
 			camera.position = Vector3(0, camera_distance * 0.65, camera_distance)
 			_camera_look_at_center()
 	elif event is InputEventMouseMotion and dragging and selected_character != null:
@@ -366,7 +374,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if get_viewport().gui_get_focus_owner() is LineEdit:return
 	if event.keycode in [KEY_MINUS,KEY_EQUAL,KEY_KP_ADD,KEY_KP_SUBTRACT]:
-		camera_distance=clampf(camera_distance+(-0.8 if event.keycode in [KEY_EQUAL,KEY_KP_ADD] else 0.8),8.0,21.0)
+		camera_distance=Settings.service().clamp_camera_distance(camera_distance+(-0.8 if event.keycode in [KEY_EQUAL,KEY_KP_ADD] else 0.8))
 		camera.position=Vector3(0,camera_distance*0.65,camera_distance)
 		_camera_look_at_center()
 		get_viewport().set_input_as_handled()

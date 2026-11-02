@@ -42,6 +42,7 @@ settings/gdscript/always_track_call_stacks=true
 
 [autoload]
 
+GameSettings="*res://scripts/game_settings.gd"
 KeyboardAccess="*res://scripts/keyboard_access.gd"
 GameDiagnostics="*res://scripts/game_diagnostics.gd"
 BotRuntime="*res://scripts/bot_runtime.gd"

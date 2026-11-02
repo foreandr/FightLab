@@ -1,0 +1,27 @@
+Universal settings
+
+Open Settings from the Create options cog, the cog in other modes, or F9.
+The shared dialog pauses the scene while open and restores its previous pause
+and mouse state when closed. Controls remain under the existing Create menu.
+
+Camera: closest and farthest orbit distance, in meters. Defaults preserve the
+previous third-person limits (2.97 to 20.52). Limits are shared by Story, Create,
+inspection, Take Control, and character placement. Moving either bound past the
+other keeps the interval valid. Existing controller pitch/focus behavior stays
+with the controller.
+
+Audio: master volume, combat volume, mute, and distance affects volume.
+Master affects every audio bus. Combat controls cast sounds and burn loops.
+Turning distance volume off preserves spatial panning but removes distance
+attenuation/culling from those combat voices, including active burn loops.
+Cast timing, native pitch, burn rules, and spell balance are unchanged.
+
+All values persist in user://global_settings.cfg, independent of saved spells
+and characters. GameSettings is a project autoload. Reusable components resolve
+it at runtime through game_settings_access.gd so standalone SceneTree scripts
+can preload the same mechanics before autoloads are initialized. Future modes
+use the same service and dialog rather than adding their own preferences.
+
+Validation: tests/global_settings_test.gd covers persistence, camera limits,
+shared Create/Story dialog, pause/resume, audio buses and live distance changes.
+The spell audio timing regression also passes.

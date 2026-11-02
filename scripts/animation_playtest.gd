@@ -1,4 +1,5 @@
 extends RefCounted
+const Settings=preload("res://scripts/game_settings_access.gd")
 const Movement=preload("res://scripts/character_movement.gd")
 const ThirdPersonCamera=preload("res://scripts/third_person_camera.gd")
 const Locomotion=preload("res://scripts/creation_locomotion.gd")
@@ -146,11 +147,12 @@ func handle_input(event:InputEvent) -> bool:
 	return false
 
 func zoom_camera(steps:int) -> void:
-	camera_distance=clampf(camera_distance*pow(1.15,steps),2.0,30.0)
+	camera_distance=Settings.service().clamp_camera_distance(camera_distance*pow(1.15,steps))
 	_update_camera()
 
 func _update_camera() -> void:
 	if not active or not is_instance_valid(editor.focused_unit):return
+	camera_distance=Settings.service().clamp_camera_distance(camera_distance)
 	camera_offset=Vector3(sin(camera_yaw)*cos(camera_pitch),sin(camera_pitch),cos(camera_yaw)*cos(camera_pitch))*camera_distance
 	ThirdPersonCamera.update(editor.field.camera,editor.focused_unit,null,camera_yaw,camera_pitch,camera_distance,1.0)
 

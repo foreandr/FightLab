@@ -1,4 +1,5 @@
 extends Node3D
+const Settings=preload("res://scripts/game_settings_access.gd")
 ## Original deterministic synthesized impact Foley, cached once; no downloads.
 var streams := {}
 var voices: Array[AudioStreamPlayer3D] = []
@@ -16,6 +17,12 @@ func _ready() -> void:
 		voice.volume_db = -18
 		add_child(voice)
 		voices.append(voice)
+		Settings.service().apply_spatial(voice,35.0)
+
+	Settings.service().changed.connect(_settings_changed)
+
+func _settings_changed()->void:
+	for voice in voices:Settings.service().apply_spatial(voice,35.0)
 
 func synthesize(kind: String) -> AudioStreamWAV:
 	var rate := 22050

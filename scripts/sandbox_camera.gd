@@ -1,4 +1,5 @@
 extends RefCounted
+const Settings=preload("res://scripts/game_settings_access.gd")
 ## Inspection camera; independent of combat pause and slow motion.
 var manual := false
 var focus := Vector3.ZERO
@@ -14,7 +15,7 @@ func take_control(camera: Camera3D,center: Vector3) -> void:
 func capture_view(camera: Camera3D,pivot_distance: float) -> void:
 	# Adopt the current viewing ray exactly; do not re-aim at a moving fighter.
 	manual=true
-	distance=clampf(pivot_distance,1.2,65)
+	distance=Settings.service().clamp_camera_distance(pivot_distance)
 	var back:=camera.global_basis.z.normalized()
 	focus=camera.global_position-back*distance
 	yaw=atan2(back.x,back.z)
@@ -25,7 +26,7 @@ func orbit(relative: Vector2) -> void:
 	pitch=clampf(pitch+relative.y*0.006,0.05,1.4)
 
 func zoom(steps: float) -> void:
-	distance=clampf(distance*pow(0.86,steps),1.2,65)
+	distance=Settings.service().clamp_camera_distance(distance*pow(0.86,steps))
 
 func move(direction: Vector3,delta: float,fast: bool=false) -> void:
 	if direction.length_squared()==0:
@@ -39,6 +40,7 @@ func move(direction: Vector3,delta: float,fast: bool=false) -> void:
 	focus.y=clampf(focus.y,0.2,30)
 
 func apply(camera: Camera3D) -> void:
+	distance=Settings.service().clamp_camera_distance(distance)
 	var back:=Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))
 	camera.global_position=focus+back*distance
 	camera.look_at(focus)

@@ -1,4 +1,5 @@
 extends RefCounted
+const Settings=preload("res://scripts/game_settings_access.gd")
 ## Shared Story/Create third-person framing. Selection never changes this camera.
 const BASE_DISTANCE:=5.4
 const MIN_ZOOM:=0.55
@@ -6,7 +7,7 @@ const MAX_ZOOM:=3.8
 
 static func adopt(state:Node,player:Node3D) -> void:
 	var back:Vector3=state.camera.global_position-(player.focus_position()+Vector3.UP*0.58)
-	state.camera_zoom=clampf(back.length()/BASE_DISTANCE,MIN_ZOOM,MAX_ZOOM)
+	state.camera_zoom=Settings.service().clamp_camera_distance(back.length())/BASE_DISTANCE
 	state.story_camera_base_yaw=atan2(back.x,back.z)
 	state.camera_orbit_yaw=0.0
 	state.camera_orbit_pitch=clampf(asin(clampf(back.normalized().y,-1.0,1.0)),0.06,1.32)
@@ -35,8 +36,9 @@ static func orbit(state:Node,relative:Vector2) -> void:
 	state.camera_orbit_pitch=clampf(state.camera_orbit_pitch+relative.y*0.004,0.06,1.32)
 
 static func zoom(state:Node,zoom_in:bool) -> void:
-	state.camera_zoom=clampf(state.camera_zoom*(0.90 if zoom_in else 1.11),MIN_ZOOM,MAX_ZOOM)
+	state.camera_zoom=Settings.service().clamp_camera_distance(state.camera_zoom*BASE_DISTANCE*(0.90 if zoom_in else 1.11))/BASE_DISTANCE
 static func update(camera:Camera3D,player:Node3D,target:Node3D,yaw:float,pitch:float,distance:float,delta:float) -> void:
+	distance=Settings.service().clamp_camera_distance(distance)
 	var locked:=is_instance_valid(target) and target!=player and float(target.get("health"))>0.0
 	var pivot:Vector3=player.focus_position()+Vector3.UP*0.58
 	var forward:=Vector3(-sin(yaw),0.0,-cos(yaw))

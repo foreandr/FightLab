@@ -1,4 +1,5 @@
 extends "res://scripts/combat_testing_sandbox.gd"
+const Settings=preload("res://scripts/game_settings_access.gd")
 const FocusVisuals=preload("res://scripts/focus_visuals.gd")
 var focus_marker:Label3D
 var selection_cleared:=false
@@ -758,6 +759,9 @@ func build_ui() -> void:
 	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. On Spells, middle-mouse drag up/down also zooms; on Store, hold Ctrl and middle-drag up/down. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
 	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. New changes are automatically credited to foreandr while preserving prior contributors."
 	controls_scroll.add_child(legend)
+	var global_settings_button:=button(options_column,"SETTINGS",func():
+		options_panel.hide();options_button.set_pressed_no_signal(false);Settings.service().open())
+	global_settings_button.name="OpenUniversalSettings"
 	var controls_button:=button(options_column,"CONTROLS",func():controls_dialog.popup_centered())
 	controls_button.name="ShowControlsLegend"
 	controls_button.custom_minimum_size=Vector2(86,32)
