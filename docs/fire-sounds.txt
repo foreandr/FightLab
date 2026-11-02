@@ -1,0 +1,19 @@
+Fire sound authoring
+
+Fire immediately resolves to Flame whoosh unless a valid saved fire sound is present.
+Confirming the flame style opens the inline Fire sound tier. The seven rows and their
+play buttons audition sound without casting or paying resources. Play [1] casts with
+the pending choice; Confirm saves appearance.sound_id in the existing spell draft.
+Back to Flame styles discards unconfirmed sound changes. Confirmed choices survive
+style changes and re-entry. Buttons support keyboard focus and activation.
+
+scripts/fire_sound_catalog.gd owns seven original deterministic synthesized fire
+Foley designs. No external audio licenses or downloads are needed. combat_audio.gd
+caches their PCM streams once on demand. combat_runtime.gd resolves the chosen
+sound at actual projectile release for every mode; physical projectiles retain dash.
+Unknown IDs fall back to the default fire sound. Existing projectile sounds are not
+stopped when a new visual style or sound is previewed.
+
+Validation: tests/fire_sound_selection_test.gd exercises unique waveforms, default
+routing, real Create selection/preview/confirmation/save, and actual release in a
+bare new combat mode. tests/fire_style_gallery_test.gd checks the preceding tier.

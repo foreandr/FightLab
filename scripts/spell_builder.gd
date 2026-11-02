@@ -107,6 +107,12 @@ var fire_style_confirm_button:Button
 var fire_style_editing:=false
 var fire_style_preview_id:=""
 var fire_style_confirmed:=false
+var fire_sound_screen:VBoxContainer
+var fire_sound_choices:Dictionary={}
+var fire_sound_preview_id:=""
+var fire_sound_confirmed:=false
+var fire_sound_open:=false
+var fire_sound_confirm_button:Button
 var fire_shapes_open:=false
 var effect_confirm_button:Button
 var spell_playback_panel:PanelContainer
@@ -925,7 +931,8 @@ func confirm_projectile_effect() -> void:
 
 func refresh_effect_choices() -> void:
  if is_instance_valid(effect_selection):effect_selection.visible=not fire_shapes_open
- if is_instance_valid(fire_shape_screen):fire_shape_screen.visible=fire_shapes_open
+ if is_instance_valid(fire_shape_screen):fire_shape_screen.visible=fire_shapes_open and not fire_sound_open
+ if is_instance_valid(fire_sound_screen):fire_sound_screen.visible=fire_shapes_open and fire_sound_open
  refresh_fire_shape()
  projectile_name_label.text="Elementless projectile" if preview_effect=="None" else preview_effect+" projectile"
  for effect in effect_choices:
@@ -956,9 +963,12 @@ func build_fire_shape_panel() -> void:
  fire_style_confirm_button.focus_mode=Control.FOCUS_ALL
  editor.button(fire_shape_screen,"← Effects",leave_fire_styles)
  fire_shape_screen.hide()
+ build_fire_sound_panel()
  refresh_fire_shape()
 
 func open_fire_shape_picker() -> void:
+ fire_sound_open=false
+ refresh_effect_choices()
  fire_style_editing=true
  fire_style_confirmed=false
  fire_style_preview_id=preload("res://scripts/fire_style_catalog.gd").active_id(appearances.get("Fire",{}))
@@ -982,11 +992,71 @@ func confirm_fire_style() -> void:
  fire_style_gallery.set_page(fire_style_gallery.page)
  refresh_fire_shape()
  save_draft()
+ open_fire_sound_picker()
 
 func leave_fire_styles() -> void:
  fire_style_editing=false;fire_style_preview_id="";fire_style_confirmed=false
  fire_shapes_open=false
+ fire_sound_open=false
  refresh_effect_choices()
+
+func build_fire_sound_panel() -> void:
+ fire_sound_screen=VBoxContainer.new()
+ fire_sound_screen.name="FireSoundWorkspace"
+ fire_sound_screen.add_theme_constant_override("separation",8)
+ projectile_screen.add_child(fire_sound_screen)
+ var title:Label=editor.menu_label(fire_sound_screen,"Fire sound",26)
+ title.add_theme_color_override("font_color",Color("b9652d"))
+ for entry in preload("res://scripts/fire_sound_catalog.gd").ENTRIES:
+  var id:String=entry.id
+  var row:=HBoxContainer.new()
+  row.add_theme_constant_override("separation",6)
+  fire_sound_screen.add_child(row)
+  var choice:Button=editor.button(row,str(entry.title),func():set_fire_sound(id))
+  choice.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  choice.name=id
+  choice.toggle_mode=true
+  fire_sound_choices[id]=choice
+  var preview:Button=editor.button(row,"▶",func():preview_fire_sound(id))
+  preview.tooltip_text="Preview sound"
+  preview.custom_minimum_size.x=38
+ fire_sound_confirm_button=editor.button(fire_sound_screen,"Confirm",confirm_fire_sound)
+ fire_sound_confirm_button.name="ConfirmFireSound"
+ editor.button(fire_sound_screen,"← Flame styles",open_fire_shape_picker)
+ fire_sound_screen.hide()
+
+func open_fire_sound_picker() -> void:
+ fire_sound_open=true
+ fire_sound_confirmed=false
+ fire_sound_preview_id=preload("res://scripts/fire_sound_catalog.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
+ refresh_effect_choices()
+ refresh_fire_sound()
+
+func set_fire_sound(id:String) -> void:
+ if preload("res://scripts/fire_sound_catalog.gd").find(id).is_empty():return
+ fire_sound_preview_id=id
+ fire_sound_confirmed=false
+ refresh_fire_sound()
+ preview_fire_sound(id)
+
+func preview_fire_sound(id:String) -> void:
+ if preload("res://scripts/fire_sound_catalog.gd").find(id).is_empty():return
+ if not is_instance_valid(editor.field) or not is_instance_valid(editor.actor):return
+ editor.field.combat_sound(id,editor.actor.global_position,0.65)
+
+func confirm_fire_sound() -> void:
+ if preload("res://scripts/fire_sound_catalog.gd").find(fire_sound_preview_id).is_empty():return
+ if not appearances.has("Fire"):appearances["Fire"]={}
+ appearances.Fire["sound_id"]=fire_sound_preview_id
+ fire_sound_confirmed=true
+ refresh_fire_sound()
+ save_draft()
+
+func refresh_fire_sound() -> void:
+ for id in fire_sound_choices:
+  fire_sound_choices[id].set_pressed_no_signal(id==fire_sound_preview_id)
+ fire_sound_confirm_button.text="Confirmed" if fire_sound_confirmed else "Confirm"
+ fire_sound_confirm_button.disabled=fire_sound_confirmed or fire_sound_preview_id.is_empty()
 
 func set_fire_shape(shape:String) -> void:
  if shape not in preload("res://scripts/spell_appearance.gd").SHAPES or shape in ["Element style","Drawn"]:return
@@ -1675,7 +1745,9 @@ func projectile_effect_spec(effect:String) -> Dictionary:
   spec=Rules.earth_spell(projectile_size,potency)
  var visual:Dictionary=appearances.get(effect,{}).duplicate(true)
  if effect=="Fire" and fire_style_editing and not fire_style_preview_id.is_empty():visual=preload("res://scripts/fire_style_catalog.gd").look(fire_style_preview_id,visual)
+ if effect=="Fire" and fire_sound_open and not fire_sound_preview_id.is_empty():visual["sound_id"]=fire_sound_preview_id
  spec["appearance"]=visual
+ spec["sound_id"]=preload("res://scripts/fire_sound_catalog.gd").resolve(spec)
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
  if not spell_provenance.is_read_only():spell_provenance=Provenance.snapshot(spell_provenance)
  spec["provenance"]=spell_provenance

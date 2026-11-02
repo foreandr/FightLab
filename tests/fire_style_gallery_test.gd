@@ -60,7 +60,7 @@ func run():
  for key in ["mana","stamina","physical_damage","radius","velocity","burn_dps"]:
   if not check(is_equal_approx(float(current[key]),float(original[key])),"Style changes combat stats: "+key):return
  b.fire_style_confirm_button.pressed.emit()
- if not check(b.fire_style_confirmed and b.fire_style_confirm_button.disabled and Catalog.active_id(b.appearances.Fire)==chosen.id and gallery.is_visible_in_tree(),"Confirm does not commit inline selection"):return
+ if not check(b.fire_style_confirmed and b.fire_style_confirm_button.disabled and Catalog.active_id(b.appearances.Fire)==chosen.id and b.fire_sound_screen.is_visible_in_tree() and not gallery.is_visible_in_tree(),"Confirm does not advance to sound selection"):return
  cfg.load(b.draft_path)
  if not check(Catalog.active_id(cfg.get_value("appearance","elements",{}).Fire)==chosen.id,"Saved structure/form preset fails round trip"):return
  b.stop_preview_controls(true)
@@ -95,6 +95,7 @@ func run():
   var node:=Appearance.visual("Fire",0.3,Catalog.look(id))
   if not check(node.mesh!=null and node.mesh.get_aabb().size.length()>0.1,"Empty variant mesh"):return
   node.free()
+ b.open_fire_shape_picker()
  gallery.page_input.value=1
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw

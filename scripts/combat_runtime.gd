@@ -158,7 +158,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3) -> void:
 		_:
 			if spec.effect=="ground" and actor.is_on_floor():origin=actor.position+Vector3.UP*0.30
 			spawn_projectile(actor,spec,origin)
-			field.combat_sound("dash",origin,0.45)
+			field.combat_sound(preload("res://scripts/fire_sound_catalog.gd").resolve(spec),origin,0.45)
 
 func aim_target(actor:CharacterBody3D) -> CharacterBody3D:
 	return field.combat_target(actor)
