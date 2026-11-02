@@ -2,7 +2,7 @@ extends VBoxContainer
 ## Only the visible page owns thumbnail worlds. UPDATE_ONCE renders the actual
 ## shared spell visual, then keeps a static image without per-frame rendering.
 signal style_chosen(id:String)
-const Catalog=preload("res://scripts/fire_style_catalog.gd")
+const Catalog=preload("res://assets/spells/fire/styles.gd")
 const Appearance=preload("res://scripts/spell_appearance.gd")
 const PAGE_SIZE:=12
 var page:=0

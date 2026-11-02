@@ -7,7 +7,7 @@ the pending choice; Confirm saves appearance.sound_id in the existing spell draf
 Back to Flame styles discards unconfirmed sound changes. Confirmed choices survive
 style changes and re-entry. Buttons support keyboard focus and activation.
 
-scripts/fire_sound_catalog.gd owns seven original deterministic synthesized fire
+assets/spells/fire/sounds.gd owns seven original deterministic synthesized fire
 Foley designs. No external audio licenses or downloads are needed. combat_audio.gd
 caches their PCM streams once on demand. combat_runtime.gd resolves the chosen
 sound at actual projectile release for every mode; physical projectiles retain dash.

@@ -55,8 +55,8 @@ func impact(kind: String, point: Vector3, strength := 1.0) -> void:
 	cursor += 1
 	voice.stop()
 	voice.position = point
-	if not streams.has(kind) and not preload("res://scripts/fire_sound_catalog.gd").find(kind).is_empty():
-		streams[kind]=preload("res://scripts/fire_sound_catalog.gd").synthesize(kind)
+	if not streams.has(kind) and not preload("res://assets/spells/fire/sounds.gd").find(kind).is_empty():
+		streams[kind]=preload("res://assets/spells/fire/sounds.gd").synthesize(kind)
 	voice.stream = streams.get(kind, streams.punch)
 	voice.volume_db = -14 + clampf(strength, 0, 1.0) * 7
 	voice.pitch_scale = 0.93 + (cursor % 4) * 0.045

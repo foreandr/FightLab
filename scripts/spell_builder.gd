@@ -951,7 +951,7 @@ func build_fire_shape_panel() -> void:
  fire_shape_screen.name="FireShapeWorkspace"
  fire_shape_screen.add_theme_constant_override("separation",12)
  projectile_screen.add_child(fire_shape_screen)
- var title:Label=editor.menu_label(fire_shape_screen,"Fire",26)
+ var title:Label=editor.menu_label(fire_shape_screen,preload("res://assets/spells/fire/library.gd").STYLE_TITLE,26)
  title.add_theme_color_override("font_color",Color("b9652d"))
  fire_style_gallery=preload("res://scripts/fire_style_gallery.gd").new()
  fire_shape_screen.add_child(fire_style_gallery)
@@ -971,20 +971,20 @@ func open_fire_shape_picker() -> void:
  refresh_effect_choices()
  fire_style_editing=true
  fire_style_confirmed=false
- fire_style_preview_id=preload("res://scripts/fire_style_catalog.gd").active_id(appearances.get("Fire",{}))
+ fire_style_preview_id=preload("res://assets/spells/fire/styles.gd").active_id(appearances.get("Fire",{}))
  var width:=maxf(300.0,size.x-24.0)
  fire_style_gallery.open_styles(appearances.get("Fire",{}),width)
  refresh_fire_shape()
 
 func set_fire_style(id:String) -> void:
- if preload("res://scripts/fire_style_catalog.gd").find(id).is_empty():return
+ if preload("res://assets/spells/fire/styles.gd").find(id).is_empty():return
  fire_style_preview_id=id
  fire_style_editing=true
  fire_style_confirmed=false
  refresh_fire_shape()
 
 func confirm_fire_style() -> void:
- var catalog=preload("res://scripts/fire_style_catalog.gd")
+ var catalog=preload("res://assets/spells/fire/styles.gd")
  if catalog.find(fire_style_preview_id).is_empty():return
  appearances["Fire"]=catalog.look(fire_style_preview_id,appearances.get("Fire",{}))
  fire_style_confirmed=true
@@ -1005,9 +1005,9 @@ func build_fire_sound_panel() -> void:
  fire_sound_screen.name="FireSoundWorkspace"
  fire_sound_screen.add_theme_constant_override("separation",8)
  projectile_screen.add_child(fire_sound_screen)
- var title:Label=editor.menu_label(fire_sound_screen,"Fire sound",26)
+ var title:Label=editor.menu_label(fire_sound_screen,preload("res://assets/spells/fire/library.gd").SOUND_TITLE,26)
  title.add_theme_color_override("font_color",Color("b9652d"))
- for entry in preload("res://scripts/fire_sound_catalog.gd").ENTRIES:
+ for entry in preload("res://assets/spells/fire/sounds.gd").ENTRIES:
   var id:String=entry.id
   var row:=HBoxContainer.new()
   row.add_theme_constant_override("separation",6)
@@ -1028,24 +1028,24 @@ func build_fire_sound_panel() -> void:
 func open_fire_sound_picker() -> void:
  fire_sound_open=true
  fire_sound_confirmed=false
- fire_sound_preview_id=preload("res://scripts/fire_sound_catalog.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
+ fire_sound_preview_id=preload("res://assets/spells/fire/sounds.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
  refresh_effect_choices()
  refresh_fire_sound()
 
 func set_fire_sound(id:String) -> void:
- if preload("res://scripts/fire_sound_catalog.gd").find(id).is_empty():return
+ if preload("res://assets/spells/fire/sounds.gd").find(id).is_empty():return
  fire_sound_preview_id=id
  fire_sound_confirmed=false
  refresh_fire_sound()
  preview_fire_sound(id)
 
 func preview_fire_sound(id:String) -> void:
- if preload("res://scripts/fire_sound_catalog.gd").find(id).is_empty():return
+ if preload("res://assets/spells/fire/sounds.gd").find(id).is_empty():return
  if not is_instance_valid(editor.field) or not is_instance_valid(editor.actor):return
  editor.field.combat_sound(id,editor.actor.global_position,0.65)
 
 func confirm_fire_sound() -> void:
- if preload("res://scripts/fire_sound_catalog.gd").find(fire_sound_preview_id).is_empty():return
+ if preload("res://assets/spells/fire/sounds.gd").find(fire_sound_preview_id).is_empty():return
  if not appearances.has("Fire"):appearances["Fire"]={}
  appearances.Fire["sound_id"]=fire_sound_preview_id
  fire_sound_confirmed=true
@@ -1063,17 +1063,17 @@ func set_fire_shape(shape:String) -> void:
  var look:Dictionary=appearances.get("Fire",{}).duplicate(true)
  look.erase("preset")
  look["shape"]=shape
- look.merge(preload("res://scripts/fire_style_catalog.gd").FORM_DEFAULTS,true)
+ look.merge(preload("res://assets/spells/fire/styles.gd").FORM_DEFAULTS,true)
  look.erase("fire_style_id")
  appearances["Fire"]=look
- fire_style_preview_id=preload("res://scripts/fire_style_catalog.gd").active_id(look)
+ fire_style_preview_id=preload("res://assets/spells/fire/styles.gd").active_id(look)
  fire_style_confirmed=true
  refresh_fire_shape()
  save_draft()
 
 func refresh_fire_shape() -> void:
  if not is_instance_valid(fire_style_gallery):return
- var id:String=fire_style_preview_id if fire_style_editing else preload("res://scripts/fire_style_catalog.gd").active_id(appearances.get("Fire",{}))
+ var id:String=fire_style_preview_id if fire_style_editing else preload("res://assets/spells/fire/styles.gd").active_id(appearances.get("Fire",{}))
  fire_style_gallery.select_style(id)
  if is_instance_valid(fire_style_confirm_button):
   fire_style_confirm_button.text="Confirmed" if fire_style_confirmed else "Confirm"
@@ -1744,10 +1744,10 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  if spell_kind=="Summons":
   spec=Rules.earth_spell(projectile_size,potency)
  var visual:Dictionary=appearances.get(effect,{}).duplicate(true)
- if effect=="Fire" and fire_style_editing and not fire_style_preview_id.is_empty():visual=preload("res://scripts/fire_style_catalog.gd").look(fire_style_preview_id,visual)
+ if effect=="Fire" and fire_style_editing and not fire_style_preview_id.is_empty():visual=preload("res://assets/spells/fire/styles.gd").look(fire_style_preview_id,visual)
  if effect=="Fire" and fire_sound_open and not fire_sound_preview_id.is_empty():visual["sound_id"]=fire_sound_preview_id
  spec["appearance"]=visual
- spec["sound_id"]=preload("res://scripts/fire_sound_catalog.gd").resolve(spec)
+ spec["sound_id"]=preload("res://assets/spells/fire/sounds.gd").resolve(spec)
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
  if not spell_provenance.is_read_only():spell_provenance=Provenance.snapshot(spell_provenance)
  spec["provenance"]=spell_provenance

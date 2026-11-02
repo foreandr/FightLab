@@ -1,0 +1,24 @@
+Shared spell asset libraries
+
+assets/spells/fire/
+  library.gd  One Fire collection; selection(style_id, sound_id) produces saved settings.
+  styles.gd   All 74 Fire styles and their source/artist/license metadata.
+  sounds.gd   The seven Fire sounds and their default/synthesis definitions.
+
+scripts/spell_asset_library.gd is the element registry. for_element("Fire") and
+for_spell(spec) resolve the same library regardless of delivery_type. Projectile,
+Touch, Beam, Barrier and future types reuse these IDs, catalogs and source assets.
+No copies of styles or sounds belong inside delivery folders. The UI names both
+steps Fire · Styles and Fire · Sounds so the collection remains recognizable.
+
+Existing raw textures remain in the shared assets/combat/vfx directory, including
+community_fire and external; catalog file references and original credit records
+remain authoritative. Synthesized sounds are cached by shared combat_audio.gd.
+Changing library organization does not duplicate textures/audio or load every PNG.
+
+Save format remains appearance.fire_style_id and appearance.sound_id. Original
+scripts/fire_style_catalog.gd and fire_sound_catalog.gd are compatibility wrappers,
+not additional catalogs. Existing spells and internal tools keep their IDs.
+
+Touch and other disabled deliveries remain disabled. This supplies shared asset
+access and verifies it across delivery types without implementing those mechanics.
