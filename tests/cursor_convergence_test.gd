@@ -22,6 +22,10 @@ func run() -> void:
 	for fighter in field.fighters:
 		fighter.set_physics_process(false)
 		fighter.global_position=Vector3(20,0,20)
+	# The real caster must share the controlled launch origin, now that ray depth
+	# is correctly measured from its body rather than an unrelated off-screen actor.
+	editor.actor.global_position=Vector3.ZERO
+	editor.actor.update_targets()
 	var target=editor.target
 	var area:=Area3D.new()
 	area.collision_layer=8<<target.team

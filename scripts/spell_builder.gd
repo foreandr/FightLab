@@ -14,6 +14,7 @@ var editor:Node
 var manual_aim:=false
 var spell_focus_target:CharacterBody3D
 var manual_aim_point:=Vector3.ZERO
+var manual_aim_ray_direction:=Vector3.ZERO
 var manual_aim_valid:=false
 var preview_hitboxes:=false
 var projectile_hitbox_button:Button
@@ -1572,7 +1573,9 @@ func cast_pose_aim(progress:float) -> Dictionary:
  if str(casting_animation.get("demo_choice","cross")) not in ["headbutt","cross","hook","knee","roundhouse","dismantle"]:return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
- elif manual_aim_valid:target=manual_aim_point
+ elif manual_aim_valid:
+  var origin:=preview_emitter_position({"hand":CombatAim.emitter(playback_animation())})
+  target=CombatAim.safe_cursor_target(origin,manual_aim_point,manual_aim_ray_direction)
  else:return {}
  var weight:=smoothstep(0.0,0.12,progress)*(1.0-smoothstep(0.75,1.0,progress))
  return {"target":target,"emitter":CombatAim.emitter(playback_animation()),"weight":weight}
@@ -1887,10 +1890,13 @@ func play_cast_preview() -> void:
   launch_projectile()
   released=true
 
+func preview_emitter_position(spec:Dictionary)->Vector3:
+ return editor.field.fighter_hand(editor.actor,str(spec.get("hand","hand_r")))+editor.actor.global_basis.z*0.12
+
 func projectile_preview_launch() -> Dictionary:
  var actor=editor.actor
  var spec:Dictionary=demo_preview_spec()
- var origin:Vector3=editor.field.fighter_hand(actor,spec.hand)+actor.global_basis.z*0.12
+ var origin:=preview_emitter_position(spec)
  if demo_only_stage and previews_projectile():
   spec["aim_direction"]=preview_aim_direction(origin)
  return {"spec":spec,"origin":origin}
@@ -1898,7 +1904,7 @@ func projectile_preview_launch() -> Dictionary:
 func preview_aim_direction(origin:Vector3) -> Vector3:
  var direction:Vector3=editor.actor.global_basis.z.normalized()
  if manual_aim:
-  if manual_aim_valid:direction=(manual_aim_point-origin).normalized()
+  if manual_aim_valid:direction=(CombatAim.safe_cursor_target(origin,manual_aim_point,manual_aim_ray_direction)-origin).normalized()
  else:
   var subject:CharacterBody3D=spell_focus_target if is_instance_valid(spell_focus_target) else editor.target
   if is_instance_valid(subject) and subject.visible and subject.health>0.0:direction=(CombatAim.focused_chest(subject)-origin).normalized()
@@ -2046,6 +2052,7 @@ func set_third_person_focus(unit:CharacterBody3D) -> void:
  spell_focus_target=editor.field.camera_focus_target
  manual_aim=not is_instance_valid(spell_focus_target)
  manual_aim_valid=false
+ manual_aim_ray_direction=Vector3.ZERO
  editor.camera_focus_active=not manual_aim
 
 func toggle_third_person_focus(selected:CharacterBody3D) -> void:
@@ -2110,8 +2117,10 @@ func update_third_person_view(delta:float) -> void:
 
 func aim_at_screen(pointer:Vector2) -> void:
  if not manual_aim:return
- var motion:Dictionary=Projectile.resolved_motion(demo_preview_spec())
- manual_aim_point=CombatAim.ray_point(editor.field.camera,editor.actor,pointer,editor.field.fighters,float(motion.radius))
+ var spec:=demo_preview_spec()
+ var motion:Dictionary=Projectile.resolved_motion(spec)
+ manual_aim_ray_direction=editor.field.camera.project_ray_normal(pointer)
+ manual_aim_point=CombatAim.ray_point(editor.field.camera,editor.actor,pointer,editor.field.fighters,float(motion.radius),preview_emitter_position(spec))
  manual_aim_valid=true
 
 func _input(event:InputEvent) -> void:

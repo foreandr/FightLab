@@ -13,17 +13,22 @@ static func angles(actor:Node3D,direction:Vector3) -> Dictionary:
 	var local:Vector3=actor.global_basis.inverse()*direction.normalized()
 	return {"yaw":atan2(local.x,local.z),"pitch":clampf(atan2(local.y,maxf(0.001,Vector2(local.x,local.z).length())),-deg_to_rad(80),deg_to_rad(80))}
 
-static func ray_point(camera:Camera3D,actor:CharacterBody3D,pointer:Vector2,fighters:Array=[],projectile_radius:float=0.0) -> Vector3:
+static func ray_point(camera:Camera3D,actor:CharacterBody3D,pointer:Vector2,fighters:Array=[],projectile_radius:float=0.0,emitter_position:Variant=null) -> Vector3:
 	var origin:=camera.project_ray_origin(pointer)
 	var direction:=camera.project_ray_normal(pointer)
-	var query:=PhysicsRayQueryParameters3D.create(origin,origin+direction*200.0,1|8|16|32)
+	# Camera-side walls must not become destinations behind the firing hand.
+	# Keep the exact cursor ray; discard only its segment before the emitter plane.
+	var emitter:Vector3=emitter_position if emitter_position is Vector3 else actor.bone_point("spine_03")
+	var minimum_depth:=maxf(0.0,(emitter-origin).dot(direction))
+	var end_depth:=maxf(200.0,minimum_depth+20.0)
+	var query:=PhysicsRayQueryParameters3D.create(origin+direction*minimum_depth,origin+direction*end_depth,1|8|16|32)
 	query.collide_with_areas=true
 	var ignored:Array[RID]=[actor.get_rid()]
 	for pair in actor.targets:ignored.append(pair[0].get_rid())
 	for pair in actor.limb_targets:ignored.append(pair[0].get_rid())
 	query.exclude=ignored
 	var hit:Dictionary=actor.get_world_3d().direct_space_state.intersect_ray(query)
-	var point:Vector3=hit.position if not hit.is_empty() else origin+direction*200.0
+	var point:Vector3=hit.position if not hit.is_empty() else origin+direction*end_depth
 	# A near miss must converge at the nearby fighter's depth, not a distant wall.
 	# Only depth changes: the destination remains exactly on the cursor ray.
 	var depth:float=origin.distance_to(point)
@@ -36,9 +41,17 @@ static func ray_point(camera:Camera3D,actor:CharacterBody3D,pointer:Vector2,figh
 		var center_depth:float=(bounds.get_center()-origin).dot(direction)
 		var half:Vector3=bounds.size*0.5
 		var front_depth:float=center_depth-half.dot(direction.abs())
-		if front_depth<=0.1 or front_depth>=depth:continue
+		if front_depth<=maxf(0.1,minimum_depth) or front_depth>=depth:continue
 		depth=front_depth
 		point=origin+direction*depth
+	return point
+
+static func safe_cursor_target(emitter:Vector3,point:Vector3,ray_direction:Vector3)->Vector3:
+	if ray_direction.is_zero_approx():return point
+	var ray:=ray_direction.normalized()
+	# The hand can move past a very close cursor hit during the cast animation.
+	# Continue along the cursor ray instead of turning back toward stale geometry.
+	if (point-emitter).dot(ray)<=0.001:return emitter+ray*20.0
 	return point
 
 static func hurt_bounds(fighter:Node3D) -> Variant:
