@@ -1,5 +1,6 @@
 extends RefCounted
 ## Element-owned assets: every delivery type uses this exact same library.
+const Burning=preload("res://assets/spells/fire/burning.gd")
 const ELEMENT:="Fire"
 const Styles=preload("res://assets/spells/fire/styles.gd")
 const Sounds=preload("res://assets/spells/fire/sounds.gd")

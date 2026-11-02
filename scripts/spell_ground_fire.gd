@@ -4,7 +4,12 @@ const Plume=preload("res://scripts/fire_plume.gd")
 var flames:Array[MeshInstance3D]=[]
 var embers:CPUParticles3D
 var smoke:CPUParticles3D
-func setup(radius:float,appearance:Dictionary={},normal:Vector3=Vector3.UP) -> void:
+var burn_audio:AudioStreamPlayer3D
+func setup(radius:float,appearance:Dictionary={},normal:Vector3=Vector3.UP,sound_service:Node=null) -> void:
+ burn_audio=preload("res://scripts/burning_audio.gd").new()
+ add_child(burn_audio)
+ burn_audio.setup(sound_service)
+ burn_audio.set_burning(true)
  radius=maxf(0.0,radius)
  normal=normal.normalized() if not normal.is_zero_approx() else Vector3.UP
  var surface_basis:=Basis(Quaternion(Vector3.UP,normal))
@@ -58,6 +63,7 @@ func setup(radius:float,appearance:Dictionary={},normal:Vector3=Vector3.UP) -> v
  add_child(smoke)
 
 func fade(remaining:float) -> void:
+ burn_audio.set_burning(remaining>0.0 and is_visible_in_tree())
  var strength:=clampf(remaining/1.2,0.0,1.0)
  for flame in flames:flame.material_override.set_shader_parameter("strength",strength)
  embers.emitting=remaining>0.6

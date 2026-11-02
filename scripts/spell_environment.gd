@@ -436,7 +436,7 @@ func ground_fire(point:Vector3,radius:float,appearance:Dictionary) -> Node3D:
  var fire=preload("res://scripts/spell_ground_fire.gd").new()
  add_child(fire)
  fire.global_position=ground_point(point)
- fire.setup(radius,appearance)
+ fire.setup(radius,appearance,Vector3.UP,arena.audio)
  return fire
 
 func surface_fire(point:Vector3,normal:Vector3,radius:float,appearance:Dictionary,surface:Node3D=null) -> Node3D:
@@ -444,7 +444,7 @@ func surface_fire(point:Vector3,normal:Vector3,radius:float,appearance:Dictionar
  if is_instance_valid(surface):surface.add_child(fire)
  else:add_child(fire)
  fire.global_transform=Transform3D(Basis.IDENTITY,point)
- fire.setup(radius,appearance,normal)
+ fire.setup(radius,appearance,normal,arena.audio)
  return fire
 
 func ground_point(point:Vector3) -> Vector3:

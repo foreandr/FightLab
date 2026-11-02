@@ -17,3 +17,17 @@ stopped when a new visual style or sound is previewed.
 Validation: tests/fire_sound_selection_test.gd exercises unique waveforms, default
 routing, real Create selection/preview/confirmation/save, and actual release in a
 bare new combat mode. tests/fire_style_gallery_test.gd checks the preceding tier.
+
+Sustained burning
+
+assets/spells/fire/burning.gd supplies one cached, seamless synthesized burn loop,
+also exposed as Fire library.Burning. It is separate from the seven casting sounds.
+scripts/burning_audio.gd creates source-owned AudioStreamPlayer3D emitters with
+3 m unit size, 24 m maximum distance and capped volume. Native 3D attenuation and
+panning use the active camera/listener. Each source shares the exact PCM resource.
+CharacterBurnVisual follows the torso and stops on cleanse, death or burn expiry.
+SpellGroundFire owns the same emitter on walls/floors and stops at patch expiry.
+Removing/resetting either effect frees its emitter, avoiding orphan loops. The
+shared audio mute is respected; cast/impact voice recycling cannot cut off a burn.
+Burn damage timing, potency, duration and ticks are unchanged.
+Validation: burning_audio_test.gd plus combat_presentation_contract_test.gd.
