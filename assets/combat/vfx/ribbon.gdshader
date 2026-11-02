@@ -7,7 +7,7 @@ void fragment(){
  float flow=texture(pattern,vec2(UV.x*2.2-TIME*3.,UV.y)).a;
  float core=pow(max(0.,1.-edge),2.);
  float filaments=pow(max(0.,sin(UV.x*38.-TIME*25.+UV.y*18.)),6.);
- vec3 hot=mix(vec3(1.,.15,.008),vec3(1.,.93,.43),core);
+ vec3 hot=mix(vec3(1.,.15,.008),vec3(1.,.12,.07),core);
  vec3 wet=mix(vec3(.02,.32,.65),vec3(.76,.97,1.),clamp(core*.4+filaments*.6+pow(edge,5.),0.,1.));
  ALBEDO=water?wet:hot;
  EMISSION=ALBEDO*.35;

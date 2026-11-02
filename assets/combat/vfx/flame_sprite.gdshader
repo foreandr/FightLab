@@ -2,7 +2,7 @@ shader_type spatial;
 render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
 uniform sampler2D mask_texture : source_color, filter_linear_mipmap;
 uniform vec4 primary : source_color=vec4(1.0,0.22,0.02,1.0);
-uniform vec4 accent : source_color=vec4(1.0,0.9,0.3,1.0);
+uniform vec4 accent : source_color=vec4(1.0,0.35,0.27,1.0);
 uniform float phase=0.0;
 uniform float opacity=0.9;
 uniform float glow=1.0;

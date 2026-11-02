@@ -12,15 +12,7 @@ const FORMS=[
  {"id":"curl","title":"Curl","flame_width":0.85,"flame_bend":0.18,"flame_turbulence":1.3,"flame_flow":0.9},
  {"id":"crooked","title":"Crooked","flame_width":0.9,"flame_height":0.95,"flame_bend":-0.18,"flame_turbulence":1.15,"flame_flow":1.1},
  {"id":"wild","title":"Wild","flame_bend":0.05,"flame_turbulence":2.2,"flame_flow":1.8}]
-const PALETTES=[
- {"id":"ember","title":"Ember","color":Color("ff641b"),"accent":Color("fff0a0")},
- {"id":"gold","title":"Gold","color":Color("ffb51e"),"accent":Color("fff6cc")},
- {"id":"crimson","title":"Crimson","color":Color("e62316"),"accent":Color("ffc471")},
- {"id":"white","title":"White","color":Color("ffb17b"),"accent":Color("ffffff")},
- {"id":"blue","title":"Blue","color":Color("228bff"),"accent":Color("d9f7ff")},
- {"id":"violet","title":"Violet","color":Color("9c3dff"),"accent":Color("ffe1ff")},
- {"id":"green","title":"Green","color":Color("20ca69"),"accent":Color("d5ffb0")},
- {"id":"rose","title":"Rose","color":Color("ff3c82"),"accent":Color("ffe1bd")}]
+const PALETTES=preload("res://scripts/fire_palette.gd").PRESETS
 static var cached:Array[Dictionary]=[]
 static var by_id:Dictionary={}
 static func _add(entry:Dictionary) -> void:

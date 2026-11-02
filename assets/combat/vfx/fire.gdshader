@@ -5,7 +5,7 @@ void vertex(){VERTEX += NORMAL * (sin(VERTEX.y*38.0+TIME*28.0+VERTEX.x*25.0)*.02
 void fragment(){
  float f=pow(1.0-max(dot(normalize(NORMAL),normalize(VIEW)),0.0),.7);
  float n=noise(VERTEX*2.0);
- ALBEDO=mix(vec3(1.0,.83,.26),vec3(1.0,.075,.004),clamp(f*.9+n*.3,0.0,1.0));
+ ALBEDO=mix(vec3(1.0,.12,.07),vec3(1.0,.075,.004),clamp(f*.9+n*.3,0.0,1.0));
  EMISSION=ALBEDO*.45;
  ROUGHNESS=1.0;
 }

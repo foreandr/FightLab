@@ -2,10 +2,14 @@ extends RefCounted
 const SHAPES=["Element style","Orb","Lance","Shard","Ring","Wisp","Bolt","Flame","Cube","Cone","Disc","Capsule","Diamond","Star","Drawn"]
 static func defaults(element:String) -> Dictionary:
  var colors:Dictionary=load("res://scripts/basic_projectile.gd").COLORS
- return {"shape":{"Fire":"Flame","Ice":"Shard","Lightning":"Lance","Wind":"Ring","Water":"Orb","Earth":"Shard"}.get(element,"Orb"),"color":colors.get(element,Color.WHITE),"accent":Color("fff0a0") if element=="Fire" else colors.get(element,Color.WHITE).lerp(Color.WHITE,0.8),"glow":{"Fire":1.8,"Ice":0.8,"Lightning":2.3,"Wind":0.8,"Water":0.6,"Earth":0.15}.get(element,1.0),"trail_texture":"Element style","texture":"Element style","drawn_outline":PackedVector2Array(),"drawn_trail":PackedVector2Array(),"orbits":element=="Wind","opacity":0.75 if element=="Water" else 0.95,"trail_style":"Element style","trail":0.6,"pulse":0.15,"spin":1.4}
+ return {"shape":{"Fire":"Flame","Ice":"Shard","Lightning":"Lance","Wind":"Ring","Water":"Orb","Earth":"Shard"}.get(element,"Orb"),"color":colors.get(element,Color.WHITE),"accent":preload("res://scripts/fire_palette.gd").PRESETS[0].accent if element=="Fire" else colors.get(element,Color.WHITE).lerp(Color.WHITE,0.8),"glow":{"Fire":1.8,"Ice":0.8,"Lightning":2.3,"Wind":0.8,"Water":0.6,"Earth":0.15}.get(element,1.0),"trail_texture":"Element style","texture":"Element style","drawn_outline":PackedVector2Array(),"drawn_trail":PackedVector2Array(),"orbits":element=="Wind","opacity":0.75 if element=="Water" else 0.95,"trail_style":"Element style","trail":0.6,"pulse":0.15,"spin":1.4}
 static func settings(element:String,custom:Dictionary) -> Dictionary:
  var out:Dictionary=defaults(element)
  out.merge(custom,true)
+ if element=="Fire":
+  var palette:Dictionary=preload("res://scripts/fire_palette.gd").colors(out)
+  out.color=palette.color
+  out.accent=palette.accent
  if out.shape=="Element style":out.shape=defaults(element).shape
  return out
 static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInstance3D:

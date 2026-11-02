@@ -1,6 +1,6 @@
 extends RefCounted
 const ELEMENTS=["Fire","Ice","Lightning","Wind","Water","Earth"]
-const COLORS={"Fire":Color("ff7138"),"Ice":Color("76dcff"),"Lightning":Color("fff253"),"Wind":Color("b4ffe2"),"Water":Color("258de0"),"Earth":Color("9c8059")}
+const COLORS={"Fire":preload("res://scripts/fire_palette.gd").PRESETS[0].color,"Ice":Color("76dcff"),"Lightning":Color("fff253"),"Wind":Color("b4ffe2"),"Water":Color("258de0"),"Earth":Color("9c8059")}
 const MIN_RADIUS:=0.1
 const MAX_RADIUS:=2.0
 const TEST_RADIUS:=30.0

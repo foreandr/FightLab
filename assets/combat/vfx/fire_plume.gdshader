@@ -3,7 +3,7 @@ render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
 uniform float phase=0.0;
 uniform float strength : hint_range(0.0,1.0)=1.0;
 uniform vec4 primary : source_color=vec4(1.0,0.24,0.025,1.0);
-uniform vec4 accent : source_color=vec4(1.0,0.94,0.6,1.0);
+uniform vec4 accent : source_color=vec4(1.0,0.35,0.27,1.0);
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){
  vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);

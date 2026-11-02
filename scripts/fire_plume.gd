@@ -8,8 +8,9 @@ static func flame(width:float,height:float,phase:float,appearance:Dictionary={})
 	var mat:=ShaderMaterial.new()
 	mat.shader=preload("res://assets/combat/vfx/fire_plume.gdshader")
 	mat.set_shader_parameter("phase",phase)
-	mat.set_shader_parameter("primary",appearance.get("color",Color("ff5910")))
-	mat.set_shader_parameter("accent",appearance.get("accent",Color("fff0a0")))
+	var palette:Dictionary=preload("res://scripts/fire_palette.gd").colors(appearance)
+	mat.set_shader_parameter("primary",palette.color)
+	mat.set_shader_parameter("accent",palette.accent)
 	node.material_override=mat
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return node
@@ -31,7 +32,7 @@ static func particles(radius:float,smoke:bool=false) -> CPUParticles3D:
 	node.scale_amount_min=0.2 if smoke else 0.015
 	node.scale_amount_max=0.4 if smoke else 0.035
 	var gradient:=Gradient.new()
-	gradient.colors=PackedColorArray([Color(0.22,0.19,0.16,0.0),Color(0.27,0.24,0.2,0.12),Color(0.3,0.28,0.25,0.0)]) if smoke else PackedColorArray([Color("fff4bf"),Color("ff8a23"),Color(1,0.25,0.03,0)])
+	gradient.colors=PackedColorArray([Color(0.22,0.19,0.16,0.0),Color(0.27,0.24,0.2,0.12),Color(0.3,0.28,0.25,0.0)]) if smoke else PackedColorArray([Color("ff5945"),Color("e62917"),Color(0.65,0.02,0.01,0)])
 	node.color_ramp=gradient
 	gradient.offsets=PackedFloat32Array([0.0,0.3,1.0])
 	var mesh:=QuadMesh.new()
