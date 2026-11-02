@@ -132,7 +132,7 @@ func orient_projectile(node:MeshInstance3D,spec:Dictionary,origin:Vector3,direct
 	if spec.effect in ["slash","cleave"] and is_instance_valid(camera):node.look_at(camera.global_position)
 	elif not direction.is_zero_approx():node.look_at(origin+direction,Vector3.FORWARD if absf(direction.normalized().dot(Vector3.UP))>0.95 else Vector3.UP)
 	if spec.effect=="cleave":node.rotate_object_local(Vector3.FORWARD,PI/2)
-	if spec.effect=="spear":node.scale=Vector3(0.60,0.60,3.6)
+	if spec.effect=="spear" and not node.has_meta("look"):node.scale=Vector3(0.60,0.60,3.6)
 
 func combat_sound(sound:String,point:Vector3,volume:float) -> void:
 	if is_instance_valid(audio):audio.impact(sound,point,volume)

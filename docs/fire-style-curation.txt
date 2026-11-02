@@ -11,11 +11,15 @@ Cartesian combinations were removed from the visible choices. The retained
 3D shapes differ in actual geometry, not just their projection in one image.
 510 redundant or minor-variation choices are no longer offered.
 
-All styles use the same red (#e62917) for both primary and accent, with the
-same glow and opacity. Source texture RGB cannot tint fire. Transparency and
-shape may vary; colour is not a selectable source of variety.
+All styles use the same warm heat palette: orange #ff681c and yellow #ffe889,
+with the same glow and opacity. Source texture RGB cannot tint fire.
+Transparency and shape may vary; colour is not a selectable source of variety.
 
 FireStyleCatalog.GALLERY_STYLES is the explicit visible shortlist. Legacy
 IDs and original files remain readable for existing saved spells, but are
 not advertised as additional gallery options. Do not reintroduce a Cartesian
 product to inflate the count. New styles require structural/motion review.
+
+SpellAppearance fits the complete visual hierarchy inside the gameplay sphere.
+The budget includes rotating child rings and the maximum authored pulse.
+Effect orientation adapters must preserve this scale for authored appearances.

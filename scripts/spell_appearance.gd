@@ -151,6 +151,7 @@ static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInst
   shine.albedo_color=Color(look.accent,0.25+float(look.glow)*0.1)
   band.material_override=shine
   body.add_child(band)
+ preload("res://scripts/spell_visual_bounds.gd").fit(body,radius,float(look.pulse))
  return body
 static func step(body:MeshInstance3D,age:float,delta:float) -> void:
  if not body.has_meta("look"):return

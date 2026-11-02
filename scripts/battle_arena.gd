@@ -591,4 +591,4 @@ func projectile_visual(actor:CharacterBody3D,spec:Dictionary,radius:float) -> Me
 	return vfx.projectile(actor.team,"slash" if spec.effect=="slash" else "orb",radius)
 
 func orient_projectile(node:MeshInstance3D,spec:Dictionary,_origin:Vector3,_direction:Vector3) -> void:
-	if spec.effect=="slash":node.scale=Vector3.ONE*(1.0+clampf(float(spec.get("charge",0)),0,1)*0.6)
+	if spec.effect=="slash" and not node.has_meta("look"):node.scale=Vector3.ONE*(1.0+clampf(float(spec.get("charge",0)),0,1)*0.6)

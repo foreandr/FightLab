@@ -1,5 +1,6 @@
 extends Node3D
 ## Layered CC0 textured effects. All particles are bounded, camera-facing quads.
+const FirePalette=preload("res://scripts/fire_palette.gd")
 const ROOT := "res://assets/combat/vfx/"
 const LIMIT := 240
 var camera: Camera3D
@@ -24,6 +25,8 @@ func _ready() -> void:
 		textures[name_] = load(ROOT + name_ + ".png")
 	fire = ShaderMaterial.new()
 	fire.shader = load(ROOT + "fire.gdshader")
+	fire.set_shader_parameter("primary",FirePalette.PRESETS[0].color)
+	fire.set_shader_parameter("accent",FirePalette.PRESETS[0].accent)
 	water = ShaderMaterial.new()
 	water.shader = load(ROOT + "water.gdshader")
 	shield_shader = load(ROOT + "shield.gdshader")
@@ -31,11 +34,13 @@ func _ready() -> void:
 		var mat := ShaderMaterial.new()
 		mat.shader = load(ROOT + "ribbon.gdshader")
 		mat.set_shader_parameter("water", team == 1)
+		mat.set_shader_parameter("fire_primary",FirePalette.PRESETS[0].color)
+		mat.set_shader_parameter("fire_accent",FirePalette.PRESETS[0].accent)
 		mat.set_shader_parameter("pattern", textures["flame_01" if team == 0 else "twirl_02"])
 		ribbon_materials.append(mat)
 
 func tint(team: int) -> Color:
-	return Color("e62917") if team == 0 else Color(0.18, 0.75, 1.0)
+	return FirePalette.PRESETS[0].color if team == 0 else Color(0.18, 0.75, 1.0)
 
 func sprite(texture: String, size_: Vector2, color: Color) -> Sprite3D:
 	var node := Sprite3D.new()
@@ -103,10 +108,10 @@ func projectile(team: int, kind: String, radius: float) -> MeshInstance3D:
 	var corona := sprite("twirl_02" if team == 1 else "flame_04", Vector2.ONE * radius * 8.5, tint(team).lightened(0.15))
 	corona.name = "Corona"
 	node.add_child(corona)
-	var core := sprite("light_02", Vector2.ONE * radius * 3.5, Color("d3f9ff") if team == 1 else Color("ff5945"))
+	var core := sprite("light_02", Vector2.ONE * radius * 3.5, Color("d3f9ff") if team == 1 else FirePalette.PRESETS[0].accent)
 	node.add_child(core)
 	if team == 0:
-		var tongue := sprite("flame_01", Vector2(radius * 7.0, radius * 9.5), Color(1, 0.12, 0.06, 0.85))
+		var tongue := sprite("flame_01", Vector2(radius * 7.0, radius * 9.5), Color(FirePalette.PRESETS[0].color,0.85))
 		tongue.name = "Tongue"
 		node.add_child(tongue)
 	var ribbon := MeshInstance3D.new()
@@ -146,7 +151,7 @@ func flight(node: MeshInstance3D, velocity_: Vector3, team: int, kind: String, a
 	if kind in ["slash", "cleave"]:
 		puff(point, "slash_02", team, Vector2(0.9, 0.9), -speed * 0.8, 0.22, Color(tint(team), 0.65), 0.1)
 	elif team == 0:
-		puff(point, "flame_01" if rng.randf() < 0.5 else "flame_04", team, Vector2(0.6, 0.85), -velocity_ * 0.12 + Vector3.UP * 0.4, 0.32, Color(1, 0.12, 0.06, 0.95), 0.6, 2)
+		puff(point, "flame_01" if rng.randf() < 0.5 else "flame_04", team, Vector2(0.6, 0.85), -velocity_ * 0.12 + Vector3.UP * 0.4, 0.32, Color(FirePalette.PRESETS[0].color,0.95), 0.6, 2)
 		puff(point - speed * 0.2, "smoke_04", team, Vector2.ONE * 0.38, -velocity_ * 0.08 + Vector3.UP * 0.5, 0.52, Color(0.24, 0.16, 0.15, 0.35), 1.5)
 	else:
 		puff(point, "smoke_04", team, Vector2(0.42, 0.54), -velocity_ * 0.08, 0.28, Color(0.36, 0.82, 1.0, 0.65), 0.5, 5)
@@ -191,12 +196,12 @@ func physical_contact(point:Vector3) -> void:
 
 func burst(point: Vector3, team: int, connected: bool) -> void:
 	var color := tint(team)
-	puff(point, "light_02", team, Vector2.ONE * (1.3 if connected else 0.7), Vector3.ZERO, 0.18, Color("ff5945") if team == 0 else Color("e3fcff"), 0.8)
+	puff(point, "light_02", team, Vector2.ONE * (1.3 if connected else 0.7), Vector3.ZERO, 0.18, FirePalette.PRESETS[0].accent if team == 0 else Color("e3fcff"), 0.8)
 	puff(point, "circle_03", team, Vector2.ONE * 0.55, Vector3.ZERO, 0.38, Color(color, 0.8), 3.5)
 	for i in (9 if connected else 5):
 		var dir := Vector3(rng.randf_range(-1, 1), rng.randf_range(0.1, 1.5), rng.randf_range(-1, 1)).normalized()
 		puff(point, "flame_04" if team == 0 else "smoke_04", team, Vector2.ONE * rng.randf_range(0.28, 0.55), dir * rng.randf_range(1.1, 3.0), rng.randf_range(0.25, 0.5), Color(color.lightened(0.15), 0.85), 0.8, rng.randf_range(-5, 5))
-		puff(point, "spark_05", team, Vector2(0.06, 0.27), dir * rng.randf_range(2, 4), 0.42, Color("ff5945") if team == 0 else Color("d9faff"), 0.0)
+		puff(point, "spark_05", team, Vector2(0.06, 0.27), dir * rng.randf_range(2, 4), 0.42, FirePalette.PRESETS[0].accent if team == 0 else Color("d9faff"), 0.0)
 	for i in 3:
 		puff(point, "smoke_04", team, Vector2.ONE * 0.55, Vector3(rng.randf_range(-0.4, 0.4), 0.8, rng.randf_range(-0.4, 0.4)), 0.7, Color(0.22, 0.16, 0.13, 0.3) if team == 0 else Color(0.7, 0.9, 1.0, 0.28), 1.5)
 

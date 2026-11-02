@@ -1,8 +1,8 @@
 shader_type spatial;
 render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
 uniform sampler2D mask_texture : source_color, filter_linear_mipmap;
-uniform vec4 primary : source_color=vec4(1.0,0.22,0.02,1.0);
-uniform vec4 accent : source_color=vec4(1.0,0.35,0.27,1.0);
+uniform vec4 primary : source_color=vec4(1.0,0.408,0.11,1.0);
+uniform vec4 accent : source_color=vec4(1.0,0.91,0.537,1.0);
 uniform float phase=0.0;
 uniform float opacity=0.9;
 uniform float glow=1.0;
@@ -65,8 +65,9 @@ void fragment(){
  }
  if(flame_structure==7){raw*=0.45+0.55*smoothstep(-0.2,0.35,sin(uv.y*23.0-t*3.0));}
  float a=clamp(pow(raw,0.55)*2.1,0.0,1.0);
- // Texture RGB must never introduce a second fire colour.
- vec3 pigment=primary.rgb;
+ // Source RGB never tints fire: all styles share the same warm heat gradient.
+ float heat=clamp(raw*0.7+(1.0-UV.y)*0.3,0.0,1.0);
+ vec3 pigment=mix(primary.rgb,accent.rgb,smoothstep(0.2,0.95,heat));
  ALBEDO=pigment;
  EMISSION=pigment*(0.2+glow*0.25);
  ALPHA=pow(a,0.85)*opacity*(0.85+sin(t*2.3)*0.12);
