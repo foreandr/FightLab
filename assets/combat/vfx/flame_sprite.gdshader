@@ -6,15 +6,22 @@ uniform vec4 accent : source_color=vec4(1.0,0.9,0.3,1.0);
 uniform float phase=0.0;
 uniform float opacity=0.9;
 uniform float glow=1.0;
+uniform int flame_tongues=1;
+uniform float flame_bend=0.0;
+uniform float flame_turbulence=1.0;
+uniform float flame_flow=1.0;
 void vertex(){
  MODELVIEW_MATRIX=VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0]*length(MODEL_MATRIX[0].xyz),INV_VIEW_MATRIX[1]*length(MODEL_MATRIX[1].xyz),INV_VIEW_MATRIX[2]*length(MODEL_MATRIX[2].xyz),MODEL_MATRIX[3]);
 }
 void fragment(){
  vec2 uv=UV;
- float t=TIME*2.8+phase;
- uv.x+=sin(uv.y*12.0-t*2.0)*0.035*(1.0-uv.y);
- uv.y+=sin(uv.x*9.0+t)*0.025;
- float raw=texture(mask_texture,uv).a;
+ float t=TIME*2.8*flame_flow+phase;
+ if(flame_tongues>1){uv.x=fract(uv.x*float(flame_tongues));}
+ uv.x+=flame_bend*(1.0-uv.y)*(1.0-uv.y);
+ uv.x+=sin(uv.y*12.0-t*2.0)*0.035*(1.0-uv.y)*flame_turbulence;
+ uv.y+=sin(uv.x*9.0+t)*0.025*flame_turbulence;
+ float raw=texture(mask_texture,clamp(uv,vec2(0.0),vec2(1.0))).a;
+ if(uv.x<0.0||uv.x>1.0||uv.y<0.0||uv.y>1.0){raw=0.0;}
  float a=clamp(pow(raw,0.55)*2.1,0.0,1.0);
  float heat=clamp(raw*0.6+uv.y*0.4,0.0,1.0);
  vec3 pigment=mix(primary.rgb,accent.rgb,heat);

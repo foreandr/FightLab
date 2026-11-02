@@ -71,7 +71,7 @@ static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInst
    if custom_mesh!=null:body.mesh=custom_mesh
   "Flame":
    var quad:=QuadMesh.new()
-   quad.size=Vector2(radius*2,radius*2.5)
+   quad.size=Vector2(radius*2*clampf(float(look.get("flame_width",1.0)),0.2,1.0),radius*2.5*clampf(float(look.get("flame_height",1.0)),0.2,1.0))
    body.mesh=quad
    var flame_material:=ShaderMaterial.new()
    flame_material.shader=preload("res://assets/combat/vfx/flame_sprite.gdshader")
@@ -82,6 +82,8 @@ static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInst
    flame_material.set_shader_parameter("accent",look.accent)
    flame_material.set_shader_parameter("opacity",look.opacity)
    flame_material.set_shader_parameter("glow",look.glow)
+   for key in ["flame_tongues","flame_bend","flame_turbulence","flame_flow"]:
+    flame_material.set_shader_parameter(key,look.get(key,{"flame_tongues":1,"flame_bend":0.0,"flame_turbulence":1.0,"flame_flow":1.0}[key]))
    body.material_override=flame_material
   "Lance":base=Vector3(0.35,0.35,1.8)
   "Bolt":

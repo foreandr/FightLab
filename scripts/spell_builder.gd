@@ -101,10 +101,12 @@ var projectile_effect_confirmed:=false
 var effect_choices:Dictionary={}
 var effect_selection:VBoxContainer
 var fire_shape_screen:VBoxContainer
-var fire_shape_button:Button
-var fire_shape_popup:PopupPanel
 var fire_shape_choices:Dictionary={}
 var fire_style_gallery:VBoxContainer
+var fire_style_confirm_button:Button
+var fire_style_editing:=false
+var fire_style_preview_id:=""
+var fire_style_confirmed:=false
 var fire_shapes_open:=false
 var effect_confirm_button:Button
 var spell_playback_panel:PanelContainer
@@ -791,7 +793,7 @@ func confirm_demo_choice() -> void:
 
 func show_creation_step(step:String) -> void:
  if step!="projectile" and cast_committed():return
- if step!="projectile" and is_instance_valid(fire_shape_popup):fire_shape_popup.hide()
+ if step!="projectile":fire_style_editing=false;fire_style_preview_id=""
  if previews_projectile() and step!="projectile":
   stop_preview_controls()
   playing=false
@@ -863,6 +865,7 @@ func confirm_delivery_type() -> void:
 func open_projectile_workspace(advance:=true) -> void:
  if advance and not casting_animation.is_empty():demo_choice_selected=true
  fire_shapes_open=false
+ fire_style_editing=false;fire_style_preview_id="";fire_style_confirmed=false
  stop_preview_controls()
  if not limiter_enabled:set_limiter_enabled(true)
  if is_instance_valid(limiter_warning):limiter_warning.hide()
@@ -905,8 +908,12 @@ func preview_projectile_effect(value:String) -> void:
   begin_demo_exit()
  refresh_effect_choices()
  refresh_demo_timing()
- if fire_shapes_open:save_draft()
- else:play_demo_preview()
+ if fire_shapes_open:
+  open_fire_shape_picker()
+  save_draft()
+ else:
+  fire_style_editing=false;fire_style_preview_id=""
+  play_demo_preview()
 
 func confirm_projectile_effect() -> void:
  if preview_effect not in ["None","Fire"]:return
@@ -939,74 +946,68 @@ func build_fire_shape_panel() -> void:
  projectile_screen.add_child(fire_shape_screen)
  var title:Label=editor.menu_label(fire_shape_screen,"Fire",26)
  title.add_theme_color_override("font_color",Color("b9652d"))
- fire_shape_button=editor.button(fire_shape_screen,"Shape",open_fire_shape_picker)
- fire_shape_button.name="FireShapePicker"
- fire_shape_button.custom_minimum_size.y=52
- fire_shape_button.tooltip_text="Choose the active shape. Press 1 to cast it using the size, speed and burn settings on the right."
- editor.button(fire_shape_screen,"← Effects",func():fire_shapes_open=false;refresh_effect_choices())
- fire_shape_popup=PopupPanel.new()
- fire_shape_popup.name="FireShapeOptions"
- fire_shape_popup.theme=editor._book_theme()
- var popup_style:=StyleBoxFlat.new()
- popup_style.bg_color=Color("f1e8d3")
- popup_style.border_color=Color("b5a27f")
- popup_style.set_border_width_all(1)
- popup_style.set_corner_radius_all(5)
- fire_shape_popup.theme.set_stylebox("panel","PopupPanel",popup_style)
- add_child(fire_shape_popup)
- var margin:=MarginContainer.new()
- for side in ["left","top","right","bottom"]:margin.add_theme_constant_override("margin_"+side,6)
- fire_shape_popup.add_child(margin)
  fire_style_gallery=preload("res://scripts/fire_style_gallery.gd").new()
- margin.add_child(fire_style_gallery)
+ fire_shape_screen.add_child(fire_style_gallery)
  fire_style_gallery.setup(editor._book_theme())
  fire_style_gallery.style_chosen.connect(set_fire_style)
- fire_style_gallery.close_requested.connect(func():fire_shape_popup.hide())
  fire_shape_choices=fire_style_gallery.choices
+ fire_style_confirm_button=editor.button(fire_shape_screen,"Confirm",confirm_fire_style)
+ fire_style_confirm_button.name="ConfirmFireStyle"
+ fire_style_confirm_button.focus_mode=Control.FOCUS_ALL
+ editor.button(fire_shape_screen,"← Effects",leave_fire_styles)
  fire_shape_screen.hide()
  refresh_fire_shape()
 
 func open_fire_shape_picker() -> void:
- var rect:=fire_shape_button.get_global_rect()
- var screen:=get_viewport_rect().size
- var width:=minf(640.0,screen.x-24.0)
+ fire_style_editing=true
+ fire_style_confirmed=false
+ fire_style_preview_id=preload("res://scripts/fire_style_catalog.gd").active_id(appearances.get("Fire",{}))
+ var width:=maxf(300.0,size.x-24.0)
  fire_style_gallery.open_styles(appearances.get("Fire",{}),width)
- var rows:=ceili(12.0/fire_style_gallery.columns)
- var height:=minf(rows*144.0+88.0,screen.y-24.0)
- var position:=rect.position+Vector2(0,rect.size.y+6)
- position.x=clampf(position.x,12.0,maxf(12.0,screen.x-width-12.0))
- position.y=clampf(position.y,12.0,maxf(12.0,screen.y-height-12.0))
- fire_shape_popup.popup(Rect2i(Vector2i(position),Vector2i(width,height)))
- fire_style_gallery.focus_selection()
+ refresh_fire_shape()
 
 func set_fire_style(id:String) -> void:
- var catalog=preload("res://scripts/fire_style_catalog.gd")
- if catalog.find(id).is_empty():return
- appearances["Fire"]=catalog.look(id,appearances.get("Fire",{}))
+ if preload("res://scripts/fire_style_catalog.gd").find(id).is_empty():return
+ fire_style_preview_id=id
+ fire_style_editing=true
+ fire_style_confirmed=false
  refresh_fire_shape()
- fire_shape_popup.hide()
+
+func confirm_fire_style() -> void:
+ var catalog=preload("res://scripts/fire_style_catalog.gd")
+ if catalog.find(fire_style_preview_id).is_empty():return
+ appearances["Fire"]=catalog.look(fire_style_preview_id,appearances.get("Fire",{}))
+ fire_style_confirmed=true
+ fire_style_gallery.base_look=appearances.Fire.duplicate(true)
+ fire_style_gallery.set_page(fire_style_gallery.page)
+ refresh_fire_shape()
  save_draft()
+
+func leave_fire_styles() -> void:
+ fire_style_editing=false;fire_style_preview_id="";fire_style_confirmed=false
+ fire_shapes_open=false
+ refresh_effect_choices()
 
 func set_fire_shape(shape:String) -> void:
  if shape not in preload("res://scripts/spell_appearance.gd").SHAPES or shape in ["Element style","Drawn"]:return
  var look:Dictionary=appearances.get("Fire",{}).duplicate(true)
  look.erase("preset")
  look["shape"]=shape
+ look.merge(preload("res://scripts/fire_style_catalog.gd").FORM_DEFAULTS,true)
  look.erase("fire_style_id")
  appearances["Fire"]=look
+ fire_style_preview_id=preload("res://scripts/fire_style_catalog.gd").active_id(look)
+ fire_style_confirmed=true
  refresh_fire_shape()
- fire_shape_popup.hide()
  save_draft()
 
 func refresh_fire_shape() -> void:
- if not is_instance_valid(fire_shape_button):return
- var custom:Dictionary=appearances.get("Fire",{})
- var catalog=preload("res://scripts/fire_style_catalog.gd")
- var id:String=catalog.active_id(custom)
- var entry:Dictionary=catalog.find(id)
- var shape:String=preload("res://scripts/spell_appearance.gd").settings("Fire",custom).shape
- fire_shape_button.text="Shape: %s ▾"%str(entry.get("title",shape))
- if is_instance_valid(fire_style_gallery):fire_style_gallery.select_style(id)
+ if not is_instance_valid(fire_style_gallery):return
+ var id:String=fire_style_preview_id if fire_style_editing else preload("res://scripts/fire_style_catalog.gd").active_id(appearances.get("Fire",{}))
+ fire_style_gallery.select_style(id)
+ if is_instance_valid(fire_style_confirm_button):
+  fire_style_confirm_button.text="Confirmed" if fire_style_confirmed else "Confirm"
+  fire_style_confirm_button.disabled=id.is_empty() or fire_style_confirmed
 
 func allocation_for(effect:String) -> Dictionary:
  var raw:Dictionary=projectile_allocations.get(effect,{})
@@ -1664,7 +1665,9 @@ func projectile_effect_spec(effect:String) -> Dictionary:
   spec=Rules.allocate(spec,allocation_for(effect),effect,total_power)
  if spell_kind=="Summons":
   spec=Rules.earth_spell(projectile_size,potency)
- spec["appearance"]=appearances.get(effect,{}).duplicate(true)
+ var visual:Dictionary=appearances.get(effect,{}).duplicate(true)
+ if effect=="Fire" and fire_style_editing and not fire_style_preview_id.is_empty():visual=preload("res://scripts/fire_style_catalog.gd").look(fire_style_preview_id,visual)
+ spec["appearance"]=visual
  spec["testing_only"]=testing_sizes and projectile_size>MAX_RADIUS
  if not spell_provenance.is_read_only():spell_provenance=Provenance.snapshot(spell_provenance)
  spec["provenance"]=spell_provenance
@@ -2016,7 +2019,9 @@ func workspace_visibility_changed() -> void:
   for item in practice_human.targets:item[0].collision_layer=0
   for item in practice_human.limb_targets:item[0].collision_layer=0
  if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree()
- if not is_visible_in_tree():stop_preview_controls()
+ if not is_visible_in_tree():
+  stop_preview_controls()
+  fire_style_editing=false;fire_style_preview_id=""
  if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree()
  playing=false
  repeat_wait=0

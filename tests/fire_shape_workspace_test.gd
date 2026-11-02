@@ -65,7 +65,7 @@ func run() -> void:
 	root.get_texture().get_image().save_png("user://logs/fire_shape_workspace.png")
 	b.open_fire_shape_picker()
 	await RenderingServer.frame_post_draw
-	if not check(b.fire_shape_popup.visible,"Shape picker does not open"):return
+	if not check(b.fire_style_gallery.is_visible_in_tree(),"Shape picker does not open"):return
 	root.get_texture().get_image().save_png("user://logs/fire_shape_picker.png")
 	print("FIRE SHAPE WORKSPACE PASSED: Fire navigation, 13 shapes, actual 1-key projectile visuals, no automatic cast/shot deletion, shared costs/size/speed/burn, saved metadata, back navigation and compact RHS with hover details")
 	quit()
