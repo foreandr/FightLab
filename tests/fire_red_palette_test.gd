@@ -5,7 +5,7 @@ const Plume=preload("res://scripts/fire_plume.gd")
 func red(color:Color) -> bool:
  return color.r>color.g*2.0 and color.r>color.b*2.0
 func _initialize() -> void:
- assert(Catalog.entries().size()==524)
+ assert(Catalog.entries().size()==533)
  for entry in Catalog.entries():
   var look:=Catalog.look(entry.id)
   var resolved:=Appearance.settings("Fire",look)
@@ -16,6 +16,9 @@ func _initialize() -> void:
   resolved=Appearance.settings("Fire",look)
   assert(red(resolved.color) and red(resolved.accent),entry.id)
   assert(Catalog.active_id(look)==entry.id,entry.id)
+  if entry.id.begins_with("style_"):
+   var legacy:=look.duplicate(true);legacy.erase("flame_structure")
+   assert(Catalog.active_id(legacy)==entry.id,"Legacy preset loses selection: "+str(entry.id))
   var body:=Appearance.visual("Fire",0.3,look)
   assert(red(body.material_override.get_shader_parameter("primary")))
   body.free()
@@ -24,5 +27,5 @@ func _initialize() -> void:
  assert(red(plume.material_override.get_shader_parameter("accent")))
  plume.free()
  assert(Appearance.settings("Ice",{"color":Color.BLUE}).color==Color.BLUE)
- print("RED FIRE PASS: 524 styles, legacy colors, projectile and plume materials; other elements unchanged")
+ print("RED FIRE PASS: 533 styles, legacy colors, projectile and plume materials; other elements unchanged")
  quit()

@@ -10,6 +10,8 @@ static func settings(element:String,custom:Dictionary) -> Dictionary:
   var palette:Dictionary=preload("res://scripts/fire_palette.gd").colors(out)
   out.color=palette.color
   out.accent=palette.accent
+  if not out.has("flame_structure") and str(out.get("fire_style_id","")).begins_with("style_"):
+   out.flame_structure=preload("res://scripts/fire_palette.gd").legacy_structure(str(out.fire_style_id))
  if out.shape=="Element style":out.shape=defaults(element).shape
  return out
 static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInstance3D:
@@ -86,8 +88,8 @@ static func visual(element:String,radius:float,custom:Dictionary={}) -> MeshInst
    flame_material.set_shader_parameter("accent",look.accent)
    flame_material.set_shader_parameter("opacity",look.opacity)
    flame_material.set_shader_parameter("glow",look.glow)
-   for key in ["flame_tongues","flame_bend","flame_turbulence","flame_flow"]:
-    flame_material.set_shader_parameter(key,look.get(key,{"flame_tongues":1,"flame_bend":0.0,"flame_turbulence":1.0,"flame_flow":1.0}[key]))
+   for key in ["flame_tongues","flame_bend","flame_turbulence","flame_flow","flame_structure","flame_sheet_columns","flame_sheet_rows","flame_sheet_frames","flame_sheet_fps"]:
+    flame_material.set_shader_parameter(key,look.get(key,{"flame_tongues":1,"flame_bend":0.0,"flame_turbulence":1.0,"flame_flow":1.0,"flame_structure":0,"flame_sheet_columns":1,"flame_sheet_rows":1,"flame_sheet_frames":1,"flame_sheet_fps":24.0}[key]))
    body.material_override=flame_material
   "Lance":base=Vector3(0.35,0.35,1.8)
   "Bolt":

@@ -16,7 +16,7 @@ func run():
   var signature:=JSON.stringify(visual,"",true)
   if not check(not signatures.has(signature),"Duplicate preset settings"):return
   signatures[signature]=true
- if not check(ids.size()==524,"Expanded style catalog size wrong"):return
+ if not check(ids.size()==533,"Expanded style catalog size wrong"):return
  change_scene_to_file("res://scenes/combat_sandbox.tscn")
  var e:Node
  while true:
@@ -32,13 +32,13 @@ func run():
  b.effect_choices.Fire.pressed.emit()
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
- if not check(gallery.is_visible_in_tree() and gallery.choices.size()==12 and gallery.page_count()==44 and b.fire_style_confirm_button.is_visible_in_tree(),"Fire does not open inline paginated tier"):return
+ if not check(gallery.is_visible_in_tree() and gallery.choices.size()==12 and gallery.page_count()==45 and b.fire_style_confirm_button.is_visible_in_tree(),"Fire does not open inline paginated tier"):return
  if not check(e.get_viewport().get_embedded_subwindows().is_empty() and not preload("res://scripts/combat_pointer.gd").dialog_open(root),"Fire gallery is still modal"):return
  var original:Dictionary=b.demo_projectile_stats()
  var committed:Dictionary=b.appearances.get("Fire",{}).duplicate(true)
- gallery.page_input.value=44
+ gallery.page_input.value=45
  for i in 2:await process_frame
- if not check(gallery.page==43 and gallery.choices.size()==8 and gallery.previews.size()==8 and gallery.next_button.disabled,"Last page bounds or lazy preview count wrong"):return
+ if not check(gallery.page==44 and gallery.choices.size()==5 and gallery.previews.size()==5 and gallery.next_button.disabled,"Last page bounds or lazy preview count wrong"):return
  var chosen:Dictionary=Catalog.entries().back()
  gallery.choices[chosen.id].pressed.emit()
  if not check(b.fire_style_preview_id==chosen.id and not b.fire_style_confirm_button.disabled and b.appearances.get("Fire",{})==committed,"Clicking preview commits or loses selection"):return
@@ -49,7 +49,7 @@ func run():
  if not check(e.field.shots.size()==1 and e.field.shots[0].spec.appearance.fire_style_id==chosen.id,"Play does not cast unconfirmed preview"):return
  var shot=e.field.shots[0]
  var look:Dictionary=shot.node.get_meta("look")
- if not check(look.flame_flow==chosen.flame_flow and look.color.is_equal_approx(chosen.color),"Variant palette/motion ignored by actual cast"):return
+ if not check(look.flame_flow==chosen.flame_flow and look.color.is_equal_approx(chosen.color),"Variant structure/motion ignored by actual cast"):return
  if not check(shot.node.material_override.get_shader_parameter("flame_turbulence")==chosen.flame_turbulence,"Actual shader ignores selected silhouette"):return
  var current:Dictionary=b.demo_projectile_stats()
  for key in ["mana","stamina","physical_damage","radius","velocity","burn_dps"]:
@@ -57,24 +57,33 @@ func run():
  b.fire_style_confirm_button.pressed.emit()
  if not check(b.fire_style_confirmed and b.fire_style_confirm_button.disabled and Catalog.active_id(b.appearances.Fire)==chosen.id and gallery.is_visible_in_tree(),"Confirm does not commit inline selection"):return
  cfg.load(b.draft_path)
- if not check(Catalog.active_id(cfg.get_value("appearance","elements",{}).Fire)==chosen.id,"Saved colored/form preset fails round trip"):return
+ if not check(Catalog.active_id(cfg.get_value("appearance","elements",{}).Fire)==chosen.id,"Saved structure/form preset fails round trip"):return
  b.stop_preview_controls(true)
- gallery.set_page(0);gallery.choices.flame_01.pressed.emit()
+ gallery.set_page(floori(Catalog.entries().find(Catalog.find("flame_01"))/12.0));gallery.choices.flame_01.pressed.emit()
  if not check(e.field.shots.size()==1 and shot.node.get_meta("look").fire_style_id==chosen.id,"Preview mutates/removes existing shot"):return
  b.leave_fire_styles()
  if not check(not gallery.is_visible_in_tree() and Catalog.active_id(b.appearances.Fire)==chosen.id and not b.fire_style_editing,"Back does not discard unconfirmed choice"):return
  b.effect_choices.Fire.pressed.emit()
- if not check(gallery.page==43 and gallery.choices[chosen.id].button_pressed,"Reenter loses confirmed page/highlight"):return
+ if not check(gallery.page==44 and gallery.choices[chosen.id].button_pressed,"Reenter loses confirmed page/highlight"):return
+ # Imported sheets are cast through the same preview and retain their origin.
+ b.stop_preview_controls(true)
+ gallery.set_page(0);gallery.choices.soluna_fire.pressed.emit()
+ b.play_projectile_once();b.process_demo_preview(b.cast_duration()*b.release_fraction+0.001)
+ var imported:Dictionary=e.field.shots.back()
+ if not check(imported.spec.appearance.author=="Soluna Software" and imported.spec.appearance.source.begins_with("https://opengameart.org/") and imported.node.material_override.get_shader_parameter("flame_sheet_frames")==32,"Imported sheet loses source or animation layout during actual cast"):return
+ b.fire_style_confirm_button.pressed.emit();cfg.load(b.draft_path)
+ if not check(Catalog.active_id(cfg.get_value("appearance","elements",{}).Fire)=="soluna_fire","Imported style fails save/reload"):return
+ if not check(not Catalog.look("flame_01",b.appearances.Fire).has("author"),"Switching style retains unrelated artist credit"):return
  # Representative forms all create nonempty geometry using the shared renderer.
  for form in Catalog.FORMS:
   var id:String="style_flame_02_%s_blue"%form.id
   var node:=Appearance.visual("Fire",0.3,Catalog.look(id))
   if not check(node.mesh!=null and node.mesh.get_aabb().size.length()>0.1,"Empty variant mesh"):return
   node.free()
- gallery.page_input.value=4
+ gallery.page_input.value=1
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/inline_fire_gallery.png")
  if not check(b.fire_style_confirm_button.get_global_rect().end.y<b.spell_playback_panel.get_global_rect().position.y,"Gallery Confirm is below bottom toolbar"):return
- print("INLINE FIRE GALLERY PASS: 524 unique preset records, 44 pages, only 12 rendered previews, no modal, page jump, preview via Play without saving, Confirm persists color/form, Back discards preview, existing shots and combat stats preserved, buttons fit left tier")
+ print("INLINE FIRE GALLERY PASS: 533 unique preset records, 45 pages, only 12 rendered previews, no modal, page jump, preview via Play without saving, Confirm persists structure/form, Back discards preview, existing shots and combat stats preserved, buttons fit left tier")
  quit()

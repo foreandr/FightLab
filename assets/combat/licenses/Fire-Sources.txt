@@ -1,0 +1,19 @@
+Additional animated fire sources (original files; recoloured red at render time):
+
+Animated Fire - Ben Hickling
+https://opengameart.org/content/animated-fire
+License: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Files: assets/combat/vfx/external/ben_fire_01.png through ben_fire_08.png
+Original filenames: fire1_64.png; fire2_64_0.png through fire8_64_0.png
+60 frames, 64x64 per frame, 10 columns x 6 rows.
+
+Lots of game effects - Soluna Software
+https://opengameart.org/content/lots-of-game-effects
+License: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+File: assets/combat/vfx/external/soluna_fire.png
+Original: https://opengameart.org/sites/default/files/Fire01.png
+32 frames, 128x256 per frame, 8 columns x 4 rows.
+
+Existing particle masks: Kenney Particle Pack, CC0.
+See Kenney-Particle-Pack-CC0.txt.
+Procedural structure variants are FightLab shader treatments, not additional downloads.

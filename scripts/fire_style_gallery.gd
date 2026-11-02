@@ -60,7 +60,7 @@ func set_page(value:int) -> void:
   button.custom_minimum_size=Vector2(82,108)
   button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
   button.focus_mode=Control.FOCUS_ALL;button.toggle_mode=true;button.button_group=group
-  button.tooltip_text=str(entry.title)
+  button.tooltip_text=str(entry.title)+("\n"+str(entry.author)+" · "+str(entry.license) if entry.has("author") else "")
   button.set_pressed_no_signal(entry.id==selected_id)
   grid.add_child(button)
   var margin:=MarginContainer.new();margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -92,6 +92,7 @@ func _preview(id:String) -> SubViewport:
  camera.size=1.05;camera.position=Vector3(0.9,0.55,2)
  camera.basis=Basis.looking_at(-camera.position.normalized());camera.current=true;viewport.add_child(camera)
  var visual:=Appearance.visual("Fire",0.32,Catalog.look(id,base_look))
+ if str(visual.get_meta("look",{}).get("shape",""))=="Flame":visual.material_override.set_shader_parameter("flame_preview_time",0.8)
  viewport.add_child(visual)
  return viewport
 func select_style(id:String) -> void:
