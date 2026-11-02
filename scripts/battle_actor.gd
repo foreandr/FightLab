@@ -629,7 +629,7 @@ func _apply_story_punch_aim(delta:float) -> void:
 	for channel in ["arm_l","arm_r","leg_l","leg_r","face"]:
 		if story_strikes.has(channel) or story_limb_reservations.has(channel):active_channels.append(channel)
 	if story_block_held and not active_channels.has("arm_l"):active_channels.append("arm_l")
-	var cursor_action_active:=story_calibration_aim_enabled and not active_channels.is_empty()
+	var cursor_action_active:=story_calibration_aim_enabled and (active_channels.has("arm_l") or active_channels.has("arm_r"))
 	if cursor_action_active:
 		if not story_torso_aim_was_active:
 			story_torso_aim_blend_elapsed=0.0
@@ -642,21 +642,19 @@ func _apply_story_punch_aim(delta:float) -> void:
 		var blend_progress:=clampf(story_torso_aim_blend_elapsed/maxf(0.001,story_torso_aim_blend_duration),0.0,1.0)
 		story_torso_aim_blend=blend_progress*blend_progress*(3.0-2.0*blend_progress)
 		var torso_channel:="arm_l" if active_channels.has("arm_l") else ("arm_r" if active_channels.has("arm_r") else "")
-		if not torso_channel.is_empty():
-			_rotate_torso_punch_endpoint_to_facing_line(torso_channel)
-		else:
-			story_torso_recovery_yaw=story_torso_calibration_yaw
-			story_torso_recovery_pitch=story_torso_calibration_pitch
-			_apply_training_torso_pose(story_torso_calibration_yaw*story_torso_aim_blend,story_torso_calibration_pitch*story_torso_aim_blend)
+		_rotate_torso_punch_endpoint_to_facing_line(torso_channel)
 	else:
 		story_torso_aim_was_active=false
 		story_torso_aim_blend=0.0
-	for channel in ["leg_l","leg_r"]:
+	for channel in ["leg_l","leg_r","face"]:
 		if not story_strikes.has(channel) and not story_punch_previews.has(channel):continue
 		var strike:Dictionary=story_strikes.get(channel,story_punch_previews.get(channel,{}))
-		var aim:Vector3=strike.get("aim_direction",Vector3.ZERO)
-		if aim.is_zero_approx():continue
-		AimPose.aim_leg(self,channel.right(1),aim)
+		var direction:Vector3=strike.get("aim_direction",Vector3.ZERO)
+		var emitter:String="Head" if channel=="face" else "calf_"+channel.right(1)
+		var pivot:Vector3=bone_point("Head" if channel=="face" else "spine_03")
+		var target:Vector3=story_calibration_aim_target if story_calibration_aim_enabled else pivot+direction*8.0
+		if not story_calibration_aim_enabled and direction.is_zero_approx():continue
+		AimPose.apply(self,target,emitter,1.0)
 	if not cursor_action_active and story_torso_recovery_pending:
 		story_torso_recovery_elapsed+=delta
 		var progress:=clampf(story_torso_recovery_elapsed/maxf(0.001,story_torso_recovery_duration),0.0,1.0)

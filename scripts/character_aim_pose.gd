@@ -2,7 +2,6 @@ extends RefCounted
 ## Shared post-animation aim correction, extracted from Story's calibrated rig.
 ## Call after sampling the base pose, before ice constraints are restored.
 const Safety=preload("res://scripts/character_pose_safety.gd")
-const Aim=preload("res://scripts/combat_aim.gd")
 
 static func apply_torso(actor:Node,yaw:float,pitch:float) -> void:
 	# Let the arm absorb small aim corrections on its own. Bring the upper torso
@@ -38,21 +37,23 @@ static func rotate_bone(actor:Node,bone_name:String,world_axis:Vector3,angle:flo
 	var current:Quaternion=actor.skeleton.get_bone_pose_rotation(index)
 	actor.skeleton.set_bone_pose_rotation(index,Quaternion(axis_in_parent.normalized(),angle)*current)
 
-static func endpoint_angles(actor:Node,emitter:String,target:Vector3) -> Dictionary:
-	var torso_pivot:Vector3=actor.bone_point("spine_03")
-	var target_offset:=target-torso_pivot
+static func direction_angles(actor:Node,direction:Vector3) -> Dictionary:
 	var facing:Vector3=actor.global_basis.z
-	# Aim the body from its facing, never from the hook's moving hand.
-	# A hand sweeping behind the chest must not reverse the whole torso.
 	var current_flat:=Vector3(facing.x,0.0,facing.z)
-	var target_flat:=Vector3(target_offset.x,0.0,target_offset.z)
-	if current_flat.length_squared()<0.0001 or target_flat.length_squared()<0.0001:return {}
-	var raw_yaw:=current_flat.signed_angle_to(target_flat,Vector3.UP)
+	var target_flat:=Vector3(direction.x,0.0,direction.z)
+	if current_flat.length_squared()<0.0001 or direction.length_squared()<0.0001:return {}
+	# All contact regions use the punch's facing-based ray. Ease rearward aim
+	# through zero rather than flipping at the +/- PI seam.
+	var raw_yaw:=current_flat.signed_angle_to(target_flat,Vector3.UP) if not target_flat.is_zero_approx() else 0.0
 	var yaw:=atan2(sin(raw_yaw),maxf(0.15,cos(raw_yaw)))
-	var target_pitch:=atan2(target_offset.y,maxf(0.001,target_flat.length()))
+	var target_pitch:=atan2(direction.y,maxf(0.001,target_flat.length()))
 	var pitch:=clampf(-target_pitch,-deg_to_rad(80.0),deg_to_rad(80.0))
 	var off_center:=clampf(Vector2(yaw/deg_to_rad(89.0),pitch/deg_to_rad(80.0)).length(),0.0,1.0)
 	return {"yaw":yaw,"pitch":pitch,"recovery_duration":lerpf(0.12,0.26,off_center)}
+
+static func endpoint_angles(actor:Node,emitter:String,target:Vector3) -> Dictionary:
+	var pivot:String="Head" if emitter in ["Head","head","mouth"] else "spine_03"
+	return direction_angles(actor,target-actor.bone_point(pivot))
 
 static func align_forearm(actor:Node,side:String,target:Vector3,weight:float=1.0) -> void:
 	var safe_reference:=Safety.capture(actor,["lowerarm_%s"%side])
@@ -80,30 +81,51 @@ static func align_forearm(actor:Node,side:String,target:Vector3,weight:float=1.0
 	Safety.constrain(actor,safe_reference)
 	actor.skeleton.force_update_all_bone_transforms()
 
+static func _aim_joint(actor:Node,bone:String,direction:Vector3,weight:float,yaw_limit:float,pitch_limit:float,parts:Array) -> void:
+	weight=clampf(weight,0.0,1.0)
+	if weight<=0.0:return
+	var correction:=direction_angles(actor,direction)
+	if correction.is_empty():return
+	var reference:=Safety.capture(actor,[bone])
+	var yaw:=yaw_limit*tanh(float(correction.yaw)/yaw_limit)*weight
+	var pitch:=pitch_limit*tanh(float(correction.pitch)/pitch_limit)*weight
+	rotate_bone(actor,bone,Vector3.UP,yaw)
+	rotate_bone(actor,bone,actor.global_basis.x,pitch)
+	Safety.constrain(actor,reference,parts)
+
 static func aim_leg(actor:Node,side:String,direction:Vector3,weight:float=1.0) -> void:
-	if direction.is_zero_approx():return
-	var local:Vector3=actor.global_basis.inverse()*direction.normalized()
-	var yaw:=clampf(atan2(local.x,local.z),-0.8,0.8)*weight
-	rotate_bone(actor,"thigh_%s"%side,Vector3.UP,yaw*0.78)
-	rotate_bone(actor,"calf_%s"%side,Vector3.UP,yaw*0.18)
+	# Steer from the hip so the knee's authored hinge/bend remains intact.
+	_aim_joint(actor,"thigh_"+side,direction,weight,deg_to_rad(30.0),deg_to_rad(20.0),["thigh_"+side,"calf_"+side,"foot_"+side])
+
+static func aim_elbow(actor:Node,side:String,direction:Vector3,weight:float=1.0) -> void:
+	# An elbow strike steers its upper arm, not an unrelated casting hand.
+	_aim_joint(actor,"upperarm_"+side,direction,weight,deg_to_rad(35.0),deg_to_rad(30.0),["arm_"+side,"forearm_"+side,"hand_"+side])
+
+static func aim_head(actor:Node,target:Vector3,weight:float=1.0) -> void:
+	weight=clampf(weight,0.0,1.0)
+	if weight<=0.0:return
+	var correction:=endpoint_angles(actor,"Head",target)
+	if correction.is_empty():return
+	var reference:=Safety.capture(actor,["neck_01","Head"])
+	var yaw:=deg_to_rad(75.0)*tanh(float(correction.yaw)/deg_to_rad(75.0))*weight
+	var pitch:=deg_to_rad(45.0)*tanh(float(correction.pitch)/deg_to_rad(45.0))*weight
+	for part in ["neck_01","Head"]:
+		rotate_bone(actor,part,Vector3.UP,yaw*0.5)
+		rotate_bone(actor,part,actor.global_basis.x,pitch*0.5)
+	Safety.constrain(actor,reference,["head"])
 
 static func apply(actor:Node,target:Vector3,emitter:String,weight:float) -> void:
 	weight=clampf(weight,0.0,1.0)
 	if weight<=0.0:return
-	if emitter in ["hand_l","hand_r"]:
+	if emitter in ["hand_l","hand_r","lowerarm_l","lowerarm_r","upperarm_l","upperarm_r"]:
 		var correction:=endpoint_angles(actor,emitter,target)
 		if not correction.is_empty():apply_torso(actor,float(correction.yaw)*weight,float(correction.pitch)*weight)
 		actor.skeleton.force_update_all_bone_transforms()
-		align_forearm(actor,emitter.right(1),target,weight)
+		if emitter.begins_with("hand_"):align_forearm(actor,emitter.right(1),target,weight)
+		else:aim_elbow(actor,emitter.right(1),target-actor.bone_point("spine_03"),weight)
 	elif emitter in ["Head","head","mouth"]:
-		var correction:=Aim.angles(actor,target-actor.bone_point("Head"))
-		var yaw:=clampf(float(correction.yaw),-deg_to_rad(80.0),deg_to_rad(80.0))*weight
-		var pitch:=-clampf(float(correction.pitch),-deg_to_rad(65.0),deg_to_rad(65.0))*weight
-		for part in ["neck_01","Head"]:
-			rotate_bone(actor,part,Vector3.UP,yaw*0.5)
-			rotate_bone(actor,part,actor.global_basis.x,pitch*0.5)
+		aim_head(actor,target,weight)
 	elif emitter.begins_with("thigh_") or emitter.begins_with("calf_") or emitter.begins_with("foot_") or emitter.begins_with("ball_"):
-		var correction:=Aim.angles(actor,target-actor.bone_point("spine_03"))
-		apply_torso(actor,float(correction.yaw)*weight,-float(correction.pitch)*weight)
-		aim_leg(actor,emitter.right(1),target-actor.bone_point(emitter),weight)
+		# Use the stable body pivot rather than the knee/foot swinging in the clip.
+		aim_leg(actor,emitter.right(1),target-actor.bone_point("spine_03"),weight)
 	actor.skeleton.force_update_all_bone_transforms()

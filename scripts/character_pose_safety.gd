@@ -20,11 +20,12 @@ static func _clear(rig:Skeleton3D,baseline:Dictionary,parts:Array) -> bool:
  for pair in contacts:
   if float(contacts[pair])>maxf(TOLERANCE,float(baseline.get(pair,0.0)))+0.00001:return false
  return true
-static func constrain(actor:Node,reference:Dictionary) -> float:
+static func constrain(actor:Node,reference:Dictionary,affected:Array=[]) -> float:
  if reference.is_empty():return 1.0
  var rig:Skeleton3D=actor.skeleton
- var parts:Array=[]
+ var parts:Array=affected.duplicate()
  for index in reference:
+  if not affected.is_empty():break
   var name_:=rig.get_bone_name(index)
   if name_.begins_with("lowerarm_"):
    var side:=name_.right(1)
@@ -41,7 +42,7 @@ static func constrain(actor:Node,reference:Dictionary) -> float:
  _apply_blend(rig,reference,desired,0.0)
  var baseline:=Collision.penetrations(rig,parts)
  _apply_blend(rig,reference,desired,1.0)
- if _clear(rig,baseline,parts):return 1.0
+ if affected.is_empty() and _clear(rig,baseline,parts):return 1.0
  var low:=0.0
  var high:=1.0
  # For a blocked request, find its first feasible boundary from the reference
