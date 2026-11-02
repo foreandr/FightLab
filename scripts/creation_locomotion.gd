@@ -75,3 +75,13 @@ static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,spr
 		if type_.controls_bone(rig,index,kind):rig.set_bone_pose(index,cast[index])
 	actor.clip=cast_clip
 	rig.force_update_all_bone_transforms()
+
+## Blend the cast recovery into the gait being requested now, not a frozen pose.
+static func recover_from_cast(actor:Node,input:Vector2,time:float,sprinting:bool,weight:float) -> void:
+	if weight<=0.0:return
+	var cast:=CastPose.capture(actor)
+	var cast_clip:String=actor.clip
+	if input.is_zero_approx():preload("res://scripts/editor_rig_pose.gd").idle(actor,time)
+	else:pose(actor,input,time,sprinting)
+	CastPose.blend_from(actor,cast,weight)
+	actor.clip=cast_clip

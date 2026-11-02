@@ -94,7 +94,9 @@ func run() -> void:
 				root.get_texture().get_image().save_png("user://logs/spell_demo_"+choice+".png")
 				captured=true
 		if not check(not builder.playing and not builder.released,"Demo repeated or launched a spell"):return
-		if not check(not builder.demo_exit_pose.is_empty(),"Demo did not start a smooth exit"):return
+		if preload("res://scripts/animation_cast_type.gd").owns_legs(builder.casting_animation):
+			if not check(builder.demo_exit_pose.is_empty(),"Recovery restarted a redundant exit fade"):return
+		elif not check(not builder.demo_exit_pose.is_empty(),"Demo did not start a smooth exit"):return
 		var settled:=Time.get_ticks_msec()+260
 		while Time.get_ticks_msec()<settled:await process_frame
 		if not check(builder.demo_exit_pose.is_empty(),"Demo exit blend did not finish"):return

@@ -1315,7 +1315,7 @@ func process_demo_preview(delta:float) -> void:
    var weight:=smoothstep(0.0,DEMO_TRANSITION_SECONDS,demo_exit_elapsed)
    blend_demo_pose(demo_exit_pose,weight)
    if demo_exit_elapsed>=DEMO_TRANSITION_SECONDS:demo_exit_pose.clear()
-   Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
+   if not CastType.owns_legs(playback_animation()):Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
   if creation_step=="projectile" and preview_repeating:
    repeat_wait=maxf(0.0,repeat_wait-delta)
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
@@ -1329,14 +1329,25 @@ func process_demo_preview(delta:float) -> void:
   blend_demo_pose(demo_enter_pose,smoothstep(0.0,fade,elapsed))
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
+ Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
  if creation_step=="projectile" and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
  if progress>=1.0:
+  var locomotion_restored:=CastType.owns_legs(playback_animation()) and cast_recovery_weight()>=0.999
   editor.field.combat().finish_cast(editor.actor)
   playing=false
   repeat_wait=REPEAT_DELAY
-  begin_demo_exit()
+  if locomotion_restored:
+   demo_enter_pose.clear()
+   demo_exit_pose.clear()
+   interrupt_preview_cast()
+  else:begin_demo_exit()
+
+func cast_recovery_weight() -> float:
+ if not playing or (creation_step=="projectile" and not released):return 0.0
+ var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else (release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0)
+ return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if creation_step=="projectile" else 0.0)
 
 func capture_demo_pose() -> Array[Transform3D]:
  return CastPose.capture(editor.actor)
@@ -2084,12 +2095,16 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  # Scriptable locomotion entry point; live input/focus checks remain above.
  var caster=editor.actor
  if playing and CastType.owns_legs(playback_animation()):
-  caster.use_sprint(delta,false,false)
+  var recovery:=cast_recovery_weight()
+  sprinting=caster.use_sprint(delta,sprinting and recovery>0.0,not axes.is_zero_approx() and recovery>0.0)
   var drift:=CastType.drift(caster,playback_animation(),delta)
+  var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
+  var speed:float=Movement.gait_speed(caster,sprinting,4.0,7.0)*Movement.directional_speed(axes,sprinting)*caster.movement_multiplier()
+  var velocity:=drift.lerp(direction*speed,recovery)
   caster_move_axes=axes
-  caster_sprinting=false
-  caster_moving=drift.length_squared()>0.0001
-  editor.field.move_character(caster,drift.normalized(),drift.length(),delta)
+  caster_sprinting=sprinting
+  caster_moving=velocity.length_squared()>0.0001
+  editor.field.move_character(caster,velocity.normalized(),velocity.length(),delta)
   Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
   return
  sprinting=caster.use_sprint(delta,sprinting,not axes.is_zero_approx())
