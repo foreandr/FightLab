@@ -506,8 +506,6 @@ func setup(owner_editor:Node) -> void:
  choices_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  demo_columns.add_child(choices_column)
  editor.menu_label(choices_column,"Choose a demo animation",20)
- var library_button:Button=editor.button(choices_column,"My spells",open_spell_library)
- library_button.name="OpenSavedSpells"
  for choice_key in DEMO_ANIMATIONS:
   var choice:String=choice_key
   var row:=HBoxContainer.new()
@@ -1076,7 +1074,6 @@ func build_spell_save_panel()->void:
  spell_save_screen.setup(editor._book_theme())
  spell_save_screen.name_input.focus_entered.connect(func():movement_keys.clear())
  spell_save_screen.save_requested.connect(save_named_spell)
- spell_save_screen.load_requested.connect(load_named_spell)
  spell_save_screen.back_requested.connect(leave_spell_save)
  spell_save_screen.hide()
 
@@ -1086,16 +1083,11 @@ func current_spell_definition()->Dictionary:
 func open_spell_save()->void:
  spell_save_open=true
  refresh_effect_choices()
- refresh_saved_spells()
+ refresh_spell_save_controls()
  spell_save_screen.name_input.grab_focus()
 
-func open_spell_library()->void:
- if cast_committed():return
- show_creation_step("projectile")
- open_spell_save()
-
-func refresh_saved_spells()->void:
- spell_save_screen.refresh(saved_spells.entries(),limiter_enabled)
+func refresh_spell_save_controls()->void:
+ spell_save_screen.refresh(limiter_enabled)
 
 func leave_spell_save()->void:
  spell_save_open=false
@@ -1109,7 +1101,7 @@ func save_named_spell(name:String)->Dictionary:
  if result.ok:
   active_spell_provenance=result.record.provenance.duplicate(true)
   spell_save_screen.name_input.text=result.record.name
-  refresh_saved_spells()
+  refresh_spell_save_controls()
   spell_save_screen.status.text="Saved: "+str(result.record.name)
   GameDiagnostics.log_event("spell_definition_saved",{"id":result.record.id,"name":result.record.name})
  else:spell_save_screen.status.text=result.error
@@ -1354,7 +1346,7 @@ func set_limiter_enabled(enabled:bool) -> void:
  for label in [demo_mana_base_label,demo_stamina_label,demo_damage_label,demo_ragdoll_label,demo_stamina_note,demo_damage_breakdown,demo_amplifier_label,demo_amp_breakdown]:label.visible=enabled
  refresh_projectile_allocation()
  refresh_demo_timing()
- if spell_save_open:refresh_saved_spells()
+ if spell_save_open:refresh_spell_save_controls()
  if not enabled:
   if not is_instance_valid(limiter_warning):
    limiter_warning=AcceptDialog.new()

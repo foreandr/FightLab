@@ -1,8 +1,9 @@
 Reusable named spell definitions
 
 Flow: Fire styles Confirm -> Fire sounds Confirm -> Name / Save.
-No effect Confirm goes directly to Name / Save. My spells is also accessible from
-the demo chooser. Click a saved spell to load its choices. Enter saves the name.
+No effect Confirm goes directly to Name / Save. This panel contains only naming,
+save confirmation and Back; it is not a spell collection/browser. Enter saves the
+name. Saved definitions remain available through the library/load scripting API.
 Repeated names become Name (1), Name (2), etc.; saves create new IDs/files and do
 not overwrite prior spells. Limiter-off experiments cannot be saved.
 

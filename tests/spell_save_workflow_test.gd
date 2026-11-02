@@ -37,7 +37,7 @@ func run():
  b.limiter_enabled=false
  var blocked:Dictionary=b.save_named_spell("Blocked")
  if not check(not blocked.ok and b.saved_spells.entries().size()==2,"Limiter-off save allowed"):return
- b.limiter_enabled=true;b.refresh_saved_spells()
+ b.limiter_enabled=true;b.refresh_spell_save_controls()
  b.spell_save_screen.name_input.text="My flame"
  for i in 3:await process_frame
  await RenderingServer.frame_post_draw
