@@ -28,12 +28,12 @@ func run() -> void:
 		if unrestricted:b.set_limiter_enabled(false)
 		b.show_creation_step("delivery")
 		b.choose_delivery_type("Projectile")
-		if not check(b.limiter_enabled and b.total_power==1 and b.demo_duration==1 and b.cast_duration()==1,"Entry did not reset balanced power/duration"):return
+		if not check(b.limiter_enabled and b.total_power==1 and b.demo_duration==4 and b.cast_duration()==4,"Entry did not reset balanced power while keeping chosen duration"):return
 		if not check(b.element=="None" and b.preview_effect=="None" and not b.projectile_effect_confirmed,"Entry did not reset to elementless projectile"):return
 		var mix:Dictionary=b.allocation_for("None")
 		if not check(mix.size==0.5 and mix.speed==0.5 and b.allocation_sliders.size.value==50.0 and b.allocation_sliders.speed.value==50.0,"Entry did not reset size/speed to 50/50"):return
 		var midpoint:float=(b.release_slider.min_value+b.release_slider.max_value)*0.5
 		if not check(is_equal_approx(float(b.release_slider.value),midpoint) and is_equal_approx(float(b.release_fraction),0.3),"Timing slider is not centered"):return
-		if not check(b.total_power_slider.value==100 and b.demo_duration_slider.value==1 and (not is_instance_valid(b.limiter_warning) or not b.limiter_warning.visible),"Default UI differs from values or leaves old modal open"):return
-	print("PROJECTILE DEFAULTS PASSED: every entry resets to 100% power, 1 second, centered timing, neutral effect and Limiter on; edits remain usable within stage")
+		if not check(b.total_power_slider.value==100 and b.demo_duration_slider.value==4 and (not is_instance_valid(b.limiter_warning) or not b.limiter_warning.visible),"Default UI differs from values or leaves old modal open"):return
+	print("PROJECTILE DEFAULTS PASSED: every entry resets to 100% power, preserved chosen duration, centered timing, neutral effect and Limiter on; edits remain usable within stage")
 	quit()

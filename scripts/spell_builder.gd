@@ -820,7 +820,7 @@ func open_projectile_workspace() -> void:
  if is_instance_valid(limiter_warning):limiter_warning.hide()
  total_power=1.0
  projectile_allocations["None"]={"size":0.5,"speed":0.5}
- demo_duration=1.0
+ # Keep the duration chosen on the demo step when advancing to the spell.
  casting_animation["duration"]=demo_duration
  release_fraction=(MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5
  category="Projectiles"
@@ -1372,6 +1372,7 @@ func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if is_instance_valid(editor.actor) and not editor._ensure_animation_source(entry):return false
  if not before.is_empty():blend_demo_pose(before,0.0)
  casting_animation=preload("res://scripts/combat_spec.gd").copy(entry)
+ casting_animation["duration"]=demo_duration
  var choice:=str(entry.get("demo_choice",""))
  if demo_animation_types.has(choice) and CastType.normalize(str(demo_animation_types[choice])) in CastType.TYPES:casting_animation["animation_type"]=CastType.normalize(str(demo_animation_types[choice]))
  if is_instance_valid(demo_movement_control):
