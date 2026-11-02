@@ -2,7 +2,7 @@ extends RefCounted
 ## A spell is an element asset + allocation, independent of any demonstration cast.
 const Assets=preload("res://scripts/spell_asset_library.gd")
 const Provenance=preload("res://scripts/asset_provenance.gd")
-const KEYS:=["schema","id","name","delivery_type","element","allocation","appearance","provenance"]
+const KEYS:=["schema","id","name","delivery_type","element","allocation","appearance","provenance","metadata"]
 static func make(element:String,delivery:String,mix:Dictionary,look:Dictionary,parent:Dictionary={})->Dictionary:
  var appearance:Dictionary={}
  if element=="Fire":
@@ -16,6 +16,11 @@ static func error(record:Dictionary)->String:
  if str(record.get("delivery_type",""))!="Projectile":return "Only Projectile spells are available yet"
  if str(record.get("element","")) not in ["None","Fire"]:return "Choose an available effect"
  if not record.get("allocation") is Dictionary or not record.get("appearance") is Dictionary or not record.get("provenance") is Dictionary:return "Invalid spell data"
+ if record.has("metadata"):
+  if not record.metadata is Dictionary:return "Invalid spell metadata"
+  for key in ["creator","created_utc","name"]:
+   if not record.metadata.get(key) is String:return "Invalid spell metadata"
+  if record.has("name") and record.metadata.name!=record.name:return "Spell name and metadata differ"
  var mix:Dictionary=record.allocation
  var keys:Array=["size","speed"]+(["effect"] if record.element!="None" else [])
  for key in mix:
@@ -34,6 +39,12 @@ static func error(record:Dictionary)->String:
   if library.Styles.find(str(record.appearance.get("fire_style_id",""))).is_empty():return "Confirm a fire style"
   if library.Sounds.find(str(record.appearance.get("sound_id",""))).is_empty():return "Confirm a fire sound"
  return ""
+static func metadata_for(record:Dictionary)->Dictionary:
+ var graph:Dictionary=record.get("provenance",{})
+ var head:Dictionary=graph.get("nodes",{}).get(str(graph.get("head","")),{})
+ var created:=str(head.get("created_utc",""))
+ if not created.is_empty() and not created.ends_with("Z"):created+="Z"
+ return {"creator":str(head.get("author","")),"created_utc":created,"name":str(record.get("name",head.get("title","")))}
 static func credit(record:Dictionary,name:String)->Dictionary:
  var parents:Array=[]
  if not record.get("provenance",{}).is_empty():parents.append(record.provenance)
@@ -59,6 +70,7 @@ static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->
  base["name"]=record.get("name","Spell")
  base["spell_definition_id"]=record.get("id","")
  base["provenance"]=record.provenance
+ base["spell_metadata"]=record.get("metadata",metadata_for(record)).duplicate(true)
  var spec:Dictionary=rules.author(base,seconds,float(binding.get("release",0.3)),str(animation.get("group","Attack"))=="Attack")
  spec["hand"]=str(binding.get("hand",animation.get("attack_bone","hand_r")))
  return spec

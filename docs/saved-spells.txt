@@ -8,7 +8,7 @@ not overwrite prior spells. Limiter-off experiments cannot be saved.
 
 Local definitions are ConfigFiles under user://spells, via saved_spell_library.gd.
 They contain schema, id, name, delivery_type, element, normalized size/speed/effect
-allocation, appearance IDs (fire_style_id and sound_id), and provenance. Source
+allocation, appearance IDs (fire_style_id and sound_id), metadata, and provenance. Source
 artists, URLs and licenses are merged into the existing contributor graph. The
 demo animation is not cited as a source of the spell itself.
 
@@ -36,3 +36,14 @@ Tests: saved_spell_definition_test.gd checks the on-disk schema, duplicate names
 asset credits, limiter guard, independent animation-derived costs and an actual
 bare-mode cast. spell_save_workflow_test.gd exercises the inline name/save/load UI,
 keyboard route, no overwritten preview context, and source style/sound retention.
+
+Creator metadata
+
+Every saved definition has metadata.creator, metadata.created_utc (ISO UTC with Z),
+and metadata.name, matching the final unique display name. Backend creator identity
+continues to use shared asset_provenance.creator_name (foreandr in this build).
+The runtime compile carries this as spell_metadata. New copies/remixes have their
+own creator/date/name and preserve the original contributors' names, dates and
+source credits in the parent revision graph. No author-name entry field is added.
+Older named saves are upgraded from their existing provenance head; an unknown
+legacy date remains empty rather than being replaced by a fabricated new date.

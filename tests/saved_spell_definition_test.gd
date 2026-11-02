@@ -20,8 +20,24 @@ func run():
  for key in ["total_power","duration","animation_duration","casting_animation","release","hand","mana","stamina_cost","damage","spell_amplifier","projectile_radius","projectile_velocity"]:
   if not check(not saved.has(key),"Saved calculated/demo/binding field: "+key):return
  if not check(saved.appearance.keys().size()==2 and saved.appearance.sound_id=="lentikula_fire_4" and saved.allocation==definition.allocation,"Lost asset IDs or distribution"):return
+ if not check(saved.metadata.creator=="foreandr" and saved.metadata.name==saved.name and saved.metadata.created_utc.ends_with("Z") and not saved.metadata.created_utc.is_empty(),"Spell metadata missing creator/creation date/name"):return
  var history:=preload("res://scripts/asset_provenance.gd").inspect_text(saved.provenance)
  if not check(history.contains("lentikula") and history.contains("foreandr") and history.contains("https://"),"Spell loses artist/author source history"):return
+ # Reuse by another creator keeps the original author/date/name in the parent graph.
+ var parent:Dictionary=saved.provenance.duplicate(true)
+ parent.nodes[parent.head].author="Original spell artist"
+ parent.nodes[parent.head].created_utc="2025-01-02T03:04:05"
+ var derived:=Definition.make("Fire","Projectile",saved.allocation,look,parent)
+ var copy:=library.save("Remixed flame",derived)
+ if not check(copy.ok and copy.record.metadata.creator=="foreandr" and copy.record.metadata.name=="Remixed flame" and copy.record.provenance.nodes[parent.head].created_utc=="2025-01-02T03:04:05" and preload("res://scripts/asset_provenance.gd").inspect_text(copy.record.provenance).contains("Original spell artist"),"Reuse erases original creator"):return
+ DirAccess.remove_absolute(library.directory.path_join(copy.record.id+".cfg"))
+ # Older named assets recover creation details from their stored revision, not today's date.
+ var cfg:=ConfigFile.new();var path:String=library.directory.path_join(saved.id+".cfg")
+ var legacy:=saved.duplicate(true);legacy.erase("metadata")
+ cfg.set_value("spell","definition",legacy);cfg.save(path)
+ var upgraded:=reopened.find(saved.id)
+ cfg.load(path)
+ if not check(upgraded.metadata==saved.metadata and cfg.get_value("spell","definition").metadata==saved.metadata,"Legacy metadata recovery changes original creation date or is not persisted"):return
  var blocked:=library.save("Unrestricted",definition,false)
  if not check(not blocked.ok and library.entries().size()==2,"Limiter-off spell can be saved"):return
  var bad:=definition.duplicate(true);bad["total_power"]=0.1
@@ -37,7 +53,7 @@ func run():
  if not check(Definition.error(plain).is_empty() and plain.appearance.is_empty() and is_equal_approx(plain_cast.physical_damage,10.0),"Elementless reusable spell loses neutral benchmark"):return
  var world=preload("res://scripts/combat_world.gd").new();root.add_child(world);world.set_physics_process(false);world.round_active=true
  var actor:CharacterBody3D=world.spawn_combatant(0,Vector3.ZERO);actor.practice_god_mode=true
- if not check(world.combat().release(actor,b,actor.bone_point(b.hand)) and world.shots.back().spec.spell_definition_id==saved.id and world.audio.played.get(saved.appearance.sound_id,0)==1,"Reusable saved definition cannot cast through shared combat"):return
+ if not check(world.combat().release(actor,b,actor.bone_point(b.hand)) and world.shots.back().spec.spell_definition_id==saved.id and world.shots.back().spec.spell_metadata==saved.metadata and world.audio.played.get(saved.appearance.sound_id,0)==1,"Reusable saved definition cannot cast through shared combat"):return
  for record in library.entries():DirAccess.remove_absolute(library.directory.path_join(record.id+".cfg"))
  DirAccess.remove_absolute(library.directory)
  print("SAVED SPELL DEFINITION PASS: local reload; unique names; no power/demo/timing/cost fields; asset credits; limiter guard; animation-derived compile and actual shared cast")

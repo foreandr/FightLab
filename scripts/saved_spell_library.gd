@@ -10,7 +10,12 @@ func entries()->Array[Dictionary]:
   var cfg:=ConfigFile.new()
   if cfg.load(directory.path_join(file))!=OK:continue
   var record:Dictionary=cfg.get_value("spell","definition",{})
-  if Definition.error(record).is_empty() and record.has("id") and record.has("name"):result.append(record)
+  if not Definition.error(record).is_empty() or not record.has("id") or not record.has("name"):continue
+  if not record.has("metadata"):
+   record["metadata"]=Definition.metadata_for(record)
+   cfg.set_value("spell","definition",record)
+   if cfg.save(directory.path_join(file))!=OK:push_warning("Could not update spell metadata: "+str(record.name))
+  result.append(record)
  result.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.name).naturalnocasecmp_to(str(b.name))<0)
  return result
 func save(name:String,definition:Dictionary,limiter_enabled:=true)->Dictionary:
@@ -32,6 +37,7 @@ func save(name:String,definition:Dictionary,limiter_enabled:=true)->Dictionary:
  record["id"]=Crypto.new().generate_random_bytes(16).hex_encode()
  record["name"]=unique
  record["provenance"]=Definition.credit(record,unique)
+ record["metadata"]=Definition.metadata_for(record)
  if DirAccess.make_dir_recursive_absolute(directory)!=OK:return {"ok":false,"error":"Could not open your spell folder"}
  var cfg:=ConfigFile.new();cfg.set_value("spell","definition",record)
  var target:=directory.path_join(record.id+".cfg")
