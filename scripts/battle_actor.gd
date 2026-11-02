@@ -47,6 +47,7 @@ var burn_time := 0.0
 var burn_clock := 0.0
 var burn_source: CharacterBody3D
 var burn_visual:Node3D
+var burn_death:Node3D
 var status_visual:Node3D
 var last_physical_impact_damage:=0.0
 var chill_time := 0.0
@@ -243,6 +244,8 @@ func _ready() -> void:
 
 func reset_fighter(location: Vector3) -> void:
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
+	if is_instance_valid(burn_death):burn_death.restore()
+	burn_death=null
 	last_physical_impact_damage=0.0
 	if has_meta("melee_surface_contacts"):remove_meta("melee_surface_contacts")
 	if is_instance_valid(burn_visual):burn_visual.queue_free()
@@ -1290,6 +1293,7 @@ func start_burst(paid := false) -> void:
 	count_action("flash_charge")
 
 func tick(delta: float) -> void:
+	if is_instance_valid(burn_death):return
 	if practice_god_mode:restore_god_resources()
 	if practice_wooden_dummy and health<=0.0:
 		mode="ko"
@@ -1531,7 +1535,7 @@ func update_status(delta: float) -> void:
 				burn_source.damage_dealt += damage
 			arena.events.append({"time":arena.elapsed,"event":"burn_tick","victim":team,"damage":damage})
 			if health <= 0:
-				enter_death(burn_source,Vector3.ZERO,bone_point("pelvis"))
+				enter_death(burn_source,Vector3.ZERO,bone_point("pelvis"),"burn")
 
 func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 	# Story stage one is straight hand-to-hand combat; enemy team identity must
@@ -1614,11 +1618,11 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 		start_ragdoll(impulse, point)
 	return landed
 
-func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> void:
+func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3,cause:String="physical") -> void:
 	if practice_god_mode:
 		health=MAX_HEALTH
 		return
-	if practice_immortal and not drowned:
+	if practice_immortal and not drowned and not (cause=="burn" and practice_damageable_dummy):
 		health=0.0 if practice_damageable_dummy and not practice_god_mode else MAX_HEALTH
 		return
 	ko_count+=1
@@ -1628,7 +1632,11 @@ func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3) -> v
 	if not is_instance_valid(ragdoll):
 		start_ragdoll(impulse,point)
 	mode="ragdoll"
-	arena.events.append({"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
+	if cause=="burn" and not is_instance_valid(burn_death):
+		burn_death=preload("res://scripts/burn_death.gd").new()
+		add_child(burn_death)
+		burn_death.setup(self)
+	arena.events.append({"cause":cause,"time":arena.elapsed,"event":"death","team":team,"impulse":[impulse.x,impulse.y,impulse.z],"point":[point.x,point.y,point.z]})
 	GameDiagnostics.log_event("fighter_death", {"team":team, "name":story_profile.get("name", "Fighter"), "attacker_team":attacker.team if is_instance_valid(attacker) else -1, "fight":arena.story_stage if arena.story_mode else 0})
 	if not practice_immortal and not practice_damageable_dummy:arena.finish_round(attacker.team if is_instance_valid(attacker) else -1)
 

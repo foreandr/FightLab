@@ -25,7 +25,7 @@ func setup(owner_actor:CharacterBody3D) -> void:
 
 func _process(delta:float) -> void:
 	if not is_instance_valid(actor):queue_free();return
-	var burning:bool=actor.burn_time>0.0 and actor.health>0.0
+	var burning:bool=(actor.burn_time>0.0 and actor.health>0.0) or (is_instance_valid(actor.burn_death) and actor.burn_death.is_burning())
 	strength=move_toward(strength,1.0 if burning else 0.0,delta*5.0)
 	global_basis=Basis.IDENTITY
 	for anchor in anchors:

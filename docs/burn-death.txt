@@ -1,0 +1,23 @@
+Burn death presentation
+
+A fatal burn tick calls BattleActor.enter_death with cause="burn". Death creates
+its normal single CombatRagdoll; BurnDeath reuses it. There is no second ragdoll
+or second set of rigid bodies. Brief bounded impulses make the corpse writhe for
+1.15 seconds, then a per-instance charred dissolve and grey flakes remove it over
+1.25 seconds. A small ash mound follows the level's surface position and normal.
+
+BurnDeath owns stepping this terminal corpse, so editor pose ownership and round
+end cannot freeze the sequence. BattleActor.tick skips that owned corpse to avoid
+double stepping. Normal physical deaths retain their existing ragdoll behavior.
+God mode prevents burn death. Damageable practice humans can visibly burn to death.
+
+Character burn flames and the existing shared burn loop continue through the
+sequence, then fade/stop at ash completion. No extra damage ticks are introduced.
+The dissolved body's ragdoll and receiving hitboxes are removed/disabled. Reset
+restores original surface overrides, mesh visibility, hurtbox layers and skeleton,
+and removes particles and ash. Source meshes/materials are never mutated.
+
+Test: tests/burn_death_test.gd validates actual fatal burn, one ragdoll, round-end
+and pose-locked progression, saved material isolation, ash and sound cleanup,
+reset restoration, physical death and God mode. Shared presentation contract also
+covers actual Story/Create and a bare new mode.

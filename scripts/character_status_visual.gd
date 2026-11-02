@@ -17,7 +17,8 @@ func ensure_frozen() -> Node3D:
 
 func _process(delta:float) -> void:
 	if not is_instance_valid(actor):return
-	if actor.burn_time>0.0 and actor.health>0.0 and not is_instance_valid(actor.burn_visual):
+	var burning:bool=(actor.burn_time>0.0 and actor.health>0.0) or (is_instance_valid(actor.burn_death) and actor.burn_death.is_burning())
+	if burning and not is_instance_valid(actor.burn_visual):
 		actor.burn_visual=preload("res://scripts/character_burn_visual.gd").new()
 		actor.add_child(actor.burn_visual)
 		actor.burn_visual.setup(actor)
