@@ -53,19 +53,20 @@ keyboard-accessible page field. Reopening follows the saved sound to its page.
 Waveforms/streams load only for the requested page and cache for reuse. Burning
 still uses the single separate sustained loop; the default cast remains unchanged.
 
-Animation duration coupling
+Release-window timing
 
-combat_spell_rules.author stores animation_duration in the authored spec. Shared
-spell_audio_rules computes rate = 1 second / animation_duration (minimum audio
-duration 0.1 seconds). Normal is 1 second; 0.5 seconds = 2x; 2 seconds = 0.5x.
-An old spec with no duration uses its animation profile duration or defaults to 1s.
-Limiter-off previews use their explicit duration. Cast sounds still begin on actual
-release, and catalog auditions use the same timing. Ordinary audio resampling also
-changes pitch: shorter casts sound higher, longer casts sound deeper. Original
-sound files stay unchanged. A sound's original tail can extend past the animation.
+Cast audio is a short accent at actual successful spell release. It is not slowed
+across a full wind-up/recovery animation. The local window is 25% of animation
+duration, bounded to 0.08–0.60 seconds (1 second cast: up to 0.25 seconds).
+spell_audio_rules selects the strongest short-energy transient, places it within
+25 ms of release, and adds short edge fades. The source's native rate/pitch is kept.
+This skips long leading silence/wind-ups and limits unrelated long tails.
 
-combat_audio captures each cast voice's base rate, then multiplies it by the global
-slow-motion time scale while playing. Different simultaneous casts retain their own
-rates; later slider edits do not alter them. Ordinary Foley keeps its existing pitch
-variation, and the sustained burning loop stays independent of cast duration.
-Test: spell_audio_timing_test.gd plus the actual Create sound-selection test.
+Shared combat_cast_sound is invoked only by successful release; no sound on failed
+resource payment. Card auditions use exactly the same accent. Excerpts cache in a
+bounded 64-entry cache. Different simultaneous casts retain their own snippets;
+slider changes do not retime audio already in flight. Original assets are unchanged.
+
+Slow mo still follows the scene time scale. The sustained burning loop and ordinary
+Foley stay separate. Shared test: spell_audio_timing_test.gd; actual Create selection
+and release: fire_sound_selection_test.gd.

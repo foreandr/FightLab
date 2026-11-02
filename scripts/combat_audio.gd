@@ -47,27 +47,34 @@ func synthesize(kind: String) -> AudioStreamWAV:
 	stream.data = data
 	return stream
 
-func impact(kind: String, point: Vector3, strength := 1.0,playback_rate:float=-1.0) -> void:
-	played[kind] = played.get(kind, 0) + 1
-	if muted or voices.is_empty():
-		return
-	var voice := voices[cursor % voices.size()]
-	cursor += 1
-	voice.stop()
-	voice.position = point
+func stream_for(kind:String)->AudioStreamWAV:
 	if not streams.has(kind) and not preload("res://assets/spells/fire/sounds.gd").find(kind).is_empty():
 		streams[kind]=preload("res://assets/spells/fire/sounds.gd").synthesize(kind)
-	voice.stream = streams.get(kind, streams.punch)
-	voice.volume_db = -14 + clampf(strength, 0, 1.0) * 7
-	voice.set_meta("cast_audio_rate",playback_rate)
-	voice.pitch_scale = preload("res://scripts/spell_audio_rules.gd").audible_rate(playback_rate) if playback_rate>=0.0 else 0.93 + (cursor % 4) * 0.045
+	return streams.get(kind,streams.punch)
+
+func impact(kind:String,point:Vector3,strength:=1.0)->void:
+	_play(kind,point,strength,stream_for(kind),false)
+
+func cast_accent(kind:String,point:Vector3,strength:float,window:float)->void:
+	var accent:AudioStreamWAV=preload("res://scripts/spell_audio_rules.gd").accent(stream_for(kind),window)
+	_play(kind,point,strength,accent,true)
+
+func _play(kind:String,point:Vector3,strength:float,stream:AudioStreamWAV,cast_sound:bool)->void:
+	played[kind]=played.get(kind,0)+1
+	if muted or voices.is_empty():return
+	var voice:=voices[cursor%voices.size()]
+	cursor+=1
+	voice.stop()
+	voice.position=point
+	voice.stream=stream
+	voice.volume_db=-14+clampf(strength,0,1.0)*7
+	voice.set_meta("cast_accent",cast_sound)
+	voice.pitch_scale=preload("res://scripts/spell_audio_rules.gd").audible_rate() if cast_sound else 0.93+(cursor%4)*0.045
 	voice.play()
 
-func _process(_delta:float) -> void:
+func _process(_delta:float)->void:
 	for voice in voices:
-		if not voice.playing:continue
-		var rate:float=voice.get_meta("cast_audio_rate",-1.0)
-		if rate>=0.0:voice.pitch_scale=preload("res://scripts/spell_audio_rules.gd").audible_rate(rate)
+		if voice.playing and voice.get_meta("cast_accent",false):voice.pitch_scale=preload("res://scripts/spell_audio_rules.gd").audible_rate()
 
 func stop_all() -> void:
 	for voice in voices:

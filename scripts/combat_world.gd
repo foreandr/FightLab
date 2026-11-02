@@ -134,8 +134,11 @@ func orient_projectile(node:MeshInstance3D,spec:Dictionary,origin:Vector3,direct
 	if spec.effect=="cleave":node.rotate_object_local(Vector3.FORWARD,PI/2)
 	if spec.effect=="spear" and not node.has_meta("look"):node.scale=Vector3(0.60,0.60,3.6)
 
-func combat_sound(sound:String,point:Vector3,volume:float,playback_rate:float=-1.0) -> void:
-	if is_instance_valid(audio):audio.impact(sound,point,volume,playback_rate)
+func combat_sound(sound:String,point:Vector3,volume:float)->void:
+	if is_instance_valid(audio):audio.impact(sound,point,volume)
+
+func combat_cast_sound(spec:Dictionary,point:Vector3,volume:float=0.45,profile:Dictionary={})->void:
+	if is_instance_valid(audio):audio.cast_accent(preload("res://scripts/spell_asset_library.gd").sound_for(spec),point,volume,preload("res://scripts/spell_audio_rules.gd").release_window(spec,profile))
 
 func combat_impact_feedback(attacker:CharacterBody3D,victim:CharacterBody3D,spec:Dictionary,point:Vector3,_direction:Vector3,_area:Area3D,result:Dictionary) -> void:
 	var key:="%s/%s"%[attacker.team,spec.get("id","unknown")]
