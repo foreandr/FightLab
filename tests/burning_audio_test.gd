@@ -43,4 +43,3 @@ func run():
  if not check(weak.get_ref()==null,"Scene reset leaves an orphan burning sound"):return
  print("BURNING AUDIO PASS: one cached seamless loop; follows burning actor; cleanse/mute; wall and floor spatial sources; expiry/reset cleanup")
  quit()
-
