@@ -494,6 +494,7 @@ func advance_animation(delta: float) -> void:
 	capture_ice_pose()
 	advance_free_animation(delta)
 	_advance_story_limb_animations(delta)
+	preload("res://scripts/character_pose_safety.gd").limit_torso(self)
 	_apply_story_punch_aim(delta)
 	restore_ice_pose()
 

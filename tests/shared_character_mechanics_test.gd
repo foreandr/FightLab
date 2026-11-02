@@ -25,6 +25,7 @@ func run() -> void:
 	loading_sandbox._unhandled_key_input(early_key)
 	loading_sandbox._input(early_key)
 	loading_sandbox.take_camera_control()
+	if not check(not loading_sandbox.camera_text_editing(),"Input during scene setup accesses missing menus"):return
 	loading_sandbox.free()
 	var source:=source_clip()
 	var filtered:=Channels.filtered(source,"test","arm_r")
@@ -77,11 +78,12 @@ func run() -> void:
 	var request:Dictionary=b.cast_pose_aim(0.45)
 	if not check(not request.is_empty() and is_equal_approx(float(request.weight),1.0),"Spell preview does not request shared aim at apex"):return
 	Pose.pose(actor,profile,0.45,request)
-	if not check(baseline.angle_to(actor.skeleton.get_bone_pose_rotation(pelvis))>0.01,"Large aim correction does not engage hips/legs"):return
+	if not check(baseline.angle_to(actor.skeleton.get_bone_pose_rotation(pelvis))<deg_to_rad(18),"Large aim correction over-twists hips"):return
 	if emitter in ["hand_l","hand_r"]:
 		var elbow:Vector3=actor.bone_point("lowerarm_"+emitter.right(1))
 		var hand:Vector3=actor.bone_point(emitter)
-		if not check((hand-elbow).normalized().dot((target-elbow).normalized())>0.999,"Spell hand does not use shared endpoint alignment"):return
+		var index:int=actor.bones["lowerarm_"+emitter.right(1)]
+		if not check(pose_before[index].angle_to(actor.skeleton.get_bone_pose_rotation(index))<=deg_to_rad(25.01),"Unreachable aim overrides the authored elbow bend"):return
 	if not check(is_zero_approx(float(b.cast_pose_aim(0.0).weight)) and float(b.cast_pose_aim(0.98).weight)<0.1,"Aim does not blend in/out smoothly"):return
 	if not check(b.demo_physical_stats()==physical,"Aim refactor changed resource/damage calculations"):return
 	Pose.pose(actor,profile,0.45)

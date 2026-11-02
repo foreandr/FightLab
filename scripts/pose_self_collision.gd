@@ -1,7 +1,7 @@
 extends RefCounted
 ## Small capsule proxies keep pose editing responsive without mesh collision.
 
-static func penetrations(skeleton: Skeleton3D) -> Dictionary:
+static func penetrations(skeleton: Skeleton3D, affected:Array=[]) -> Dictionary:
 	var parts: Array[Dictionary]=[]
 	_add(parts,skeleton,"torso","spine_01","neck_01",0.145)
 	_add(parts,skeleton,"pelvis","pelvis","spine_01",0.135)
@@ -19,6 +19,7 @@ static func penetrations(skeleton: Skeleton3D) -> Dictionary:
 			var a: Dictionary=parts[i]
 			var b: Dictionary=parts[j]
 			if _connected(a.id,b.id):continue
+			if not affected.is_empty() and not a.id in affected and not b.id in affected:continue
 			var start_b:Vector3=b.a
 			# The hip socket must be free to fold into a crouch. Keep checking
 			# the distal thigh against the torso instead of the shared socket.

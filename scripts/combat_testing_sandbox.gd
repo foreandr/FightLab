@@ -487,8 +487,9 @@ func reframe_camera() -> void:
 	update_camera(1)
 
 func camera_text_editing() -> bool:
-	if get_viewport().gui_get_focus_owner() is LineEdit or move_menu.get_popup().visible or block_menu.get_popup().visible or dash_direction_menu.get_popup().visible:
-		return true
+	if is_inside_tree() and get_viewport().gui_get_focus_owner() is LineEdit:return true
+	for menu in [move_menu,block_menu,dash_direction_menu]:
+		if is_instance_valid(menu) and menu.get_popup().visible:return true
 	return false
 
 func _process(delta: float) -> void:

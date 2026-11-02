@@ -17,6 +17,7 @@ static func sample(actor:Node,clip:String,time:float) -> void:
 	actor.skeleton.reset_bone_poses()
 	layer(actor,"fight/guard",0)
 	layer(actor,clip,time)
+	preload("res://scripts/character_pose_safety.gd").limit_torso(actor)
 	actor.skeleton.force_update_all_bone_transforms()
 
 static func idle(actor:Node,time:=0.0) -> void:

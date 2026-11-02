@@ -2862,6 +2862,7 @@ func _apply_timeline_at(time:float,force:bool=false) -> void:
 	for key in timeline_active.keys():
 		if str(key) not in TIMELINE_TRACKS and str(key)!="ROOT" and not str(key).begins_with("OVERRIDE:"):timeline_active.erase(key)
 	_apply_timeline_root_motion(time)
+	preload("res://scripts/character_pose_safety.gd").limit_torso(actor)
 	if is_instance_valid(focused_unit):_set_unit_pose_target(focused_unit)
 
 func _active_jump_pose(time:float) -> Dictionary:

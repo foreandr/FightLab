@@ -1,6 +1,7 @@
 extends RefCounted
 const Source=preload("res://scripts/animation_source_pose.gd")
 const Mirror=preload("res://scripts/animation_mirror.gd")
+const Safety=preload("res://scripts/character_pose_safety.gd")
 const AimPose=preload("res://scripts/character_aim_pose.gd")
 
 static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={}) -> void:
@@ -29,6 +30,7 @@ static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={})
 	if profile.get("mirrored",false):Mirror.apply(actor)
 	if profile.get("frames",[]).size()>=2:actor.apply_custom_jump_pose(progress,profile.frames,true)
 	if profile.has("demo_palm"):_apply_demo_hand(actor,str(profile.demo_palm),progress)
+	Safety.limit_torso(actor)
 	if not aim.is_empty():AimPose.apply(actor,aim.target,str(aim.get("emitter","hand_r")),float(aim.get("weight",1.0)))
 	actor.restore_ice_pose()
 	actor.skeleton.force_update_all_bone_transforms()
