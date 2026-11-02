@@ -8,7 +8,7 @@ func check(ok:bool,message:String)->bool:
  push_error(message);quit(1);return false
 func run():
  var library:=Registry.for_element("Fire")
- if not check(library!=null and library.styles().size()==74 and library.sounds().size()==7,"Shared Fire collection counts"):return
+ if not check(library!=null and library.styles().size()==74 and library.sounds().size()==13,"Shared Fire collection counts"):return
  var id:String=library.styles()[0].id
  var selection:Dictionary=library.selection(id,"fire_roar")
  var cfg:=ConfigFile.new();cfg.set_value("spell","appearance",selection)
@@ -26,5 +26,5 @@ func run():
  if not check(Registry.sound_for({"element":"Fire","sound_id":"missing"})==library.Sounds.DEFAULT_ID,"Invalid sound ID fallback"):return
  var copy:Array=library.sounds();copy[0].title="changed"
  if not check(library.sounds()[0].title!="changed","Consumer modified shared sound records"):return
- print("SHARED FIRE LIBRARY PASS: 74 styles / 7 sounds; same library and saved IDs for all five deliveries; legacy paths and defaults preserved")
+ print("SHARED FIRE LIBRARY PASS: 74 styles / 13 sounds; same library and saved IDs for all five deliveries; legacy paths and defaults preserved")
  quit()

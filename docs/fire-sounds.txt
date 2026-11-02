@@ -1,7 +1,7 @@
 Fire sound authoring
 
 Fire immediately resolves to Flame whoosh unless a valid saved fire sound is present.
-Confirming the flame style opens the inline Fire sound tier. The seven waveform cards
+Confirming the flame style opens the inline Fire sound tier. The waveform cards
 audition sound without casting or paying resources. Play [1] casts with
 the pending choice; Confirm saves appearance.sound_id in the existing spell draft.
 Back to Flame styles discards unconfirmed sound changes. Confirmed choices survive
@@ -21,7 +21,7 @@ bare new combat mode. tests/fire_style_gallery_test.gd checks the preceding tier
 Sustained burning
 
 assets/spells/fire/burning.gd supplies one cached, seamless synthesized burn loop,
-also exposed as Fire library.Burning. It is separate from the seven casting sounds.
+also exposed as Fire library.Burning. It is separate from the casting sounds.
 scripts/burning_audio.gd creates source-owned AudioStreamPlayer3D emitters with
 3 m unit size, 24 m maximum distance and capped volume. Native 3D attenuation and
 panning use the active camera/listener. Each source shares the exact PCM resource.
@@ -38,3 +38,17 @@ Sound selection uses the same asset_preview_card.gd component as flame styles:
 image, caption, theme, 6 px padding, selection outline and keyboard focus. The
 sound image is an actual PCM waveform with a playback mark. Three/four columns
 adapt to width. Images/streams are built and cached only when entering Sounds.
+
+Downloaded additions
+
+The catalog now contains 13 cast sounds: the original seven plus five fire impacts
+by lentikula (CC0) and a flare by artisticdude (CC BY 3.0). Credits and license URIs:
+assets/combat/licenses/Fire-Audio-Credits.txt. The six WAVs live in the element-owned
+assets/spells/fire/audio folder. IDs, artist/source/license, source SHA256 and
+converted SHA256 are retained in sounds.gd. Files are mono PCM16 at original rate,
+with original pitch/timing. They are distinct source recordings, not pitch variants.
+
+The card gallery shows at most 12 sound choices on a page, with Prev/Next and a
+keyboard-accessible page field. Reopening follows the saved sound to its page.
+Waveforms/streams load only for the requested page and cache for reuse. Burning
+still uses the single separate sustained loop; the default cast remains unchanged.

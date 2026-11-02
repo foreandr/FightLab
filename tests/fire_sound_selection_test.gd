@@ -9,10 +9,13 @@ func run():
  for entry in Sounds.ENTRIES:
   var stream:=Sounds.synthesize(entry.id)
   if not check(stream!=null and stream.get_length()>0.3 and stream.data.size()>1000,"Empty sound"):return
+  if not check(stream.format==AudioStreamWAV.FORMAT_16_BITS and not stream.stereo,"Fire sound is not mono PCM16"):return
+  if entry.has("file"):
+   if not check(FileAccess.get_sha256(entry.file)==entry.sha256 and entry.has("source_sha256") and entry.has("license"),"Downloaded sound loses hash or credits"):return
   var signature:=hash(stream.data)
   if not check(not hashes.has(signature),"Duplicate fire sound"):return
   hashes[signature]=true
- if not check(hashes.size()==7 and Sounds.resolve({"projectile_element":"Fire"})==Sounds.DEFAULT_ID and Sounds.resolve({"projectile_element":"None","sound_id":"fire_roar"})=="dash","Default sound routing"):return
+ if not check(hashes.size()==Sounds.ENTRIES.size() and Sounds.resolve({"projectile_element":"Fire"})==Sounds.DEFAULT_ID and Sounds.resolve({"projectile_element":"None","sound_id":"fire_roar"})=="dash","Default sound routing"):return
  change_scene_to_file("res://scenes/combat_sandbox.tscn")
  var e:Node
  while true:
@@ -30,16 +33,19 @@ func run():
  if not check(initial.sound_id==Sounds.DEFAULT_ID,"Fire fails to default immediately before confirming style"):return
  b.set_fire_style(preload("res://scripts/fire_style_catalog.gd").entries()[0].id)
  b.confirm_fire_style()
- if not check(b.fire_sound_screen.is_visible_in_tree() and not b.fire_shape_screen.is_visible_in_tree() and b.fire_sound_choices.size()==7,"Missing next-tier sounds"):return
+ if not check(b.fire_sound_screen.is_visible_in_tree() and not b.fire_shape_screen.is_visible_in_tree() and b.fire_sound_choices.size()==mini(12,Sounds.ENTRIES.size()),"Missing next-tier sounds"):return
  for button in b.fire_sound_choices.values():
   var image:TextureRect=button.find_child("PreviewImage",true,false)
   if not check(image!=null and image.texture!=null and button.custom_minimum_size==Vector2(82,108) and button.focus_mode==Control.FOCUS_ALL,"Sound does not use the shared image card"):return
  if not check(b.fire_sound_gallery.grid.columns==4 or b.fire_sound_gallery.grid.columns==3,"Sound gallery does not adapt columns"):return
  var stamina:float=e.actor.stamina;var mana:float=e.actor.mana
- for entry in Sounds.ENTRIES:
+ for i in Sounds.ENTRIES.size():
+  var entry:Dictionary=Sounds.ENTRIES[i]
+  b.fire_sound_gallery.set_page(floori(i/12.0))
   b.fire_sound_choices[entry.id].pressed.emit()
   if not check(e.field.audio.played.get(entry.id,0)>0,"Click did not audition sound"):return
  if not check(e.actor.stamina==stamina and e.actor.mana==mana,"Audio audition spends resources"):return
+ b.fire_sound_gallery.set_page(0)
  b.set_fire_sound("fire_roar")
  b.save_draft()
  var cfg:=ConfigFile.new();cfg.load(b.draft_path)
@@ -51,6 +57,15 @@ func run():
  b.stop_preview_controls(true);b.open_fire_shape_picker()
  b.confirm_fire_style()
  if not check(b.fire_sound_preview_id=="fire_roar","Back and reenter loses saved selection"):return
+ # Actual downloaded audio routes through the same cast and save path.
+ b.set_fire_sound("lentikula_fire_4")
+ b.play_projectile_once();b.process_demo_preview(b.cast_duration()*b.release_fraction+0.001)
+ if not check(e.field.audio.streams.has("lentikula_fire_4") and e.field.shots.back().spec.sound_id=="lentikula_fire_4","Downloaded sound not played on actual release"):return
+ b.confirm_fire_sound();cfg.load(b.draft_path)
+ if not check(cfg.get_value("appearance","elements",{}).Fire.sound_id=="lentikula_fire_4","Downloaded sound does not save"):return
+ b.fire_sound_gallery.set_page(b.fire_sound_gallery.page_count()-1)
+ if not check(b.fire_sound_choices.size()==1 and b.fire_sound_gallery.next_button.disabled,"Sound pagination last page wrong"):return
+ b.fire_sound_gallery.set_page(0)
  # Same release route in a completely new mode, without Create or Story adapters.
  var world=preload("res://scripts/combat_world.gd").new();root.add_child(world);world.set_physics_process(false)
  var actor:CharacterBody3D=world.spawn_combatant(0,Vector3.ZERO);actor.practice_god_mode=true
@@ -61,5 +76,5 @@ func run():
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/fire_sound_selection.png")
  if not check(b.fire_sound_confirm_button.get_global_rect().end.y<b.spell_playback_panel.get_global_rect().position.y,"Sound cards push Confirm below toolbar"):return
- print("FIRE SOUND PASS: 7 unique nonempty sounds; default Fire; next-tier preview/confirm/back/save; no audition costs; actual Create and new-mode releases")
+ print("FIRE SOUND PASS: ",Sounds.ENTRIES.size()," unique nonempty sounds; default Fire; next-tier preview/confirm/back/save; no audition costs; actual Create and new-mode releases")
  quit()

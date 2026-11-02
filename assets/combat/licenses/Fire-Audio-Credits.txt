@@ -1,0 +1,15 @@
+Additional Fire sound credits
+
+The five Fire Spell Impact sounds by lentikula are CC0-1.0:
+https://lentikula.itch.io/freecc0-basic-spell-impacts-sfx
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Fire.aif (Flare discharge) from Fire & Evil Spell by artisticdude, submitted by
+qubodup on OpenGameArt, is CC-BY-3.0. Attribution retained here and in the catalog:
+https://opengameart.org/content/fire-evil-spell
+https://creativecommons.org/licenses/by/3.0/
+
+Changes: converted to mono 16-bit WAV for spatial playback. Original sample rate,
+timing and pitch retained. No recoloured/pitch-shifted duplicates counted as assets.
+Source-file and converted-file SHA256 hashes are recorded in the Fire catalog.
+Only the fire effect was imported from artisticdude's pack, not the evil spell.

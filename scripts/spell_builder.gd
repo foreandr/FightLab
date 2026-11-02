@@ -1019,10 +1019,10 @@ func build_fire_sound_panel() -> void:
  fire_sound_screen.hide()
 
 func open_fire_sound_picker() -> void:
- fire_sound_gallery.open_sounds()
  fire_sound_open=true
  fire_sound_confirmed=false
  fire_sound_preview_id=preload("res://assets/spells/fire/sounds.gd").resolve({"projectile_element":"Fire","appearance":appearances.get("Fire",{})})
+ fire_sound_gallery.open_sounds(fire_sound_preview_id)
  refresh_effect_choices()
  refresh_fire_sound()
 
@@ -1047,8 +1047,7 @@ func confirm_fire_sound() -> void:
  save_draft()
 
 func refresh_fire_sound() -> void:
- for id in fire_sound_choices:
-  fire_sound_choices[id].set_pressed_no_signal(id==fire_sound_preview_id)
+ fire_sound_gallery.select_sound(fire_sound_preview_id)
  fire_sound_confirm_button.text="Confirmed" if fire_sound_confirmed else "Confirm"
  fire_sound_confirm_button.disabled=fire_sound_confirmed or fire_sound_preview_id.is_empty()
 

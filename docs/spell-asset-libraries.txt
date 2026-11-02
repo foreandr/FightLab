@@ -3,7 +3,7 @@ Shared spell asset libraries
 assets/spells/fire/
   library.gd  One Fire collection; selection(style_id, sound_id) produces saved settings.
   styles.gd   All 74 Fire styles and their source/artist/license metadata.
-  sounds.gd   The seven Fire sounds and their default/synthesis definitions.
+  sounds.gd   The 13 Fire sounds and their default/synthesis definitions.
 
 scripts/spell_asset_library.gd is the element registry. for_element("Fire") and
 for_spell(spec) resolve the same library regardless of delivery_type. Projectile,

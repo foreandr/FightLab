@@ -125,3 +125,5 @@ See [Community-Fire-Credits.txt](Community-Fire-Credits.txt) for per-asset autho
 source, licence and modification notices. Additional artists include rubberduck,
 Cethiel, Mikodrak, para, stealthix, CodeManu, Davit Masia, IndieDevs, Color Optimist
 and cazlg. The in-game warm colouring and atlas conversions retain these credits.
+
+Additional Fire audio: lentikula (CC0-1.0) and artisticdude (CC-BY-3.0); see Fire-Audio-Credits.txt for sources, license URIs and conversion notices.
