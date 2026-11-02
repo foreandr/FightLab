@@ -22,6 +22,8 @@ func run() -> void:
 	var env=world.spell_environment
 	assert(env.patches.size()==1 and world.surface_marks.marks.size()==1)
 	var patch:Dictionary=env.patches[0]
+	assert(is_equal_approx(float(patch.radius),0.2),"Wall burn footprint differs from projectile hitbox")
+	assert(patch.node.get_child(0).mesh.size.is_equal_approx(Vector2.ONE*0.4),"Wall fire diameter differs from projectile hitbox")
 	var mark=world.surface_marks.marks[0].node
 	assert(absf(patch.point.y-1.4)<0.001 and absf(patch.normal.y)<0.01,"Wall fire fell onto the floor")
 	assert(patch.node.get_parent()==mark.get_parent(),"Fire must attach to the struck wall")

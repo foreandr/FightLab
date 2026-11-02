@@ -72,7 +72,8 @@ func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
  var element:String=shot.spec.projectile_element
  var potency:float=float(shot.spec.get("potency",1.0))
  if potency<=0.0:return
- var radius:float=maxf(0.7,shot.radius*2)
+ # Surface fire inherits the actual collision radius, including tiny/large casts.
+ var radius:float=float(shot.radius) if element=="Fire" else maxf(0.7,shot.radius*2)
  if element=="Wind":
   for other in arena.shots:
    if other.spec.get("projectile_element","")!="Fire" or other.get("wind_amplified",false):continue
