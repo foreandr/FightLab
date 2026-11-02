@@ -40,7 +40,7 @@ func run() -> void:
 	builder.draft_path="user://logs/spell_demo_test_draft.cfg"
 	builder.preview_preferences_path="user://logs/spell_demo_test_preferences.cfg"
 	editor.select_group("Spells")
-	if not check(visible_buttons(builder)==["Headbutt","Left cross","Melee hook","Left knee","Right roundhouse","Jump Dismantle","Block stand","Self mend","Confirm"],"Spells must show the eight demos and Confirm"):return
+	if not check(visible_buttons(builder)==["Headbutt","Left cross","Melee hook","Left knee","Right roundhouse","Jump Dismantle","Block stand","Self mend","Grab","Confirm"],"Spells must show eight demos, disabled Grab and Confirm"):return
 	if not check(builder.demo_duration_slider.min_value==0.1 and builder.demo_duration_slider.max_value==60.0,"Duration range is incorrect"):return
 	builder.set_demo_duration(1.0)
 	if not check(editor.actor.visible and not editor.animation_footer.visible,"Demo character/toolbar visibility is incorrect"):return

@@ -48,6 +48,7 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
+var grab_demo_button:Button
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -507,6 +508,18 @@ func setup(owner_editor:Node) -> void:
   node.name="Demo"+choice.capitalize()
   node.custom_minimum_size.y=40
   demo_choices[choice]=node
+ var grab_row:=HBoxContainer.new()
+ grab_row.add_theme_constant_override("separation",6)
+ choices_column.add_child(grab_row)
+ grab_demo_button=editor.button(grab_row,"Grab",func():pass)
+ grab_demo_button.name="DemoGrab"
+ grab_demo_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ grab_demo_button.custom_minimum_size.y=40
+ grab_demo_button.disabled=true
+ grab_demo_button.tooltip_text="Grab mechanics are not available yet."
+ var grab_badge_space:=Control.new()
+ grab_badge_space.custom_minimum_size.x=144
+ grab_row.add_child(grab_badge_space)
  var help:Label=editor.menu_label(choices_column,"Preview only. You can change this anytime.",14)
  help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  demo_confirm_button=editor.button(choices_column,"Confirm",confirm_demo_choice)

@@ -17,6 +17,10 @@ func run():
  e.actor.practice_god_mode=true
  if not check(b.creation_step=="demo" and b.spell_playback_panel.is_visible_in_tree(),"Initial demo step hides playback toolbar"):return
  if not check(not b.demo_choice_selected and not b.playing and b.projectile_preview_button.disabled and b.projectile_repeat_button.disabled and b.demo_confirm_button.disabled,"Play enabled or default animation running before selection"):return
+ if not check(b.grab_demo_button.is_visible_in_tree() and b.grab_demo_button.disabled,"Grab placeholder is missing or enabled"):return
+ var previous_choice:String=str(b.casting_animation.get("demo_choice",""))
+ b.select_demo_choice("grab",false)
+ if not check(str(b.casting_animation.get("demo_choice",""))==previous_choice and not b.demo_choice_selected,"Disabled Grab can select an animation"):return
  if not check(b.offset_bottom== -60 and b.demo_timing_panel.offset_bottom== -60,"Early panels overlap bottom toolbar"):return
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/spell_wizard_initial.png")
