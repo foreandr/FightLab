@@ -14,9 +14,10 @@ static func layer(actor:Node,clip:String,time:float) -> void:
 			Animation.TYPE_POSITION_3D:actor.skeleton.set_bone_pose_position(index,animation.position_track_interpolate(track,time))
 
 static func sample(actor:Node,clip:String,time:float) -> void:
-	actor.skeleton.reset_bone_poses()
-	layer(actor,"fight/guard",0)
-	layer(actor,clip,time)
+	if not preload("res://scripts/ai/collision_pose_cache.gd").sample(actor,clip,time):
+		actor.skeleton.reset_bone_poses()
+		layer(actor,"fight/guard",0)
+		layer(actor,clip,time)
 	preload("res://scripts/character_pose_safety.gd").limit_torso(actor)
 	actor.skeleton.force_update_all_bone_transforms()
 

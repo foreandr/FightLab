@@ -4,7 +4,7 @@ func _initialize():set_meta("ai_learning_enabled",false);set_meta("cpu_training_
 func run():
  var flat:=Vector3(300,0,400);var tilted:=Rules.ragdoll_launch_impulse(flat)
  assert(is_equal_approx(tilted.length(),flat.length()))
- assert(is_equal_approx(rad_to_deg(atan2(tilted.y,Vector2(tilted.x,tilted.z).length())),20.0))
+ assert(is_equal_approx(rad_to_deg(atan2(tilted.y,Vector2(tilted.x,tilted.z).length())),30.0))
  assert(Vector2(tilted.x,tilted.z).normalized().is_equal_approx(Vector2(flat.x,flat.z).normalized()))
  for impulse in [Vector3(0,300,300),Vector3.DOWN*300,Vector3(50,-100,0),Vector3.ZERO]:assert(Rules.ragdoll_launch_impulse(impulse).is_equal_approx(impulse))
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
@@ -21,5 +21,5 @@ func run():
  w.rematch(812);w.set_physics_process(false);assert(Engine.time_scale==1 and w.finish_slowmo_left==0)
  w.finish_round(0);w.rematch(813);w.set_physics_process(false);assert(Engine.time_scale==1 and w.finish_slowmo_left==0)
  w.training_view=true;w.finish_round(1);assert(Engine.time_scale==1 and w.finish_slowmo_left==0)
- print("DASH / FINISH / LAUNCH PASS: dash multiplier 0.85, actual ragdoll 20-degree upward tilt with preserved force; higher/downward impulses retained; real-time slow finish eases to normal, pause/rematch/training isolation")
+ print("DASH / FINISH / LAUNCH PASS: dash multiplier 0.85, actual ragdoll 30-degree upward tilt with preserved force; higher/downward impulses retained; real-time slow finish eases to normal, pause/rematch/training isolation")
  quit()

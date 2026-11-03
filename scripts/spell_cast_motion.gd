@@ -21,10 +21,11 @@ static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={})
 		var duration:float=float(profile.get("source_duration",Source.duration(actor,profile.step,profile.clip)))
 		var recipe:=Source.clip_at(actor,profile.step,profile.clip,progress,duration)
 		actor.clip=recipe.name
+		var collision_only:=preload("res://scripts/ai/collision_pose_cache.gd").enabled(actor)
 		actor.player.speed_scale=1.0
 		actor.player.play(recipe.name,0,1)
-		actor.player.seek(actor.player.get_animation(recipe.name).length*float(recipe.blend),true)
-		actor.player.advance(0)
+		actor.player.seek(actor.player.get_animation(recipe.name).length*float(recipe.blend),not collision_only)
+		if not collision_only:actor.player.advance(0)
 		actor.player.pause()
 		preload("res://scripts/editor_rig_pose.gd").sample(actor,recipe.name,actor.player.get_animation(recipe.name).length*float(recipe.blend))
 	if profile.get("mirrored",false):Mirror.apply(actor)

@@ -56,6 +56,8 @@ var editor_animation_profile:Dictionary={}
 var pending_editor_land_profile:Dictionary={}
 var has_pending_editor_land_profile := false
 var ragdoll: Node3D
+var recovery_timing=preload("res://scripts/ragdoll_recovery_timing.gd").new()
+var recovery_prompt:Control
 var burn_time := 0.0
 var burn_clock := 0.0
 var burn_source: CharacterBody3D
@@ -268,6 +270,7 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	recovery_timing.clear()
 	touch_chain_speed=1.0
 	authored_aim_target=null
 	authored_entry_pose.clear()
@@ -323,7 +326,11 @@ func reset_fighter(location: Vector3) -> void:
 	# offsets before the idle clip, which only animates the pelvis position.
 	skeleton.reset_bone_poses()
 	clip=preload("res://scripts/default_idle.gd").resolve(self,player,story_profile.get("idle_animation"))
+	# Replaying the same idle otherwise resumes its previous phase, making
+	# seeded rematches start from different entry poses after a previous fight.
+	player.stop()
 	player.play(clip,0,1)
+	player.seek(0,true)
 	tactics.reset(self)
 	flash_aura_time=0
 	collision_layer = 128 << team
@@ -860,7 +867,7 @@ func advance_free_animation(delta:float) -> void:
 		var recipe:=preload("res://scripts/animation_source_pose.gd").clip_at(self,custom_motion_step,str(editor_animation_profile.clip),editor_attack_progress(),float(editor_animation_profile.source_duration))
 		player.seek(player.get_animation(recipe.name).length*float(recipe.blend),true)
 	elif mode == "cast":
-		player.seek(minf(cast_time, mode_length), true)
+		player.seek(minf(cast_time, mode_length),practice_spell_animation.is_empty() or not preload("res://scripts/ai/collision_pose_cache.gd").enabled(self))
 	elif mode == "melee_charge":
 		player.seek(0.02, true)
 	elif mode=="burst_charge":
@@ -1557,10 +1564,12 @@ func tick(delta: float) -> void:
 	collision_mask=1|1024 if air_body_passthrough else 1|128|256|512|1024
 	if is_instance_valid(ragdoll):
 		invulnerability=maxf(0,invulnerability-delta)
+		recover_idle_resources(delta)
 		mode = "ragdoll"
 		var landed: bool = ragdoll.step(delta)
+		if health>0:recovery_timing.step(delta)
 		ragdoll_peak = maxf(ragdoll_peak, ragdoll.peak_height)
-		if landed and health > 0:
+		if health>0 and (landed or recovery_timing.early_ready(self)):
 			finish_ragdoll()
 		return
 	if health <= 0:
@@ -1568,6 +1577,7 @@ func tick(delta: float) -> void:
 		return
 	if mode == "getup":
 		invulnerability=maxf(0,invulnerability-delta)
+		recover_idle_resources(delta)
 		mode_time += delta
 		advance_recovery(delta)
 		if mode_time >= mode_length:
@@ -1907,9 +1917,20 @@ func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 	ragdoll = Ragdoll.new()
 	arena.add_child(ragdoll)
 	ragdoll.build(self, impulse, point)
+	if health>0:
+		recovery_timing.begin()
+		if player_controlled:ensure_recovery_prompt()
 	ragdoll_count += 1
 	arena.events.append({"time":arena.elapsed,"event":"ragdoll","team":team,"impulse":impulse.length(),"health":health,"physical_damage":last_physical_impact_damage})
 	arena.audio.impact("heavy", point, 1)
+
+func ensure_recovery_prompt()->void:
+	if is_instance_valid(recovery_prompt):return
+	var layer:=CanvasLayer.new();layer.name="RecoveryTimingHUD";layer.layer=80;add_child(layer)
+	recovery_prompt=preload("res://scripts/ragdoll_recovery_prompt.gd").new();layer.add_child(recovery_prompt);recovery_prompt.setup(self)
+
+func try_quick_recovery()->String:
+	return recovery_timing.attempt(self)
 
 func finish_ragdoll() -> void:
 	var location: Vector3 = ragdoll.location()
@@ -1931,7 +1952,9 @@ func finish_ragdoll() -> void:
 	mode = "getup"
 	mode_time = 0
 	clip="ual2/LayToIdle"
-	player.play(clip,0,1.05)
+	var getup_seconds:float=recovery_timing.getup_seconds()
+	var recovery_speed:float=player.get_animation(clip).length/maxf(0.1,getup_seconds-RECOVERY_GATHER) if getup_seconds>0.0 else 1.05
+	player.play(clip,0,recovery_speed)
 	var target_direction:=bone_point("Head")-bone_point("pelvis")
 	target_direction.y=0
 	if lying_direction.length()>0.15 and target_direction.length()>0.15:
@@ -1940,7 +1963,8 @@ func finish_ragdoll() -> void:
 	position.x=location.x-pelvis_offset.x
 	position.z=location.z-pelvis_offset.z
 	global_position=arena.constrain_to_level(global_position,0.4)
-	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/1.05
+	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/recovery_speed
+	recovery_timing.running=false
 	invulnerability=mode_length
 	recovery_source.clear()
 	recovery_target.clear()

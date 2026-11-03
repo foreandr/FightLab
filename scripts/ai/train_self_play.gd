@@ -53,6 +53,9 @@ func run()->void:
  base_seed=int(argument("seed","731091"))
  var profile:=argument("profile","user://ai/self_play.json")
  set_meta("cpu_training_view",true);set_meta("ai_learning_path",profile)
+ var pose_mode:=argument("pose-mode","full")
+ if pose_mode not in ["full","collision"]:push_error("pose-mode must be full or collision");quit(1);return
+ set_meta("collision_pose_cache",pose_mode=="collision")
  Engine.physics_ticks_per_second=int(60*speed);Engine.time_scale=speed;Engine.max_fps=0
  change_scene_to_file("res://scenes/cpu_duel.tscn")
  await process_frame;await process_frame
@@ -76,6 +79,8 @@ func run()->void:
   if every>0 and (iteration+1)%every==0:
    if not await evaluate_checkpoint(pairs,iteration+1):push_error("Could not save evaluated checkpoint");quit(1);return
  report["wall_seconds"]=(Time.get_ticks_msec()-start)/1000.0
+ report["pose_mode"]=pose_mode
+ report["pose_cache_build_seconds"]=preload("res://scripts/ai/collision_pose_cache.gd").build_usec/1000000.0
  report["profile"]=profile;report["total_matches"]=demo.learning_store.data.matches
  var output:=FileAccess.open(profile.get_basename()+"_report.json",FileAccess.WRITE)
  if output:output.store_string(JSON.stringify(report,"  "));output.close()

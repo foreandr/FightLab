@@ -1,0 +1,50 @@
+Collision-track training experiment (2026-11-03)
+
+Run: tools/train_ai.ps1 -PoseMode collision -Matches 1000 -Speed 16
+The normal default remains -PoseMode full. No C++ or extra dependencies.
+Direct trainer flag: --pose-mode=collision. This is accepted only in headless
+CPU training; visible gameplay and creation keep the complete skeleton path.
+
+The cache compiles a clip's collision-relevant track indices and guarded rest
+pose. It evaluates the ORIGINAL curves, not quantized/resampled animation frames.
+23 of the standard rig's 65 joints (including collision ancestors) are written.
+Aim, authored pose edits, mirroring, safety projection, entry/return blends,
+impact reactions, root movement and collision resolution remain live and shared.
+AnimationPlayer clocks still advance/seek without applying the full pose.
+Locomotion, Story layered players and ragdoll simulation retain the normal path.
+Thus this is a reduced collision skeleton, not an animation-free damage model.
+Animation.changed invalidates cached track data; rig rest transforms and clip
+resource identity distinguish cache entries. It does not modify source assets.
+
+An initial fixed-rate 960 Hz bake was rejected: even sub-millimetre errors could
+affect close contacts. The retained exact-curve version matches collision joint
+positions/bases across 882 sampled authored poses, and matches a 300-frame real
+cast/contact sequence including costs, HP, entry/return blends and hit reactions.
+The comparison also exposed reset_fighter resuming an old idle phase; reset now
+explicitly rewinds idle before rematches and entry-pose capture.
+
+scripts/ai/benchmark_collision_poses.gd reproduces the comparison:
+Godot --headless --path . --script res://scripts/ai/benchmark_collision_poses.gd -- --mode=full
+Godot --headless --path . --script res://scripts/ai/benchmark_collision_poses.gd -- --mode=collision
+Read-only fixed CPU tactics, no user model writes. Reports go under work/.
+docs/collision-pose-benchmark.json preserves measured results and conditions.
+
+Three sequential fights: full 58.986194 s; collision 22.990041 s; 2.5657x faster.
+Same winners, exact HP, event counts, physics ticks and simulated match durations
+on seeds 173/917/321. Cache compilation took about 15 ms. Startup is excluded.
+Background jobs were present; these local figures are not guaranteed throughput.
+Microbenchmarks use alternating full/collision/collision/full batches.
+
+Shared ragdoll recovery changes in this checkpoint:
+- Living ragdoll and get-up tick the usual mana/stamina recovery once per step.
+  Normal post-spend delay and 34/s rate remain; dead actors do not regenerate.
+- Flat ragdoll impulses have a 30-degree upward minimum, preserving magnitude.
+- recovery_timing is actor-owned, one Space attempt per living knockdown.
+  A ring shrinks inward over 1.10 simulation seconds. Last 14%: perfect, free,
+  0.65-second get-up. Previous 21%: yellow, costs 10 stamina, 1.10-second get-up.
+  Too early, timeout or insufficient yellow stamina: original slow get-up.
+- Success waits for real floor contact and a bounded landing speed; it cannot
+  teleport an airborne body to the floor. Existing LayToIdle supplies the motion
+  with faster playback; a dedicated roll-out can be supplied later.
+- Death/reset hide the prompt. CPU actors share the attempt API but do not
+  automatically win the QTE. No new AI recovery choices are silently introduced.

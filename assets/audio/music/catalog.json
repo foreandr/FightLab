@@ -824,6 +824,42 @@
         "combat"
       ],
       "permission": "CC0 public domain dedication verified on source page"
+    },
+    {
+      "id": "infraction_just_evil",
+      "title": "Just Evil",
+      "creator": "Infraction",
+      "reference_video": "https://www.youtube.com/watch?v=K7IV1pz2FHs",
+      "audio_source": "https://inaudio.org/track/just-evil-cyberpunk/",
+      "status": "candidate_only",
+      "asset": null,
+      "permission": "Creator description requires an InAudio subscription for commercial projects. No game-use license held; reference only.",
+      "license_checked": "2026-11-03",
+      "license_evidence": "https://www.youtube.com/watch?v=K7IV1pz2FHs"
+    },
+    {
+      "id": "infraction_dead_network",
+      "title": "Dead Network",
+      "creator": "Infraction",
+      "reference_video": "https://www.youtube.com/watch?v=9eFY5SvFH7U",
+      "audio_source": "https://inaudio.org/track/dead-network-cyberpunk/",
+      "status": "candidate_only",
+      "asset": null,
+      "permission": "Creator description requires an InAudio subscription for commercial projects. No game-use license held; reference only.",
+      "license_checked": "2026-11-03",
+      "license_evidence": "https://www.youtube.com/watch?v=9eFY5SvFH7U"
+    },
+    {
+      "id": "infraction_crave",
+      "title": "Crave",
+      "creator": "Infraction",
+      "reference_video": "https://www.youtube.com/watch?v=E_LxkqQvHkI",
+      "audio_source": "https://inaudio.org/track/crave-cyberpunk-techno/",
+      "status": "candidate_only",
+      "asset": null,
+      "permission": "Creator description requires an InAudio subscription for commercial projects. No game-use license held; reference only.",
+      "license_checked": "2026-11-03",
+      "license_evidence": "https://www.youtube.com/watch?v=E_LxkqQvHkI"
     }
   ],
   "selection": "Shared random pool for menus and combat; no immediate repeats when multiple loops are available"

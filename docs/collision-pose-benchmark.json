@@ -1,0 +1,238 @@
+{
+  "date": "2026-11-03",
+  "engine": "Godot 4.6 stable, Windows headless",
+  "conditions": "Sequential processes, identical seeds, 60 simulation steps/s, requested 16x time scale. Fixed unlearned CPU tactics, no saved model updates. Other background processes present; these are local measurements, not guaranteed throughput. Warm clip cache; startup excluded.",
+  "full": {
+    "bake_seconds": 0.01903,
+    "cache_hits": 1449,
+    "collision_bones": 23,
+    "full_bones": 65,
+    "matches": [
+      {
+        "events": {
+          "action": 52,
+          "burn_tick": 80,
+          "cast": 24,
+          "cpu_decision": 47,
+          "death": 1,
+          "hit": 10,
+          "projectile_clash": 4,
+          "ragdoll": 4,
+          "ragdoll_recovery": 3,
+          "round_start": 1,
+          "self_block": 1,
+          "self_block_break": 1
+        },
+        "hp": [
+          0.0,
+          1.06588245392668
+        ],
+        "seed": 173,
+        "sim_seconds": 39.549999999999,
+        "ticks": 2380,
+        "wall_seconds": 25.103867,
+        "winner": 1
+      },
+      {
+        "events": {
+          "action": 66,
+          "burn_tick": 56,
+          "cast": 33,
+          "cpu_air_attack": 4,
+          "cpu_air_trick": 1,
+          "cpu_combo": 4,
+          "cpu_decision": 72,
+          "cpu_jump": 5,
+          "death": 1,
+          "directional_parry": 8,
+          "hit": 10,
+          "ragdoll": 4,
+          "ragdoll_recovery": 3,
+          "round_start": 1,
+          "touch_parry_recovery": 2
+        },
+        "hp": [
+          116.963947468335,
+          0.0
+        ],
+        "seed": 917,
+        "sim_seconds": 31.1166666666662,
+        "ticks": 1873,
+        "wall_seconds": 17.727071,
+        "winner": 0
+      },
+      {
+        "events": {
+          "action": 49,
+          "burn_tick": 39,
+          "cast": 23,
+          "cpu_air_attack": 1,
+          "cpu_air_trick": 1,
+          "cpu_combo": 3,
+          "cpu_decision": 53,
+          "cpu_jump": 2,
+          "death": 1,
+          "directional_parry": 3,
+          "hit": 12,
+          "parry": 1,
+          "projectile_clash": 3,
+          "ragdoll": 3,
+          "ragdoll_recovery": 2,
+          "round_start": 1,
+          "touch_parry_recovery": 1
+        },
+        "hp": [
+          119.741344780335,
+          0.0
+        ],
+        "seed": 321,
+        "sim_seconds": 22.6333333333333,
+        "ticks": 1364,
+        "wall_seconds": 16.155256,
+        "winner": 0
+      }
+    ],
+    "micro": [
+      {
+        "mode": "full",
+        "poses": 630,
+        "seconds": 0.381472
+      },
+      {
+        "mode": "collision",
+        "poses": 630,
+        "seconds": 0.136425
+      },
+      {
+        "mode": "collision",
+        "poses": 630,
+        "seconds": 0.145668
+      },
+      {
+        "mode": "full",
+        "poses": 630,
+        "seconds": 0.351184
+      }
+    ],
+    "mode": "full"
+  },
+  "collision": {
+    "bake_seconds": 0.015447,
+    "cache_hits": 8611,
+    "collision_bones": 23,
+    "full_bones": 65,
+    "matches": [
+      {
+        "events": {
+          "action": 52,
+          "burn_tick": 80,
+          "cast": 24,
+          "cpu_decision": 47,
+          "death": 1,
+          "hit": 10,
+          "projectile_clash": 4,
+          "ragdoll": 4,
+          "ragdoll_recovery": 3,
+          "round_start": 1,
+          "self_block": 1,
+          "self_block_break": 1
+        },
+        "hp": [
+          0.0,
+          1.06588245392668
+        ],
+        "seed": 173,
+        "sim_seconds": 39.549999999999,
+        "ticks": 2380,
+        "wall_seconds": 7.835818,
+        "winner": 1
+      },
+      {
+        "events": {
+          "action": 66,
+          "burn_tick": 56,
+          "cast": 33,
+          "cpu_air_attack": 4,
+          "cpu_air_trick": 1,
+          "cpu_combo": 4,
+          "cpu_decision": 72,
+          "cpu_jump": 5,
+          "death": 1,
+          "directional_parry": 8,
+          "hit": 10,
+          "ragdoll": 4,
+          "ragdoll_recovery": 3,
+          "round_start": 1,
+          "touch_parry_recovery": 2
+        },
+        "hp": [
+          116.963947468335,
+          0.0
+        ],
+        "seed": 917,
+        "sim_seconds": 31.1166666666662,
+        "ticks": 1873,
+        "wall_seconds": 8.160939,
+        "winner": 0
+      },
+      {
+        "events": {
+          "action": 49,
+          "burn_tick": 39,
+          "cast": 23,
+          "cpu_air_attack": 1,
+          "cpu_air_trick": 1,
+          "cpu_combo": 3,
+          "cpu_decision": 53,
+          "cpu_jump": 2,
+          "death": 1,
+          "directional_parry": 3,
+          "hit": 12,
+          "parry": 1,
+          "projectile_clash": 3,
+          "ragdoll": 3,
+          "ragdoll_recovery": 2,
+          "round_start": 1,
+          "touch_parry_recovery": 1
+        },
+        "hp": [
+          119.741344780335,
+          0.0
+        ],
+        "seed": 321,
+        "sim_seconds": 22.6333333333333,
+        "ticks": 1364,
+        "wall_seconds": 6.993284,
+        "winner": 0
+      }
+    ],
+    "micro": [
+      {
+        "mode": "full",
+        "poses": 630,
+        "seconds": 0.394339
+      },
+      {
+        "mode": "collision",
+        "poses": 630,
+        "seconds": 0.150192
+      },
+      {
+        "mode": "collision",
+        "poses": 630,
+        "seconds": 0.128756
+      },
+      {
+        "mode": "full",
+        "poses": 630,
+        "seconds": 0.341337
+      }
+    ],
+    "mode": "collision"
+  },
+  "full_wall_seconds": 58.986194,
+  "collision_wall_seconds": 22.990041,
+  "speedup": 2.5657280906980544,
+  "same_winners_hp_events_ticks_and_match_lengths": true,
+  "scope": "Authored base-clip collision sampling uses 23/65 joints and original curve interpolation; live aim, safety, edits, blending and impact reactions retained. Native locomotion, ragdolls and Story layered players keep full path. Gameplay rendering unchanged."
+}
