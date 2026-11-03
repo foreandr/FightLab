@@ -17,6 +17,7 @@ var stale_time:=0.0
 var combo_count:=0
 var combo_checked:=false
 var policy:RefCounted
+var deception=preload("res://scripts/ai/combat_deception.gd").new()
 const Combo=preload("res://scripts/touch_combo_rules.gd")
 const Burn=preload("res://scripts/burn_rules.gd")
 func expected_damage(item:Dictionary)->float:
@@ -56,6 +57,7 @@ func melee_score(item:Dictionary,distance:float)->float:
  return score
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure
+ deception.setup(self)
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
  think_left=rng.randf_range(0.05,0.2)
  # Warm immutable contact geometry before the fight, rather than on first hit.
@@ -124,7 +126,7 @@ func defend(threat:Dictionary)->bool:
   if actor.start_motion_dash(2 if rng.randf()<0.5 else 6):
    note("Evade","Too late to parry");defense_left=0.4;return true
  return false
-func try_combo()->bool:
+func try_combo(allow_hesitation:bool=true)->bool:
  if str(actor.current_spell.get("effect",""))!="touch" or not actor.did_release:return false
  if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*Combo.LINK_PROGRESS:return false
  if actor.cast_time>actor.mode_length*0.90:return false
@@ -133,6 +135,8 @@ func try_combo()->bool:
   if item.kind!="melee" or not can_use(item,16.0) or actor.flat_distance()>float(item.range):continue
   choices.append(item)
  if choices.is_empty():return false
+ if policy==null and allow_hesitation and deception.cooldown<=0 and actor.rival.self_barrier.active() and rng.randf()<0.35:
+  deception.begin_hesitation();return true
  combo_checked=true
  var next:Dictionary=choices[0]
  var best:=-INF
@@ -141,10 +145,14 @@ func try_combo()->bool:
   if score>best:best=score;next=item
  if policy!=null:
   var options:Array[Dictionary]=[{"action":"combo/stop","prior":0.5}]
+  if allow_hesitation and deception.cooldown<=0:
+   options.append({"action":"combo/hesitate","prior":3.2 if actor.rival.self_barrier.can_parry() else 1.2})
   for item in choices:options.append({"action":"combo/"+str(item.spec.id),"prior":combo_score(item),"item":item})
   var selected:Dictionary=policy.pick(actor,options)
   policy.begin(actor,selected,options,world.elapsed)
   if str(selected.action)=="combo/stop":return false
+  if str(selected.action)=="combo/hesitate":
+   combo_checked=false;deception.begin_hesitation();return true
   next=selected.item
  var previous:=str(actor.current_spell.get("name","Touch"))
  if not actor.chain_touch_cast(next.spec,next.profile,actor.rival):return false
@@ -162,9 +170,12 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  if distance<4.5:options.append({"action":"move/retreat","prior":0.7 if actor.stamina<45 else 0.2})
  if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":1.2 if aggression>0.6 else 0.6})
  if distance>2 and distance<7 and actor.stamina>55 and defense_left<=0:options.append({"action":"move/dash","prior":0.5})
+ var feint:Dictionary=deception.feint_source()
+ if not feint.is_empty():options.append({"action":"tactic/feint","prior":4.6+aggression,"feint":feint})
  var selected:Dictionary=policy.pick(actor,options)
  policy.begin(actor,selected,options,world.elapsed)
  if selected.has("item"):return cast(selected.item,"Learned attack choice")
+ if selected.has("feint"):return deception.begin_feint(selected.feint)
  var kind:=str(selected.action).trim_prefix("move/")
  if kind=="dash":
   if actor.start_motion_dash(0):note("Dash in","Learned movement choice");defense_left=1.2;return true
@@ -181,6 +192,7 @@ func step(delta:float)->void:
  if actor.combat_reaction_active() or actor.mode in ["motion_dash","takeoff","air","land"]:return
  var threat:=incoming()
  if defend(threat):return
+ if deception.step(delta):return
  if actor.mode=="cast":
   try_combo()
   return
@@ -219,6 +231,8 @@ func step(delta:float)->void:
   adaptive_decision(distance,choices,scores)
   return
  if not choices.is_empty():
+  var feint:Dictionary=deception.feint_source()
+  if not feint.is_empty() and rng.randf()<0.20 and deception.begin_feint(feint):return
   if distance>0.78 and distance<1.6 and actor.stamina>40 and actor.rival.mode!="cast" and rng.randf()<0.35:
    move("approach","Work into punching range");action_left=0.2;return
   var best:=0

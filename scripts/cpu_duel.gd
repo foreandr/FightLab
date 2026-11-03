@@ -176,7 +176,7 @@ func build_ui()->void:
  button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible))
  button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible))
  spell_names_button=button(buttons,"Spells [4]",toggle_spell_names);spell_names_button.toggle_mode=true
- spell_names_button.tooltip_text="Show the last spell actually cast above each fighter"
+ spell_names_button.tooltip_text="Show casts, cancelled feints and hesitations above each fighter"
  button(buttons,"Match report",show_report)
  self_play_button=button(buttons,"Self-play [T]",toggle_self_play);self_play_button.toggle_mode=true
  self_play_button.tooltip_text="Keep running matches and saving AI learning"
@@ -212,6 +212,8 @@ func update_spell_names()->void:
   last_spell_labels[id].visible=spell_names_visible and elapsed<float(last_spell_until.get(id,0.0))
 func combat_cast_feedback(actor:CharacterBody3D,spec:Dictionary)->void:
  super.combat_cast_feedback(actor,spec)
+ combat_tactical_feedback(actor,str(spec.get("name",spec.get("id","Spell"))))
+func combat_tactical_feedback(actor:CharacterBody3D,text_:String)->void:
  if training_view:return
  var id:=actor.get_instance_id()
  if not last_spell_labels.has(id):
@@ -220,7 +222,7 @@ func combat_cast_feedback(actor:CharacterBody3D,spec:Dictionary)->void:
   spell_label.name="LastSpellCast";spell_label.position.y=0.66
   spell_label.modulate=Color("fff0bb")
   tag.add_child(spell_label);last_spell_labels[id]=spell_label
- last_spell_labels[id].text=str(spec.get("name",spec.get("id","Spell")))
+ last_spell_labels[id].text=text_
  last_spell_until[id]=elapsed+2.5
  update_spell_names()
 func toggle_pause()->void:

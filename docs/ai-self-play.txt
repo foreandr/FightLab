@@ -202,3 +202,29 @@ range scoring and old-policy compatibility. Three full CPU fights, the combo
 selection test, AI learning test, and graphical regional aiming test passed.
 A frozen copy of the live policy completed a 65.6s match with 32 punches/hooks
 and five elbows. This is a behavior sample, not evidence of optimal balance.
+
+Feints and off-beat combinations
+-------------------------------
+ai/combat_deception.gd owns CPU intentions only. tactic/feint is a policy option
+when a plausible jab can draw a guard and resources/range permit it. It starts
+the ordinary jab; the opponent reads the same visible cast as any other attack,
+not a private feint flag. Cancel on a visible guard commitment, or by 80% of the
+pre-release windup if the opponent does not bite. A 3.5s cooldown limits repeats.
+BattleActor.cancel_authored_windup is the shared pre-release cancel API. It uses
+CombatRuntime's proportional stamina payment, clears the unlaunched contact,
+and blends back toward idle over 0.14s. Released attacks cannot use this API.
+No mana, hit or projectile is created by the cancelled windup.
+After an 80-160ms pause, choose a normal affordable follow-up, favoring the
+opposite side and fire against an active ordinary block. It must still connect
+and obey shields/parries; baiting a guard does not guarantee damage or a bonus.
+combo/hesitate delays a follow-up by up to 0.18 animation seconds, keeping the
+first animation playing. It then uses the same paid Touch chain and side bonus.
+Defensive reactions and hits can supersede these plans. Neither clocks nor the
+opponent's block windows are frozen or secretly changed. Spells [4] labels
+cancelled feints and hesitations; events record baits, spend and follow-ups.
+Validation: cpu_deception_test.gd covers selectable policy actions, a real expert
+guard bait, proportional stamina, no phantom launch, cooldown, delayed chain,
+and released-cast commitment. Three full fights, combo choices and label tests
+passed. A copy of the live policy produced one actual guard bait and follow-up
+in a 38.75s match; another fixture fight exercised a hesitation. This verifies
+the behavior, not that deception is already an optimal learned strategy.

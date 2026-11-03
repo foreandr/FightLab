@@ -84,6 +84,7 @@ var cast_phase := "windup"
 var cast_rate := 2.9
 var touch_chain_speed:=1.0
 var authored_aim_target:WeakRef
+var authored_return_elapsed:=0.0
 var beam_clock := 0.0
 var melee_charge := 0.0
 var last_hit_charge := 0.0
@@ -421,6 +422,18 @@ func chain_touch_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)
 	authored_entry_pose=previous_pose
 	touch_chain_speed=next_speed
 	return true
+
+## A genuine pre-release cancel. Controllers cannot erase a launched attack or
+## bypass the runtime's proportional stamina payment by calling this API.
+func cancel_authored_windup()->Dictionary:
+	if mode!="cast" or did_release or arena.combat().cast_committed(self) or combat_reaction_active():return {"cancelled":false,"stamina":0.0}
+	var pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
+	var paid:float=arena.combat().interrupt_cast_attempt(self)
+	arena.combat().finish_cast(self)
+	mode="idle";mode_time=0.0;mode_length=0.12;clip=""
+	authored_entry_pose=pose;authored_return_elapsed=0.0
+	authored_aim_target=null;touch_chain_speed=1.0
+	return {"cancelled":true,"stamina":paid}
 
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
@@ -820,7 +833,12 @@ func advance_free_animation(delta:float) -> void:
 		if not authored_entry_pose.is_empty():
 			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.10,cast_time))
 			if cast_time>=0.10:authored_entry_pose.clear()
-	elif not authored_entry_pose.is_empty():authored_entry_pose.clear()
+	elif not authored_entry_pose.is_empty():
+		if mode=="idle":
+			authored_return_elapsed+=delta
+			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.14,authored_return_elapsed))
+			if authored_return_elapsed>=0.14:authored_entry_pose.clear()
+		else:authored_entry_pose.clear()
 
 func editor_uppercut_charge_duration() -> float:
 	return 0.85
