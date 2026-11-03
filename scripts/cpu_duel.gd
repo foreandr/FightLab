@@ -10,8 +10,6 @@ var paused:=false
 var match_seed:=0
 var match_winner:=-2
 var finished_at:=0.0
-var result_label:Label
-var cards:Array[Dictionary]=[]
 var pause_button:Button
 var report_dialog:AcceptDialog
 var report_text:Label
@@ -23,9 +21,25 @@ var selected:CharacterBody3D
 var hovered:CharacterBody3D
 var focus_marker:Label3D
 var hud:Control
-var ui_clock:=0.0
+var learning_store:RefCounted
+var learning_enabled:=true
+var learning_updates:=true
+var exploration:=0.06
+var policy_overrides:Array=[]
+var policy_training_flags:Array=[]
+var self_play:=false
+var self_play_button:Button
+var intermission_left:=2.0
+var training_view:=false
+var learning_save_ok:=true
 func _ready()->void:
  super._ready()
+ training_view=bool(get_tree().get_meta("cpu_training_view",false))
+ learning_enabled=bool(get_tree().get_meta("ai_learning_enabled",true))
+ if learning_enabled:
+  learning_store=preload("res://scripts/ai/self_play_store.gd").new()
+  learning_store.path=str(get_tree().get_meta("ai_learning_path","user://ai/self_play.json"))
+  if not learning_store.load_data():learning_enabled=false;push_warning(learning_store.error)
  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
  var pit=preload("res://scenes/maps/gladiatorial_pit.tscn").instantiate();add_child(pit);use_level(pit)
  var environment:=WorldEnvironment.new();environment.environment=Environment.new()
@@ -41,19 +55,22 @@ func _ready()->void:
   Focus.ensure_ring(actor)
   preload("res://scripts/fighter_overhead_tag.gd").attach(actor,"CPU "+str(team+1))
  focus_marker=Focus.create_marker(self)
- build_ui()
+ if not training_view:build_ui()
+ else:set_process(false)
  ready_for_match=true
  rematch()
  update_camera(1.0)
 func rematch(seed_:int=0)->void:
- paused=false;pause_button.text="Pause";Engine.time_scale=1.0
+ paused=false
+ if is_instance_valid(pause_button):pause_button.text="Pause"
+ if not training_view:Engine.time_scale=1.0
  set_physics_process(true)
  match_seed=seed_ if seed_!=0 else int(Time.get_ticks_usec())
  var random:=RandomNumberGenerator.new();random.seed=match_seed
  round_active=false;clear_battle_effects();events.clear();casts.clear();hits.clear();elapsed=0
  spell_environment.reset_environment()
  combat().cast_attempts.clear();combat().cast_recoveries.clear();combat().touch_casts.clear()
- brains.clear();match_winner=-2;finished_at=0;countdown=2.0
+ brains.clear();match_winner=-2;finished_at=0;countdown=0.1 if training_view else 2.0;intermission_left=2.0
  selected=null;camera_focus_target=null
  var names:Array=["Aster","Rook","Vale","Cinder","Flint","Ash","Wren","Slate"]
  var offset:=random.randi_range(0,names.size()-1)
@@ -69,11 +86,16 @@ func rematch(seed_:int=0)->void:
   actor.get_node("OverheadHealthTag").name_label.text=names[(offset+team)%names.size()]
   actor.story_profile["name"]=names[(offset+team)%names.size()]
   var brain=Brain.new();brain.setup(actor,self,match_seed+team*7919,random.randf_range(0.35,0.80));brains.append(brain)
-  cards[team].title.text=str(actor.story_profile.name)+(" · Red" if team==0 else " · Blue")
-  cards[team].style.text="Pressure fighter" if brain.aggression>0.58 else "Patient counterfighter"
- update_hud()
+  if learning_enabled:
+   var table:Dictionary=policy_overrides[team] if policy_overrides.size()==2 else learning_store.data.learner
+   brain.policy=preload("res://scripts/ai/adaptive_policy.gd").new()
+   var train:bool=learning_updates and (bool(policy_training_flags[team]) if policy_training_flags.size()==2 else true)
+   brain.policy.configure(table,match_seed+team*179,train,exploration)
 func _physics_process(delta:float)->void:
  if not ready_for_match or paused:return
+ if match_winner!=-2 and self_play:
+  intermission_left-=delta
+  if intermission_left<=0:rematch();return
  if countdown>0:
   countdown=maxf(0.0,countdown-delta)
   if countdown<=0:round_active=true;elapsed=0.0
@@ -96,7 +118,15 @@ func finish_round(winner:int)->void:
  match_winner=winner;finished_at=elapsed;super.finish_round(winner)
  for actor in fighters:
   combat().discard_cast_attempt(actor)
- update_hud()
+ if learning_enabled:
+  var updates:=0
+  for brain in brains:
+   brain.policy.finish(brain.actor,winner,finished_at);updates+=int(brain.policy.updates)
+  if learning_updates:
+   learning_save_ok=learning_store.completed(updates,winner,finished_at)
+   if not learning_save_ok:push_warning("Could not save AI learning profile: "+str(learning_store.last_save_error))
+ if winner>=0:
+  fighters[winner].get_node("OverheadHealthTag").name_label.text=str(fighters[winner].story_profile.name)+" · Winner"
  var record:Dictionary={"seed":match_seed,"winner":winner,"seconds":elapsed,"fighters":[],"events":events}
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i]
@@ -115,19 +145,6 @@ func build_ui()->void:
  var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b5a27f");paper.set_border_width_all(1)
  for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:paper.set_content_margin(side,6)
  hud.theme.set_stylebox("panel","PanelContainer",paper)
- var top:=PanelContainer.new();top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE);hud.add_child(top)
- var row:=HBoxContainer.new();top.add_child(row);row.add_theme_constant_override("separation",18)
- for i in 2:
-  if i==1:
-   var center:=VBoxContainer.new();center.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(center)
-   var title:=label(center,"1v1 CPU Demo",22);title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-   result_label=label(center,"",18);result_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-  var column:=VBoxContainer.new();column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(column)
-  var title:=label(column,"",20);title.add_theme_color_override("font_color",Color("b64b44") if i==0 else Color("3981b5"))
-  var style:=label(column,"",13)
-  var action:=label(column,"Ready",15);action.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-  var why:=label(column,"",12);why.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-  cards.append({"title":title,"style":style,"action":action,"why":why})
  var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-54;hud.add_child(bottom)
  var buttons:=HBoxContainer.new();buttons.alignment=BoxContainer.ALIGNMENT_CENTER;bottom.add_child(buttons)
  button(buttons,"Main menu",go_home)
@@ -136,18 +153,14 @@ func build_ui()->void:
  button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible))
  button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible))
  button(buttons,"Match report",show_report)
-func update_hud()->void:
- if not is_instance_valid(result_label):return
- if match_winner!=-2:result_label.text=("Draw" if match_winner<0 else str(fighters[match_winner].story_profile.name)+" wins")+" · %.1f s"%finished_at
- elif countdown>0:result_label.text="Ready · "+str(ceili(countdown))
- else:result_label.text=("Paused · " if paused else "")+"%.1f s"%elapsed
- for i in fighters.size():
-  var actor:CharacterBody3D=fighters[i];var card:Dictionary=cards[i]
-  card.action.text=("Defeated" if actor.health<=0 else brains[i].plan)
-  card.why.text=brains[i].reason+" · Damage dealt %.1f"%actor.damage_dealt
+ self_play_button=button(buttons,"Self-play [T]",toggle_self_play);self_play_button.toggle_mode=true
+ self_play_button.tooltip_text="Keep running matches and saving AI learning"
 func toggle_pause()->void:
  paused=not paused;set_physics_process(not paused)
- pause_button.text="Resume" if paused else "Pause";update_hud()
+ if is_instance_valid(pause_button):pause_button.text="Resume" if paused else "Pause"
+func toggle_self_play()->void:
+ self_play=not self_play
+ if is_instance_valid(self_play_button):self_play_button.set_pressed_no_signal(self_play)
 func toggle_slow()->void:Engine.time_scale=1.0 if Engine.time_scale<1.0 else 0.35
 func show_report()->void:
  if not is_instance_valid(report_dialog):
@@ -155,6 +168,10 @@ func show_report()->void:
   var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(540,360);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;report_dialog.add_child(scroll)
   report_text=Label.new();report_text.custom_minimum_size.x=520;report_text.size_flags_horizontal=Control.SIZE_EXPAND_FILL;report_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;scroll.add_child(report_text)
  var text_:="Seed: %d\nElapsed: %.1f seconds\nSame loadouts; different decisions.\n"%[match_seed,finished_at if match_winner!=-2 else elapsed]
+ text_+="Winner: "+("In progress" if match_winner==-2 else ("Draw" if match_winner<0 else str(fighters[match_winner].story_profile.name)))+"\n"
+ if learning_store!=null and not learning_enabled:text_+="Learning unavailable: "+str(learning_store.error)+"\n"
+ if learning_enabled:text_+="Learning: %d completed matches · %d updates · champion generation %d\n"%[learning_store.data.matches,learning_store.data.updates,learning_store.data.generation]
+ if not learning_save_ok:text_+="Learning was not saved: "+str(learning_store.last_save_error)+"\n"
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i]
   text_+="\n%s\nDamage %.1f · Mana spent %.1f · Stamina spent %.1f\n"%[actor.story_profile.name,actor.damage_dealt,actor.mana_spent,actor.stamina_spent]
@@ -171,8 +188,7 @@ func update_camera(delta:float)->void:
  camera.global_position=camera.global_position.lerp(middle+backward*distance,1.0-exp(-5.0*delta));camera.look_at(middle)
 func _process(delta:float)->void:
  if not ready_for_match:return
- update_camera(delta);ui_clock+=delta
- if ui_clock>0.1:ui_clock=0;update_hud()
+ update_camera(delta)
  hovered=Focus.pick(camera,fighters,get_viewport().get_mouse_position()) if get_viewport().gui_get_hovered_control()==null else null
  for actor in fighters:Focus.update_ring(Focus.ensure_ring(actor),actor==selected,actor==hovered,actor.health>0)
  Focus.update_marker(focus_marker,camera_focus_target)
@@ -181,6 +197,7 @@ func _unhandled_input(event:InputEvent)->void:
   match event.keycode:
    KEY_SPACE:toggle_pause()
    KEY_R:rematch()
+   KEY_T:toggle_self_play()
    KEY_ESCAPE:go_home()
    KEY_2:set_combat_hitboxes(not projectile_hitboxes_visible)
    KEY_3:set_combat_numbers(not combat_numbers_visible)

@@ -268,7 +268,7 @@ CombatWorld host, not a copy of an existing arena. cpu_duel.gd owns only the
 level, spectator camera, HUD, match lifecycle and aiming input. cpu_duel_brain.gd
 chooses existing actor actions using range, visible incoming trajectories,
 reaction intervals, stamina reserves, mana reserves and opponent commitments.
-This is a rule-based controller; no training or reinforcement learning is used.
+The rule-based controller supplies expert reflexes and safe action candidates. Optional scripts/ai/adaptive_policy.gd learns tactical choices through persistent tabular Q-learning; see docs/ai-self-play.txt.
 
 cpu_duel_loadout.gd authors a symmetric repertoire through CombatSpellRules:
 jab, cross, kick and knee at 0.55 / 1 / 1.5 seconds; quick, balanced and large
@@ -305,4 +305,4 @@ CPU defense checks every simulation step, forecasts visible projectile arrival
 perfect-parry window. It uses a legal 0.5-second shield animation with ordinary
 shared pricing/capacity and tries an evade when activation would be too late.
 No parry windows, invulnerability, damage or resource rules are relaxed for AI.
-The spectator HUD shows plans; all resource bars remain on the characters.
+The spectator commentary panel is removed; plans remain in Match report and all resource bars remain on the characters.

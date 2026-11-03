@@ -1,5 +1,7 @@
 extends SceneTree
-func _initialize():call_deferred("run")
+func _initialize():
+ set_meta("ai_learning_enabled",false)
+ call_deferred("run")
 func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn")
  await process_frame;await process_frame

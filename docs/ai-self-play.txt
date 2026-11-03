@@ -1,0 +1,104 @@
+PERSISTENT AI SELF-PLAY
+
+Visible fights
+--------------
+Home -> Fight -> 1v1 CPU Demo learns by default. Each completed match updates and
+saves the shared learner. Press T / Self-play to keep rematching automatically;
+press it again to stop. Space pauses simulation. R rematches. The top commentary
+panel has been removed. Resources remain above each character. Match report
+contains decisions, completed learning matches, update count and champion version.
+
+Offline batches
+---------------
+Close the visible CPU demo before using the same learning profile in a trainer.
+From the FightLab folder, PowerShell:
+
+  .\tools\train_ai.ps1 -Matches 1000 -Speed 4
+
+This runs real Godot combat without a game window. It resumes the saved learner,
+saves after each completed training match, and can be stopped between matches.
+An interrupted unfinished match is not counted as a completed episode. Speed is
+a requested acceleration, not a promised throughput. Physics frequency increases
+with time scale so each simulated physics step stays 1/60 second; it does not
+skip animation/contact frames to manufacture faster fights. CPU throughput may
+limit actual acceleration.
+
+Advanced direct entry:
+
+  .\tools\Godot_v4.6-stable_win64_console.exe --headless --path . --script res://scripts/ai/train_self_play.gd -- --matches=1000 --speed=4 --eval-every=100 --eval-pairs=10 --history-every=3 --seed=731091
+
+--profile=user://ai/other_profile.json uses a separate model file.
+--timeout=180 limits simulated seconds per training/evaluation game; a timeout is
+a draw, not an invented win. Visible ordinary fights keep their real death-based
+ending. Do not run concurrent writers on one profile. The revision check refuses
+stale overwrites; separate worker profiles are not automatically merged.
+
+What learns
+-----------
+The AI module is scripts/ai/, separate from modes, levels and combat mechanics.
+AdaptivePolicy uses tabular semi-Markov Q-learning, not a neural network. Its
+state buckets cover distance, both fighters' health, stamina, mana, enemy casting
+and enemy shield. Its legal actions include the equipped melee/fireball choices,
+combo links/stopping, and approach/sprint/dash/circle/retreat. Resource and range
+masks, expert recovery and the existing precise block/evasion reflex remain in
+the controller. This is a bounded tactical learner, not arbitrary motor control.
+
+Reward per transition:
+  +0.1 * damage dealt
+  -0.1 * damage taken
+  -0.003 * actual mana spent
+  -0.002 * actual stamina spent
+  -0.015 * elapsed simulated seconds
+Terminal reward: +20 win, -20 loss, -5 draw.
+Bootstrap discount: 0.97 per simulated second. Initial learning rate: 0.12,
+decreasing with visits. Existing heuristic scores initialize unknown choices.
+Live exploration is 6%; batch exploration decays from 18% to a 4% floor. Frozen
+evaluation has zero exploration and cannot update its policy.
+
+CombatWorld, BattleActor, CombatRuntime and the existing authored spell rules
+still own animation clocks, real limb contacts/projectiles, damage, resource
+payment/recovery, shields/parries, status ticks, ragdolls and death. Learning never
+raises stats, widens parry windows or grants hidden resources. Levels remain
+independent providers of geometry. Other modes can reuse AdaptivePolicy and
+SelfPlayStore.best_model without duplicating combat.
+
+Checkpoints and evidence
+------------------------
+Most batch games are self-play against the current learner. Every third training
+game uses a frozen champion/historical opponent, alternating the learner's side,
+to reduce pure self-play overfitting. Every 100 training games by default, the
+runner freezes a candidate and evaluates both orientations on held-out seeds
+against the incumbent, the untrained policy and archived champions.
+
+Promotion requires at least 20 evaluation games, at least 10 against the incumbent,
+70% aggregate points and 60% incumbent points. A draw earns half a point. These are
+practical checkpoint gates, not statistical proof of superiority. The current
+champion and up to five older policies are retained. A candidate that fails does
+not replace the champion. Training still continues in the separate learner.
+
+Every completed match supplies experience; it does NOT guarantee a stronger AI
+on every update. Evaluation can expose regression, cyclic counters or reward
+exploits. Thousands of matches and substantially broader evaluation are needed
+before claiming general or superhuman strength. Changes to combat rules/loadouts
+or state semantics should bump SelfPlayStore.RULESET and use a new profile.
+
+Local files (not game/character content or Git assets)
+----------------------------------------------------
+Default: user://ai/self_play.json, plus .bak backup and temporary atomic save.
+Windows: %APPDATA%\Godot\app_userdata\FightLab\ai\self_play.json
+The profile contains learner values/visits, match/update counters, frozen champion,
+small historical league and bounded evaluation/match histories. Corrupt profiles
+can recover from a valid backup; unknown formats are preserved and not overwritten.
+Batch report: <profile basename>_report.json, with seeds, outcomes, updates,
+evaluation points and wall time. Normal match details remain in
+user://logs/cpu_demo_last_match.json. One process should write a profile at a time.
+
+Validation
+----------
+tests/ai_learning_test.gd: rewards change subsequent choices, legal masks,
+read-only evaluation, persistence/reload/backups, incompatible-file preservation,
+stale writer rejection and evidence-gated champion promotion.
+tests/ai_self_play_ui_test.gd: no top panel, learner/opponent training flags,
+completed-match persistence, automatic rematch, retained policy and stop toggle.
+Headless smoke batches validate real fights, saving, resume and frozen evaluation.
+They validate the pipeline; they are not a thousand-match strength benchmark.

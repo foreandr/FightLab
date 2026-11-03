@@ -1,6 +1,8 @@
 extends SceneTree
 const Loadout=preload("res://scripts/cpu_duel_loadout.gd")
-func _initialize():call_deferred("run")
+func _initialize():
+ set_meta("ai_learning_enabled",false)
+ call_deferred("run")
 func run():
  # Public home route, rather than a development-only scene entry.
  change_scene_to_file("res://scenes/home.tscn");await process_frame;await process_frame

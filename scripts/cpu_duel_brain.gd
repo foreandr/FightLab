@@ -16,6 +16,7 @@ var last_progress:=0.0
 var stale_time:=0.0
 var combo_count:=0
 var combo_checked:=false
+var policy:RefCounted
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
@@ -98,11 +99,35 @@ func try_combo()->bool:
   choices.append(item)
  if choices.is_empty():return false
  var next:Dictionary=choices[rng.randi_range(0,choices.size()-1)]
+ if policy!=null:
+  var options:Array[Dictionary]=[{"action":"combo/stop","prior":0.5}]
+  for item in choices:options.append({"action":"combo/"+str(item.spec.id),"prior":1.0+float(item.spec.damage)*0.03,"item":item})
+  var selected:Dictionary=policy.pick(actor,options)
+  policy.begin(actor,selected,options,world.elapsed)
+  if str(selected.action)=="combo/stop":return false
+  next=selected.item
  var previous:=str(actor.current_spell.get("name","Touch"))
  if not actor.chain_touch_cast(next.spec,next.profile):return false
  combo_count+=1;combo_checked=false
  note(str(next.title),"Combo from "+previous)
  world.events.append({"time":world.elapsed,"event":"cpu_combo","team":actor.team,"from":previous,"to":next.title})
+ return true
+func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[float])->bool:
+ var options:Array[Dictionary]=[]
+ for i in choices.size():options.append({"action":"cast/"+str(choices[i].spec.id),"prior":scores[i],"item":choices[i]})
+ options.append({"action":"move/strafe","prior":0.4})
+ if distance>0.85:options.append({"action":"move/approach","prior":0.9 if distance<3 else 0.35})
+ if distance<4.5:options.append({"action":"move/retreat","prior":0.7 if actor.stamina<45 else 0.2})
+ if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":1.2 if aggression>0.6 else 0.6})
+ if distance>2 and distance<7 and actor.stamina>55 and defense_left<=0:options.append({"action":"move/dash","prior":0.5})
+ var selected:Dictionary=policy.pick(actor,options)
+ policy.begin(actor,selected,options,world.elapsed)
+ if selected.has("item"):return cast(selected.item,"Learned attack choice")
+ var kind:=str(selected.action).trim_prefix("move/")
+ if kind=="dash":
+  if actor.start_motion_dash(0):note("Dash in","Learned movement choice");defense_left=1.2;return true
+  return false
+ move(kind,"Learned movement choice");action_left=0.45
  return true
 func step(delta:float)->void:
  if not world.round_active or actor.health<=0:return
@@ -127,7 +152,7 @@ func step(delta:float)->void:
   return
  if action_left>0:return
  # Pressure fighters sometimes spend movement stamina to deny a ranged reset.
- if distance>3.0 and distance<10.0 and actor.stamina>55 and aggression>0.6 and rng.randf()<0.35:
+ if policy==null and distance>3.0 and distance<10.0 and actor.stamina>55 and aggression>0.6 and rng.randf()<0.35:
   move("chase","Deny a ranged opening");action_left=0.45;return
  var choices:Array[Dictionary]=[]
  var scores:Array[float]=[]
@@ -149,6 +174,9 @@ func step(delta:float)->void:
    if distance>10.0:score*=0.55
   if score>0:
    choices.append(item);scores.append(score*rng.randf_range(0.6,1.4))
+ if policy!=null:
+  adaptive_decision(distance,choices,scores)
+  return
  if not choices.is_empty():
   var best:=0
   for i in scores.size():if scores[i]>scores[best]:best=i
