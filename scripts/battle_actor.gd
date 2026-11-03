@@ -29,6 +29,7 @@ var practice_dummy_visual:Node3D
 var practice_spell_animation:Dictionary={}
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
+var practice_face_rival:=false
 var practice_home:=Vector3.ZERO
 var return_state:=""
 var air_remaining:=8.0
@@ -1297,6 +1298,9 @@ func start_burst(paid := false) -> void:
 	tactics.attack(self,"flash_step")
 	count_action("flash_charge")
 
+func combat_reaction_active()->bool:
+	return health<=0.0 or is_instance_valid(ragdoll) or is_instance_valid(burn_death) or mode in ["hit","ragdoll","getup","ko","frozen","land"] or freeze_time>0.0 or stun_time>0.0
+
 func tick(delta: float) -> void:
 	if practice_paused:return
 	if is_instance_valid(burn_death):return
@@ -1310,8 +1314,9 @@ func tick(delta: float) -> void:
 		return
 	update_status(delta)
 	stun_time=maxf(0,stun_time-delta)
+	# Editor previews yield to shared hit, restraint, recovery and death behavior.
 	# Pose ownership never pauses combat status clocks or damage-over-time.
-	if editor_pose_locked:
+	if editor_pose_locked and not combat_reaction_active():
 		invulnerability=maxf(0.0,invulnerability-delta)
 		return
 	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH
@@ -1776,7 +1781,7 @@ func tick_return_home(delta:float) -> void:
 		play("ual1/Idle" if practice_damageable_dummy else "fight/guard")
 	else:
 		mode="frozen" if blocked else "returning"
-		rotation.y=lerp_angle(rotation.y,atan2(offset.x,offset.z),minf(1,delta*8))
+		if not practice_face_rival:rotation.y=lerp_angle(rotation.y,atan2(offset.x,offset.z),minf(1,delta*8))
 		var desired:Vector3=offset.normalized()*minf(2.0,offset.length()*3)*(0.6 if chill_time>0 else 1.0)
 		drive_velocity=Vector3.ZERO if blocked else drive_velocity.move_toward(desired,delta*(0.7 if surface_slippery else 12.0))
 		play("fight/guard" if blocked else "duel/walk_forward",0.7 if chill_time>0 else 1.0)
@@ -1785,6 +1790,7 @@ func tick_return_home(delta:float) -> void:
 	velocity.y=-0.5 if is_on_floor() else velocity.y-GRAVITY*delta
 	knockback*=exp(-delta*(0.4 if surface_slippery else 4.2))
 	move_and_slide()
+	if practice_face_rival and is_instance_valid(rival) and rival.health>0.0:face_rival(delta)
 	advance_animation(delta)
 
 func tick_swimming(delta:float) -> void:

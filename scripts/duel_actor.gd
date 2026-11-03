@@ -743,7 +743,7 @@ func tick(delta: float) -> void:
 	var was_air := not is_on_floor()
 	move_and_slide()
 	arena.settle_actor_on_ground(self)
-	if is_on_floor() and was_air and mode in ["flip", "air", "cast", "hit"]:
+	if is_on_floor() and was_air and mode in ["flip", "air", "cast"]:
 		if mode != "cast" or did_release:
 			mode = "land"
 			mode_time = 0

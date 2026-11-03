@@ -16,6 +16,7 @@ func configure(owner_builder:Control,punch_only:=false)->void:
 	unit.name="BarrierTestPuncher" if melee_only else "BarrierTestCaster"
 	unit.set_meta("barrier_test_caster",true)
 	unit.brain_enabled=false;unit.practice_return_enabled=true;unit.editor_pose_locked=false
+	unit.practice_face_rival=true
 	unit.practice_damageable_dummy=true
 	preload("res://scripts/fighter_overhead_tag.gd").attach(unit,"Punch tester" if melee_only else "Projectile tester")
 	for profile in preload("res://scripts/animation_catalog.gd").entries():
@@ -35,7 +36,7 @@ func reset()->void:
 	clock=0.0
 	set_paused(false)
 	if not is_instance_valid(unit):return
-	var home:Vector3=builder.editor.actor.global_position+builder.editor.actor.global_basis.z*1.4 if melee_only else builder.editor.target.practice_home-builder.editor.target.global_basis.x*3.0
+	var home:Vector3=builder.editor.actor.global_position+builder.editor.actor.global_basis.z*1.25 if melee_only else builder.editor.target.practice_home-builder.editor.target.global_basis.x*3.0
 	unit.practice_home=builder.editor.field.surface_placement(home)
 	unit.global_position=unit.practice_home;unit.velocity=Vector3.ZERO
 	unit.rival=builder.editor.actor
@@ -75,8 +76,6 @@ func _physics_process(delta:float)->void:
 	if clock<INTERVAL:return
 	clock=fmod(clock,INTERVAL)
 	if melee_only:
-		var toward:Vector3=target.global_position-unit.global_position
-		unit.rotation.y=atan2(toward.x,toward.z)
 		unit.begin_strike(["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0])
 	else:unit.start_cast(false)
 	if unit.mode in ["cast","punch"]:casts_started+=1

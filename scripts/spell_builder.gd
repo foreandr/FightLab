@@ -152,7 +152,7 @@ var barrier_confirm_button:Button
 var barrier_back_button:Button
 var barrier_tester:Node
 var barrier_puncher:Node
-var barrier_test_controls:VBoxContainer
+var barrier_test_controls:HBoxContainer
 var barrier_pause_buttons:Dictionary={}
 var delivery_screen:VBoxContainer
 var delivery_choices:Dictionary={}
@@ -723,11 +723,6 @@ func setup(owner_editor:Node) -> void:
  barrier_confirm_button=editor.button(barrier_screen,"Confirm",confirm_barrier_kind)
  barrier_confirm_button.name="ConfirmBarrierType"
  barrier_confirm_button.disabled=true
- barrier_test_controls=VBoxContainer.new();barrier_screen.add_child(barrier_test_controls)
- for tester_kind in ["Projectiles","Punches"]:
-  var pause_button:Button=editor.button(barrier_test_controls,"Pause "+tester_kind,func():toggle_barrier_tester(tester_kind))
-  pause_button.name="Pause"+tester_kind
-  barrier_pause_buttons[tester_kind]=pause_button
  barrier_back_button=editor.button(barrier_screen,"← Back",func():show_creation_step("barrier" if creation_step=="shield" else "delivery"))
  add_start_navigation(barrier_back_button)
  barrier_screen.hide()
@@ -802,6 +797,14 @@ func setup(owner_editor:Node) -> void:
  reset_scene_button.custom_minimum_size.x=140
  reset_scene_button.focus_mode=Control.FOCUS_ALL
  reset_scene_button.tooltip_text="Heal and restore the practice scene; keep your spell settings."
+ barrier_test_controls=HBoxContainer.new();playback_row.add_child(barrier_test_controls)
+ barrier_test_controls.add_theme_constant_override("separation",6)
+ for tester_kind in ["Projectiles","Punches"]:
+  var pause_button:Button=editor.button(barrier_test_controls,"Pause "+tester_kind,func():toggle_barrier_tester(tester_kind))
+  pause_button.name="Pause"+tester_kind
+  pause_button.custom_minimum_size.x=110
+  pause_button.focus_mode=Control.FOCUS_ALL
+  barrier_pause_buttons[tester_kind]=pause_button
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
  add_start_navigation(projectile_back_button)
@@ -940,6 +943,9 @@ func choose_barrier_kind(value:String)->void:
 func confirm_barrier_kind()->void:
  if creation_step!="barrier" or barrier_kind!="Shield":return
  show_creation_step("shield")
+ for tester in [barrier_tester,barrier_puncher]:
+  if is_instance_valid(tester):tester.reset()
+ refresh_barrier_choices()
  GameDiagnostics.log_event("barrier_type_confirmed",{"kind":barrier_kind})
 
 func toggle_barrier_tester(kind:String)->void:
@@ -1585,6 +1591,7 @@ func refresh_demo_choices() -> void:
   if not parts.is_empty():demo_type_labels[choice].tooltip_text+="\nSource layers: "+" + ".join(parts)
 
 func play_demo_preview() -> void:
+ if is_instance_valid(editor.actor) and editor.actor.combat_reaction_active():return
  if not demo_choice_selected or cast_committed():return
  interrupt_preview_cast()
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
@@ -1618,6 +1625,12 @@ func play_demo_preview() -> void:
   begin_demo_exit()
 
 func process_demo_preview(delta:float) -> void:
+ if editor.actor.combat_reaction_active():
+  interrupt_preview_cast()
+  playing=false
+  demo_enter_pose.clear();demo_exit_pose.clear()
+  caster_moving=false
+  return
  idle_elapsed+=delta
  if playing and previews_projectile() and not editor.actor.can_cast_with(committed_spec if cast_committed() else demo_preview_spec(),playback_animation()):
   editor.field.combat().finish_cast(editor.actor)
@@ -2310,7 +2323,7 @@ func workspace_visibility_changed() -> void:
  if is_instance_valid(editor.actor):
   for fighter in editor.field.fighters:
    fighter.editor_pose_locked=is_visible_in_tree() and fighter==editor.actor
-   fighter.practice_immortal=is_visible_in_tree()
+   fighter.practice_immortal=fighter.practice_god_mode
    fighter.practice_return_enabled=is_visible_in_tree() and fighter!=editor.actor
   reset_caster_pose()
  if is_visible_in_tree():
@@ -2334,6 +2347,7 @@ func reset_caster_pose() -> void:
  demo_exit_pose.clear()
  if not is_instance_valid(editor) or not is_instance_valid(editor.actor):return
  var actor=editor.actor
+ if actor.combat_reaction_active():return
  actor.capture_ice_pose()
  actor.set_editor_animation_profile({},"")
  actor.mode="review"
@@ -2450,6 +2464,7 @@ func _physics_process(delta:float) -> void:
 
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  ensure_third_person_camera()
+ if editor.actor.combat_reaction_active():return
  # Scriptable locomotion entry point; live input/focus checks remain above.
  var caster=editor.actor
  if playing and CastType.owns_legs(playback_animation()):
