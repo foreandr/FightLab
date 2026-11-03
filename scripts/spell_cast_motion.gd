@@ -31,7 +31,13 @@ static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={})
 	if profile.get("frames",[]).size()>=2:actor.apply_custom_jump_pose(progress,profile.frames,true)
 	if profile.has("demo_palm"):_apply_demo_hand(actor,str(profile.demo_palm),progress)
 	Safety.limit_torso(actor)
-	if not aim.is_empty():AimPose.apply(actor,aim.target,str(aim.get("emitter","hand_r")),float(aim.get("weight",1.0)))
+	if not aim.is_empty():
+		if profile.get("preserve_arm_arc",str(profile.get("clip","")).begins_with("boxing/hook_")):
+			# Hook/sweep geometry is authored into the arm. Aim through the torso
+			# rather than pulling the forearm into a straight targeting ray.
+			var correction:=AimPose.endpoint_angles(actor,str(aim.get("emitter","hand_r")),aim.target)
+			if not correction.is_empty():AimPose.apply_torso(actor,float(correction.yaw)*float(aim.get("weight",1.0)),float(correction.pitch)*float(aim.get("weight",1.0)))
+		else:AimPose.apply(actor,aim.target,str(aim.get("emitter","hand_r")),float(aim.get("weight",1.0)))
 	actor.restore_ice_pose()
 	actor.skeleton.force_update_all_bone_transforms()
 

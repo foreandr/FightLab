@@ -412,7 +412,7 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=nu
 ## Touch can link its recovery into another Touch. Released projectiles remain locked.
 func chain_touch_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)->bool:
 	if mode!="cast" or str(current_spell.get("effect",""))!="touch" or str(spec.get("effect",""))!="touch" or not did_release:return false
-	if cast_time<mode_length*preload("res://scripts/touch_combo_rules.gd").LINK_PROGRESS or combat_reaction_active() or not arena.round_active:return false
+	if cast_time<mode_length*preload("res://scripts/touch_combo_rules.gd").link_progress(practice_spell_animation) or combat_reaction_active() or not arena.round_active:return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if stamina<float(spec.get("stamina_cost",0.0)) or mana<arena.mana_cost(spec):return false
 	var previous_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)

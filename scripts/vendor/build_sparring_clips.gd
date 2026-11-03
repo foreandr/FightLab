@@ -47,14 +47,20 @@ func build_boxing_hook() -> Animation:
 	var shoulder := global_origin(load_pose, "upperarm_" + rear)
 	solve_ik(load_pose, "upperarm_" + rear, "lowerarm_" + rear, "hand_" + rear, shoulder + Vector3(rear_sign() * 0.22, -0.07, 0.28), Vector3(rear_sign(), 0.1, 0.1))
 	var strike := duplicate_pose(guard)
-	hip_turn(strike, 30.0)
-	move_bone(strike, "pelvis", Vector3(0, -0.015, 0.045))
+	hip_turn(strike, 38.0)
+	move_bone(strike, "pelvis", Vector3(0, -0.025, 0.09))
 	plant_foot(strike, "l", lf)
 	plant_foot(strike, "r", rf)
 	shoulder = global_origin(strike, "upperarm_" + rear)
-	solve_ik(strike, "upperarm_" + rear, "lowerarm_" + rear, "hand_" + rear, Vector3(-rear_sign() * 0.08, 1.40, 0.58), Vector3(rear_sign(), 0.2, 0.1))
+	# A hook stays bent: the old distant wrist target exceeded arm reach and
+	# silently straightened the elbow into a cross. Sweep across the centreline.
+	solve_ik(strike, "upperarm_" + rear, "lowerarm_" + rear, "hand_" + rear, Vector3(rear_sign() * 0.06, 1.31, 0.42), Vector3(rear_sign(), 0.25, 0.05))
 	shoulder_roll(strike, rear, 8.0)
-	return make_animation([[0.0, guard], [0.14, load_pose], [0.28, strike], [0.34, strike], [0.68, guard]], false)
+	var follow := duplicate_pose(strike)
+	hip_turn(follow, 16.0)
+	plant_foot(follow,"l",lf);plant_foot(follow,"r",rf)
+	solve_ik(follow,"upperarm_"+rear,"lowerarm_"+rear,"hand_"+rear,Vector3(-rear_sign()*0.24,1.29,0.24),Vector3(rear_sign(),0.2,0.05))
+	return make_animation([[0.0, guard], [0.18, load_pose], [0.34, strike], [0.46, follow], [0.78, guard]], false)
 
 # --- Clips -----------------------------------------------------------------------
 

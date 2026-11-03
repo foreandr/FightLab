@@ -82,7 +82,13 @@ static func touch_move(move:Array,element:String="None")->Dictionary:
  var seconds:=float(move[5])
  var spec:Dictionary=Rules.author(base,seconds,0.22,true)
  spec.id="cpu_touch_"+str(move[0]).to_snake_case();spec.name=move[0]
- return {"kind":"melee","title":move[0],"range":move[4],"duration":seconds,"spec":spec,"profile":{"clip":move[1],"step":move[0],"store_raw":true,"duration":seconds,"attack_bone":move[2],"animation_type":move[3]}}
+ var result:Dictionary={"kind":"melee","title":move[0],"range":move[4],"duration":seconds,"spec":spec,"profile":{"clip":move[1],"step":move[0],"store_raw":true,"duration":seconds,"attack_bone":move[2],"animation_type":move[3]}}
+ if str(move[1]).begins_with("boxing/hook_"):
+  result.profile["combo_link_progress"]=0.68
+  result.profile["contact_progress"]=0.44
+  result.profile["preserve_arm_arc"]=true
+  result["range"]=0.80
+ return result
 
 static func prepare(actor:Node)->void:
  # Register the existing authored headbutt once per actor, never per cast.

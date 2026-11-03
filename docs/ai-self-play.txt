@@ -228,3 +228,22 @@ and released-cast commitment. Three full fights, combo choices and label tests
 passed. A copy of the live policy produced one actual guard bait and follow-up
 in a 38.75s match; another fixture fight exercised a hesitation. This verifies
 the behavior, not that deception is already an optimal learned strategy.
+
+Hook visibility and contact
+---------------------------
+The match audit found hooks were being released, but the old boxing hooks had
+~173-degree elbows at impact: an out-of-reach wrist target straightened them
+into cross-like punches. The reproducible sparring clip builder now authors a
+bent-arm sideways strike with a separate cross-body follow-through. The shared
+boxing animation library supplies the same corrected clips throughout the game.
+Hook Touch profiles preserve their authored arm arc when aiming; use bounded
+torso correction instead of pulling the forearm into the target ray. Known
+boxing hook sources default to this behavior, including outside the CPU mode.
+The shared Touch link gate is 68% for these hooks (ordinary strikes stay 55%),
+so combinations cannot remove the follow-through. Controller contact prediction
+uses their 44% impact marker. Their selection range is 0.8m; hitbox radius and
+damage rules are unchanged. Saved policy action IDs remain unchanged.
+cpu_hook_test.gd verifies bent left/right elbows, actual sideways sweep, aiming
+preserves the bend, real physical and fire contacts, and the shared link gate.
+Measured impact angles are about 72 degrees left / 124 degrees right in the
+existing asymmetric stance. Normal combo and expert-defense tests also pass.

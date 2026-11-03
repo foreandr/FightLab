@@ -98,6 +98,7 @@ func incoming()->Dictionary:
   if effect=="touch" and actor.flat_distance()<1.65 and not bool(world.combat().touch_casts.get(enemy.get_instance_id(),{}).get("connected",false)):
    var bone:=str(enemy.current_spell.get("hand","hand_r"))
    var apex:=0.48 if bone.begins_with("calf") else (0.44 if bone.begins_with("foot") else 0.36)
+   apex=float(enemy.practice_spell_animation.get("contact_progress",apex))
    eta=maxf(0.0,enemy.mode_length*apex-enemy.cast_time)/enemy.cast_speed_multiplier()
   elif effect=="orb" and not enemy.did_release:
    var speed:float=preload("res://scripts/combat_spell_rules.gd").motion(enemy.current_spell).speed
@@ -128,7 +129,7 @@ func defend(threat:Dictionary)->bool:
  return false
 func try_combo(allow_hesitation:bool=true)->bool:
  if str(actor.current_spell.get("effect",""))!="touch" or not actor.did_release:return false
- if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*Combo.LINK_PROGRESS:return false
+ if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*Combo.link_progress(actor.practice_spell_animation):return false
  if actor.cast_time>actor.mode_length*0.90:return false
  var choices:Array[Dictionary]=[]
  for item in loadout:
