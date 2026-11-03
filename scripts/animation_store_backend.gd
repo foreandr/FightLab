@@ -377,9 +377,6 @@ static func _portable_store_animation(host, entry:Dictionary) -> Animation:
 static func take_store_animation(host, entry:Dictionary,group:String,category:String) -> void:
 	entry=host._resolve_store_record(entry)
 	if entry.is_empty():return
-	if not preload("res://scripts/animation_cast_type.gd").declared(entry):
-		host.open_animation_type_dialog(entry,group,category)
-		return
 	host._log_store_action("download_clicked",entry,{"destination_group":group,"destination_folder":category})
 	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,host.actor):
 		host._show_library_notice("Not added · this source could not be imported onto the character rig")
@@ -419,24 +416,3 @@ static func take_store_animation(host, entry:Dictionary,group:String,category:St
 	host.selection_status.text="Added %s to %s / %s"%[entry.title,group,category]
 	host._log_store_action("download_complete",entry,{"project_asset":host.store_library.last_taken_entry.get("animation_resource",""),"tracks":project_animation.get_track_count(),"duration":project_animation.length})
 	host._show_library_notice("Added %s → %s · project asset ready for Git"%[host.store_library.last_taken_entry.get("title",entry.title),category])
-
-
-static func open_animation_type_dialog(host, entry:Dictionary,group:String,category:String) -> void:
-	var dialog=ConfirmationDialog.new()
-	dialog.title="Animation type · "+str(entry.get("title","Animation"))
-	dialog.theme=host._book_theme()
-	var control=preload("res://scripts/animation_movement_control.gd").new()
-	dialog.add_child(control)
-	dialog.get_ok_button().disabled=true
-	var selected:Dictionary=entry.duplicate(true)
-	control.value_changed.connect(func(value:String):
-		selected["animation_type"]=value
-		dialog.get_ok_button().disabled=false)
-	dialog.confirmed.connect(func():
-		selected.erase("_detail_offset")
-		host.take_store_animation(selected,group,category)
-		dialog.queue_free())
-	dialog.canceled.connect(dialog.queue_free)
-	host.add_child(dialog)
-	dialog.popup_centered(Vector2i(400,180))
-	control.menu.grab_focus()

@@ -187,9 +187,7 @@ var custom_action_category := "Jump"
 var custom_action_group := "Motion"
 var custom_source_mirrored := false
 var custom_source_attack_bone := ""
-var custom_animation_type:=""
 var custom_animation_components:Array=[]
-var custom_movement_control:VBoxContainer
 var custom_source_step := "Jump"
 var custom_source_clip := "duel/air"
 var custom_source_animation_resource:=""
@@ -1066,8 +1064,6 @@ func _portable_store_animation(entry:Dictionary) -> Animation:
 func take_store_animation(entry:Dictionary,group:String,category:String) -> void:
 	preload("res://scripts/animation_store_backend.gd").take_store_animation(self ,entry,group,category)
 
-func open_animation_type_dialog(entry:Dictionary,group:String,category:String) -> void:
-	preload("res://scripts/animation_store_backend.gd").open_animation_type_dialog(self ,entry,group,category)
 func open_rename_animation(entry:Dictionary) -> void:
 	var dialog:=ConfirmationDialog.new()
 	dialog.title="Rename animation"
@@ -2695,7 +2691,6 @@ func save_timeline() -> void:
 	if name_.is_empty():return
 	var snapshot:Dictionary={"name":name_,"duration":timeline_duration,"clips":timeline_clips.duplicate(true),"rows":timeline_rows.duplicate(true)}
 	snapshot["animation_components"]=preload("res://scripts/animation_cast_type.gd").components(timeline_clips)
-	snapshot["animation_type"]=preload("res://scripts/animation_cast_type.gd").composite_type(snapshot.animation_components)
 	for entry in store_library.taken.values():
 		if str(entry.get("title",""))==name_:
 			snapshot.group=entry.group
@@ -3238,10 +3233,7 @@ func open_custom_for(entry: Dictionary) -> void:
 	custom_random_pending.clear()
 	custom_source_mirrored=bool(entry.get("mirrored",false))
 	custom_source_attack_bone=str(entry.get("attack_bone",""))
-	custom_animation_type=preload("res://scripts/animation_cast_type.gd").kind(entry) if preload("res://scripts/animation_cast_type.gd").declared(entry) else ""
 	custom_animation_components=entry.get("animation_components",preload("res://scripts/animation_cast_type.gd").components(entry.get("composed_timeline",{}).get("clips",[]))).duplicate(true)
-	custom_movement_control.set_components({"animation_components":custom_animation_components})
-	custom_movement_control.set_value(custom_animation_type)
 	custom_source_step=entry.step
 	custom_source_clip=entry.clip
 	custom_source_animation_resource=str(entry.get("animation_resource",""))
@@ -3315,7 +3307,7 @@ func create_custom_variant(entry:Dictionary={}) -> void:
 	if custom_recording or custom_randomizing:return
 	var parent:Dictionary=entry.duplicate(true)
 	if parent.is_empty():
-		parent={"group":custom_action_group,"category":custom_action_category,"title":custom_name.text.strip_edges(),"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"duration":custom_duration,"frames":custom_frames.duplicate(true),"path":custom_edit_path}
+		parent={"group":custom_action_group,"category":custom_action_category,"title":custom_name.text.strip_edges(),"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"duration":custom_duration,"frames":custom_frames.duplicate(true),"path":custom_edit_path}
 		parent["provenance"]=custom_provenance.duplicate(true)
 		if not custom_store_source_animation.is_empty():parent["source_animation"]=custom_store_source_animation
 	if str(parent.get("title","")).is_empty():parent["title"]=custom_source_title
@@ -3521,15 +3513,6 @@ func build_custom_editor() -> void:
 	custom_controls.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	custom_controls.add_theme_constant_override("separation",3)
 	controls_scroll.add_child(custom_controls)
-	var movement_tab:=VBoxContainer.new()
-	movement_tab.name="Movement"
-	movement_tab.add_theme_constant_override("separation",UI_EDGE_GAP)
-	tools_tabs.add_child(movement_tab)
-	custom_movement_control=preload("res://scripts/animation_movement_control.gd").new()
-	movement_tab.add_child(custom_movement_control)
-	custom_movement_control.value_changed.connect(set_custom_animation_type)
-	var movement_hint:=menu_label(movement_tab,"Required: Head, Arm, Leg or Movement. Regional layers can sit over a Movement base.",14)
-	movement_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	build_custom_random_tools(tools_tabs)
 	var playback_tab:=VBoxContainer.new()
 	playback_tab.name="Playback"
@@ -3711,14 +3694,8 @@ func undo_custom_drag() -> void:
 	undo_custom_edit()
 	return
 
-func set_custom_animation_type(value:String) -> void:
-	if value not in preload("res://scripts/animation_cast_type.gd").TYPES:return
-	custom_animation_type=value
-	custom_movement_control.set_value(custom_animation_type)
-	_capture_custom_history()
-
 func _custom_history_snapshot() -> Dictionary:
-	return {"frames":custom_frames.duplicate(true),"duration":custom_duration,"mirrored":custom_source_mirrored,"timing":custom_source_timing,"source_duration":custom_source_duration,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"index":custom_frame_index}
+	return {"frames":custom_frames.duplicate(true),"duration":custom_duration,"mirrored":custom_source_mirrored,"timing":custom_source_timing,"source_duration":custom_source_duration,"animation_components":custom_animation_components.duplicate(true),"index":custom_frame_index}
 
 func _capture_custom_history() -> void:
 	if custom_history_baseline.is_empty() or custom_recording or custom_randomizing:return
@@ -3743,10 +3720,7 @@ func _restore_custom_history(state:Dictionary) -> void:
 	custom_source_mirrored=bool(state.mirrored)
 	custom_source_timing=str(state.timing)
 	custom_source_duration=float(state.source_duration)
-	custom_animation_type=str(state.get("animation_type",""))
 	custom_animation_components=state.get("animation_components",[]).duplicate(true)
-	custom_movement_control.set_components({"animation_components":custom_animation_components})
-	custom_movement_control.set_value(custom_animation_type)
 	custom_frame_index=clampi(int(state.index),0,custom_frames.size()-1)
 	custom_frame_count_input.set_value_no_signal(custom_frames.size())
 	sync_custom_range_inputs()
@@ -4802,9 +4776,6 @@ func encode_custom_source_frames() -> Array:
 	return encoded
 
 func save_custom_jump() -> void:
-	if custom_animation_type not in preload("res://scripts/animation_cast_type.gd").TYPES:
-		custom_status.text="Choose Head, Arm, Leg or Movement in the Movement tab before saving."
-		return
 	var name_: String=custom_name.text.strip_edges()
 	if name_.is_empty():
 		custom_status.text="Add a name before saving this %s."%custom_action_category
@@ -4827,7 +4798,7 @@ func save_custom_jump() -> void:
 			encoded_pose[bone]=[angles.x,angles.y,angles.z]
 		encoded_frames.append(encoded_pose)
 	custom_provenance=AssetProvenance.derive([custom_provenance],"animation",name_,AssetProvenance.creator_name(),"modified animation")
-	file.store_string(JSON.stringify({"version":2,"name":name_,"group":custom_action_group,"category":custom_action_category,"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_type":custom_animation_type,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"source_frames":encode_custom_source_frames(),"based_on":{"name":custom_parent_name,"path":custom_parent_path},"provenance":custom_provenance,"source_animation":custom_store_source_animation,"duration":custom_duration,"frame_count":encoded_frames.size(),"frames":encoded_frames},"\t"))
+	file.store_string(JSON.stringify({"version":2,"name":name_,"group":custom_action_group,"category":custom_action_category,"step":custom_source_step,"clip":custom_source_clip,"animation_resource":custom_source_animation_resource,"source_title":custom_source_title,"mirrored":custom_source_mirrored,"attack_bone":custom_source_attack_bone,"animation_components":custom_animation_components.duplicate(true),"source_timing":custom_source_timing,"source_duration":custom_source_duration,"source_frames":encode_custom_source_frames(),"based_on":{"name":custom_parent_name,"path":custom_parent_path},"provenance":custom_provenance,"source_animation":custom_store_source_animation,"duration":custom_duration,"frame_count":encoded_frames.size(),"frames":encoded_frames},"\t"))
 	file.close()
 	custom_edit_path=path
 	custom_status.text="Saved %s on this device."%name_

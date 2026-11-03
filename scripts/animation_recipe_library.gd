@@ -46,7 +46,7 @@ static func load_custom_motion(category:String, wanted_titles:Array=[]) -> Array
 						result.append({"group":source.group,"category":actual_category,"title":str(parsed.get("name",filename.get_basename())),"step":str(parsed.get("step",source.step)),"clip":str(parsed.get("clip",source.clip)),"source_title":str(parsed.get("source_title",source.title)),"mirrored":bool(parsed.get("mirrored",false)),"attack_bone":str(parsed.get("attack_bone",source.get("attack_bone",""))),"source_timing":str(parsed.get("source_timing","legacy")),"source_duration":clampf(float(parsed.get("source_duration",parsed.get("duration",CUSTOM_LOOP_DURATION))),0.1,60.0),"parent_name":str(based_on.get("name","")),"parent_path":str(based_on.get("path","")),"kind":"custom_"+actual_category.to_lower(),"duration":clampf(float(parsed.get("duration",CUSTOM_LOOP_DURATION)),0.2,60.0),"frames":decoded_frames,"frame_count":decoded_frames.size(),"path":CUSTOM_DIR+"/"+filename})
 						var loaded_entry:Dictionary=result.back()
 						loaded_entry["provenance"]=AssetProvenance.source(parsed)
-						loaded_entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").legacy_type(parsed)
+						loaded_entry["store_animation_type"]=preload("res://scripts/animation_store_types.gd").kind(parsed)
 						loaded_entry["animation_components"]=parsed.get("animation_components",[]).duplicate(true)
 						if not str(parsed.get("animation_resource","")).is_empty():loaded_entry["animation_resource"]=str(parsed.animation_resource)
 						if not str(parsed.get("source_animation","")).is_empty():loaded_entry["source_animation"]=str(parsed.source_animation)

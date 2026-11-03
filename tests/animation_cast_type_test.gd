@@ -5,7 +5,7 @@ func _initialize() -> void:call_deferred("run")
 func run() -> void:
  for e in preload("res://scripts/animation_catalog.gd").entries():assert(Type.declared(e))
  var library=load("res://scripts/animation_store_library.gd").new()
- assert(not library.take({"title":"Undeclared","clip":"missing"},"Motion","Downloaded"))
+ assert(not library.without_cast_type({"title":"Stored","animation_type":"Arm"}).has("animation_type"))
  var world=load("res://scripts/combat_world.gd").new()
  root.add_child(world);world.set_physics_process(false);world.round_active=true
  var actor=world.spawn_combatant(0,Vector3.ZERO)
@@ -34,5 +34,5 @@ func run() -> void:
   assert(is_equal_approx(stats[Type.WHOLE_BODY].physical_damage,stats[Type.ARMS].physical_damage))
   assert(stats[Type.LEGS].mana==stats[Type.ARMS].mana and stats[Type.LEGS].stamina==stats[Type.ARMS].stamina)
   assert(stats[Type.LEGS].burn_dps==stats[Type.ARMS].burn_dps)
- print("ANIMATION TYPES PASS: all catalog entries declared, import rejects undeclared, world-direction momentum and timestep-independent drag, non-Touch ignores type bonuses during actual launch, no extra mana/stamina/burn scaling")
+ print("ANIMATION TYPES PASS: all catalog entries declared, library metadata separates browsing hints from binding types, world-direction momentum and timestep-independent drag, non-Touch ignores type bonuses during actual launch, no extra mana/stamina/burn scaling")
  world.queue_free();await process_frame;quit()

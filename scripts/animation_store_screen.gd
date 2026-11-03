@@ -325,6 +325,3 @@ func _portable_store_animation(entry:Dictionary) -> Animation:
 
 func take_store_animation(entry:Dictionary,group:String,category:String) -> void:
 	preload("res://scripts/animation_store_backend.gd").take_store_animation(self ,entry,group,category)
-
-func open_animation_type_dialog(entry:Dictionary,group:String,category:String) -> void:
-	preload("res://scripts/animation_store_backend.gd").open_animation_type_dialog(self ,entry,group,category)

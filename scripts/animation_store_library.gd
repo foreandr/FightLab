@@ -18,7 +18,7 @@ func load_state() -> void:
 		taken=cfg.get_value("store","taken",{}).duplicate(true)
 		blocked=cfg.get_value("store","blocked",{}).duplicate(true)
 	_load_project_entries()
-	for entry in taken.values():entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").legacy_type(entry)
+	for id in taken:taken[id]=without_cast_type(taken[id])
 
 func _load_project_entries() -> void:
 	if not FileAccess.file_exists(ProjectAssets.MANIFEST):return
@@ -37,12 +37,17 @@ func save() -> bool:
 	cfg.set_value("store","blocked",blocked)
 	return cfg.save(path)==OK
 
+static func without_cast_type(entry:Dictionary)->Dictionary:
+	var local:=entry.duplicate(true)
+	# Classification is a browsing hint; actual ownership belongs to a spell binding.
+	local["store_animation_type"]=preload("res://scripts/animation_store_types.gd").kind(entry)
+	local.erase("animation_type")
+	return local
+
 func take(entry:Dictionary,group:String,category:String,existing_names:Array=[],animation:Animation=null) -> bool:
-	if not preload("res://scripts/animation_cast_type.gd").declared(entry):return false
 	var id:=key(entry)
 	if taken.has(id):id=id+":"+Crypto.new().generate_random_bytes(6).hex_encode()
-	var local:Dictionary=entry.duplicate(true)
-	local["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(entry)
+	var local:Dictionary=without_cast_type(entry)
 	local.store_asset_id=id
 	local["store_source_id"]=str(entry.get("store_source_id",key(entry)))
 	local["original_title"]=entry.get("original_title",entry.get("title","Animation"))

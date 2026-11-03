@@ -61,3 +61,13 @@ Store paging performance (2026-11-02)
   still includes the shared preview actor/arena setup (about 7 s in the staged run).
 - tests/store_paging_performance_test.gd verifies cached paging and invalidation
   after block/favorite/download changes, without saving test account changes.
+
+Animation save/download type selection (2026-11-02)
+- Store downloads save immediately after source/quality validation, without an
+  animation-type modal. Custom pose saves have no type requirement or Movement tab.
+- New library copies, custom recipes and composed timeline headers do not persist
+  a casting animation_type. Legacy library entries demote it to store_animation_type
+  in memory; original motion/source/component/provenance data is retained.
+- Store type filters remain browsing hints. Runtime type selection for a coupled
+  animation/spell remains in the spell binding flow (currently Touch-specific).
+- Legacy files remain readable, without a destructive batch rewrite of saved work.

@@ -88,6 +88,7 @@ func run():
  var probe:=DownloadProbe.new();probe.taken=account.taken.duplicate(true);probe.blocked=account.blocked.duplicate(true)
  store.store_library=probe
  var sample:Dictionary=store.Library.entries().filter(func(e):return e.title=="Left cross")[0].duplicate(true)
+ sample.erase("animation_type")
  store.take_store_animation(sample,"Attack","Downloaded")
  if not check(not probe.received.is_empty() and probe.received.category=="Downloaded" and probe.received.animation is Animation and probe.received.animation.get_track_count()>0,"Download did not reach unchanged project-copy backend"):return
  store.store_library=account

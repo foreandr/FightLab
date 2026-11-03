@@ -123,37 +123,16 @@ func run() -> void:
  editor.open_custom_for(source)
  editor.custom_history_baseline=editor._custom_history_snapshot()
  editor.custom_undo_history.clear();editor.custom_redo_history.clear()
- editor.custom_movement_control.menu.select(Type.TYPES.find(Type.LEGS)+1)
- editor.custom_movement_control.menu.item_selected.emit(Type.TYPES.find(Type.LEGS)+1)
- if not check(editor.custom_animation_type==Type.LEGS,"Authoring type control failed"):return
- editor.undo_custom_edit()
- if not check(editor.custom_animation_type==Type.ARMS,"Undo did not restore type"):return
- editor.redo_custom_edit()
- if not check(editor.custom_animation_type==Type.LEGS,"Redo did not restore type"):return
- var name_:="Animation Type Test "+str(Time.get_ticks_usec())
+ var name_:="Animation Untyped Save Test "+str(Time.get_ticks_usec())
  editor.custom_name.text=name_
- editor.custom_animation_type=""
- editor.save_custom_jump()
- if not check(editor.custom_status.text.contains("Choose Head"),"Undeclared custom animation was accepted"):return
- editor.set_custom_animation_type(Type.LEGS)
  editor.save_custom_jump()
  var saved_path:String=editor.custom_edit_path
  var found:=false
  for entry in editor.load_custom_motion("Punch"):
-  if entry.title==name_:found=Type.kind(entry)==Type.LEGS and entry.get("animation_resource","")==source.animation_resource and Type.component_types(entry)==[Type.WHOLE_BODY,Type.ARMS]
- if not check(found,"Authored leg control did not survive save/reload"):return
+  if entry.title==name_:found=not entry.has("animation_type") and entry.get("animation_resource","")==source.animation_resource and Type.component_types(entry)==[Type.WHOLE_BODY,Type.ARMS]
+ if not check(found,"Untyped animation/source components did not survive save/reload"):return
  DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_path))
  DirAccess.remove_absolute(ProjectSettings.globalize_path(source.animation_resource))
- editor.open_animation_type_dialog({"title":"Unclassified import","clip":"missing"},"Motion","Downloaded")
- var dialog:ConfirmationDialog=editor.get_child(editor.get_child_count()-1)
- if not check(dialog.get_ok_button().disabled,"Import did not require a declaration"):return
- var control=dialog.get_child(0)
- for child in dialog.get_children():
-  if child.name=="AnimationType":control=child
- control.menu.select(3);control.menu.item_selected.emit(3)
- if not check(not dialog.get_ok_button().disabled,"Choosing import type did not enable confirmation"):return
- dialog.canceled.emit()
-
  b.stop_preview_controls(true)
- print("MOVING DEMOS PASS: all eight demos run/sprint and turn in free aim in demo/projectile stages; non-Touch ignores type and preserves gait, stationary full-body demos return, source type editing and save/undo remain intact")
+ print("MOVING DEMOS PASS: all eight demos run/sprint and turn in free aim in demo/projectile stages; non-Touch ignores type and preserves gait, stationary full-body demos return, custom animations save without choosing or persisting a cast type")
  quit()
