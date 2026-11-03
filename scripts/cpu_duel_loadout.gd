@@ -69,6 +69,14 @@ static func build()->Array[Dictionary]:
   var spec:Dictionary=Rules.author(base,float(cast[3]),0.3,true)
   spec.id="cpu_cast_"+str(cast[0]).to_snake_case();spec.name=cast[0]
   result.append({"kind":"projectile","title":cast[0],"range":18.0,"duration":cast[3],"spec":spec,"profile":{"clip":cast[1],"step":cast[0],"store_raw":true,"duration":cast[3],"attack_bone":cast[2],"animation_type":"Arm"}})
+ # Genuine long casts: shared duration/release amplification, costs and collision.
+ # Append so every existing attack keeps its learned ID and position.
+ for charge in [["Charged fireball",3.0,0.68,0.23,0.09],["Great fireball",4.5,0.78,0.15,0.07],["Colossal fireball",6.0,0.84,0.10,0.06],["Cataclysm fireball",8.0,0.88,0.07,0.05]]:
+  var base:Dictionary=Rules.allocate(Rules.projectile_base("Fire"),{"size":charge[2],"speed":charge[3],"effect":charge[4]},"Fire",1.0)
+  var seconds:=float(charge[1])
+  var spec:Dictionary=Rules.author(base,seconds,0.55,true)
+  spec.id="cpu_charge_"+str(charge[0]).to_snake_case();spec.name=charge[0]
+  result.append({"kind":"projectile","title":charge[0],"range":18.0,"duration":seconds,"spec":spec,"profile":{"clip":"spells/overhead_cleave","step":"Overhead fireball","store_raw":true,"duration":seconds,"attack_bone":"hand_r","animation_type":"Arm"}})
  # Quicker shield animation, priced by the same rules as any authored cast.
  var shield:Dictionary=Rules.author(Rules.self_barrier_base(),0.5,0.3,false)
  shield["id"]="cpu_shield";shield["name"]="Timed shield"

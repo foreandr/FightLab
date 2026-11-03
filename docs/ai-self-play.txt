@@ -290,3 +290,25 @@ same setters used by clicks, hotkeys and scripts. Spells [4] remains unchanged.
 cpu_match_clock_test.gd verifies deadlines, pause, HP result/ties, rematches,
 late-round state/decisions, actual recovery and toggle synchronization. Three
 full fights and self-play regression passed; clock/toggles also checked visually.
+
+Long-cast projectile choices
+-----------------------------
+The repertoire previously stopped at 1.6-second projectiles. Four appended
+shared-rule Fire spells now use 3, 4.5, 6 and 8-second animations, releasing at
+55% of the animation. Size/speed/burn allocations shift increasingly to size;
+duration/timing amplification, mana, stamina, burn, flight and collision still
+come from CombatSpellRules and the common runtime. Existing attack IDs and
+indices remain intact; the shield remains last. Total repertoire: 58 choices.
+ai/cast_opening.gd estimates observable rush time from distance and a fast
+ground approach, with extra space only for actual committed enemy recovery.
+projectile_score weighs long-cast damage against this exposure, preserves a
+stamina/defensive mana reserve, and rejects charges unable to release before
+the round deadline. Ground and aerial decisions use this same score; gravity
+continues normally during an aerial charge. Threat defense may cancel an
+unreleased charge, paying proportional stamina under the existing rules.
+Long casts are legal learned actions, not a scripted every-N-attacks quota.
+At range, an opening-time context prefix distinguishes these opportunities.
+Nested fallback preserves prior and frozen policy data without rewriting it.
+cpu_long_cast_test.gd checks all four real specs, size/cost scaling, exposure,
+committed recovery, deadline handling, learned selection, real launch timing,
+actual projectile radius, resource spending and post-release commitment.

@@ -22,6 +22,23 @@ var air_action_used:=false
 var deception=preload("res://scripts/ai/combat_deception.gd").new()
 const Combo=preload("res://scripts/touch_combo_rules.gd")
 const Burn=preload("res://scripts/burn_rules.gd")
+const CastOpening=preload("res://scripts/ai/cast_opening.gd")
+func projectile_score(item:Dictionary,distance:float)->float:
+ if distance<=1.8 or distance>=18.0:return 0.0
+ var score:=1.0+(1.0-aggression)*1.3
+ if float(item.duration)<=0.8 and actor.rival.drive_velocity.length()>2.0:score+=1.0
+ if float(item.duration)>=1.25 and actor.rival.mode=="cast":score+=0.8
+ if float(item.duration)>=3.0:
+  var safety:=CastOpening.safety(actor,item)
+  # Long casts buy area/damage at real exposure and resource cost. A choice,
+  # never a quota; incoming threats can still interrupt it through normal defense.
+  score=(2.0+minf(4.0,expected_damage(item)*0.035))*lerpf(0.08,1.0,safety)
+  if float(item.spec.stamina_cost)>actor.stamina-20.0:score*=0.5
+  if world.has_method("time_remaining") and world.time_remaining()<float(item.duration)*float(item.spec.release)+0.5:return 0.0
+ if actor.mana<35:score*=0.25
+ if actor.mana-world.mana_cost(item.spec)<12 and actor.rival.health>float(item.spec.damage)*1.5:return 0.0
+ if distance>10.0 and float(item.duration)<3.0:score*=0.55
+ return score
 func expected_damage(item:Dictionary)->float:
  var damage:=float(item.spec.damage)
  if str(item.spec.get("projectile_element","None"))=="Fire":
@@ -100,7 +117,8 @@ func air_step(delta:float)->void:
  for item in loadout:
   if not can_use(item,12.0):continue
   if item.kind=="projectile" and distance>1.8 and distance<18:
-   options.append({"action":"air/cast/"+str(item.spec.id),"prior":1.5+expected_damage(item)*0.02,"item":item})
+   var score:=projectile_score(item,distance)
+   if score>0.0:options.append({"action":"air/cast/"+str(item.spec.id),"prior":score,"item":item})
   elif item.kind=="melee" and distance<=float(item.range) and actor.bone_point(str(item.spec.hand)).distance_to(actor.rival.bone_point("spine_03"))<float(item.range)+0.2:
    options.append({"action":"air/cast/"+str(item.spec.id),"prior":melee_score(item,distance),"item":item})
  if actor.velocity.y>3 and actor.stamina>=30:
@@ -280,13 +298,7 @@ func step(delta:float)->void:
   if item.kind=="melee" and distance<=float(item.range):
    score=melee_score(item,distance)
   elif item.kind=="projectile" and distance>1.8 and distance<18.0:
-   score=1.0+(1.0-aggression)*1.3
-   if float(item.duration)<=0.8 and actor.rival.drive_velocity.length()>2.0:score+=1.0
-   if float(item.duration)>=1.25 and actor.rival.mode=="cast":score+=0.8
-   if actor.mana<35:score*=0.25
-   # Preserve one defensive cast unless this shot could finish the opponent.
-   if actor.mana-world.mana_cost(item.spec)<12 and actor.rival.health>float(item.spec.damage)*1.5:score=0.0
-   if distance>10.0:score*=0.55
+   score=projectile_score(item,distance)
   if score>0:
    choices.append(item);scores.append(score*rng.randf_range(0.6,1.4))
  if policy!=null:

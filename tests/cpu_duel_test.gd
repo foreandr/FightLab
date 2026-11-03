@@ -13,7 +13,7 @@ func run():
  await process_frame;await process_frame
  var demo=current_scene
  assert(demo.ready_for_match and demo.fighters.size()==2 and demo.get_script().get_base_script()==load("res://scripts/combat_world.gd"))
- assert(Loadout.build().size()==54)
+ assert(Loadout.build().size()==58)
  assert(demo.hud.find_children("*","ProgressBar",true,false).is_empty(),"Resource bars should only be on the characters")
  for brain in demo.brains:
   for item in brain.loadout:assert(brain.actor.player.has_animation(item.profile.clip),"Missing equipped animation")

@@ -24,6 +24,9 @@ func state(actor:CharacterBody3D)->String:
  # context as a suffix so archived policies remain readable without rewriting.
  var pocket:=0 if distance<=0.68 else (1 if distance<=1.05 else (2 if distance<=1.65 else 3))
  var context:="range%d|%s"%[pocket,legacy]
+ if distance>4.0:
+  var opening:=preload("res://scripts/ai/cast_opening.gd").seconds(actor)
+  context="opening%d|%s"%[mini(3,int(opening)),context]
  if actor.arena.has_method("time_remaining") and actor.arena.time_remaining()<=10.0:
   var lead:=1 if actor.health>actor.rival.health else (-1 if actor.health<actor.rival.health else 0)
   context="end%d|%s"%[lead,context]
