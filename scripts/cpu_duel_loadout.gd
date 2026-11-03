@@ -46,6 +46,8 @@ static func build()->Array[Dictionary]:
   result.append(touch_move(move))
  # Elemental contact still uses only its declared limb and the shared burn rules.
  for move in [
+  ["Flame left jab","ual1/Punch_Jab","hand_l","Arm",1.05,0.65],
+  ["Flame right cross","ual1/Punch_Cross","hand_r","Arm",1.10,0.7],
   ["Flame left hook","boxing/hook_l","hand_l","Arm",1.15,1.0],
   ["Flame right hook","boxing/hook_r","hand_r","Arm",1.15,1.0],
   ["Flame elbow","editor_attacks/elbow","lowerarm_r","Arm",0.95,0.9],

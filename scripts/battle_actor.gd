@@ -82,6 +82,7 @@ var charge_held := 0.0
 var charge_value := 0.0
 var cast_phase := "windup"
 var cast_rate := 2.9
+var touch_chain_speed:=1.0
 var beam_clock := 0.0
 var melee_charge := 0.0
 var last_hit_charge := 0.0
@@ -252,6 +253,7 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	touch_chain_speed=1.0
 	authored_entry_pose.clear()
 	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
@@ -406,17 +408,20 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
 ## Touch can link its recovery into another Touch. Released projectiles remain locked.
 func chain_touch_cast(spec:Dictionary,profile:Dictionary)->bool:
 	if mode!="cast" or str(current_spell.get("effect",""))!="touch" or str(spec.get("effect",""))!="touch" or not did_release:return false
-	if cast_time<mode_length*0.55 or combat_reaction_active() or not arena.round_active:return false
+	if cast_time<mode_length*preload("res://scripts/touch_combo_rules.gd").LINK_PROGRESS or combat_reaction_active() or not arena.round_active:return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if stamina<float(spec.get("stamina_cost",0.0)) or mana<arena.mana_cost(spec):return false
 	var previous_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
+	var next_speed:=preload("res://scripts/touch_combo_rules.gd").speed(current_spell,spec)
 	arena.combat().finish_cast(self)
 	if not start_authored_cast(spec,profile):return false
 	authored_entry_pose=previous_pose
+	touch_chain_speed=next_speed
 	return true
 
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
+	touch_chain_speed=1.0
 	arena.combat().interrupt_cast_attempt(self)
 	if arena.story_mode:
 		set_close_combat(true)
@@ -466,7 +471,7 @@ func start_cast(air: bool) -> void:
 		air_casts += 1
 
 func cast_speed_multiplier()->float:
-	return parry_cast_haste.multiplier()
+	return parry_cast_haste.multiplier()*(touch_chain_speed if mode=="cast" and str(current_spell.get("effect",""))=="touch" else 1.0)
 
 func tick_cast(delta: float) -> bool:
 	if not can_cast_with(current_spell,practice_spell_animation):

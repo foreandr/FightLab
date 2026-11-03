@@ -17,6 +17,28 @@ var stale_time:=0.0
 var combo_count:=0
 var combo_checked:=false
 var policy:RefCounted
+const Combo=preload("res://scripts/touch_combo_rules.gd")
+const Burn=preload("res://scripts/burn_rules.gd")
+func expected_damage(item:Dictionary)->float:
+ var damage:=float(item.spec.damage)
+ if str(item.spec.get("projectile_element","None"))=="Fire":
+  var duration:=float(item.spec.get("burn_duration",Burn.DURATION))
+  var fresh_burn:=Burn.dps(float(item.spec.get("potency",0.0)))*duration
+  # Burn refreshes rather than stacks: count only the extra pending damage.
+  var pending:=float(actor.rival.burn_damage)/Burn.TICK_INTERVAL*float(actor.rival.burn_time)
+  damage+=maxf(0.0,fresh_burn-pending)
+ return damage
+func combo_score(item:Dictionary)->float:
+ var score:=1.0+expected_damage(item)*0.03
+ var old_bone:=str(actor.current_spell.get("hand",""))
+ var new_bone:=str(item.spec.get("hand",""))
+ if Combo.speed(actor.current_spell,item.spec)>1.0:
+  score+=0.35
+  # A compact opposite-hand follow-up is a useful one-two, not just another
+  # randomly chosen kick. It remains a learned choice, not a forced sequence.
+  if old_bone.begins_with("hand_") and new_bone.begins_with("hand_"):
+   score+=0.5/maxf(0.5,float(item.duration))
+ return score
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
@@ -71,7 +93,8 @@ func defend(threat:Dictionary)->bool:
  var shield:Dictionary=loadout.back()
  if not can_use(shield):return false
  var eta:float=threat.eta
- var activation:float=float(shield.duration)*float(shield.spec.release)/actor.cast_speed_multiplier()
+ # A new shield resets the preceding Touch-chain bonus; only parry haste carries.
+ var activation:float=float(shield.duration)*float(shield.spec.release)/actor.parry_cast_haste.multiplier()
  # Aim for impact about 50 ms into the real 120 ms perfect-parry window.
  if eta>activation+0.09 and eta<0.65:
   if actor.mode=="cast":return false
@@ -88,20 +111,22 @@ func defend(threat:Dictionary)->bool:
  return false
 func try_combo()->bool:
  if str(actor.current_spell.get("effect",""))!="touch" or not actor.did_release:return false
- if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*0.58:return false
- combo_checked=true
- if actor.flat_distance()>1.25 or rng.randf()>0.90:return false
+ if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*Combo.LINK_PROGRESS:return false
+ if actor.cast_time>actor.mode_length*0.90:return false
  var choices:Array[Dictionary]=[]
- var old_bone:=str(actor.current_spell.get("hand",""))
  for item in loadout:
   if item.kind!="melee" or not can_use(item,16.0) or actor.flat_distance()>float(item.range):continue
-  if str(item.spec.hand)==old_bone:continue
   choices.append(item)
  if choices.is_empty():return false
- var next:Dictionary=choices[rng.randi_range(0,choices.size()-1)]
+ combo_checked=true
+ var next:Dictionary=choices[0]
+ var best:=-INF
+ for item in choices:
+  var score:=combo_score(item)*rng.randf_range(0.9,1.1)
+  if score>best:best=score;next=item
  if policy!=null:
   var options:Array[Dictionary]=[{"action":"combo/stop","prior":0.5}]
-  for item in choices:options.append({"action":"combo/"+str(item.spec.id),"prior":1.0+float(item.spec.damage)*0.03,"item":item})
+  for item in choices:options.append({"action":"combo/"+str(item.spec.id),"prior":combo_score(item),"item":item})
   var selected:Dictionary=policy.pick(actor,options)
   policy.begin(actor,selected,options,world.elapsed)
   if str(selected.action)=="combo/stop":return false
@@ -162,7 +187,7 @@ func step(delta:float)->void:
   if item.kind=="shield" or not can_use(item,10.0):continue
   var score:=0.0
   if item.kind=="melee" and distance<=float(item.range):
-   score=2.0+aggression+float(item.spec.damage)*0.055
+   score=2.0+aggression+expected_damage(item)*0.055
    if actor.rival.mode=="cast":score+=0.8/float(item.duration)
    if float(item.spec.damage)>=actor.rival.health:score+=3.0
    if actor.rival.self_barrier.active():score*=0.35
