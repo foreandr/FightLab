@@ -1,4 +1,5 @@
 extends RefCounted
+const Movement=preload("res://scripts/character_movement.gd")
 const Settings=preload("res://scripts/game_settings_access.gd")
 ## Shared Story/Create third-person framing. Selection never changes this camera.
 const BASE_DISTANCE:=5.4
@@ -6,6 +7,7 @@ const MIN_ZOOM:=0.55
 const MAX_ZOOM:=3.8
 
 static func adopt(state:Node,player:Node3D) -> void:
+	_reset_follow_anchor(state.camera,player)
 	var back:Vector3=state.camera.global_position-(player.focus_position()+Vector3.UP*0.58)
 	state.camera_zoom=Settings.service().clamp_camera_distance(back.length())/BASE_DISTANCE
 	state.story_camera_base_yaw=atan2(back.x,back.z)
@@ -13,6 +15,7 @@ static func adopt(state:Node,player:Node3D) -> void:
 	state.camera_orbit_pitch=clampf(asin(clampf(back.normalized().y,-1.0,1.0)),0.06,1.32)
 
 static func set_focus(state:Node,player:Node3D,target:Node3D) -> void:
+	_reset_follow_anchor(state.camera,player)
 	var back:Vector3=state.camera.global_position-(player.focus_position()+Vector3.UP*0.58)
 	var current_yaw:=atan2(back.x,back.z)
 	if is_instance_valid(target) and target!=player:
@@ -31,6 +34,26 @@ static func world_yaw(state:Node,player:Node3D) -> float:
 		return atan2(-toward.x,-toward.z)+float(state.camera_orbit_yaw)
 	return float(state.story_camera_base_yaw)+float(state.camera_orbit_yaw)
 
+static func movement_heading(state:Node,player:Node3D)->Vector3:
+	var target:Node3D=state.camera_focus_target
+	if is_instance_valid(target) and target!=player and float(target.get("health"))>0.0:
+		return Movement.camera_forward(state.camera,player.global_basis.z)
+	var yaw:=world_yaw(state,player)
+	return Vector3(-sin(yaw),0.0,-cos(yaw))
+
+static func movement_direction(state:Node,player:Node3D,input:Vector2)->Vector3:
+	return Movement.direction_from_forward(input,movement_heading(state,player))
+
+static func movement_facing(state:Node,player:Node3D)->Vector3:
+	var target:Node3D=state.camera_focus_target
+	if is_instance_valid(target) and target!=player and float(target.get("health"))>0.0:
+		return Movement.facing(player,state.camera,target)
+	return movement_heading(state,player)
+
+static func _reset_follow_anchor(camera:Camera3D,player:Node3D)->void:
+	camera.set_meta("third_person_follow_owner",player.get_instance_id())
+	camera.set_meta("third_person_follow_anchor",player.focus_position()+Vector3.UP*0.58)
+
 static func orbit(state:Node,relative:Vector2) -> void:
 	state.camera_orbit_yaw-=relative.x*0.0065
 	state.camera_orbit_pitch=clampf(state.camera_orbit_pitch+relative.y*0.004,0.06,1.32)
@@ -41,6 +64,12 @@ static func update(camera:Camera3D,player:Node3D,target:Node3D,yaw:float,pitch:f
 	distance=Settings.service().clamp_camera_distance(distance)
 	var locked:=is_instance_valid(target) and target!=player and float(target.get("health"))>0.0
 	var pivot:Vector3=player.focus_position()+Vector3.UP*0.58
+	# Follow horizontal movement directly; smoothing remains for orbit/zoom/height.
+	# Feeding positional lag into input used to make free strafing curve its heading.
+	if not locked and int(camera.get_meta("third_person_follow_owner",0))==player.get_instance_id():
+		var previous:Vector3=camera.get_meta("third_person_follow_anchor",pivot)
+		camera.global_position+=Vector3(pivot.x-previous.x,0.0,pivot.z-previous.z)
+	_reset_follow_anchor(camera,player)
 	var forward:=Vector3(-sin(yaw),0.0,-cos(yaw))
 	# Aim ahead at chest height, keeping the player below the free crosshair.
 	var look_point:=pivot+Vector3.UP*0.5+forward*3.5

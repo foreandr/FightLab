@@ -2426,26 +2426,27 @@ func _physics_process(delta:float) -> void:
  move_caster(delta,Locomotion.axes(movement_keys),movement_keys.get(KEY_SHIFT,false))
 
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
+ ensure_third_person_camera()
  # Scriptable locomotion entry point; live input/focus checks remain above.
  var caster=editor.actor
  if playing and CastType.owns_legs(playback_animation()):
   var recovery:=cast_recovery_weight()
   sprinting=caster.use_sprint(delta,sprinting and recovery>0.0,not axes.is_zero_approx() and recovery>0.0)
   var drift:=CastType.drift(caster,playback_animation(),delta)
-  var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
+  var direction:=ThirdPersonCamera.movement_direction(editor.field,caster,axes)
   var speed:float=Movement.gait_speed(caster,sprinting,4.0,7.0)*Movement.directional_speed(axes,sprinting)*caster.movement_multiplier()
   var velocity:=drift.lerp(direction*speed,recovery)
   caster_move_axes=axes
   caster_sprinting=sprinting
   caster_moving=velocity.length_squared()>0.0001
   editor.field.move_character(caster,velocity.normalized(),velocity.length(),delta)
-  Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
+  Movement.turn(caster,ThirdPersonCamera.movement_facing(editor.field,caster),delta)
   return
  sprinting=caster.use_sprint(delta,sprinting,not axes.is_zero_approx())
  if (not axes.is_equal_approx(caster_move_axes) or sprinting!=caster_sprinting) and not playing:begin_demo_exit()
  caster_move_axes=axes
  caster_sprinting=sprinting
- var direction:=Movement.camera_direction(axes,editor.field.camera,caster.global_basis.z)
+ var direction:=ThirdPersonCamera.movement_direction(editor.field,caster,axes)
  caster_moving=not direction.is_zero_approx()
  if caster_moving:
   var speed:=Movement.gait_speed(caster,sprinting,4.0,7.0)
@@ -2454,7 +2455,7 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  else:editor.field.move_character(caster,Vector3.ZERO,0.0,delta)
  # Demo playback never owns movement or facing, including knee animations.
  # Face from the resolved position, including near-target collision/sprint steps.
- Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
+ Movement.turn(caster,ThirdPersonCamera.movement_facing(editor.field,caster),delta)
 
 func update_training_dummy(_delta:float) -> void:
  if not demo_only_stage or not is_instance_valid(editor.target) or not editor.target.practice_damageable_dummy:return

@@ -679,7 +679,7 @@ func tick(delta: float) -> void:
 		if air_dash_used and air_clock > 0.46:
 			air_momentum = air_momentum.move_toward(Vector3.ZERO, delta * 12)
 	if desired.length() > 0.2 and mode in ["run", "dash"]:
-		var facing:Vector3=Movement.facing(self,arena.camera,arena.camera_focus_target) if arena.story_mode and player_controlled else desired
+		var facing:Vector3=preload("res://scripts/third_person_camera.gd").movement_facing(arena,self) if arena.story_mode and player_controlled else desired
 		Movement.turn(self,facing,delta)
 		if mode=="dash":
 			play("duel/dash",clampf(desired.length()/3.1,0.7,3.5))
@@ -791,7 +791,7 @@ func _player_move_direction() -> Vector3:
 	var input_direction:=_player_move_axes()
 	if arena.story_mode and player_controlled:
 		# This input adapter uses negative Y for forwards; the shared API uses positive Y.
-		return Movement.camera_direction(Vector2(input_direction.x,-input_direction.y),arena.camera,global_basis.z).normalized()
+		return preload("res://scripts/third_person_camera.gd").movement_direction(arena,self,Vector2(input_direction.x,-input_direction.y)).normalized()
 	return Vector3(input_direction.x,0,input_direction.y).normalized()
 
 func _player_move_axes() -> Vector2:
