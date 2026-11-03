@@ -11,13 +11,13 @@ shader_type spatial;
 render_mode blend_mix, cull_back, unshaded;
 uniform float barrier_strength : hint_range(0.0, 1.0) = 0.0;
 void vertex() {
-	VERTEX += NORMAL * 0.065;
+	VERTEX += NORMAL * 0.045;
 }
 void fragment() {
 	float rim = pow(1.0 - abs(dot(normalize(NORMAL), normalize(VIEW))), 2.4);
-	ALBEDO = vec3(0.48, 0.80, 0.95);
-	EMISSION = vec3(0.20, 0.60, 0.88) * (0.35 + rim * 1.5);
-	ALPHA = barrier_strength * (0.24 + rim * 0.48);
+	ALBEDO = vec3(0.72, 0.90, 1.0);
+	EMISSION = vec3(0.34, 0.66, 0.84) * (0.25 + rim * 1.1);
+	ALPHA = barrier_strength * (0.16 + rim * 0.36);
 }
 """
 	for mesh: MeshInstance3D in skeleton.find_children("*", "MeshInstance3D", true, false):
