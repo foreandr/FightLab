@@ -1,5 +1,6 @@
 {
   "sources": [
+    {"id":"motifect_martial_arts","name":"Motifect Martial Arts","url":"https://motifect.itch.io/motifect-martial-arts-motion-pack","itch_upload_id":"17846059","license":"Free personal and commercial project use; no standalone raw redistribution","commercial":true,"provider_generated":true,"author":"Motifect"},
     {"id":"bandai","name":"Bandai Namco Research","url":"https://github.com/BandaiNamcoResearchInc/Bandai-Namco-Research-Motiondataset","archive_url":"https://codeload.github.com/BandaiNamcoResearchInc/Bandai-Namco-Research-Motiondataset/zip/refs/heads/master","license":"CC BY-NC 4.0","commercial":false,"author":"Bandai Namco Research Inc."},
     {"id":"cmu","name":"CMU Graphics Lab / cgspeed BVH conversion","url":"https://mocap.cs.cmu.edu/","archive_url":"https://codeload.github.com/una-dinosauria/cmu-mocap/zip/refs/heads/master","license":"CMU free use; no standalone data resale; cgspeed conversion","commercial":true,"author":"CMU Graphics Lab; BVH conversion by Bruce Hahne"},
     {"id":"100style","name":"100STYLE","url":"https://www.ianxmason.com/100style/","archive_url":"https://zenodo.org/records/8127870/files/100STYLE.zip?download=1","license":"CC BY 4.0","commercial":true,"author":"Ian Mason"},

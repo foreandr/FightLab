@@ -1,0 +1,53 @@
+Combat library cleanup — 2026-11-03
+
+The shared Store index and Sandbox picker now accept combat actions, defensive
+actions, weapons, spell gestures, acrobatics, locomotion and combat recovery.
+data/combat_animation_keywords.json contains 2,557 word-aware terms and phrases.
+The generator is scripts/vendor/build_combat_vocabulary.gd. It combines curated
+action names, spelling/inflection variants and directional action phrases.
+Generic fragments such as “forward”, “head”, “arm” and “cross” do not qualify
+on their own. Names are tokenized with camel-case support. Full source
+descriptions/filenames are considered, while inherited generic tags/categories
+are not sufficient evidence. Compact Store rows retain the original evidence.
+
+Local catalog results:
+  Before:                       26,056 community entries
+  Removed from active catalog: 21,324 without matching evidence
+  Retained:                      4,732
+  New downloads admitted:           38
+  Final catalog:                 4,770 (existing static/invalid suppression still applies)
+
+Removal is recoverable. The complete original manifest and removed records are
+under assets/animations/community/quarantine/noncombat-2026-11-03T22-30-33/.
+Original raw downloads remain local. No engine animation resources or user
+custom/owned recipes were deleted. Optional bulk data remains excluded from Git.
+New indexing runs and both browsing surfaces share the relevance policy.
+
+New source: Motifect Martial Arts Motion Pack
+https://motifect.itch.io/motifect-martial-arts-motion-pack
+40 original BVH downloads; 38 accepted, two essentially static guard poses
+rejected. The provider discloses that these motions were generated with Motifect
+AI. That disclosure, creator, source, license and source hashes are retained in
+metadata/provenance. Personal/commercial project use is allowed; raw standalone
+redistribution is prohibited. License/README accompanies the local source files.
+
+Admission checks: source SHA-256, required arm/leg/head/root mapping, finite
+normalized rotations, shared animation_quality_gate torso penetration checks,
+21 sampled on-rig poses, actual limb displacement, bounded joint positions,
+and retargeted-motion fingerprints within the incoming pack. Its LeftLeg/LeftShin
+hierarchy required an explicit mapping convention; ordinary LeftUpLeg/LeftLeg
+skeleton mappings remain unchanged. Automated checks do not guarantee that
+every surviving motion will look aesthetically good or have no self-contact.
+
+Local acquisition reports:
+  work/combat_curation_report.json
+  work/martial_arts_import_report.json
+Internal scripts:
+  scripts/vendor/curate_combat_catalog.gd (backs up before replacing catalog)
+  scripts/vendor/import_martial_arts_pack.gd (expects the downloaded pack in work/)
+
+Verification:
+  tests/combat_animation_filter_test.gd
+  tests/combat_store_curation_test.gd
+  tests/new_combat_catalog_test.gd
+  tests/store_type_classification_test.gd

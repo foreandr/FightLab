@@ -135,6 +135,8 @@ func interaction_body_parts(description:String) -> Array[String]:
 	return parts
 
 func write_catalog() -> void:
+	var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
+	entries=entries.filter(func(entry):return combat_filter.accepts(entry))
 	var file:=FileAccess.open(ROOT+"/catalog.json.tmp",FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema":1,"entries":entries,"rejected":errors,"distinct_count":entries.size(),"updated_utc":Time.get_datetime_string_from_system(true)}))
 	file.close()

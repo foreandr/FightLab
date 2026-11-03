@@ -28,6 +28,7 @@ var page_label:Label
 var confirm:Button
 var debounce:Timer
 var thumbnails:Node
+var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
 func setup(editor:Control)->void:
  host=editor;size_flags_horizontal=Control.SIZE_EXPAND_FILL;size_flags_vertical=Control.SIZE_EXPAND_FILL;add_theme_constant_override("separation",6)
  thumbnails=preload("res://scripts/animation_thumbnail_renderer.gd").new();add_child(thumbnails)
@@ -89,6 +90,7 @@ func load_catalog()->void:
   return str(a.title).naturalnocasecmp_to(str(b.title))<0)
  ready_catalog=true;apply_filters()
 func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)->void:
+ if origin!="Your library" and not combat_filter.accepts(entry):return
  var id:=Library.key(entry)
  if used.has(id):return
  used[id]=true;clips[str(entry.get("clip",""))]=true

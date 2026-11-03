@@ -31,7 +31,7 @@ static func load_cache(index_path: String) -> Dictionary:
 	return data
 
 static func _source_stamp() -> Dictionary:
-	return {"manifest_modified":FileAccess.get_modified_time(Community.MANIFEST),"static_filter":FileAccess.get_file_as_string(STATIC_FILTER).sha256_text() if FileAccess.file_exists(STATIC_FILTER) else ""}
+	return {"manifest_modified":FileAccess.get_modified_time(Community.MANIFEST),"combat_vocabulary":FileAccess.get_file_as_string("res://data/combat_animation_keywords.json").sha256_text(),"static_filter":FileAccess.get_file_as_string(STATIC_FILTER).sha256_text() if FileAccess.file_exists(STATIC_FILTER) else ""}
 
 static func build_cache(index_path: String) -> Dictionary:
 	var json_path := ProjectSettings.globalize_path(Community.MANIFEST)
@@ -51,8 +51,9 @@ static func build_cache(index_path: String) -> Dictionary:
 					var suppressed_id:=str(item.get("store_asset_id",""))
 					if not suppressed_id.is_empty():suppressed_ids[suppressed_id]=true
 	var valid: Array[Dictionary] = []
+	var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
 	for value in raw:
-		if value is Dictionary and FileAccess.file_exists(str(value.get("bvh_source", ""))) and not suppressed_ids.has(str(value.get("store_asset_id",""))): valid.append(value)
+		if value is Dictionary and combat_filter.accepts(value) and FileAccess.file_exists(str(value.get("bvh_source", ""))) and not suppressed_ids.has(str(value.get("store_asset_id",""))): valid.append(value)
 	var details_file := FileAccess.open(details_path(index_path), FileAccess.WRITE)
 	if details_file == null: return {}
 	var compact: Array[Dictionary] = []
@@ -62,6 +63,7 @@ static func build_cache(index_path: String) -> Dictionary:
 		var detail_offset := details_file.get_position()
 		details_file.store_buffer(bytes)
 		var record := _compact_record(entry)
+		record["combat_keyword_matches"]=combat_filter.matches(entry)
 		record["_detail_offset"] = detail_offset
 		record["_detail_size"] = bytes.size()
 		compact.append(record)

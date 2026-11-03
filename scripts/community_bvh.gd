@@ -62,6 +62,16 @@ static func mapping(data:Dictionary) -> Dictionary:
 	for bone in ALIASES:
 		for alias in ALIASES[bone]+EXTRA_ALIASES.get(bone,[]):
 			if named.has(alias):result[bone]=named[alias];break
+	# Some exporters call the thigh LeftLeg and the calf LeftShin. Only use
+	# that convention when both joints exist, so ordinary LeftUpLeg/LeftLeg
+	# skeletons keep their existing mapping.
+	for side in ["left","right"]:
+		var suffix:="l" if side=="left" else "r"
+		if named.has(side+"leg") and named.has(side+"shin") and not named.has(side+"upleg"):
+			result["thigh_"+suffix]=named[side+"leg"]
+			result["calf_"+suffix]=named[side+"shin"]
+	if not named.has("spine") and named.has("spine1") and named.has("spine2") and named.has("chest"):
+		result.spine_01=named.spine1;result.spine_02=named.spine2
 	# Some compact humanoid exports end at Neck and omit explicit clavicle joints.
 	# Use their actual hierarchy endpoints, preserving the recorded anatomy.
 	if not result.has("Head") and result.has("neck_01"):
