@@ -43,3 +43,21 @@ Store movement and type browsing (2026-11-02)
 - Body-part metadata and body: searches remain available; type: searches are added.
 - Cache version 5 rebuilds the local metadata index once. Source assets, creator
   credits and account ownership remain intact; old body-filter indices are ignored.
+
+Store paging performance (2026-11-02)
+- Keep up to eight ordered query result lists in host metadata. Page changes
+  slice these lists and hydrate only the visible 20 records.
+- Query keys include filters, owned-entry identity/name/category/type, blocked IDs
+  and favorites. Downloading, blocking and favorites invalidate stale results.
+- Build a source-ID ownership lookup once per query instead of scanning every
+  owned entry for every catalog item. Compute favorite/rank scores once per match,
+  not twice per sort comparison.
+- Restoring saved search does not trigger an overlapping query. Store completion
+  no longer waits for an estimated minimum loading-screen duration.
+- Structured store_open_timing, store_index_timing and animation_store_page_timing
+  diagnostics expose actual costs and query-cache hits.
+- Local comparison with 26k records: all-items page turns previously took 12.9–14.3 s;
+  cached turns now take 0.13–0.15 s. First all-items query is about 1.65 s. Opening
+  still includes the shared preview actor/arena setup (about 7 s in the staged run).
+- tests/store_paging_performance_test.gd verifies cached paging and invalidation
+  after block/favorite/download changes, without saving test account changes.

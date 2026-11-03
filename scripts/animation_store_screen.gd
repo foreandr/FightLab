@@ -63,14 +63,19 @@ var store_air_filter:OptionButton
 var store_view_filter:OptionButton
 
 func _ready()->void:
+	var started_usec:=Time.get_ticks_usec()
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
 	store_library.load_state();animation_favorites.load_state()
 	var view:=ConfigFile.new()
 	if view.load("user://animation_store_view.cfg")==OK:zoom=clampf(float(view.get_value("view","zoom",1.0)),0.6,1.8)
+	var account_usec:=Time.get_ticks_usec()
 	_build_preview_world()
+	var world_usec:=Time.get_ticks_usec()
 	_build_ui()
+	var ui_usec:=Time.get_ticks_usec()
 	await _load_animation_store()
 	store_screen_ready=true
+	GameDiagnostics.log_event("store_open_timing",{"account_ms":(account_usec-started_usec)/1000.0,"world_ms":(world_usec-account_usec)/1000.0,"ui_ms":(ui_usec-world_usec)/1000.0,"catalog_ms":(Time.get_ticks_usec()-ui_usec)/1000.0})
 	GameDiagnostics.log_event("standalone_animation_store_ready",{"records":store_index_records.size(),"rows":animation_store_list.get_child_count(),"editor_loaded":false})
 
 func _build_preview_world()->void:

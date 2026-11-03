@@ -4,6 +4,7 @@ extends RefCounted
 static func _load_animation_store(host) -> void:
 	if host.store_loaded or host.store_loading_in_progress:return
 	host.store_loading_in_progress=true
+	host.set_meta("store_query_cache",{})
 	var cache_path=ProjectSettings.globalize_path(host.StoreIndex.cache_path())
 	host.store_loading_pacer.begin("store_index_cold_build" if not FileAccess.file_exists(cache_path) else "store_index_build")
 	host.store_loading_indicator.show()
@@ -23,6 +24,7 @@ static func _load_animation_store(host) -> void:
 		if build_thread.start(func():return host.StoreIndex.build_cache(cache_path))==OK:
 			var result:Variant=await host._wait_for_store_thread(build_thread,0.12,"Indexing animation titles and tags…")
 			if result is Dictionary:cached=result
+	var cache_loaded_usec:=Time.get_ticks_usec()
 	host.store_index_records.clear()
 	for record in cached.get("records",[]):
 		if record is Dictionary:host.store_index_records.append(record)
@@ -54,13 +56,11 @@ static func _load_animation_store(host) -> void:
 			if entry.has("source_animation") and auxiliary!=null:animation=auxiliary.get_animation(str(entry.source_animation))
 			elif host.actor.player.has_animation(str(entry.clip)):animation=host.actor.player.get_animation(str(entry.clip))
 			host.animation_store_entries[index]=host.StoreLibrary.enrich(entry,animation)
+	GameDiagnostics.log_event("store_index_timing",{"cache_seconds":host.store_loading_pacer.elapsed_seconds(),"registry_ms":(Time.get_ticks_usec()-cache_loaded_usec)/1000.0})
 	host._set_store_loading_progress(0.96,"Loading the first 20 matching records…")
 	host._populate_store_creators()
 	host._load_store_preferences()
 	await host._populate_animation_store()
-	while not host.store_loading_pacer.target_reached():
-		host._set_store_loading_progress(0.99,"Finishing the Store’s local setup…")
-		await host.get_tree().create_timer(minf(host.store_loading_pacer.remaining_seconds(),0.1)).timeout
 	host.store_loaded=true
 	host.store_loading_bar.value=100
 	host.store_loading_status.text="Store ready · 20 results per page"
@@ -97,7 +97,9 @@ static func _save_store_preferences(host) -> void:
 static func _load_store_preferences(host) -> void:
 	var config=ConfigFile.new()
 	if config.load("user://animation_store_preferences.cfg")!=OK:return
+	host.animation_store_search.set_block_signals(true)
 	host.animation_store_search.text=str(config.get_value("store","search",""))
+	host.animation_store_search.set_block_signals(false)
 	for pair in [[host.store_body_filter,"animation_type"],[host.store_air_filter,"air"],[host.store_view_filter,"view"],[host.store_sort_filter,"sort"]]:
 		var filter:OptionButton=pair[0]
 		filter.select(clampi(int(config.get_value("store",pair[1],0)),0,filter.item_count-1))
@@ -177,43 +179,64 @@ static func _toggle_store_block(host, entry:Dictionary,currently_blocked:bool) -
 
 static func _populate_animation_store(host) -> void:
 	if not is_instance_valid(host.animation_store_list):return
+	var started_usec:=Time.get_ticks_usec()
 	host.store_page_generation+=1
 	var generation=host.store_page_generation
 	host.clear_list(host.animation_store_list)
 	var query=host.animation_store_search.text.strip_edges().to_lower()
 	var query_key="%s|%d|%d|%d|%d|%d"%[query,host.store_body_filter.selected,host.store_air_filter.selected,host.store_view_filter.selected,host.store_sort_filter.selected,host.store_creator_filter.selected]
 	if query_key!=host.store_last_query:host.store_page=0;host.store_last_query=query_key
-	var count=0
+	# A page turn reuses ordered matches. Ownership lookup is built once, not
+	# once per catalog record; source IDs also recognize renamed local copies.
+	var owned_sources:Dictionary={}
+	var ownership_signature:Array=[]
+	for owned in host.store_library.taken.values():
+		var owned_id:String=host.StoreLibrary.key(owned)
+		owned_sources[owned_id]=true
+		owned_sources[str(owned.get("store_source_id",owned_id))]=true
+		ownership_signature.append([owned_id,owned.get("title"),owned.get("category"),owned.get("animation_type")])
+	var cache_key:String=query_key+"|"+str([host.store_index_records.size(),host.animation_store_entries.size(),ownership_signature,host.store_library.blocked.keys(),host.animation_favorites.favorites].hash())
+	var query_cache:Dictionary=host.get_meta("store_query_cache",{})
+	var cache_hit:bool=query_cache.has(cache_key)
 	var matches_:Array[Dictionary]=[]
-	var all_records:Array[Dictionary]=[]
-	all_records.append_array(host.store_index_records)
-	all_records.append_array(host.animation_store_entries)
-	for entry in all_records:
-		var id=host.StoreLibrary.key(entry)
-		var taken:bool=host.store_library.is_taken(entry) or entry.has("path")
-		var blocked:bool=host.store_library.blocked.has(id)
-		if host.store_view_filter.selected==0 and (taken or blocked):continue
-		if host.store_view_filter.selected==1 and not taken:continue
-		if host.store_view_filter.selected==2 and not blocked:continue
-		if host.store_library.taken.has(id):entry=host.store_library.taken[id].duplicate(true)
-		if not entry.has("store_animation_type"):entry["store_animation_type"]=preload("res://scripts/animation_store_types.gd").kind(entry)
-		if host.store_body_filter.selected>0 and host.store_body_filter.get_item_text(host.store_body_filter.selected)!=str(entry.store_animation_type):continue
-		if host.store_air_filter.selected>0 and str(entry.get("air_state",""))!=host.store_air_filter.get_item_text(host.store_air_filter.selected):continue
-		if host.store_creator_filter.selected>0 and host._store_creator(entry)!=host.store_creator_filter.get_item_text(host.store_creator_filter.selected):continue
-		if not query.is_empty() and not host.StoreLibrary.matches(entry,query):continue
-		count+=1
-		matches_.append(entry)
-	if host.store_sort_filter.selected==0:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
-			var score_a=host._store_top_score(a);var score_b=host._store_top_score(b)
-			if score_a!=score_b:return score_a>score_b
-			return str(a.title).naturalnocasecmp_to(str(b.title))<0)
-	elif host.store_sort_filter.selected==2:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
-			var creator_order=host._store_creator(a).naturalnocasecmp_to(host._store_creator(b))
-			return creator_order<0 if creator_order!=0 else str(a.title).naturalnocasecmp_to(str(b.title))<0)
+	if cache_hit:matches_.assign(query_cache[cache_key])
 	else:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.title).naturalnocasecmp_to(str(b.title))<0)
+		var all_records:Array[Dictionary]=[]
+		all_records.append_array(host.store_index_records)
+		all_records.append_array(host.animation_store_entries)
+		for entry in all_records:
+			var id=host.StoreLibrary.key(entry)
+			var taken:bool=owned_sources.has(id) or entry.has("path")
+			var blocked:bool=host.store_library.blocked.has(id)
+			if host.store_view_filter.selected==0 and (taken or blocked):continue
+			if host.store_view_filter.selected==1 and not taken:continue
+			if host.store_view_filter.selected==2 and not blocked:continue
+			if host.store_library.taken.has(id):entry=host.store_library.taken[id].duplicate(true)
+			if not entry.has("store_animation_type"):entry["store_animation_type"]=preload("res://scripts/animation_store_types.gd").kind(entry)
+			if host.store_body_filter.selected>0 and host.store_body_filter.get_item_text(host.store_body_filter.selected)!=str(entry.store_animation_type):continue
+			if host.store_air_filter.selected>0 and str(entry.get("air_state",""))!=host.store_air_filter.get_item_text(host.store_air_filter.selected):continue
+			if host.store_creator_filter.selected>0 and host._store_creator(entry)!=host.store_creator_filter.get_item_text(host.store_creator_filter.selected):continue
+			if not query.is_empty() and not host.StoreLibrary.matches(entry,query):continue
+			entry["_store_query_score"]=host._store_top_score(entry)
+			matches_.append(entry)
+	var scan_usec:=Time.get_ticks_usec()
+	if not cache_hit:
+		if host.store_sort_filter.selected==0:
+			matches_.sort_custom(func(a:Dictionary,b:Dictionary):
+				var score_a:int=a._store_query_score;var score_b:int=b._store_query_score
+				if score_a!=score_b:return score_a>score_b
+				return str(a.title).naturalnocasecmp_to(str(b.title))<0)
+		elif host.store_sort_filter.selected==2:
+			matches_.sort_custom(func(a:Dictionary,b:Dictionary):
+				var creator_order=host._store_creator(a).naturalnocasecmp_to(host._store_creator(b))
+				return creator_order<0 if creator_order!=0 else str(a.title).naturalnocasecmp_to(str(b.title))<0)
+		else:
+			matches_.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.title).naturalnocasecmp_to(str(b.title))<0)
+		if query_cache.size()>=8:query_cache.clear()
+		query_cache[cache_key]=matches_
+		host.set_meta("store_query_cache",query_cache)
+	var count:int=matches_.size()
+	var sorted_usec:=Time.get_ticks_usec()
 	host.store_page=clampi(host.store_page,0,maxi(0,ceili(float(count)/host.STORE_PAGE_SIZE)-1))
 	host.store_page_label.text="Page %d / %d · %d matches"%[host.store_page+1,maxi(1,ceili(float(count)/host.STORE_PAGE_SIZE)),count]
 	host.store_page_previous.disabled=host.store_page==0
@@ -235,6 +258,7 @@ static func _populate_animation_store(host) -> void:
 		var detail_result:Variant=await host._wait_for_store_thread(detail_thread,0.98,"Loading this page’s 20 animation records…")
 		if detail_result is Dictionary:page_details=detail_result
 	if generation!=host.store_page_generation:return
+	var details_usec:=Time.get_ticks_usec()
 	for compact_entry in visible:
 		var entry:Dictionary=compact_entry
 		var id=host.StoreLibrary.key(entry)
@@ -252,6 +276,7 @@ static func _populate_animation_store(host) -> void:
 		id=host.StoreLibrary.key(entry)
 		var blocked:bool=host.store_library.blocked.has(id)
 		var row_entry:Dictionary=entry.duplicate(true)
+		row_entry.erase("_store_query_score")
 		var row=HBoxContainer.new()
 		row.add_theme_constant_override("separation",6)
 		host.animation_store_list.add_child(row)
@@ -280,6 +305,9 @@ static func _populate_animation_store(host) -> void:
 		reject.name="StoreBlock"
 		host._style_store_action(reject,Color("b8443e") if not blocked else Color("9c743d"))
 	host.animation_store_count.text="Animations · %d / %d"%[count,host.store_index_records.size()+host.animation_store_entries.size()]
+	var timing:Dictionary={"cache_hit":cache_hit,"scan_ms":(scan_usec-started_usec)/1000.0,"sort_ms":(sorted_usec-scan_usec)/1000.0,"details_ms":(details_usec-sorted_usec)/1000.0,"rows_ms":(Time.get_ticks_usec()-details_usec)/1000.0,"total_ms":(Time.get_ticks_usec()-started_usec)/1000.0}
+	host.set_meta("store_page_timing",timing)
+	GameDiagnostics.log_event("animation_store_page_timing",timing)
 	GameDiagnostics.log_event("animation_store_page_ready",{"page":host.store_page,"matches":count,"visible":visible.size(),"details_expected":visible.filter(func(value):return value.has("_detail_offset")).size(),"details_loaded":page_details.values().filter(func(value):return value is Dictionary and not value.is_empty()).size(),"details_file":page_source})
 	host.call_deferred("_apply_panel_zoom","Store")
 
