@@ -342,3 +342,16 @@ tests/projectile_clash_test.gd verifies equal/unequal damage, reduced burn/force
 fast crossing, array ordering, successive clashes, friendly/near misses, earlier
 wall/body impacts and actual residual damage/burn. tests/clash_review.gd checks
 the older arena integration.
+Touch directional-perfect regression
+------------------------------------
+Physical and elemental Touch sweeps use the same SelfBarrier perfect-block
+rules as projectiles: 120ms timing window, facing within 30 degrees of the
+incoming direction, and enough barrier capacity for the physical hit. Gold
+directional perfect blocks effects, spends no impact stamina, refunds up to
+10 mana and grants two haste stacks; timed-only blue grants the lower reward.
+This was already routed through the shared resolver. Added explicit swept-limb
+physical/Fire regression coverage, not a separate Touch-only parry mechanic.
+Block events now include spell ID, delivery_type and incoming_direction so
+diagnostics distinguish Touch golds from projectile golds. See
+tests/touch_directional_parry_test.gd for real collision-query coverage of gold,
+blue and normal blocks, effect prevention, resource rewards and colored feedback.

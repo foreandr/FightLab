@@ -209,13 +209,17 @@ func try_combo(allow_hesitation:bool=true)->bool:
  return true
 func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[float])->bool:
  var options:Array[Dictionary]=[]
- for i in choices.size():options.append({"action":"cast/"+str(choices[i].spec.id),"prior":scores[i],"item":choices[i]})
- options.append({"action":"move/strafe","prior":0.4})
+ var closing:bool=world.has_method("time_remaining") and world.time_remaining()<=10.0
+ var protect_lead:bool=closing and actor.health>actor.rival.health
+ for i in choices.size():
+  var tempo:=0.65 if protect_lead else (1.2 if closing else 1.0)
+  options.append({"action":"cast/"+str(choices[i].spec.id),"prior":scores[i]*tempo,"item":choices[i]})
+ options.append({"action":"move/strafe","prior":2.5 if protect_lead else 0.4})
  if distance>0.56:
-  var inside:bool=distance<1.6 and actor.stamina>40 and actor.rival.mode!="cast"
+  var inside:bool=not protect_lead and distance<1.6 and actor.stamina>40 and actor.rival.mode!="cast"
   options.append({"action":"move/approach","prior":4.0+aggression if inside else (0.9 if distance<3 else 0.35)})
- if distance<4.5:options.append({"action":"move/retreat","prior":0.7 if actor.stamina<45 else 0.2})
- if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":1.2 if aggression>0.6 else 0.6})
+ if distance<4.5:options.append({"action":"move/retreat","prior":4.5 if protect_lead else (0.7 if actor.stamina<45 else 0.2)})
+ if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":0.2 if protect_lead else (2.0 if closing else (1.2 if aggression>0.6 else 0.6))})
  if distance>2 and distance<7 and actor.stamina>55 and defense_left<=0:options.append({"action":"move/dash","prior":0.5})
  if distance>1.6 and distance<9 and can_jump():
   var jump_score:=3.0+(0.6 if actor.drive_velocity.length()>2 else 0.0)+(0.5 if actor.rival.mode=="cast" else 0.0)

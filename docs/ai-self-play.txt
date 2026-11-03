@@ -269,3 +269,24 @@ and landing, real aerial projectile release/pose, paid flip/twist and low-stamin
 rejection. Three full fights and defense/deception regression tests passed.
 A copy of the saved policy completed an 81.9s fight with 33 jumps, 21 airborne
 attacks and nine air tricks across both fighters. This verifies use, not optimality.
+
+One-minute rounds and resource recovery
+--------------------------------------
+CPU rounds now last at most 60 simulation seconds after the initial countdown.
+Pause stops the clock; slow motion slows it with the fight. A small top-centre
+clock turns red in the last ten seconds. Knockout ends a round earlier. At the
+deadline, higher current HP wins; HP equal within 0.001 is a draw. Survivors are
+not killed by timeout. Reports record finish_reason and duration_limit. Self-play
+and frozen comparisons use the same deadline; rematch resets the clock.
+In the last ten seconds, policy contexts distinguish being ahead/tied/behind.
+Soft tactical priors favor space and protecting a lead, or pressure when behind;
+the learned choice can still override these priors. Nested context fallback
+keeps old snapshots readable without modifying them. No forced defensive script.
+Shared stamina and magicka recovery is 34/s, up from 17/s, in live and editor
+idle recovery paths. Busy-state restrictions, delays, caps and sprint costs are
+unchanged. Guard still recovers at 17/s; health recovery was not added.
+Hitboxes [2] and Numbers [3] now latch their selected appearance through the
+same setters used by clicks, hotkeys and scripts. Spells [4] remains unchanged.
+cpu_match_clock_test.gd verifies deadlines, pause, HP result/ties, rematches,
+late-round state/decisions, actual recovery and toggle synchronization. Three
+full fights and self-play regression passed; clock/toggles also checked visually.

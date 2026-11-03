@@ -23,7 +23,8 @@ const PLAN := ["cast", "strafe", "jump_cast", "retreat", "cast", "shield", "dash
 const MAX_GUARD := 44.0
 const MAX_MANA := 100.0
 const MAX_STAMINA := 100.0
-const RESOURCE_RECOVERY_RATE := 17.0
+const RESOURCE_RECOVERY_RATE := 34.0
+const GUARD_RECOVERY_RATE := 17.0
 const RESOURCE_RECOVERY_DELAY := 0.65
 const ImpactPhysics = preload("res://scripts/impact_physics.gd")
 var impact_physics := ImpactPhysics.new()
@@ -476,7 +477,7 @@ func recover_resources(delta: float) -> void:
 func recover_guard(delta:float) -> void:
 	guard_recovery=maxf(0.0,guard_recovery-delta)
 	if health>0 and mode!="shield" and not story_block_held and guard_recovery<=0.0:
-		guard_energy=minf(MAX_GUARD,guard_energy+delta*RESOURCE_RECOVERY_RATE)
+		guard_energy=minf(MAX_GUARD,guard_energy+delta*GUARD_RECOVERY_RATE)
 
 func _player_sprint_active() -> bool:
 	return player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT) and preload("res://scripts/character_exertion.gd").can_sprint(self)

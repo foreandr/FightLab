@@ -10,6 +10,11 @@ var paused:=false
 var match_seed:=0
 var match_winner:=-2
 var finished_at:=0.0
+var match_duration:=60.0
+var finish_reason:=""
+var timer_label:Label
+var hitboxes_button:Button
+var numbers_button:Button
 var pause_button:Button
 var report_dialog:AcceptDialog
 var report_text:Label
@@ -84,7 +89,7 @@ func rematch(seed_:int=0)->void:
  round_active=false;clear_battle_effects();events.clear();casts.clear();hits.clear();elapsed=0;projectile_clash_count=0
  spell_environment.reset_environment()
  combat().cast_attempts.clear();combat().cast_recoveries.clear();combat().touch_casts.clear()
- brains.clear();match_winner=-2;finished_at=0;countdown=0.1 if training_view else 2.0;intermission_left=2.0
+ brains.clear();match_winner=-2;finished_at=0;finish_reason="";countdown=0.1 if training_view else 2.0;intermission_left=2.0
  for spell_label in last_spell_labels.values():spell_label.text="";spell_label.visible=false
  last_spell_until.clear()
  selected=null;camera_focus_target=null
@@ -122,10 +127,18 @@ func _physics_process(delta:float)->void:
   # Alternate evaluation order: neither team always gets the first decision.
   var order:=[0,1] if Engine.get_physics_frames()%2==0 else [1,0]
   for i in order:brains[i].step(delta)
- tick_combat(delta)
+ var combat_delta:=minf(delta,maxf(0.0,match_duration-elapsed)) if round_active else delta
+ tick_combat(combat_delta)
  if round_active:
   var dead0:bool=fighters[0].health<=0;var dead1:bool=fighters[1].health<=0
   if dead0 or dead1:finish_round(-1 if dead0 and dead1 else (1 if dead0 else 0))
+  elif elapsed>=match_duration-0.00001:
+   elapsed=match_duration
+   finish_reason="timeout"
+   var difference:float=fighters[0].health-fighters[1].health
+   finish_round(-1 if absf(difference)<0.001 else (0 if difference>0 else 1))
+func time_remaining()->float:
+ return maxf(0.0,match_duration-(finished_at if match_winner!=-2 else (0.0 if countdown>0 else elapsed)))
 func projectile_aim_target(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,speed:float)->Vector3:
  var target:=combat_target(actor)
  if not is_instance_valid(target):return super.projectile_aim_target(actor,spec,origin,speed)
@@ -134,6 +147,7 @@ func projectile_aim_target(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,
  return chest+Vector3(target.velocity.x,0,target.velocity.z)*lead*0.65
 func finish_round(winner:int)->void:
  if match_winner!=-2:return
+ if finish_reason.is_empty():finish_reason="knockout" if fighters.any(func(a):return a.health<=0) else "manual"
  # Result framing must not track settling corpses or residual actor movement.
  # Keep orbit, zoom and changing focus available after the fight.
  result_camera_frame={"middle":(fighters[0].global_position+fighters[1].global_position)*0.5+Vector3.UP*1.3,"separation":fighters[0].global_position.distance_to(fighters[1].global_position),"focus":{}}
@@ -150,7 +164,7 @@ func finish_round(winner:int)->void:
    if not learning_save_ok:push_warning("Could not save AI learning profile: "+str(learning_store.last_save_error))
  if winner>=0:
   fighters[winner].get_node("OverheadHealthTag").name_label.text=str(fighters[winner].story_profile.name)+" · Winner"
- var record:Dictionary={"seed":match_seed,"winner":winner,"seconds":elapsed,"fighters":[],"events":events,"model_paths":model_match_paths.duplicate(),"learning":learning_updates}
+ var record:Dictionary={"seed":match_seed,"winner":winner,"seconds":elapsed,"fighters":[],"events":events,"model_paths":model_match_paths.duplicate(),"learning":learning_updates,"finish_reason":finish_reason,"duration_limit":match_duration}
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i]
   record.fighters.append({"name":actor.story_profile.name,"health":actor.health,"damage_dealt":actor.damage_dealt,"stamina_spent":actor.stamina_spent,"mana_spent":actor.mana_spent,"decisions":brains[i].counts})
@@ -168,19 +182,27 @@ func build_ui()->void:
  var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b5a27f");paper.set_border_width_all(1)
  for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:paper.set_content_margin(side,6)
  hud.theme.set_stylebox("panel","PanelContainer",paper)
+ var clock:=PanelContainer.new();clock.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP);clock.offset_left=-54;clock.offset_right=54;clock.offset_top=6;clock.offset_bottom=44;clock.mouse_filter=Control.MOUSE_FILTER_IGNORE;hud.add_child(clock)
+ timer_label=label(clock,"1:00",24);timer_label.name="MatchTimer";timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-46;bottom.grow_vertical=Control.GROW_DIRECTION_BEGIN;hud.add_child(bottom)
  var buttons:=HFlowContainer.new();buttons.alignment=FlowContainer.ALIGNMENT_CENTER;buttons.add_theme_constant_override("h_separation",6);buttons.add_theme_constant_override("v_separation",6);bottom.add_child(buttons)
  button(buttons,"Main menu",go_home)
  pause_button=button(buttons,"Pause",toggle_pause);pause_button.tooltip_text="Space"
  button(buttons,"Rematch",func():rematch());button(buttons,"Slow mo",toggle_slow)
- button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible))
- button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible))
+ hitboxes_button=button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible));hitboxes_button.toggle_mode=true;hitboxes_button.set_pressed_no_signal(projectile_hitboxes_visible)
+ numbers_button=button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible));numbers_button.toggle_mode=true;numbers_button.set_pressed_no_signal(combat_numbers_visible)
  spell_names_button=button(buttons,"Spells [4]",toggle_spell_names);spell_names_button.toggle_mode=true
  spell_names_button.tooltip_text="Show casts, cancelled feints and hesitations above each fighter"
  button(buttons,"Match report",show_report)
  self_play_button=button(buttons,"Self-play [T]",toggle_self_play);self_play_button.toggle_mode=true
  self_play_button.tooltip_text="Keep running matches and saving AI learning"
  var models_button:=button(buttons,"Models [M]",show_models);models_button.disabled=not learning_enabled
+func set_combat_hitboxes(enabled:bool)->void:
+ super.set_combat_hitboxes(enabled)
+ if is_instance_valid(hitboxes_button):hitboxes_button.set_pressed_no_signal(enabled)
+func set_combat_numbers(enabled:bool)->void:
+ super.set_combat_numbers(enabled)
+ if is_instance_valid(numbers_button):numbers_button.set_pressed_no_signal(enabled)
 func show_models()->void:
  if not learning_enabled:return
  if not is_instance_valid(model_dialog):
@@ -239,6 +261,7 @@ func show_report()->void:
   report_text=Label.new();report_text.custom_minimum_size.x=520;report_text.size_flags_horizontal=Control.SIZE_EXPAND_FILL;report_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;scroll.add_child(report_text)
  var text_:="Seed: %d\nElapsed: %.1f seconds\nSame loadouts; different decisions.\n"%[match_seed,finished_at if match_winner!=-2 else elapsed]
  text_+="Winner: "+("In progress" if match_winner==-2 else ("Draw" if match_winner<0 else str(fighters[match_winner].story_profile.name)))+"\n"
+ if not finish_reason.is_empty():text_+="Result: "+finish_reason+"\n"
  if learning_store!=null and not learning_enabled:text_+="Learning unavailable: "+str(learning_store.error)+"\n"
  if learning_enabled:text_+="Learning: %d completed matches · %d updates · champion generation %d\n"%[learning_store.data.matches,learning_store.data.updates,learning_store.data.generation]
  if not model_match_labels.is_empty():text_+="Frozen comparison: Red %s vs Blue %s\n"%model_match_labels
@@ -268,6 +291,11 @@ func update_camera(delta:float)->void:
  camera.look_at(camera_follow_point)
 func _process(delta:float)->void:
  if not ready_for_match:return
+ if is_instance_valid(timer_label):
+  var seconds:=int(ceil(time_remaining()))
+  timer_label.text="%d:%02d"%[seconds/60,seconds%60]
+  var color:=Color("b64336") if seconds<=10 else Color("3a3022")
+  if timer_label.get_theme_color("font_color")!=color:timer_label.add_theme_color_override("font_color",color)
  update_camera(delta)
  update_spell_names()
  hovered=Focus.pick(camera,fighters,get_viewport().get_mouse_position()) if get_viewport().gui_get_hovered_control()==null else null

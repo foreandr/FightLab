@@ -23,15 +23,18 @@ func state(actor:CharacterBody3D)->String:
  # Separate elbow/clinch, boxing, kicking and outside distance. Keep the old
  # context as a suffix so archived policies remain readable without rewriting.
  var pocket:=0 if distance<=0.68 else (1 if distance<=1.05 else (2 if distance<=1.65 else 3))
- return "range%d|%s"%[pocket,legacy]
+ var context:="range%d|%s"%[pocket,legacy]
+ if actor.arena.has_method("time_remaining") and actor.arena.time_remaining()<=10.0:
+  var lead:=1 if actor.health>actor.rival.health else (-1 if actor.health<actor.rival.health else 0)
+  context="end%d|%s"%[lead,context]
+ return context
 func value(context:String,action:String,prior:float)->float:
  var entry:Dictionary=model.get(context,{}).get(action,{})
  if not entry.is_empty():return float(entry.q)
  if "|" in context:
-  var legacy:Dictionary=model.get(context.get_slice("|",1),{}).get(action,{})
   # Old distance buckets were too broad. Retain some prior learning while
   # allowing the more specific range's tactical prior to seed new experience.
-  if not legacy.is_empty():return lerpf(prior,float(legacy.q),0.25)
+  return lerpf(prior,value(context.substr(context.find("|")+1),action,prior),0.25)
  return prior
 func pick(actor:CharacterBody3D,options:Array[Dictionary])->Dictionary:
  assert(not options.is_empty())

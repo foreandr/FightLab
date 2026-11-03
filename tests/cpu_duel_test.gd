@@ -41,7 +41,9 @@ func run():
     assert(not actor.practice_god_mode and not actor.practice_immortal)
   assert(demo.match_winner>=-1 and demo.match_winner<=1,"CPU match failed to finish")
   assert(not demo.round_active)
-  if demo.match_winner>=0:assert(demo.fighters[1-demo.match_winner].health<=0)
+  if demo.match_winner>=0:
+   if demo.finish_reason=="timeout":assert(demo.fighters[demo.match_winner].health>demo.fighters[1-demo.match_winner].health)
+   else:assert(demo.fighters[1-demo.match_winner].health<=0)
   for event in demo.events:
    if event.event=="cpu_combo":seen_combo=true
    if event.event in ["parry","directional_parry"]:seen_perfect=true

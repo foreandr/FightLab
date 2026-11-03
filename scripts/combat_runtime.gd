@@ -369,7 +369,7 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 			if amount<=0.0001:
 				if not parry_ready and victim.has_method("receive_status"):victim.receive_status(attacker,spec)
 				preload("res://scripts/block_tier_feedback.gd").show_for(victim,int(block_result.tier))
-				field.events.append({"time":field.elapsed,"event":"directional_parry" if int(block_result.tier)==3 else ("parry" if parry_ready else "self_block"),"tier":block_result.tier,"tier_name":block_result.tier_name,"victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund})
+				field.events.append({"time":field.elapsed,"event":"directional_parry" if int(block_result.tier)==3 else ("parry" if parry_ready else "self_block"),"tier":block_result.tier,"tier_name":block_result.tier_name,"victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund,"spell":str(spec.get("id","unknown")),"delivery_type":str(spec.get("delivery_type","Projectile")),"incoming_direction":str(direction)})
 				return true
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken

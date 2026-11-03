@@ -11,7 +11,7 @@ func run():
  demo.policy_overrides=[demo.learning_store.data.learner,frozen]
  demo.policy_training_flags=[true,false];demo.rematch(317)
  assert(demo.brains[0].policy.learning and not demo.brains[1].policy.learning)
- assert(demo.hud.find_children("*","Label",true,false).is_empty(),"Removed top commentary panel still exists")
+ for label in demo.hud.find_children("*","Label",true,false):assert(label.name=="MatchTimer","Removed top commentary panel still exists")
  assert(demo.hud.find_children("*","ProgressBar",true,false).is_empty())
  var action:Dictionary={"action":"move/strafe","prior":0.5}
  var options:Array[Dictionary]=[action]
