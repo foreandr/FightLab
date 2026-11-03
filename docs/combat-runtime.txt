@@ -306,3 +306,10 @@ perfect-parry window. It uses a legal 0.5-second shield animation with ordinary
 shared pricing/capacity and tries an evade when activation would be too late.
 No parry windows, invulnerability, damage or resource rules are relaxed for AI.
 The spectator commentary panel is removed; plans remain in Match report and all resource bars remain on the characters.
+
+Physical flinch recovery: CombatDefenseRules.hit_recovery_seconds owns the shared
+non-ragdoll action lockout (about 0.15 s for 10 body damage, 0.21 s for a 20-damage
+head hit). Damage and support loss add modest weight, capped at 0.27 s. The
+head/chest clips remain distinct. Ragdoll/getup and explicit status stuns retain
+their own clocks. CPU thinking is ready immediately after the physical reaction.
+tests/hit_recovery_test.gd checks real impacts and immediate counter casts.

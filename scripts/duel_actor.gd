@@ -870,7 +870,7 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 		mode = "hit"
 		mode_time = 0
 		var reaction:=preload("res://scripts/combat_hit_regions.gd").reaction(zone)
-		mode_length = maxf(0.42 if zone=="head" else 0.36,clampf(0.16 + impact_physics.support_loss * 0.12, 0.18, 0.40))
+		mode_length = preload("res://scripts/combat_defense_rules.gd").hit_recovery_seconds(amount,zone.to_lower()=="head",impact_physics.support_loss)
 		clip = ""
 		play(reaction,player.get_animation(reaction).length/mode_length)
 	return true

@@ -131,6 +131,8 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  return true
 func step(delta:float)->void:
  if not world.round_active or actor.health<=0:return
+ # Reassess immediately when a physical flinch ends, without an extra think delay.
+ if actor.mode=="hit":think_left=0.0
  defense_left=maxf(0.0,defense_left-delta);action_left=maxf(0.0,action_left-delta)
  if actor.damage_dealt>last_progress+0.1:last_progress=actor.damage_dealt;stale_time=0.0
  else:stale_time+=delta
