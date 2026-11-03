@@ -2543,7 +2543,7 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
   var drift:=CastType.drift(caster,playback_animation(),delta)
   var direction:=ThirdPersonCamera.movement_direction(editor.field,caster,axes)
   var speed:float=Movement.gait_speed(caster,sprinting,4.0,7.0)*Movement.directional_speed(axes,sprinting)*caster.movement_multiplier()
-  var velocity:=drift.lerp(direction*speed,recovery)
+  var velocity:=CastType.steered_velocity(caster,playback_animation(),drift,direction*speed,delta,recovery)
   caster_move_axes=axes
   caster_sprinting=sprinting
   caster_moving=velocity.length_squared()>0.0001

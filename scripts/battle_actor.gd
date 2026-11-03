@@ -31,6 +31,8 @@ var practice_dummy_visual:Node3D
 var practice_spell_animation:Dictionary={}
 var authored_entry_pose:Array[Transform3D]=[]
 var authored_entry_duration:=0.10
+var cast_movement_input:=Vector3.ZERO
+var touch_parry_recovery:=0.0
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
 var practice_face_rival:=false
@@ -268,6 +270,8 @@ func reset_fighter(location: Vector3) -> void:
 	touch_chain_speed=1.0
 	authored_aim_target=null
 	authored_entry_pose.clear()
+	cast_movement_input=Vector3.ZERO
+	touch_parry_recovery=0.0
 	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
 	if is_instance_valid(block_notice):block_notice.age=1.0;block_notice.hide();block_notice.set_process(false)
@@ -414,6 +418,7 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=nu
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if not arena.combat().can_start_cast(self,spec) or mana+0.0001<arena.mana_cost(spec):return false
 	var incoming_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
+	cast_movement_input=Vector3.ZERO
 	practice_projectile_spec=spec.duplicate(true)
 	practice_projectile_spec["animation"]="palm_fireball"
 	practice_spell_animation=profile.duplicate(true)
@@ -431,17 +436,29 @@ func cast_locomotion_velocity(desired:Vector3,delta:float)->Vector3:
 	if mode!="cast" or editor_pose_locked or not is_on_floor() or str(current_spell.get("effect",""))!="touch":return desired
 	var type_=preload("res://scripts/animation_cast_type.gd")
 	var carry:Vector3=type_.drift(self,practice_spell_animation,delta)
-	if not player_controlled:return carry
+	if not player_controlled:
+		return type_.steered_velocity(self,practice_spell_animation,carry,cast_movement_input*4.8,delta,0.0)
 	var axes:=_player_move_axes()
 	var sprinting_now:=_player_sprint_active()
 	var speed:=Movement.gait_speed(self,sprinting_now,4.8,8.2)*Movement.directional_speed(Vector2(axes.x,-axes.y),sprinting_now)*movement_multiplier()
 	var requested:=_player_move_direction()*speed
 	if not type_.owns_legs(practice_spell_animation):return requested
 	var recovery:=type_.recovery_weight(practice_spell_animation,cast_time,mode_length,float(current_spell.release)/maxf(0.001,mode_length))
-	return carry.lerp(requested,recovery)
+	return type_.steered_velocity(self,practice_spell_animation,carry,requested,delta,recovery)
+
+func set_cast_movement(direction:Vector3)->void:
+	direction.y=0.0
+	cast_movement_input=direction.limit_length(1.0)
+
+func receive_touch_parry()->void:
+	# Continue the current follow-through, but deny the immediate attacking link.
+	var remaining:=maxf(0.0,mode_length-cast_time) if mode=="cast" else maxf(0.0,mode_length-mode_time)
+	touch_parry_recovery=maxf(touch_parry_recovery,0.18+minf(0.25,remaining))
+	cast_movement_input=Vector3.ZERO
 
 ## Touch can link its recovery into another Touch. Released projectiles remain locked.
 func chain_touch_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)->bool:
+	if touch_parry_recovery>0.0:return false
 	if mode!="cast" or str(current_spell.get("effect",""))!="touch" or str(spec.get("effect",""))!="touch" or not did_release:return false
 	if cast_time<mode_length*preload("res://scripts/touch_combo_rules.gd").link_progress(practice_spell_animation) or combat_reaction_active() or not arena.round_active:return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
@@ -1047,6 +1064,7 @@ func has_story_ability(ability: String) -> bool:
 	return abilities is Array and abilities.has(ability)
 
 func start_story_punch(side: String, charge: float=0.0, charge_profile:Dictionary={}, aim_direction:Vector3=Vector3.ZERO, aim_pitch:float=0.0) -> void:
+	if touch_parry_recovery>0.0:return
 	if arena.combat().cast_committed(self):return
 	if not arena.story_mode:
 		start_punch()
@@ -1119,6 +1137,7 @@ func start_story_block() -> bool:
 	return true
 
 func start_story_front_kick(charge_profile:Dictionary={},aim_direction:Vector3=Vector3.ZERO,aim_pitch:float=0.0) -> void:
+	if touch_parry_recovery>0.0:return
 	if arena.combat().cast_committed(self):return
 	if not has_story_ability("front_kick"):
 		return
@@ -1365,6 +1384,7 @@ func tick_air_trick(delta: float) -> void:
 			arena.movement_burst(self,true)
 
 func begin_strike(spec: Array, charge: float=0.0) -> void:
+	if touch_parry_recovery>0.0:return
 	melee_aim_direction=Vector3.ZERO
 	if arena.combat().cast_committed(self):return
 	if editor_animation_profile.get("category","") in ["Punch","Kick","Knee","Elbow","Uppercut","Sweep","Slash"]:
@@ -1417,6 +1437,7 @@ func begin_strike(spec: Array, charge: float=0.0) -> void:
 	count_action(spec[0])
 
 func start_uppercut(charged:=false) -> void:
+	if touch_parry_recovery>0.0:return
 	if arena.combat().cast_committed(self):return
 	if not charged:
 		melee_charge=0
@@ -1688,6 +1709,7 @@ func cleanse_burn() -> bool:
 	return Burn.cleanse(self)
 
 func update_status(delta: float) -> void:
+	touch_parry_recovery=maxf(0.0,touch_parry_recovery-delta)
 	parry_cast_haste.step(delta)
 	self_barrier.step(delta)
 	tactics.tick(self,delta)

@@ -12,6 +12,9 @@ const BODY_DRAG:=2.25
 const LEG_RECOVERY_START:=0.0
 const RECOVERY_FRACTION:=0.25
 const MAX_RECOVERY_SECONDS:=0.35
+const LEG_STEERING_SPEED:=1.0
+const BODY_STEERING_SPEED:=0.65
+const STEERING_ACCELERATION:=4.0
 static func normalize(value:String) -> String:return str(LEGACY_TYPES.get(value,value))
 static func declared(profile:Dictionary) -> bool:
  return normalize(str(profile.get("animation_type",""))) in TYPES
@@ -44,6 +47,7 @@ static func begin(actor:Node3D,profile:Dictionary,movement:Vector3=Vector3.INF) 
  var velocity:Vector3=movement if movement.is_finite() else actor.velocity
  velocity.y=0.0
  actor.set_meta("animation_cast_momentum",velocity if applies(profile) else Vector3.ZERO)
+ actor.set_meta("animation_cast_steering",Vector3.ZERO)
 static func drift(actor:Node3D,profile:Dictionary,delta:float) -> Vector3:
  if not applies(profile):return Vector3.ZERO
  var velocity:Vector3=actor.get_meta("animation_cast_momentum",Vector3.ZERO)
@@ -51,12 +55,20 @@ static func drift(actor:Node3D,profile:Dictionary,delta:float) -> Vector3:
  if velocity.length()<0.05:velocity=Vector3.ZERO
  actor.set_meta("animation_cast_momentum",velocity)
  return velocity
+static func steered_velocity(actor:Node3D,profile:Dictionary,carry:Vector3,requested:Vector3,delta:float,recovery:float)->Vector3:
+ # Small footwork remains available while the authored legs/body own the pose.
+ var cap:=LEG_STEERING_SPEED if kind(profile)==LEGS else BODY_STEERING_SPEED
+ var steering:Vector3=actor.get_meta("animation_cast_steering",Vector3.ZERO)
+ steering=steering.move_toward(requested.limit_length(cap),STEERING_ACCELERATION*maxf(0.0,delta))
+ actor.set_meta("animation_cast_steering",steering)
+ var early:Vector3=(carry+steering).limit_length(maxf(carry.length(),cap))
+ return early.lerp(requested,clampf(recovery,0.0,1.0))
 static func description(type_:String) -> String:
  match normalize(type_):
   HEAD:return "Head only · movement stays available."
   ARMS:return "Running legs + upper-body cast."
-  LEGS:return "Leg region · Touch: momentum slows · +20% physical damage."
-  WHOLE_BODY:return "Entire body · momentum carries forward and slows."
+  LEGS:return "Leg region · Touch: momentum slows, small steps allowed · +20% physical damage."
+  WHOLE_BODY:return "Entire body · momentum slows, small steps allowed."
  return "Choose an animation type before saving."
 
 ## Regions describe contributions, independent of the destination timeline track.

@@ -403,3 +403,28 @@ before limb contact do not erase all running momentum. The coefficient remains
 extra mana/burn/size bonus, and no momentum retained outside the current cast.
 run_attack_transition_test.gd verifies identical first pose, smooth deceleration,
 actual static/walking/sprinting knee hits and exact damage, plus clean recovery.
+
+Small cast footwork and perfect Touch counter advantage
+-------------------------------------------------------
+AnimationCastType.steered_velocity is shared by the live actor and Create's
+scripted controller. Early leg casts allow up to 1.0m/s of input footwork;
+Movement casts allow 0.65m/s. Steering accelerates at 4m/s^2 and combines with
+decaying entry momentum without adding speed above the larger of carry/cap.
+Normal input returns through the unchanged recovery curve. The authored leg
+pose, actual hitboxes, release timing and commitment remain intact. Live actor
+set_cast_movement accepts world-space direction input from script controllers;
+CPU Touch casts use modest forward pressure only while outside contact space.
+
+Both timed and directional perfect Touch parries apply attacker recovery of
+180ms plus at most 250ms of current follow-through (maximum 430ms from parry).
+Ordinary blocks and projectile parries do not apply this penalty. Repeated
+contacts refresh the maximum remaining lock instead of adding indefinite stun.
+The current animation continues; Touch follow-up links and new cast/legacy
+melee starts are denied during recovery, without charging a failed attempt.
+Movement remains available. The shared actor status clock expires it and reset
+clears it. Existing defender haste/refund rewards remain unchanged. Runtime
+emits touch_parry_recovery with attacker/defender/duration for diagnostics.
+Tests: cast_footwork_test.gd checks actual pre-release leg/Movement translation,
+caps, smooth reversal and normal recovery; touch_directional_parry_test.gd checks
+which block tiers apply it; touch_parry_counter_test.gd uses an actual parried
+jab and verifies the defender lands the first equal-speed counter punch.

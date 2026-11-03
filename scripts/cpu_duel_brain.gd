@@ -273,6 +273,8 @@ func step(delta:float)->void:
  if actor.mode=="air":air_step(delta);return
  if deception.step(delta):return
  if actor.mode=="cast":
+  var direction:Vector3=actor.rival.global_position-actor.global_position;direction.y=0.0
+  actor.set_cast_movement(direction.normalized()*clampf((actor.flat_distance()-0.55)*0.5,0.0,0.25) if str(actor.current_spell.get("effect",""))=="touch" and actor.touch_parry_recovery<=0.0 else Vector3.ZERO)
   try_combo()
   return
  think_left-=delta

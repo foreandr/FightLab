@@ -12,6 +12,7 @@ func run():
    victim.self_barrier.clear();victim.parry_cast_haste.clear();victim.cleanse_burn()
    victim.rotation.y=sample[0];victim.invulnerability=0;victim.mana=50;victim.stamina=50
    attacker.mana=100;attacker.stamina=100
+   attacker.touch_parry_recovery=0.0
    victim.update_targets();attacker.update_targets()
    await physics_frame;await physics_frame
    assert(world.combat().release(victim,shield,victim.global_position))
@@ -26,6 +27,8 @@ func run():
    var event:Dictionary=world.events.back()
    assert(event.tier==sample[2] and event.delivery_type=="Touch" and event.spell==touch.id)
    assert(victim.health==hp)
+   assert((attacker.touch_parry_recovery>0.0)==(sample[2]>=2))
+   if sample[2]>=2:assert(not world.combat().can_start_cast(attacker,touch))
    assert(victim.get_node("BlockTierFeedback").text==["","BLOCK","PERFECT","DIRECTIONAL PERFECT"][int(sample[2])])
    if sample[2]==3:assert(victim.mana==50 and victim.stamina==50 and victim.parry_cast_haste.stacks==2)
    if sample[2]==2:assert(victim.mana==45 and victim.stamina==50 and victim.parry_cast_haste.stacks==1)

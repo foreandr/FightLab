@@ -61,6 +61,7 @@ func resource_notice(actor:CharacterBody3D,message:String) -> void:
 	preload("res://scripts/combat_diagnostics.gd").event(field,"cast_resource_failure",{"actor":str(actor.name),"reason":message})
 
 func can_start_cast(actor:CharacterBody3D,spec:Dictionary) -> bool:
+	if actor.has_method("receive_touch_parry") and actor.touch_parry_recovery>0.0:return false
 	var required:=maxf(0.0,float(spec.get("stamina_cost",0.0)))
 	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement"):required=maxf(required,actor.flash_stamina_requirement())
 	if not actor.practice_god_mode and actor.stamina+0.0001<required:
@@ -95,6 +96,7 @@ func discard_cast_attempt(actor:CharacterBody3D) -> void:
 	finish_cast(actor)
 
 func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={}) -> bool:
+	if actor.has_method("receive_touch_parry") and actor.touch_parry_recovery>0.0:return false
 	if cast_committed(actor):return false
 	if not field.round_active or actor.health<=0:
 		interrupt_cast_attempt(actor)
@@ -369,6 +371,9 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 			if amount<=0.0001:
 				if not parry_ready and victim.has_method("receive_status"):victim.receive_status(attacker,spec)
 				preload("res://scripts/block_tier_feedback.gd").show_for(victim,int(block_result.tier))
+				if parry_ready and (str(spec.get("delivery_type",""))=="Touch" or str(spec.get("effect","")) in ["touch","melee"]) and attacker.has_method("receive_touch_parry"):
+					attacker.receive_touch_parry()
+					field.events.append({"time":field.elapsed,"event":"touch_parry_recovery","attacker":attacker.team,"defender":victim.team,"seconds":attacker.touch_parry_recovery})
 				field.events.append({"time":field.elapsed,"event":"directional_parry" if int(block_result.tier)==3 else ("parry" if parry_ready else "self_block"),"tier":block_result.tier,"tier_name":block_result.tier_name,"victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund,"spell":str(spec.get("id","unknown")),"delivery_type":str(spec.get("delivery_type","Projectile")),"incoming_direction":str(direction)})
 				return true
 	var health_before: float=victim.health
