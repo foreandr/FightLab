@@ -342,5 +342,5 @@ func _unhandled_input(event:InputEvent)->void:
   if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:CameraControls.zoom(self,event.button_index==MOUSE_BUTTON_WHEEL_UP)
  elif event is InputEventMouseMotion and camera_dragging:CameraControls.orbit(self,event.relative)
 func go_home()->void:
- Engine.time_scale=1.0;get_tree().set_meta("home_page","Fight");get_tree().change_scene_to_file("res://scenes/home.tscn")
+ Engine.time_scale=1.0;get_tree().set_meta("home_page","Free Fight");get_tree().change_scene_to_file("res://scenes/home.tscn")
 func _exit_tree()->void:Engine.time_scale=1.0

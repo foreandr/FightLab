@@ -7,9 +7,9 @@ func run():
  # Public home route, rather than a development-only scene entry.
  change_scene_to_file("res://scenes/home.tscn");await process_frame;await process_frame
  var home=current_scene
- home.navigation_buttons.Fight.pressed.emit()
- assert(home.page=="Fight" and home.navigation_buttons.has("1v1 CPU Demo"))
- home.navigation_buttons["1v1 CPU Demo"].pressed.emit()
+ home.navigation_buttons["Free Fight"].pressed.emit()
+ assert(home.page=="Free Fight" and home.navigation_buttons.has("CPU 1v1"))
+ home.navigation_buttons["CPU 1v1"].pressed.emit()
  await process_frame;await process_frame
  var demo=current_scene
  assert(demo.ready_for_match and demo.fighters.size()==2 and demo.get_script().get_base_script()==load("res://scripts/combat_world.gd"))

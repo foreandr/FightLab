@@ -128,7 +128,7 @@ func nav(text_: String,callback: Callable) -> void:
 	navigation_buttons[text_]=node
 
 func show_page(next: String) -> void:
-	page=next
+	page="Free Fight" if next=="Fight" else next
 	for child in content.get_children():
 		content.remove_child(child)
 		child.queue_free()
@@ -136,11 +136,8 @@ func show_page(next: String) -> void:
 	match page:
 		"Home":
 			nav("Story",_open_story)
-			nav("Fight",func():show_page("Fight"))
-			nav("Free Fight",func():open_scene("res://scenes/fight.tscn"))
-			navigation_buttons["Free Fight"].disabled=true
-			nav("Sandbox",func():pass)
-			navigation_buttons["Sandbox"].disabled=true
+			nav("Free Fight",func():show_page("Free Fight"))
+			nav("Sandbox",func():open_scene("res://scenes/sandbox.tscn"))
 			var menu_spacer:=Control.new()
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 			content.add_child(menu_spacer)
@@ -149,9 +146,9 @@ func show_page(next: String) -> void:
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
-		"Fight":
-			label("FIGHT",24,Color("655740"))
-			nav("1v1 CPU Demo",func():open_scene("res://scenes/cpu_duel.tscn"))
+		"Free Fight":
+			label("FREE FIGHT",24,Color("655740"))
+			nav("CPU 1v1",func():open_scene("res://scenes/cpu_duel.tscn"))
 			nav("Back",func():show_page("Home"))
 		"Create":
 			label("CREATE",24,Color("655740"))
