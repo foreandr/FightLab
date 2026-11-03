@@ -74,4 +74,3 @@ static func _default_hand_pose() -> Dictionary:
 		for finger in HAND_FINGERS:fingers[finger]=0.0
 		hand[side]=fingers
 	return hand
-
