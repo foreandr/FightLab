@@ -517,6 +517,7 @@ func absorb_magic(amount: float, incoming: Vector3, point: Vector3) -> float:
 	play("duel/shield_hit_" + guard_style)
 	arena.shield_impact(self, point, guard_energy <= 0)
 	if guard_energy <= 0:
+		preload("res://scripts/block_shatter_effect.gd").show_for(self)
 		guard_breaks += 1
 		guard_cooldown = 4.5
 		mode = "hit"

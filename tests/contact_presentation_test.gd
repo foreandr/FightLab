@@ -24,6 +24,13 @@ func run():
  actor.impact_physics.step(0.05)
  assert(actor.impact_physics.joints.spine_03.angle.length()>0.01,"Centre-line hit lacks visible recoil")
  assert(actor.mode!="hit","Visual recoil added action stun")
+ var attacker=world.spawn_combatant(1,Vector3(2,0,0));attacker.editor_pose_locked=true
+ actor.guard_energy=5
+ world.apply_melee_block(attacker,actor,actor.bone_point("spine_03"))
+ var bursts:=0
+ for child in world.get_children():
+  if child.get_script()==preload("res://scripts/block_shatter_effect.gd"):bursts+=1
+ assert(bursts==2,"Legacy melee break must add exactly one burst")
  effect._process(1.0);assert(effect.is_queued_for_deletion())
  print("CONTACT PRESENTATION PASS: broken block creates flying glass, normal block unchanged, centreline body recoil without action stun, fragments expire")
  quit()

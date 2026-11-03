@@ -340,7 +340,6 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var absorbed: float=victim.absorb_magic(pressure,point-direction*2,point)
 	var fraction:=clampf(absorbed/maxf(0.1,pressure),0,1)
 	var shattered: bool=absorbed>0 and victim.guard_energy<=0
-	if shattered:preload("res://scripts/block_shatter_effect.gd").show_for(victim)
 	if fraction>0:
 		victim.apply_physical_impact(point,impulse*fraction*0.12,"shield","lowerarm_r")
 		amount*=1-fraction

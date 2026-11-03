@@ -236,6 +236,7 @@ func apply_melee_block(attacker: CharacterBody3D, defender: CharacterBody3D, poi
 	defender.clip=""
 	defender.play("duel/shield_hit_brace",1.25)
 	if defender.guard_energy<=0:
+		preload("res://scripts/block_shatter_effect.gd").show_for(defender)
 		defender.guard_breaks+=1
 		defender.guard_cooldown=2.2
 		defender.mode="hit"
@@ -372,7 +373,6 @@ func speed_trail(_actor:CharacterBody3D) -> void:
 	pass
 
 func shield_impact(actor:CharacterBody3D,point:Vector3,broken:bool) -> void:
-	if broken:preload("res://scripts/block_shatter_effect.gd").show_for(actor)
 	combat_sound("shatter" if broken else "shield",point,0.85)
 	impact_burst(point,actor.team,false)
 
