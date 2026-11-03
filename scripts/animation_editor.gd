@@ -1860,43 +1860,10 @@ func clear_editor_unit_selection() -> void:
 	_update_unit_focus_rings()
 
 func _ensure_unit_focus_ring(unit:CharacterBody3D) -> MeshInstance3D:
-	var ring:MeshInstance3D=unit.get_node_or_null("UnitFocusRing")
-	if is_instance_valid(ring):return ring
-	ring=MeshInstance3D.new()
-	ring.name="UnitFocusRing"
-	var mesh:=TorusMesh.new()
-	mesh.inner_radius=0.62 if unit.practice_wooden_dummy else 0.42
-	mesh.outer_radius=0.68 if unit.practice_wooden_dummy else 0.47
-	mesh.rings=24
-	mesh.ring_segments=8
-	ring.mesh=mesh
-	ring.position.y=0.04
-	var material:=StandardMaterial3D.new()
-	material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-	ring.material_override=material
-	ring.visible=false
-	unit.add_child(ring)
-	return ring
+	return FocusVisuals.ensure_ring(unit)
 
 func _pick_editor_unit(screen_position:Vector2) -> CharacterBody3D:
-	var camera:Camera3D=field.camera
-	var origin:=camera.project_ray_origin(screen_position)
-	var ray_end:=origin+camera.project_ray_normal(screen_position)*200.0
-	var closest:CharacterBody3D
-	var distance:=INF
-	for unit in focusable_editor_units():
-		if not is_instance_valid(unit) or not unit.is_visible_in_tree() or camera.is_position_behind(unit.global_position):continue
-		var center:Vector3=unit.focus_position()
-		var bottom:Vector3=center+Vector3.UP*0.3
-		var top:Vector3=center+Vector3.UP*1.55
-		if is_instance_valid(unit.ragdoll):
-			bottom=unit.bone_point("pelvis")
-			top=unit.bone_point("Head")
-		var points:=Geometry3D.get_closest_points_between_segments(origin,ray_end,bottom,top)
-		if points[0].distance_to(points[1])>0.4:continue
-		var depth:=origin.distance_to(points[0])
-		if depth<distance:closest=unit;distance=depth
-	return closest
+	return FocusVisuals.pick(field.camera,focusable_editor_units(),screen_position)
 
 func _update_unit_focus_rings() -> void:
 	var selectable:=focusable_editor_units()
@@ -2971,22 +2938,7 @@ func frame_spell_preview(subject:Node3D) -> void:
 	# Compose once on workspace/target choice, never on parameter changes.
 	if is_instance_valid(spell_builder) and spell_builder.demo_only_stage:
 		spell_builder.third_person_ready=false
-		# Rear three-quarter view: show the full body and leave room ahead of
-		# its casting direction. Use the same view for demo and spell-type steps.
-		var forward:Vector3=subject.global_basis.z.normalized()
-		var side:Vector3=subject.global_basis.x.normalized()
-		var back:Vector3=(-forward*0.9-side*0.65+Vector3.UP*0.28).normalized()
-		var distance:=8.5
-		var center:=subject.global_position+Vector3.UP*1.1+forward*1.3
-		if is_instance_valid(spell_builder.practice_human) and spell_builder.practice_human.visible:
-			distance=11.5
-			center=subject.global_position+Vector3.UP*1.1+forward*1.7-side*0.9
-		field.camera.h_offset=0.0
-		field.camera.v_offset=0.0
-		field.camera.fov=45.0
-		field.camera.global_position=center+back*distance
-		field.camera.look_at(center)
-		inspection_camera.capture_view(field.camera,distance)
+		preload("res://scripts/spell_workspace_camera.gd").frame(field.camera,subject,spell_builder.practice_human,inspection_camera)
 		camera_initialized=true
 		return
 	var center:=subject.global_position+Vector3.UP*1.35
@@ -3424,12 +3376,7 @@ func _default_land_frames(frame_count:=6) -> Array[Dictionary]:
 	return result
 
 func _default_hand_pose() -> Dictionary:
-	var hand: Dictionary={}
-	for side in ["l","r"]:
-		var fingers: Dictionary={}
-		for finger in HAND_FINGERS:fingers[finger]=0.0
-		hand[side]=fingers
-	return hand
+	return preload("res://scripts/animation_recipe_library.gd")._default_hand_pose()
 
 func build_custom_editor() -> void:
 	custom_editor=Control.new()
@@ -4886,60 +4833,10 @@ func save_custom_jump() -> void:
 	custom_status.text="Saved %s on this device."%name_
 
 func load_custom_motion(category: String) -> Array[Dictionary]:
-	var result: Array[Dictionary]=[]
-	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(CUSTOM_DIR)):return result
-	var dir:=DirAccess.open(CUSTOM_DIR)
-	if dir==null:return result
-	dir.list_dir_begin()
-	var filename:=dir.get_next()
-	while not filename.is_empty():
-		if filename.ends_with(".json"):
-			var file:=FileAccess.open(CUSTOM_DIR+"/"+filename,FileAccess.READ)
-			if file!=null:
-				var parsed=JSON.parse_string(file.get_as_text())
-				if parsed is Dictionary and Library.category_for(str(parsed.get("category","Jump")))==category and parsed.get("frames",[]).size()>=MIN_CUSTOM_FRAMES:
-					var decoded_frames: Array[Dictionary]=[]
-					for source_pose in parsed.frames:
-						var decoded: Dictionary={}
-						for bone in DragSolver.JOINTS:
-							var raw: Array=source_pose.get(bone,[0.0,0.0,0.0])
-							decoded[bone]=Vector3(float(raw[0]),float(raw[1]),float(raw[2]))
-						decoded["hands"]=_normalize_hand_pose(source_pose.get("hands",_default_hand_pose()))
-						var pelvic:Array=source_pose.get("pelvis_offset",[0,0,0])
-						decoded["pelvis_offset"]=Vector3(float(pelvic[0]),float(pelvic[1]),float(pelvic[2]))
-						decoded_frames.append(decoded)
-					var source:Dictionary={}
-					for candidate in Library.entries():
-						if (candidate.group=="Motion" or candidate.group=="Attack" and category in ["Punch","Kick","Knee","Elbow","Uppercut","Sweep","Slash","Block","Dodges"]) and candidate.category==category:
-							if source.is_empty():source=candidate
-							if candidate.step==str(parsed.get("step",category)) and candidate.clip==str(parsed.get("clip",candidate.clip)) and bool(candidate.get("mirrored",false))==bool(parsed.get("mirrored",false)):
-								source=candidate
-								break
-					if source.is_empty() and not str(parsed.get("clip","")).is_empty():
-						source=Library.item(str(parsed.get("group","Motion")),category,str(parsed.get("name",filename.get_basename())),str(parsed.get("step","Idle")),str(parsed.clip))
-					if not source.is_empty():
-						var based_on:Dictionary=parsed.get("based_on",{})
-						result.append({"group":source.group,"category":category,"title":str(parsed.get("name",filename.get_basename())),"step":str(parsed.get("step",source.step)),"clip":str(parsed.get("clip",source.clip)),"source_title":str(parsed.get("source_title",source.title)),"mirrored":bool(parsed.get("mirrored",false)),"attack_bone":str(parsed.get("attack_bone",source.get("attack_bone",""))),"source_timing":str(parsed.get("source_timing","legacy")),"source_duration":clampf(float(parsed.get("source_duration",parsed.get("duration",CUSTOM_LOOP_DURATION))),0.1,60.0),"parent_name":str(based_on.get("name","")),"parent_path":str(based_on.get("path","")),"kind":"custom_"+category.to_lower(),"duration":clampf(float(parsed.get("duration",CUSTOM_LOOP_DURATION)),0.2,60.0),"frames":decoded_frames,"frame_count":decoded_frames.size(),"path":CUSTOM_DIR+"/"+filename})
-						var loaded_entry:Dictionary=result.back()
-						loaded_entry["provenance"]=AssetProvenance.source(parsed)
-						loaded_entry["animation_type"]=preload("res://scripts/animation_cast_type.gd").legacy_type(parsed)
-						loaded_entry["animation_components"]=parsed.get("animation_components",[]).duplicate(true)
-						if not str(parsed.get("animation_resource","")).is_empty():loaded_entry["animation_resource"]=str(parsed.animation_resource)
-						if not str(parsed.get("source_animation","")).is_empty():loaded_entry["source_animation"]=str(parsed.source_animation)
-		filename=dir.get_next()
-	dir.list_dir_end()
-	return result
+	return preload("res://scripts/animation_recipe_library.gd").load_custom_motion(category)
 
 func _normalize_hand_pose(source:Dictionary) -> Dictionary:
-	var result:=_default_hand_pose()
-	for side in ["l","r"]:
-		var source_fingers: Dictionary=source.get(side,{})
-		for finger in HAND_FINGERS:
-			result[side][finger]=clampf(float(source_fingers.get(finger,0.0)),0.0,100.0)
-		for key in ["absolute","straight","palm_up"]:result[side][key]=clampf(float(source_fingers.get(key,0.0)),0,1)
-		for finger in HAND_FINGERS:
-			if source_fingers.has("absolute_"+finger):result[side]["absolute_"+finger]=clampf(float(source_fingers["absolute_"+finger]),0,1)
-	return result
+	return preload("res://scripts/animation_recipe_library.gd")._normalize_hand_pose(source)
 
 func populate_custom_motion(category: String) -> void:
 	for entry in load_custom_motion(category):

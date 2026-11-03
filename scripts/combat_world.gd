@@ -45,6 +45,15 @@ func surface_impact(surface:CollisionObject3D,point:Vector3,normal:Vector3,physi
 		add_child(surface_marks)
 	return surface_marks.add_impact(surface,point,normal,damage)
 
+func clear_battle_effects()->void:
+	clear_surface_impacts();clear_combat_numbers()
+	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.clear_hits()
+	if is_instance_valid(vfx):vfx.clear()
+	for collection in [shots,pulses,channels]:
+		for item in collection:
+			if is_instance_valid(item.get("node")):item.node.queue_free()
+		collection.clear()
+
 func clear_surface_impacts() -> void:
 	if is_instance_valid(surface_marks):surface_marks.clear()
 

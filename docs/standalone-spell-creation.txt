@@ -1,0 +1,32 @@
+Standalone spell creation
+
+Home > Create > Spell opens scenes/spell_creation.tscn and
+spell_creation_screen.gd. It does not construct or load animation_editor.gd,
+the custom pose/frame editor, timeline panels, or the Store screen.
+
+The UI is the existing spell_builder.gd, including the demo cards, 1.5-second
+initial duration, explicit animation Confirm, type preview/Confirm, Barrier
+tier, fire styles/sounds, calculation dialogs, named saves and provenance.
+The same user:// spell/draft/preferences paths are used. Standalone wizard
+panels are fixed; no floating or border resize controls are enabled.
+
+Only the pit, caster, combat dummy and human target are instantiated. The
+spell_creation_world.gd adapter extends CombatWorld and supplies camera state
+and scene-reset fields. CombatRuntime handles costs, projectile flight, hits,
+burn, ragdolls and status presentation; no copied combat loop or damage math.
+Effect cleanup now belongs to CombatWorld, with the old Duel host delegating
+before clearing its additional legacy particles.
+
+ThirdPersonCamera, CombatAim, CharacterMovement and SpellCastMotion remain the
+same owners used in other modes. FocusVisuals now also owns the existing ray
+selection and ring construction so the standalone host does not fork focus.
+Initial framing is shared in spell_workspace_camera.gd.
+
+animation_recipe_library.gd is a read-only recipe decoder shared with the
+animation editor. The standalone host reads the named demo recipes once and
+uses owned/source metadata; it does not instantiate animation authoring tools.
+This preserves the user's edited Melee Hook, Block stand and Self mend sources.
+
+Validation: standalone_spell_test.gd checks absent editor resources, all eight
+demo clips, shared casting/resource depletion, a real dummy hit, movement,
+reset/healing, named saves and Main Menu navigation.

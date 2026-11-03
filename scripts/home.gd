@@ -197,6 +197,9 @@ func open_create_character()->void:
 	open_scene("res://scenes/story_character_creator.tscn")
 
 func open_create_workspace(section:String="Animation") -> void:
+	if section=="Spell":
+		open_scene("res://scenes/spell_creation.tscn")
+		return
 	if section=="Store":
 		open_scene("res://scenes/animation_store.tscn")
 		return

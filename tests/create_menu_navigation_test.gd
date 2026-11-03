@@ -23,9 +23,12 @@ func run():
  if not check(current_scene.page=="Home","Character Main Menu did not return Home"):return
  for entry in ["Animation","Spell"]:
   current_scene.show_page("Create")
-  current_scene.navigation_buttons[entry].pressed.emit();await editor_ready()
+  current_scene.navigation_buttons[entry].pressed.emit()
+  if entry=="Spell":
+   while current_scene==null or current_scene.scene_file_path!="res://scenes/spell_creation.tscn" or not current_scene.workspace_ready:await process_frame
+  else:await editor_ready()
   var editor=current_scene
-  if not check((editor.selected_group=="Spells")== (entry=="Spell"),"Create entry opened wrong editor: "+entry):return
+  if not check((editor.scene_file_path=="res://scenes/spell_creation.tscn")== (entry=="Spell"),"Create entry opened wrong editor: "+entry):return
   var main:Button=editor.base_ui.find_child("MainMenu",true,false)
   if not check(main!=null and main.is_visible_in_tree() and main.get_global_rect().position.y<80,"Top Main Menu button missing"):return
   if entry=="Spell":

@@ -109,23 +109,10 @@ func finish_round(winner: int) -> void:
 	print("KNOCKOUT t=%.2f " % elapsed, element_name(winner))
 
 func clear_battle_effects() -> void:
-	clear_surface_impacts()
-	clear_combat_numbers()
-	if is_instance_valid(character_hitbox_overlays):character_hitbox_overlays.clear_hits()
-	if vfx:
-		vfx.clear()
-	for shot in shots:
-		shot.node.queue_free()
-	shots.clear()
+	super.clear_battle_effects()
 	for item in particles:
 		item.node.queue_free()
 	particles.clear()
-	for item in pulses:
-		item.node.queue_free()
-	pulses.clear()
-	for item in channels:
-		item.node.queue_free()
-	channels.clear()
 
 func _physics_process(delta: float) -> void:
 	elapsed += delta
