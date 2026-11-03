@@ -372,3 +372,11 @@ func step_channels(delta:float) -> void:
 
 func step_pulses(delta:float) -> void:
 	combat().step_pulses(delta)
+
+func _enter_tree()->void:
+	call_deferred("_enter_music_context")
+
+func _enter_music_context()->void:
+	if not is_inside_tree():return
+	var music:=get_tree().root.get_node_or_null("SharedMusic")
+	if music:music.enter_context("combat",self)

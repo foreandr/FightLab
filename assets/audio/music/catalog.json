@@ -1,5 +1,4 @@
 {
-  "active": "the_descent",
   "tracks": [
     {
       "id": "the_descent",
@@ -13,7 +12,7 @@
       "loop_seconds": 175,
       "edit": "Source 0\u2013177 s; 2 s tail/head crossfade, loop begins at source 2 s",
       "permission": "User confirmed game-use permission/license in chat on 2026-11-02",
-      "status": "active"
+      "status": "pool"
     },
     {
       "id": "deadly_combat",
@@ -31,6 +30,15 @@
       "reference_video": "https://www.youtube.com/watch?v=CK27piiXh6M",
       "status": "candidate_only",
       "asset": null
+    },
+    {
+      "id": "dangerous_encounter",
+      "title": "Dangerous Encounter",
+      "creator": "RPG Soundtracks",
+      "reference_video": "https://www.youtube.com/watch?v=oVZ8KGtZtwY",
+      "status": "candidate_only",
+      "asset": null
     }
-  ]
+  ],
+  "selection": "Shared random pool for menus and combat; no immediate repeats when multiple loops are available"
 }

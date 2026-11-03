@@ -1,0 +1,22 @@
+Menus and combat use /root/SharedMusic (background_music.gd).
+Home enters a menu context; CombatWorld enters a combat context through its
+inherited _enter_tree hook, including Story hosts that override _ready.
+Hosts do not own players, duplicate playlists or restart music on menu subpages.
+
+assets/audio/music/catalog.json is the single source of tracks and credits.
+Only entries with status pool/active and an existing local loop are playable.
+Candidate links remain metadata until permission and a compact audio loop exist.
+Selections avoid the previous ID when alternatives exist. One-track pools keep
+playing without restarting. Scene changes crossfade at equal power over 1.5 s;
+loop seams are baked into the excerpts. Pauses and slow motion do not pitch-shift
+or interrupt music. Music uses Master so global mute/volume applies everywhere.
+
+The Descent: 175-second Ogg loop, approximately 3.3 MB, 2-second boundary overlap.
+Original hour-long YouTube mixes are not part of the game or committed to Git.
+User confirmed game-use permission for The Descent on 2026-11-02. Additional
+requested candidates: Deadly Combat, Hill Giant, Dangerous Encounter. Permission
+confirmation for these additional tracks is pending; they are not playable yet.
+
+Validation: tests/main_menu_music_test.gd checks menu/combat pool identity,
+looping streams, master bus, submenu continuity, no-repeat selection and persistent
+playback across scenes. combat_runtime_contract_test.gd checks a new combat host.
