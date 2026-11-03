@@ -259,3 +259,33 @@ Perfect-parry cast haste: each timing-only perfect grants one additive +10% cast
 Three block tiers: normal Block (green) covers physical capacity but spends incoming physical damage as stamina and passes effects. Perfect timing (blue) uses the 0.12s activation window, costs zero impact stamina, prevents effects, refunds up to 5 mana and grants one cast-speed stack. Directional perfect (gold) additionally faces within a 30-degree cone of the opposite incoming travel vector; it refunds up to 10 mana and grants two stacks. Incoming travel direction is passed by CombatRuntime, not inferred from the attacker position. Shared actor labels/shell flashes distinguish tiers. tests/block_tiers_test.gd covers the angle boundary, bonuses, refund upgrade/cap, feedback and reset.
 
 Touch authoring prototype: Touch is enabled as a physical-contact delivery, with left/right hands, elbows, knees, feet or head selected explicitly. Additional contacts use the shared 25% stamina surcharge. Rules.touch_base + author produce a timed effect=touch spec. CombatRuntime.release arms it at the cast marker; step_touch_casts reuses MeleeContact swept queries for those selected bones only, with one connected hit per cast, no projectile and no hit at range. finish_cast/interruption/death disarm it. The same runtime works in any CombatWorld; contact physics and costs are not implemented in the authoring panel. tests/touch_cast_workspace_test.gd verifies actual animated hits, incorrect-limb misses, range and cleanup. Contact selection advances with Next to Physical/Fire effects. TouchContactVisual is actor-owned: it extracts immutable skinned body regions for white physical outlines and attaches shared fire plumes to selected contacts. Preview and active-cast sources are separate and visible only during animation playback; shared cast start activates runtime presentation before release, interruption/completion clears it, and reset/death/exit clear stale effects. Fire contact applies the existing shared burn rules without spawning a projectile or ground fire. tests/touch_contact_visual_test.gd verifies the flow, skin bindings, selected regions, original mesh preservation, bone-following flames, real contact burn and cleanup.
+
+
+1v1 CPU DEMO
+
+Home -> Fight -> 1v1 CPU Demo opens scenes/cpu_duel.tscn. This is a new
+CombatWorld host, not a copy of an existing arena. cpu_duel.gd owns only the
+level, spectator camera, HUD, match lifecycle and aiming input. cpu_duel_brain.gd
+chooses existing actor actions using range, visible incoming trajectories,
+reaction intervals, stamina reserves, mana reserves and opponent commitments.
+This is a rule-based controller; no training or reinforcement learning is used.
+
+cpu_duel_loadout.gd authors a symmetric repertoire through CombatSpellRules:
+jab, cross, kick and knee at 0.55 / 1 / 1.5 seconds; quick, balanced and large
+fireballs; and the ordinary timed self shield. Actors also use native directional
+dashes, sprint approaches, retreat and circling. BattleActor.start_authored_cast
+submits the same authored spec/profile to the existing actor animation clock and
+CombatRuntime release path. No damage, payment, contacts, burn, parry, death or
+resource recovery formulas live in the AI. Native chase sprint uses the shared
+CharacterExertion cost/threshold and CharacterMovement gait speed.
+
+The match ends on a real death and leaves the result on screen. Rematch restores
+both fighters, clears effects/attempts and per-match counters, and creates new
+seeded decision streams. Match report shows decision counts and real resource
+spending. user://logs/cpu_demo_last_match.json records the last completed match's
+seed, results, decisions and combat events. The seed identifies decisions; exact
+replays are not guaranteed across different simulation frame rates.
+
+tests/cpu_duel_test.gd exercises the public Home route, all equipped source clips,
+pause, native sprint cost, low-resource recovery, three complete live matches,
+finite resources, real melee/fire/shield/evade use, winner and rematch cleanup.

@@ -393,6 +393,19 @@ func choose_spell(air: bool) -> Dictionary:
 	spell_cursor += 1
 	return spec
 
+## Scripted controllers submit the same authored spells/poses as the editors.
+func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
+	if not arena.round_active or health<=0 or combat_reaction_active() or arena.combat().cast_committed(self):return false
+	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
+	if not arena.combat().can_start_cast(self,spec) or mana+0.0001<arena.mana_cost(spec):return false
+	practice_projectile_spec=spec.duplicate(true)
+	practice_projectile_spec["animation"]="palm_fireball"
+	practice_spell_animation=profile.duplicate(true)
+	practice_release_fraction=float(spec.get("release",0.3))
+	charge_requested=0.0
+	start_cast(false)
+	return mode=="cast"
+
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
 	arena.combat().interrupt_cast_attempt(self)

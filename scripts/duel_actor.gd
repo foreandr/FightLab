@@ -418,7 +418,8 @@ func resolve_melee(delta:float) -> void:
 	melee_previous=limb
 
 func recover_resources(delta: float) -> void:
-	use_sprint(delta,player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT),player_controlled and arena.round_active and mode=="run" and not _player_move_axes().is_zero_approx())
+	var chasing:=mode=="chase"
+	use_sprint(delta,chasing or (player_controlled and arena.story_mode and Input.is_key_pressed(KEY_SHIFT)),arena.round_active and ((chasing and flat_distance()>0.91) or (player_controlled and mode=="run" and not _player_move_axes().is_zero_approx())))
 	if practice_god_mode:
 		restore_god_resources()
 		recover_guard(delta)
@@ -458,8 +459,8 @@ func recover_resources(delta: float) -> void:
 			story_block_held = false
 			story_block_time = 0.0
 	else:recover_resource_pools(delta,not resource_busy,false)
-	if mode=="chase" or (mode=="run" and not player_controlled):
-		var drain := minf(stamina, delta * (8.0 if mode == "chase" else 6.0))
+	if mode=="run" and not player_controlled:
+		var drain := minf(stamina, delta * 6.0)
 		stamina -= drain
 		stamina_spent += drain
 		stamina_delay = 0.4
@@ -559,8 +560,8 @@ func tick(delta: float) -> void:
 		var toward := melee_aim_direction if mode=="punch" and not melee_aim_direction.is_zero_approx() else flat_direction(position, rival.position)
 		var distance := flat_distance()
 		if mode == "chase":
-			desired = toward * (5.6 if stamina > 25 else 2.4) if distance > 0.91 else Vector3.ZERO
-			play("duel/run", 1.65 if stamina > 25 else 0.85)
+			desired = toward * Movement.gait_speed(self,true,4.8,8.2) if distance > 0.91 else Vector3.ZERO
+			play("duel/run",clampf(desired.length()/3.1,0.7,3.5))
 			if distance <= 1.03 or stamina < 12:
 				mode_time = mode_length
 		elif mode == "recover":

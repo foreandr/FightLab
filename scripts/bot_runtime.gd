@@ -13,6 +13,7 @@ const SCENES := {
 	"loadout": "res://scenes/story_loadout.tscn",
 	"create": "res://scenes/combat_sandbox.tscn",
 	"fight": "res://scenes/fight.tscn",
+	"cpu_demo": "res://scenes/cpu_duel.tscn",
 	"dev": "res://scenes/story_dev_menu.tscn",
 	"clothing": "res://scenes/clothing_pavlov.tscn",
 	"pavlov": "res://scenes/animation_pavlov.tscn",

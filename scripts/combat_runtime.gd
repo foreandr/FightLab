@@ -497,7 +497,9 @@ func step_actors(delta:float) -> void:
 
 func step_touch_casts(delta:float)->void:
 	for key in touch_casts.keys():
-		var contact:Dictionary=touch_casts[key]
+		# A lethal contact can end the round and clear other casts in this loop.
+		var contact:Dictionary=touch_casts.get(key,{})
+		if contact.is_empty():continue
 		var actor=contact.actor.get_ref()
 		if not is_instance_valid(actor) or actor.health<=0.0 or actor.mode!=contact.mode or not field.round_active:
 			if is_instance_valid(actor) and is_instance_valid(actor.touch_contact_visual):actor.touch_contact_visual.clear_runtime()

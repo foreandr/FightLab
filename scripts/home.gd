@@ -136,6 +136,7 @@ func show_page(next: String) -> void:
 	match page:
 		"Home":
 			nav("Story",_open_story)
+			nav("Fight",func():show_page("Fight"))
 			nav("Free Fight",func():open_scene("res://scenes/fight.tscn"))
 			navigation_buttons["Free Fight"].disabled=true
 			nav("Sandbox",func():pass)
@@ -148,6 +149,10 @@ func show_page(next: String) -> void:
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
+		"Fight":
+			label("FIGHT",24,Color("655740"))
+			nav("1v1 CPU Demo",func():open_scene("res://scenes/cpu_duel.tscn"))
+			nav("Back",func():show_page("Home"))
 		"Create":
 			label("CREATE",24,Color("655740"))
 			nav("Character",open_create_character)
