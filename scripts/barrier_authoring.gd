@@ -131,8 +131,8 @@ func refresh()->void:
  update_preview()
 func refresh_stats(spec:Dictionary)->void:
  amp_label.text="Spell amp: +%.1f%%"%((float(spec.get("spell_amplifier",1.0))-1.0)*100.0)
- stamina_label.text="Cast stamina: %.1f\nImpact stamina: 1 per physical damage"%float(spec.get("stamina_cost",0.0))
- stamina_label.tooltip_text="A 10-physical-damage hit spends 10 stamina. Exactly zero holds; below zero breaks the block."
+ stamina_label.text="Cast stamina: %.1f\nNormal block: 1 stamina per damage\nPerfect parry: 0 impact stamina"%float(spec.get("stamina_cost",0.0))
+ stamina_label.tooltip_text="Normal block: 10 physical spends 10 stamina; below zero breaks. Perfect parry: no impact stamina and 5 mana refunded."
  strength_label.text="Shield strength: %.0f → %.1f"%[strength,float(spec.get("shield_strength",strength))]
  strength_label.tooltip_text="Base strength × block multiplier = physical damage blocked\n%.1f × %.3f = %.1f"%[strength,float(spec.get("shield_strength_multiplier",1.0)),float(spec.get("shield_strength",strength))]
  lifetime_label.text="Duration: %.1f s"%lifetime

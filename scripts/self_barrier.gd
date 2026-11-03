@@ -35,10 +35,10 @@ func resolve_hit(damage:float)->Dictionary:
  var actor=owner_ref.get_ref() if owner_ref!=null else null
  if not is_instance_valid(actor):clear();return result
  var incoming:=maxf(0.0,damage)
- var parry_ready:=can_parry()
+ var parry_ready:=can_parry() and incoming<=remaining+0.0001
  var before:float=actor.stamina
- var exhausted:bool=not actor.practice_god_mode and incoming>before+0.0001
- actor.spend_stamina(minf(before,incoming))
+ var exhausted:bool=not parry_ready and not actor.practice_god_mode and incoming>before+0.0001
+ if not parry_ready:actor.spend_stamina(minf(before,incoming))
  result.stamina_spent=maxf(0.0,before-actor.stamina)
  if exhausted:
   result.broken=true;clear();return result

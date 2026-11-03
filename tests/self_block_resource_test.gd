@@ -18,8 +18,8 @@ func run():
  assert(world.combat().release(actor,spec,actor.global_position))
  assert(is_equal_approx(actor.mana,90.0) and actor.stamina==100.0)
  assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
- assert(actor.health==hp and actor.burn_time==0.0 and actor.stamina==90.0 and actor.mana==95.0)
- assert(world.events.back().event=="parry" and world.events.back().mana_refund==5.0)
+ assert(actor.health==hp and actor.burn_time==0.0 and actor.stamina==100.0 and actor.mana==95.0)
+ assert(world.events.back().event=="parry" and world.events.back().mana_refund==5.0 and world.events.back().stamina_spent==0.0)
  assert(actor.self_barrier.flash_left>0.0)
  for overlay in actor.self_barrier.overlays:assert(float(overlay.get_shader_parameter("block_flash"))==1.0)
  actor.update_status(Barrier.BLOCK_FLASH_SECONDS+0.01)
@@ -29,7 +29,12 @@ func run():
  actor.mana=100.0;actor.stamina=100.0
  assert(world.combat().release(actor,strong,actor.global_position))
  for i in 2:assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
- assert(actor.mana==95.0 and actor.stamina==80.0 and actor.health==hp)
+ assert(actor.mana==95.0 and actor.stamina==100.0 and actor.health==hp)
+ # A perfect parry also succeeds at zero stamina, without a negative balance.
+ actor.self_barrier.clear();actor.mana=100.0;actor.stamina=0.0
+ assert(world.combat().release(actor,spec,actor.global_position))
+ assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
+ assert(actor.stamina==0.0 and actor.health==hp and actor.burn_time==0.0 and actor.mana==95.0)
  # Exactly enough stamina holds; a late block passes burn and gives no refund.
  actor.self_barrier.clear();actor.mana=100.0;actor.stamina=10.0
  assert(world.combat().release(actor,spec,actor.global_position))
@@ -37,12 +42,13 @@ func run():
  assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
  assert(actor.stamina==0.0 and actor.health==hp and actor.burn_time>0.0 and actor.mana==90.0)
  assert(world.events.back().event=="self_block" and actor.self_barrier.flash_left>0.0)
- # A stamina deficit breaks before absorption; the hit and effect get through.
+ # A normal block with a stamina deficit breaks before absorption; the hit and effect get through.
  actor.cleanse_burn();actor.invulnerability=0.0;actor.mana=100.0;actor.stamina=9.0
  assert(world.combat().release(actor,spec,actor.global_position))
+ actor.update_status(Barrier.PARRY_WINDOW+0.01)
  assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
  assert(actor.stamina==0.0 and actor.health==hp-10.0 and actor.burn_time>0.0 and actor.mana==90.0)
  assert(not actor.self_barrier.active() and actor.self_barrier.flash_left==0.0)
  assert(world.events.any(func(event):return event.event=="self_block_break"))
- print("SELF BLOCK RESOURCES PASS: 1s / 10 strength / 10 mana; perfect parry refunds 5 once; green success flash fades; 10 damage spends 10 stamina; exact zero holds, deficit breaks and passes damage/effect")
+ print("SELF BLOCK RESOURCES PASS: 1s / 10 strength / 10 mana; perfect parry costs zero impact stamina and refunds 5 once; green success flash fades; normal block spends 10 stamina for 10 damage; exact zero holds, deficit breaks and passes damage/effect")
  quit()
