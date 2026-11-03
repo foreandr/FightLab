@@ -14,10 +14,10 @@ var detail_loads:=0
 var worker:Thread
 var closing:=false
 var search:LineEdit
-var source_filter:OptionButton
-var air_filter:OptionButton
+var air_buttons:Dictionary={}
+var selected_air:="Grounded"
 var type_buttons:Dictionary={}
-var selected_type:="All"
+var selected_type:="Movement"
 var selected_id:=""
 var grid:GridContainer
 var status:Label
@@ -46,15 +46,16 @@ func setup(editor:Control)->void:
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
  var tabs:=HBoxContainer.new();add_child(tabs)
- for pair in [["All","All"],["Movement","Movement"],["Arm","Arms"],["Leg","Legs"],["Head","Head"]]:
+ for pair in [["Movement","Movement"],["Arm","Arms"],["Leg","Legs"],["Head","Head"]]:
   var kind:String=pair[0];var tab:Button=host.button(tabs,pair[1],func():set_type(kind));tab.toggle_mode=true;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;type_buttons[kind]=tab
  var row:=HBoxContainer.new();add_child(row)
- source_filter=OptionButton.new();source_filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
- for text_ in ["All animations","Your library","Built-in","Community"]:source_filter.add_item(text_)
- row.add_child(source_filter);source_filter.item_selected.connect(func(_i):apply_filters())
- air_filter=OptionButton.new()
- for text_ in ["Air + ground","Airborne","Grounded"]:air_filter.add_item(text_)
- row.add_child(air_filter);air_filter.item_selected.connect(func(_i):apply_filters())
+ var group:=ButtonGroup.new();group.allow_unpress=false
+ for state in ["Grounded","Airborne"]:
+  var radio:=CheckBox.new();radio.text="Ground" if state=="Grounded" else "Air"
+  radio.name="Sandbox"+state;radio.button_group=group;radio.focus_mode=Control.FOCUS_ALL
+  radio.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(radio);air_buttons[state]=radio
+  radio.pressed.connect(func():set_air(state))
+  radio.set_pressed_no_signal(state==selected_air)
  status=host.menu_label(self,"Opening animation index…",12)
  var scroll:=ScrollContainer.new();scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;add_child(scroll)
  grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_theme_constant_override("h_separation",6);grid.add_theme_constant_override("v_separation",6);scroll.add_child(grid)
@@ -150,14 +151,17 @@ func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)
  copy["_search"]=(str(entry.get("title",""))+" "+str(entry.get("tags",[]))+" "+str(entry.get("store_creator",entry.get("creator_name","")))+" "+str(entry.get("category",""))).to_lower()
  records.append(copy)
 func set_type(kind:String)->void:
+ if not type_buttons.has(kind):return
  selected_type=kind;apply_filters()
+func set_air(state:String)->void:
+ if not air_buttons.has(state):return
+ selected_air=state;apply_filters()
 func apply_filters()->void:
  page=0;matches_.clear()
  var query:=search.text.strip_edges().to_lower()
  for entry in records:
-  if selected_type!="All" and entry.store_animation_type!=selected_type:continue
-  if source_filter.selected>0 and entry._origin!=source_filter.get_item_text(source_filter.selected):continue
-  if air_filter.selected>0 and str(entry.get("air_state","Grounded"))!=air_filter.get_item_text(air_filter.selected):continue
+  if entry.store_animation_type!=selected_type:continue
+  if str(entry.get("air_state","Grounded"))!=selected_air:continue
   if not query.is_empty():
    if ":" in query or '"' in query:
     if not Library.matches(entry,query):continue
@@ -170,6 +174,7 @@ func apply_filters()->void:
     if not found:continue
   matches_.append(entry)
  for kind in type_buttons:type_buttons[kind].set_pressed_no_signal(kind==selected_type)
+ for state in air_buttons:air_buttons[state].set_pressed_no_signal(state==selected_air)
  show_page()
 func turn_page(direction:int)->void:
  page=clampi(page+direction,0,maxi(0,ceili(matches_.size()/float(PAGE_SIZE))-1));show_page()

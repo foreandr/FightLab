@@ -15,7 +15,7 @@ func run():
   browser.set_type(kind)
   assert(not browser.matches_.is_empty())
   for record in browser.matches_:assert(record.store_animation_type==kind)
- browser.set_type("All");browser.turn_page(1);assert(browser.page==1 and browser.grid.get_child_count()<=9 and browser.detail_loads==0)
+ browser.set_type("Movement");browser.turn_page(1);assert(browser.page==1 and browser.grid.get_child_count()<=9 and browser.detail_loads==0)
  var chosen:Dictionary={}
  for record in browser.records:
   if record._origin=="Built-in" and record.clip=="fight/backfist":chosen=record;break
@@ -26,11 +26,13 @@ func run():
  assert(builder.demo_choice_selected and builder.demo_offensive() and not browser.confirm.disabled)
  browser.confirm_selection();assert(builder.creation_step=="demo" and builder.playing,"Arbitrary animation cannot test")
  builder.show_creation_step("demo")
- browser.source_filter.select(3);browser.search.text="walk";browser.apply_filters()
+ browser.set_type("Movement");browser.search.text="walk";browser.apply_filters()
  assert(not browser.matches_.is_empty())
- for record in browser.matches_:assert(record._origin=="Community")
  assert(browser.detail_loads==0)
- assert(browser.select_animation(browser.matches_[0]),"Community source did not play")
+ var community:Dictionary={}
+ for record in browser.matches_:
+  if record._origin=="Community":community=record;break
+ assert(browser.select_animation(community),"Community source did not play")
  assert(browser.detail_loads==1 and sandbox.actor.player.has_animation(builder.casting_animation.clip))
  var before:Vector3=sandbox.actor.bone_point("foot_l")
  builder.process_demo_preview(0.25)
@@ -39,7 +41,7 @@ func run():
  assert(builder.creation_step=="demo")
  browser.confirm_selection();assert(builder.creation_step=="demo" and builder.playing)
  builder.reset_training_dummy();assert(not sandbox.target.practice_wooden_dummy and sandbox.target.model.visible)
- browser.source_filter.select(0);browser.search.text="punch -jump";browser.apply_filters()
+ browser.set_type("Arm");browser.search.text="punch -jump";browser.apply_filters()
  for record in browser.matches_:assert(str(record._search).contains("punch") and not str(record._search).contains("jump"))
  while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
  print("SANDBOX LIBRARY PASS: ",browser.records.size()," animations; own/builtin/community; all four types, search, paged 9; non-demo Backfist + real community preview/test; duration retained; human-only targets/reset")

@@ -23,11 +23,11 @@ func run():
  assert(s.actor.position.distance_to(position)<0.001 and is_equal_approx(s.actor.stamina,stamina),"Thumbnail render changed live actor")
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/sandbox_thumbnail_review.png")
- b.source_filter.select(3);b.search.text="cartwheel";b.apply_filters()
+ b.set_type("Movement");b.set_air("Airborne");b.search.text="cartwheel";b.apply_filters()
  while b.thumbnails.busy or not b.thumbnails.jobs.is_empty():await process_frame
  assert(b.grid.get_child_count()>0,"Community filter empty")
  for card in b.grid.get_children():assert(card.find_child("PreviewImage",true,false).texture!=null,"Community screenshot missing")
- b.turn_page(1);b.set_type("Head");b.set_type("All")
+ b.turn_page(1);b.set_type("Head");b.set_type("Movement")
  while b.thumbnails.busy or not b.thumbnails.jobs.is_empty():await process_frame
  print("THUMBNAILS PASS: 9 real poses, different images, persistent cache, live actor unchanged")
  quit()

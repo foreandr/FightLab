@@ -5,7 +5,7 @@ func run():
  var s=current_scene;var browser=s.animation_browser;var b=s.spell_builder
  while not browser.ready_catalog:await process_frame
  assert(browser.grid.get_child_count()==9)
- browser.source_filter.select(3);browser.search.text="tkd jump front kick";browser.apply_filters()
+ browser.set_type("Movement");browser.set_air("Airborne");browser.search.text="tkd jump front kick";browser.apply_filters()
  assert(not browser.matches_.is_empty())
  b.stop_preview_controls(true)
  for i in 100:b.move_caster(0.016,Vector2.ZERO,false)

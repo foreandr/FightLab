@@ -4,8 +4,9 @@ func run():
  change_scene_to_file("res://scenes/sandbox.tscn");await process_frame;await process_frame
  var s=current_scene;var b=s.animation_browser
  while not b.ready_catalog:await process_frame
- b.source_filter.select(3);b.search.text="motifect";b.apply_filters()
- print("NEW PACK MATCHES ",b.matches_.size()," TOTAL ",b.records.size()); assert(b.matches_.size()==38,"New combat pack missing from picker")
+ assert(b.records.filter(func(record):return str(record.get("source_name",""))=="Motifect Martial Arts").size()==38,"New combat pack missing from picker")
+ b.set_type("Leg");b.search.text="motifect";b.apply_filters()
+ assert(not b.matches_.is_empty())
  while b.thumbnails.busy or not b.thumbnails.jobs.is_empty():await process_frame
  for card in b.grid.get_children():assert(card.find_child("PreviewImage",true,false).texture!=null,"New combat thumbnail missing")
  assert(b.select_animation(b.matches_[0]))
