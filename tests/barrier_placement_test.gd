@@ -14,7 +14,11 @@ func run():
  b.set_process(false);b.set_physics_process(false)
  assert(setup.visible and setup.attachment.is_empty() and setup.confirm.disabled)
  assert(not setup.size_card.visible)
- for kind in ["Self","Follow","Place"]:
+ for disabled_kind in ["Follow","Place"]:
+  assert(setup.choices[disabled_kind].disabled)
+  setup.choose(disabled_kind)
+  assert(setup.attachment.is_empty(),"Disabled placement was selectable")
+ for kind in ["Self"]:
   setup.choices[kind].pressed.emit()
   assert(setup.attachment==kind and not setup.attachment_confirmed and setup.preview.visible)
   assert(not setup.size_card.visible,"Size opened before placement confirmation")
@@ -57,5 +61,5 @@ func run():
  for overlay in setup.preview.body_overlays:assert(is_zero_approx(float(overlay.get_shader_parameter("barrier_strength"))))
  b.return_to_start()
  assert(setup.attachment.is_empty() and not setup.attachment_confirmed)
- print("BARRIER PLACEMENT PASS: Self block, following sphere, stationary placed sphere; preview/confirm; RHS size; location/cancel; Back and reset")
+ print("BARRIER PLACEMENT PASS: only Self Block selectable; Follow and Place disabled; body overlay preview/confirm, Back and reset")
  quit()

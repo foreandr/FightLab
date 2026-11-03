@@ -27,6 +27,8 @@ func configure(owner_builder:Control,column:VBoxContainer)->void:
   button.icon=Icons.get_icon({"Self":"shield_self","Follow":"shield_follow","Place":"shield_place"}[kind])
   button.add_theme_constant_override("icon_max_width",40)
   button.tooltip_text={"Self":"A transparent barrier fitted to your body.","Follow":"A sphere centered on you that moves with you.","Place":"A sphere that stays at the chosen arena location."}[kind]
+  button.disabled=kind!="Self"
+  if button.disabled:button.tooltip_text="Not available yet"
   button.focus_mode=Control.FOCUS_ALL;choices[kind]=button
  position_row=HBoxContainer.new();add_child(position_row)
  pick_button=builder.editor.button(position_row,"Choose location",func():picking_location=not picking_location;refresh())
@@ -47,7 +49,7 @@ func reset()->void:
  attachment="";attachment_confirmed=false;size_confirmed=false;picking_location=false
  radius=1.5;size_slider.set_value_no_signal(radius);place_ahead();refresh()
 func choose(kind:String)->void:
- if not choices.has(kind):return
+ if not choices.has(kind) or choices[kind].disabled:return
  attachment=kind;attachment_confirmed=false;size_confirmed=false;picking_location=false
  if kind=="Place":place_ahead()
  refresh()
