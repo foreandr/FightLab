@@ -135,7 +135,7 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dicti
 				for i in 5:field.vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color("85ffc1"),0.55,4)
 			field.combat_sound("ice",recipient.global_position,0.45)
 		"self_barrier":
-			actor.self_barrier.activate(actor,float(spec.get("shield_strength",10.0)),float(spec.get("shield_duration",5.0)))
+			actor.self_barrier.activate(actor,float(spec.get("shield_strength",10.0)),float(spec.get("shield_duration",1.0)),float(spec.get("parry_mana_refund",5.0)))
 			field.combat_sound("shield",actor.global_position,0.6)
 		"armor":
 			pass # Legacy armor content is cosmetic; it grants no combat benefit.
@@ -339,8 +339,12 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var contact_damage:=amount
 	amount*=physical_multiplier
 	if victim.self_barrier.active():
-		var parry_ready:bool=victim.self_barrier.can_parry()
-		var shield_absorbed:float=victim.self_barrier.absorb(amount)
+		var block_result:Dictionary=victim.self_barrier.resolve_hit(amount)
+		var parry_ready:bool=block_result.parry
+		var shield_absorbed:float=block_result.absorbed
+		if block_result.broken:
+			field.combat_sound("shatter",point,0.65)
+			field.events.append({"time":field.elapsed,"event":"self_block_break","victim":victim.team,"attacker":attacker.team,"stamina_spent":block_result.stamina_spent,"incoming_physical":amount})
 		if shield_absorbed>0.0:
 			impulse*=maxf(0.0,1.0-shield_absorbed/maxf(0.001,amount))
 			amount-=shield_absorbed
@@ -348,7 +352,7 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 			field.show_hit_region(area)
 			if amount<=0.0001:
 				if not parry_ready and victim.has_method("receive_status"):victim.receive_status(attacker,spec)
-				field.events.append({"time":field.elapsed,"event":"parry" if parry_ready else "self_block","victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready})
+				field.events.append({"time":field.elapsed,"event":"parry" if parry_ready else "self_block","victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund})
 				return true
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken

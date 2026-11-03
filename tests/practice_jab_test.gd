@@ -3,9 +3,9 @@ const Rules=preload("res://scripts/combat_spell_rules.gd")
 const Camera=preload("res://scripts/third_person_camera.gd")
 func _initialize():call_deferred("run")
 func run():
- for item in [["Shield",1.0],["Absorb",2.0],["Reflect",3.0]]:
+ for item in [["Shield",10.0],["Absorb",20.0],["Reflect",30.0]]:
   var base=Rules.self_barrier_base();base.mana=Rules.barrier_base_mana(item[0])
-  assert(is_equal_approx(Rules.mana_cost(Rules.author(base,1.0,1.0,false)),item[1]))
+  assert(is_equal_approx(Rules.mana_cost(Rules.author(base,1.0,0.3,false)),item[1]))
  change_scene_to_file("res://scenes/spell_creation.tscn")
  while current_scene==null or not current_scene.workspace_ready:await process_frame
  var e=current_scene;var b=e.spell_builder;var actor=e.actor

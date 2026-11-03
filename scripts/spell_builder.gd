@@ -966,6 +966,8 @@ func barrier_back()->void:
 
 func confirm_barrier_kind()->void:
  if creation_step!="barrier" or barrier_kind!="Shield":return
+ if is_instance_valid(barrier_authoring) and barrier_authoring.attachment.is_empty():
+  demo_duration=1.0;casting_animation["duration"]=1.0
  show_creation_step("shield")
  for tester in [barrier_tester,barrier_puncher]:
   if is_instance_valid(tester):tester.reset()

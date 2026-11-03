@@ -17,7 +17,7 @@ var size_card:Control
 var size_label:Label
 var size_slider:HSlider
 var strength:=10.0
-var lifetime:=5.0
+var lifetime:=1.0
 var strength_label:Label
 var strength_slider:HSlider
 var lifetime_label:Label
@@ -55,9 +55,9 @@ func configure(owner_builder:Control,column:VBoxContainer)->void:
  strength_slider=HSlider.new();content.add_child(strength_slider)
  strength_slider.name="ShieldStrength";strength_slider.min_value=1.0;strength_slider.max_value=100.0;strength_slider.step=1.0;strength_slider.value=strength;strength_slider.custom_minimum_size.y=28
  strength_slider.focus_mode=Control.FOCUS_ALL
- strength_slider.tooltip_text="Physical damage blocked before breaking. Activate within 0.12 s of impact to parry effects too."
+ strength_slider.tooltip_text="Blocked physical damage also drains stamina. Activate within 0.12 s of impact to parry effects and refund 5 mana."
  strength_slider.value_changed.connect(func(value:float):strength=value;size_confirmed=false;refresh();builder.refresh_demo_timing())
- lifetime_label=builder.editor.menu_label(content,"Duration: 5.0 s",18)
+ lifetime_label=builder.editor.menu_label(content,"Duration: 1.0 s",18)
  lifetime_slider=HSlider.new();content.add_child(lifetime_slider)
  lifetime_slider.name="ShieldDuration";lifetime_slider.min_value=0.1;lifetime_slider.max_value=30.0;lifetime_slider.step=0.1;lifetime_slider.value=lifetime;lifetime_slider.custom_minimum_size.y=28
  lifetime_slider.focus_mode=Control.FOCUS_ALL
@@ -72,7 +72,7 @@ func configure(owner_builder:Control,column:VBoxContainer)->void:
 func reset()->void:
  attachment="";attachment_confirmed=false;size_confirmed=false;picking_location=false
  radius=1.5;size_slider.set_value_no_signal(radius)
- strength=10.0;lifetime=5.0;strength_slider.set_value_no_signal(strength);lifetime_slider.set_value_no_signal(lifetime)
+ strength=10.0;lifetime=1.0;strength_slider.set_value_no_signal(strength);lifetime_slider.set_value_no_signal(lifetime)
  builder.editor.actor.self_barrier.clear()
  place_ahead();refresh()
 func choose(kind:String)->void:
@@ -131,7 +131,8 @@ func refresh()->void:
  update_preview()
 func refresh_stats(spec:Dictionary)->void:
  amp_label.text="Spell amp: +%.1f%%"%((float(spec.get("spell_amplifier",1.0))-1.0)*100.0)
- stamina_label.text="Stamina depletion: %.1f"%float(spec.get("stamina_cost",0.0))
+ stamina_label.text="Cast stamina: %.1f\nImpact stamina: 1 per physical damage"%float(spec.get("stamina_cost",0.0))
+ stamina_label.tooltip_text="A 10-physical-damage hit spends 10 stamina. Exactly zero holds; below zero breaks the block."
  strength_label.text="Shield strength: %.0f → %.1f"%[strength,float(spec.get("shield_strength",strength))]
  strength_label.tooltip_text="Base strength × block multiplier = physical damage blocked\n%.1f × %.3f = %.1f"%[strength,float(spec.get("shield_strength_multiplier",1.0)),float(spec.get("shield_strength",strength))]
  lifetime_label.text="Duration: %.1f s"%lifetime

@@ -11,7 +11,8 @@ const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
 const PROJECTILE_BASE_MANA:=10.0
 const FIRE_MANA_SURCHARGE:=10.0
-const BARRIER_BASE_MANA:={"Shield":2.0,"Absorb":4.0,"Reflect":6.0,"Effect":10.0}
+const BARRIER_BASE_MANA:={"Shield":20.0,"Absorb":40.0,"Reflect":60.0,"Effect":100.0}
+const BARRIER_NEUTRAL_WAIT:=0.3
 const TOUCH_EXTRA_CONTACT_STAMINA:=0.25
 const TOUCH_CONTACT_BONES:=["hand_l","hand_r","upperarm_l","upperarm_r","lowerarm_l","lowerarm_r","thigh_l","thigh_r","calf_l","calf_r","foot_l","foot_r","Head"]
 const DELIVERY_MANA_MULTIPLIERS:={"Projectile":1.0,"Beam":1.0,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
@@ -42,8 +43,8 @@ static func barrier_base_mana(kind:String)->float:
 static func left_jab_strike()->Array:
 	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
 
-static func self_barrier_base(strength:float=10.0,duration:float=5.0)->Dictionary:
-	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":barrier_base_mana("Shield"),"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration)}
+static func self_barrier_base(strength:float=10.0,duration:float=1.0)->Dictionary:
+	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":barrier_base_mana("Shield"),"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration),"parry_mana_refund":5.0}
 
 static func neutral_projectile() -> Dictionary:
 	var base:=allocate(projectile_base("None"),{"size":0.5,"speed":0.5},"None",1.0)
@@ -122,7 +123,8 @@ static func resource_split(base:Dictionary,duration:float,offensive:bool) -> Dic
 	var transfer:=original*effect_share
 	var contact_count:=touch_contact_count(base)
 	var contact_surcharge:=original*TOUCH_EXTRA_CONTACT_STAMINA*(contact_count-1)
-	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer+contact_surcharge,"touch_contact_count":contact_count,"touch_contact_stamina":contact_surcharge,"delivery_mana_multiplier":delivery_mana_multiplier(str(base.get("delivery_type","Projectile"))),"base_mana":(float(base.get("mana",unscaled_mana_cost(base)))+transfer)*delivery_mana_multiplier(str(base.get("delivery_type","Projectile")))}
+	var reference:=Mana.multiplier(BARRIER_NEUTRAL_WAIT) if str(base.get("effect",""))=="self_barrier" else 1.0
+	return {"original_stamina":original,"effect_share":effect_share,"transfer":transfer,"stamina":original-transfer+contact_surcharge,"touch_contact_count":contact_count,"touch_contact_stamina":contact_surcharge,"delivery_mana_multiplier":delivery_mana_multiplier(str(base.get("delivery_type","Projectile"))),"base_mana":(float(base.get("mana",unscaled_mana_cost(base)))+transfer)*delivery_mana_multiplier(str(base.get("delivery_type","Projectile")))/reference}
 
 static func authored_stats(base:Dictionary,duration:float,fraction:float,offensive:bool,movement:=Vector3.ZERO,aim:=Vector3.BACK) -> Dictionary:
 	var timing:=cast_timing_stats(duration,fraction)
