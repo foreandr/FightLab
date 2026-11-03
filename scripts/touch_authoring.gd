@@ -115,7 +115,12 @@ func refresh_stats(spec:Dictionary)->void:
 
 func _process(_delta:float)->void:
  if not is_instance_valid(builder) or not is_instance_valid(builder.editor.actor):return
- var active:=is_visible_in_tree()
+ var visible_step:=is_visible_in_tree()
+ # Warm region geometry on selection, but show it only during playback.
+ if visible_step:
+  var ready_visual=builder.editor.actor.ensure_touch_contact_visual()
+  for bone in selected:ready_visual.ensure_region(bone)
+ var active:bool=visible_step and builder.playing
  var next_signature:=JSON.stringify([selected,preview_effect]) if active else "[]"
  var visual=builder.editor.actor.touch_contact_visual
  if preview_signature==next_signature and is_instance_valid(visual) and visual.preview_spec.is_empty()==(not active):return

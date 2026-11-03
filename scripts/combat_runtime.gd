@@ -36,6 +36,7 @@ func begin_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:fl
 		if cast_attempts[key].actor.get_ref()==null:cast_attempts.erase(key)
 	cast_attempts[actor.get_instance_id()]={"actor":weakref(actor),"stamina":maxf(0.0,float(spec.get("stamina_cost",0.0))),"time_to_release":maxf(0.0,time_to_release),"elapsed":0.0,"mode_owned":mode_owned}
 
+	if str(spec.get("effect",""))=="touch":actor.ensure_touch_contact_visual().set_runtime(spec)
 	return true
 
 func resource_notice(actor:CharacterBody3D,message:String) -> void:
@@ -76,6 +77,7 @@ func interrupt_cast_attempt(actor:CharacterBody3D) -> float:
 	var attempt:Dictionary=cast_attempts.get(key,{})
 	if attempt.is_empty():return 0.0
 	cast_attempts.erase(key)
+	if is_instance_valid(actor.touch_contact_visual):actor.touch_contact_visual.clear_runtime()
 	var progress:=clampf(float(attempt.elapsed)/maxf(0.001,float(attempt.time_to_release)),0.0,1.0)
 	var cost:=minf(actor.stamina,float(attempt.stamina)*progress)
 	var before:float=actor.stamina

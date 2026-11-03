@@ -14,9 +14,9 @@ var fire:ShaderMaterial
 func setup(owner_actor:CharacterBody3D)->void:
  actor=owner_actor;name="TouchContactVisual"
  var shader:=Shader.new()
- shader.code="shader_type spatial; render_mode unshaded,cull_front; uniform vec4 tint:source_color=vec4(1.0); void vertex(){VERTEX+=NORMAL*0.004;} void fragment(){ALBEDO=tint.rgb;EMISSION=tint.rgb*0.35;}"
- white=ShaderMaterial.new();white.shader=shader;white.set_shader_parameter("tint",Color.WHITE)
- fire=ShaderMaterial.new();fire.shader=shader;fire.set_shader_parameter("tint",Color("ff9c32"))
+ shader.code="shader_type spatial; render_mode unshaded,cull_front; uniform vec4 tint:source_color=vec4(1.0); uniform float thickness=0.004; void vertex(){VERTEX+=NORMAL*thickness;} void fragment(){ALBEDO=tint.rgb;EMISSION=tint.rgb*0.35;}"
+ white=ShaderMaterial.new();white.shader=shader;white.set_shader_parameter("tint",Color.WHITE);white.set_shader_parameter("thickness",0.009)
+ fire=ShaderMaterial.new();fire.shader=shader;fire.set_shader_parameter("tint",Color("ff9c32"));fire.set_shader_parameter("thickness",0.004)
 func set_preview(spec:Dictionary)->void:
  preview_spec=spec.duplicate(true);sync_selection()
 func set_runtime(spec:Dictionary)->void:
