@@ -1,9 +1,5 @@
 FightLab shared background-music credits
 
-The Descent — Travis Savoie / RPG Music Maker
-Source: https://travissavoie.bandcamp.com/track/the-descent
-Game-use permission confirmed by project owner in chat.
-
 The following 30 tracks are published under CC0 1.0:
 https://creativecommons.org/publicdomain/zero/1.0/
 Credits are retained voluntarily. Each is an edited, level-adjusted loop excerpt.

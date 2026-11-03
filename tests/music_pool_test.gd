@@ -21,6 +21,6 @@ func run():
 			total_bytes+=int(track.size_bytes)
 	assert(fresh==30,"Expected 30 new unique CC0 music loops, got "+str(fresh))
 	var music=root.get_node("SharedMusic")
-	assert(music.tracks.size()==31,"Shared runtime pool omitted available tracks")
-	print("MUSIC POOL PASS: 30 unique CC0 loops + The Descent; source/license metadata, valid Ogg streams, duration/seam/size checks; new bytes=",total_bytes)
+	assert(music.tracks.size()==30,"Shared runtime pool omitted available tracks")
+	print("MUSIC POOL PASS: 30 unique CC0 loops only; source/license metadata, valid Ogg streams, duration/seam/size checks; new bytes=",total_bytes)
 	quit()
