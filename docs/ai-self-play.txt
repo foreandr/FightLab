@@ -105,8 +105,8 @@ They validate the pipeline; they are not a thousand-match strength benchmark.
 
 Expanded CPU repertoire
 -----------------------
-Both fighters equip 52 authored choices across 36 existing animation clips:
-40 Touch choices (physical and five fire-enhanced contacts), 11 fireball choices,
+Both fighters equip 54 authored choices across 36 existing animation clips:
+42 Touch choices (physical and seven fire-enhanced contacts), 11 fireball choices,
 and the timed shield. The original twelve melee timing variants, three fireballs
 and their action IDs are retained; new choices have stable descriptive IDs.
 Hooks, uppercuts, elbows, headbutts, slashes, sweeps and spinning kicks use explicit
@@ -137,3 +137,20 @@ ragdoll physics are disabled by this presentation fix.
 tests/cpu_result_camera_test.gd exercises a real lethal hit/ragdoll, live target
 smoothing, uneven frame times and settling movement, result stability, camera
 controls after death, and rematch reset.
+
+Touch chain balance and selection
+--------------------------------
+The shared touch_combo_rules.gd defines a 55% follow-up gate. Alternating a
+left/right contact gives the next linked Touch animation 1.12x cast speed;
+same-side links are legal at 1.0x. Head contacts get no side bonus. It does not
+discount costs, alter damage, stack across links, or carry into separate casts.
+Parry haste multiplies normally. Every BattleActor.chain_touch_cast caller uses
+the same rule. Released projectile commitment is unchanged.
+CPU choices favor compact opposite-hand follow-ups and retry unavailable range
+or budget checks until 90% of the outgoing animation. Burn scoring counts extra
+damage using Burn rules, discounting pending burn rather than assuming stacking.
+Fire jab and cross join the existing flame hooks, elbow, kick and knee.
+Validation: touch_combo_test.gd checks speed/costs/same-side/projectile exclusion;
+cpu_combo_choices_test.gd checks burn scoring, range retry and a real physical
+jab into fire cross. Three full fights passed; the last fixture recorded five
+fire Touch casts and nine combo links. Perfect-block timing tests also passed.
