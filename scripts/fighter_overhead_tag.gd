@@ -37,10 +37,9 @@ func _ready() -> void:
 	_add_resource_bar("HEALTH", 0.11, Color("ed414b"))
 	_add_resource_bar("STAMINA", 0.03, Color("70d5a8"))
 	_add_resource_bar("MAGICA", -0.05, Color("8fc8ff"))
-	_add_resource_bar("BLOCK", -0.13, Color("efbd58"))
 	status_label=make_label(18,0.009)
 	status_label.name="Status"
-	status_label.position.y=-0.31
+	status_label.position.y=-0.23
 	status_label.outline_modulate=outline_color
 	add_child(status_label)
 	_build_chat_bubble()
@@ -208,7 +207,6 @@ func update_tag() -> void:
 	_set_resource_fraction("health",fighter.health/maximum)
 	_set_resource_fraction("stamina",_fighter_number("stamina")/100.0)
 	_set_resource_fraction("magica",_fighter_number("mana")/100.0)
-	_set_resource_fraction("block",_fighter_number("guard_energy")/44.0)
 	status_label.text=""
 	if fighter.get("drowned")==true:
 		status_label.text="DROWNED"

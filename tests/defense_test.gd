@@ -40,7 +40,7 @@ func run() -> void:
 	check(absf(victim.guard_energy - 28) < 0.01 and victim.absorbed_damage == 16, "Absorption must spend guard energy, without healing or awarding a damaging hit")
 	check(attacker.damage_dealt == 0, "Absorbed hits must not count as health damage")
 	check(field.shots.is_empty(), "Blocked projectile must be consumed")
-	check(field.guard_bars[1].value == victim.guard_energy, "Guard meter must match remaining energy")
+	check(field.resource_labels[1].size()==2, "Legacy HUD must show mana/stamina without a guard meter")
 	# Behind the shield is deliberately unprotected.
 	victim.invulnerability = 0
 	var health_before: float = victim.health

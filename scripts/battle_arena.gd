@@ -481,15 +481,13 @@ func build_fight_ui() -> void:
 		health_bars.append(health[0])
 		var mana_row:=resource_meter(column,"MANA",Color("a493f2"),f.MAX_MANA)
 		var stamina_row:=resource_meter(column,"STAMINA",Color("add46a"),f.MAX_STAMINA)
-		var guard_row:=resource_meter(column,"GUARD",Color("c4e6f3"),f.MAX_GUARD)
 		mana_bars.append(mana_row[0])
 		stamina_bars.append(stamina_row[0])
-		guard_bars.append(guard_row[0])
 		var state:=Label.new()
 		state.add_theme_font_size_override("font_size",12)
 		column.add_child(state)
 		status_labels.append(state)
-		resource_labels.append([health[1],mana_row[1],stamina_row[1],guard_row[1]])
+		resource_labels.append([health[1],mana_row[1],stamina_row[1]])
 	subtitle=Label.new()
 	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	subtitle.offset_top=166
@@ -519,10 +517,9 @@ func update_fight_ui() -> void:
 		health_bars[i].value=f.health
 		mana_bars[i].set_target_value(f.mana)
 		stamina_bars[i].set_target_value(f.stamina)
-		guard_bars[i].set_target_value(f.guard_energy)
 		health_labels[i].text="%s  %d / %d"%[element_name(i),ceili(f.health),f.MAX_HEALTH]
-		for j in 4:
-			resource_labels[i][j].text=str(ceili(f.health) if j==0 else floori([f.health,f.mana,f.stamina,f.guard_energy][j]))
+		for j in 3:
+			resource_labels[i][j].text=str(ceili(f.health) if j==0 else floori([f.health,f.mana,f.stamina][j]))
 		var states:=[]
 		if f.health<=0: states.append("OUT")
 		elif is_instance_valid(f.ragdoll): states.append("RAGDOLL")

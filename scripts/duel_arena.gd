@@ -21,7 +21,6 @@ var peak_effects := 0
 var view_axis := Vector3(0, 0, 1)
 var clashes := 0
 var shields: Array = []
-var guard_bars: Array = []
 var shield_hit_age := [2.0, 2.0]
 var mana_bars: Array = []
 var stamina_bars: Array = []
@@ -335,11 +334,9 @@ func build_fight_ui() -> void:
 		health_bars.append(bar)
 		var mana_row := resource_meter(column, "MANA", Color("9c8cf0"), fighters[i].MAX_MANA)
 		var stamina_row := resource_meter(column, "STAMINA", Color("acd66c"), fighters[i].MAX_STAMINA)
-		var guard_row := resource_meter(column, "GUARD", Color("c1e6f5"), fighters[i].MAX_GUARD)
 		mana_bars.append(mana_row[0])
 		stamina_bars.append(stamina_row[0])
-		guard_bars.append(guard_row[0])
-		resource_labels.append([mana_row[1], stamina_row[1], guard_row[1]])
+		resource_labels.append([mana_row[1], stamina_row[1]])
 	hud = Label.new()
 	hud.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	hud.offset_left = 24
@@ -391,12 +388,10 @@ func resource_meter(column: VBoxContainer, name_: String, color: Color, maximum:
 func update_fight_ui() -> void:
 	for i in 2:
 		health_bars[i].value = fighters[i].health
-		guard_bars[i].set_target_value(fighters[i].guard_energy)
 		mana_bars[i].set_target_value(fighters[i].mana)
 		stamina_bars[i].set_target_value(fighters[i].stamina)
 		resource_labels[i][0].text = str(floori(fighters[i].mana))
 		resource_labels[i][1].text = str(floori(fighters[i].stamina))
-		resource_labels[i][2].text = str(floori(fighters[i].guard_energy))
 		var tactic := "RECOVER" if fighters[i].catching_breath else ("FISTS" if fighters[i].close_combat else "MAGIC")
 		health_labels[i].text = "%s  %d / %d  ·  %s" % [element_name(i), ceili(fighters[i].health), fighters[i].MAX_HEALTH, tactic]
 	round_label.text = "ROUND %d\n%d — %d" % [round_number, wins[0], wins[1]]

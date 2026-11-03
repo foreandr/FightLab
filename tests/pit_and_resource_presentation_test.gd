@@ -34,6 +34,7 @@ func run() -> void:
 	b.playing=false
 	var actor=editor.actor
 	var tag=actor.get_node("OverheadHealthTag")
+	if not check(tag.resource_fills.size()==3 and not tag.resource_fills.has("block"),"HUD should show only health, stamina and mana"):return
 	actor.stamina=100.0;actor.mana=100.0;actor.guard_energy=44.0
 	tag.update_tag()
 	tag._advance_resource_bars(1.0)
@@ -42,7 +43,7 @@ func run() -> void:
 	tag._advance_resource_bars(1.0/60.0)
 	var shown:float=tag.resource_fills.stamina.displayed
 	if not check(shown>0.4 and shown<1.0,"Overhead resource change snaps instead of animating"):return
-	for key in ["magica","block"]:
+	for key in ["magica"]:
 		if not check(absf(float(tag.resource_fills[key].displayed)-shown)<0.001,"Resource bars have different easing"):return
 	tag._advance_resource_bars(1.0)
 	if not check(absf(float(tag.resource_fills.magica.displayed)-0.4)<0.001 and is_equal_approx(float(actor.mana),40.0),"Smoothing changes actual resources or fails to settle"):return
@@ -62,6 +63,9 @@ func run() -> void:
 	if not check(not editor.field.shots.is_empty(),"First comparison shot did not spawn"):return
 	var original:Dictionary=editor.field.shots.back()
 	var original_radius:float=original.radius
+	# The earlier cast must finish before authoring/releasing the comparison.
+	editor.field.combat().finish_cast(actor)
+	b.playing=false
 	b.set_projectile_allocation("size",0.9)
 	b.set_release_fraction(0.3)
 	b.set_demo_duration(1.1)

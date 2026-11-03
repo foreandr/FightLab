@@ -91,6 +91,7 @@ func go_back()->bool:
  return false
 func place_ahead()->void:
  var actor=builder.editor.actor
+ if not is_instance_valid(actor):return
  placed_ground=builder.editor.field.surface_placement(actor.global_position+actor.global_basis.z*4.0)
  picking_location=false;size_confirmed=false;refresh()
 func set_location(ground:Vector3)->void:
