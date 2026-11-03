@@ -21,7 +21,7 @@ func setup(owner_actor:CharacterBody3D)->void:
  var fill_shader:=Shader.new()
  fill_shader.code="shader_type spatial; render_mode unshaded,cull_back,blend_mix,depth_draw_never; void vertex(){VERTEX+=NORMAL*0.002;} void fragment(){ALBEDO=vec3(1.0);EMISSION=vec3(0.8);ALPHA=0.55;}"
  var fill:=ShaderMaterial.new();fill.shader=fill_shader;white.next_pass=fill
- fire=ShaderMaterial.new();fire.shader=shader;fire.set_shader_parameter("tint",Color("ff9c32"));fire.set_shader_parameter("thickness",0.004)
+ fire=ShaderMaterial.new();fire.shader=shader;fire.set_shader_parameter("tint",Color("ff9c32"));fire.set_shader_parameter("thickness",0.03)
 func set_preview(spec:Dictionary)->void:
  preview_spec=spec.duplicate(true);sync_selection()
 func set_runtime(spec:Dictionary)->void:
@@ -54,9 +54,9 @@ func ensure_region(bone:String)->void:
   outline.visible=false
   records.append({"source":source,"outline":outline})
  var flames:Array=[]
- var height:=0.32 if bone=="Head" else 0.23
+ var height:=0.50 if bone=="Head" else 0.40
  for index in 3:
-  var flame:=Plume.flame(0.14,height,index*2.2)
+  var flame:=Plume.flame(0.28,height,index*2.2)
   flame.name="ContactFlame"+bone+str(index);add_child(flame);flame.hide()
   flames.append(flame)
  regions[bone]={"records":records,"flames":flames,"height":height}
@@ -79,7 +79,7 @@ func _process(_delta:float)->void:
    flame.visible=enabled and element=="Fire"
    if flame.visible:
     var angle:float=index*TAU/3.0
-    flame.global_position=point+Vector3(cos(angle)*0.035,float(region.height)*0.35,sin(angle)*0.035)
+    flame.global_position=point+Vector3(cos(angle)*0.045,float(region.height)*0.35,sin(angle)*0.045)
     flame.global_basis=Basis.IDENTITY
 func _exit_tree()->void:
  for region in regions.values():

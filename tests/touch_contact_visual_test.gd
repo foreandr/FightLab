@@ -21,7 +21,7 @@ func run():
  assert(visual.contacts.is_empty(),"Idle selection left a permanent contact highlight")
  b.play_projectile_once();t._process(0.0);visual._process(0.0)
  assert(not visual.runtime_spec.is_empty(),"Shared cast start did not activate contact presentation")
- assert(visual.white.get_shader_parameter("thickness")>visual.fire.get_shader_parameter("thickness"))
+ assert(visual.white.get_shader_parameter("thickness")==visual.fire.get_shader_parameter("thickness"))
  assert(visual.contacts==["hand_l","hand_r"] and visual.element=="None")
  for bone in ["hand_l","hand_r"]:
   assert(not visual.regions[bone].records.is_empty(),"No skinned hand region was extracted")
