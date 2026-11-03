@@ -263,6 +263,7 @@ func _physics_process(delta: float) -> void:
 	combat().step_actors(delta)
 	for f in fighters:max_radius=maxf(max_radius,Vector2(f.focus_position().x,f.focus_position().z).length())
 	for i in fighters.size():
+		if i>=shield_hit_age.size():continue # Extra practice actors own their overhead tags.
 		var f = fighters[i]
 		for j in range(i+1,fighters.size()):
 			if f.health > 0 and fighters[j].health > 0:

@@ -1305,7 +1305,9 @@ func tick(delta: float) -> void:
 	update_status(delta)
 	stun_time=maxf(0,stun_time-delta)
 	# Pose ownership never pauses combat status clocks or damage-over-time.
-	if editor_pose_locked:return
+	if editor_pose_locked:
+		invulnerability=maxf(0.0,invulnerability-delta)
+		return
 	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH
 	if stun_time>0 and health>0 and not is_instance_valid(ragdoll):
 		invulnerability=maxf(0,invulnerability-delta)

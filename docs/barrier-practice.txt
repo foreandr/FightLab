@@ -1,0 +1,18 @@
+Barrier authoring practice
+- Shield/Absorb/Reflect/Effect chooser now has Confirm. Confirming Shield opens
+  its next authoring tier; shield protection mechanics are not implemented yet.
+- Choosing Barrier creates one extra practice caster beside the mannequins.
+  BarrierPracticeCaster owns only placement, aim input and a four-second cadence.
+  BattleActor.start_cast, SpellCastMotion, CombatSpellRules and CombatRuntime own
+  the jab animation, release, resource spending, projectile, collision and damage.
+- The caster uses the base Left jab (left hand), a one-second Fire projectile cast,
+  release halfway through, and normal resource recovery. It starts every four
+  simulation seconds. Slow motion therefore slows the test caster as well.
+- Switching away from Barrier hides/stops the caster. Re-entering reuses the same
+  unit. Reset scene heals everyone, resets placement and restarts its timer.
+- Pose-controlled characters now expire spawn invulnerability instead of keeping
+  it forever. The shared actor decrements it once on that pose-owned tick path.
+- Legacy arena HUD arrays skip additional practice actors, which own their tags.
+Validation: barrier_choices_test.gd covers Confirm, cadence, actual left-jab Fire
+release and real player damage, reset/heal and exit behavior. Pose status and
+legacy spell demo card checks cover status clocks and the previous wizard flow.
