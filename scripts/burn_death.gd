@@ -76,13 +76,8 @@ func _physics_process(delta:float)->void:
 func make_ash()->void:
  var origin:Vector3=actor.ragdoll.location() if is_instance_valid(actor.ragdoll) else actor.global_position
  var ground:Dictionary=actor.arena.ground_contact(origin)
- ash=Node3D.new();ash.name="AshRemains";add_child(ash)
+ ash=preload("res://scripts/ash_remains.gd").create(int(actor.get_instance_id()));add_child(ash)
  ash.global_transform=Transform3D(Basis(Quaternion(Vector3.UP,ground.normal)),ground.position+ground.normal*0.015)
- var mound:=MeshInstance3D.new()
- var mesh:=SphereMesh.new();mesh.radius=0.5;mesh.height=1.0;mesh.radial_segments=16;mesh.rings=8
- mound.mesh=mesh;mound.scale=Vector3(1.0,0.10,0.65)
- var material:=StandardMaterial3D.new();material.albedo_color=Color("38332e");material.roughness=1.0
- mound.material_override=material;ash.add_child(mound)
  dust=CPUParticles3D.new();dust.amount=55;dust.lifetime=1.1;dust.local_coords=false
  dust.emission_shape=CPUParticles3D.EMISSION_SHAPE_POINTS
  var points:=PackedVector3Array()
