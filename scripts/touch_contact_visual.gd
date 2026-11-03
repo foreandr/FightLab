@@ -15,7 +15,12 @@ func setup(owner_actor:CharacterBody3D)->void:
  actor=owner_actor;name="TouchContactVisual"
  var shader:=Shader.new()
  shader.code="shader_type spatial; render_mode unshaded,cull_front; uniform vec4 tint:source_color=vec4(1.0); uniform float thickness=0.004; void vertex(){VERTEX+=NORMAL*thickness;} void fragment(){ALBEDO=tint.rgb;EMISSION=tint.rgb*0.35;}"
- white=ShaderMaterial.new();white.shader=shader;white.set_shader_parameter("tint",Color.WHITE);white.set_shader_parameter("thickness",0.009)
+ white=ShaderMaterial.new();white.shader=shader;white.set_shader_parameter("tint",Color.WHITE);white.set_shader_parameter("thickness",0.03)
+ # A bright surface wash keeps the physical contact readable even face-on,
+ # while the wider inverted shell gives it a clear silhouette at gameplay zoom.
+ var fill_shader:=Shader.new()
+ fill_shader.code="shader_type spatial; render_mode unshaded,cull_back,blend_mix,depth_draw_never; void vertex(){VERTEX+=NORMAL*0.002;} void fragment(){ALBEDO=vec3(1.0);EMISSION=vec3(0.8);ALPHA=0.55;}"
+ var fill:=ShaderMaterial.new();fill.shader=fill_shader;white.next_pass=fill
  fire=ShaderMaterial.new();fire.shader=shader;fire.set_shader_parameter("tint",Color("ff9c32"));fire.set_shader_parameter("thickness",0.004)
 func set_preview(spec:Dictionary)->void:
  preview_spec=spec.duplicate(true);sync_selection()
