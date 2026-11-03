@@ -19,7 +19,7 @@ static func kind(entry:Dictionary)->String:
 	if _has(tokens,["walk","walking","run","running","jog","jogging","sprint","jump","jumping","flip","backflip","cartwheel","acrobatic","acrobatics","dance","dancing","dive","diving","fall","falling","roll","rolling","crawl","crawling","swim","swimming","climb","climbing","locomotion","spin","spinning","dodge","vault","leap"]):return "Movement"
 	if _has(tokens,["headbutt","head","nod","nodding","neck"]):return "Head"
 	if _has(tokens,["kick","kicking","knee","knees","sweep","sweeps","stomp","stomping","leg","legs","foot","feet"]):return "Leg"
-	if _has(tokens,["punch","punching","jab","cross","hook","uppercut","elbow","slash","block","blocking","parry","weapon","sword","shoot","shooting","aim","aiming","throw","throwing","wave","waving","clap","clapping","reach","reaching","grab","grabbing","arm","arms","hand","hands","gesture","gestures","point","pointing","boxing"]):return "Arm"
+	if _has(tokens,["punch","punching","jab","cross","hook","uppercut","elbow","slash","backfist","haymaker","slap","swipe","chop","fist","fists","melee","block","blocking","parry","weapon","sword","shoot","shooting","aim","aiming","throw","throwing","wave","waving","clap","clapping","reach","reaching","grab","grabbing","arm","arms","hand","hands","gesture","gestures","point","pointing","boxing"]):return "Arm"
 	var legacy:=CastType.kind(entry)
 	return legacy
 

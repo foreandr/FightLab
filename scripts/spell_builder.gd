@@ -49,6 +49,7 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
+var human_only_targets:=false
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -1571,6 +1572,7 @@ func demo_physical_stats() -> Dictionary:
  return physical
 
 func demo_offensive() -> bool:
+ if casting_animation.get("sandbox_animation",false):return bool(casting_animation.get("sandbox_offensive",true))
  return str(casting_animation.get("demo_choice","cross")) in ["headbutt","cross","hook","knee","roundhouse","dismantle"]
 
 func demo_projectile_stats() -> Dictionary:
@@ -1760,7 +1762,7 @@ func capture_demo_pose() -> Array[Transform3D]:
 
 func cast_pose_aim(progress:float) -> Dictionary:
  if not previews_projectile():return {}
- if str(casting_animation.get("demo_choice","cross")) not in ["headbutt","cross","hook","knee","roundhouse","dismantle"]:return {}
+ if not demo_offensive():return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
  elif manual_aim_valid:
@@ -2502,14 +2504,14 @@ func prepare_preview_targets() -> void:
   dummy_last_damage=0.0
   editor.field.round_active=true
   var tag=dummy.get_node_or_null("OverheadHealthTag")
-  if tag!=null:tag.name_label.text="Combat dummy"
-  if not is_instance_valid(dummy.practice_dummy_visual):
+  if tag!=null:tag.name_label.text="Human target" if human_only_targets else "Combat dummy"
+  if not human_only_targets and not is_instance_valid(dummy.practice_dummy_visual):
    var visual:=preload("res://scripts/practice_dummy_visual.gd").new()
    visual.name="PracticeDummyVisual"
    visual.fighter=dummy
    dummy.add_child(visual)
    dummy.practice_dummy_visual=visual
-  dummy.practice_dummy_visual.set_enabled(true)
+  if is_instance_valid(dummy.practice_dummy_visual):dummy.practice_dummy_visual.set_enabled(not human_only_targets)
   if is_instance_valid(practice_human):
    practice_human.set_editor_animation_profile({},"")
    practice_human.story_profile["idle_animation"]="Idle cannon"
@@ -2620,7 +2622,7 @@ func reset_training_dummy(clear_stats:=true) -> void:
  dummy.mode="review"
  dummy.guard_energy=0.0
  dummy_damage_mark=dummy.damage_taken
- if is_instance_valid(dummy.practice_dummy_visual):dummy.practice_dummy_visual.set_enabled(true)
+ if is_instance_valid(dummy.practice_dummy_visual):dummy.practice_dummy_visual.set_enabled(not human_only_targets)
  if clear_stats:
   dummy_total_damage=0.0
   dummy_last_damage=0.0

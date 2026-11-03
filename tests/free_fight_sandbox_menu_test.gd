@@ -14,7 +14,8 @@ func run():
  home.navigation_buttons.Back.pressed.emit();home.navigation_buttons.Sandbox.pressed.emit()
  await process_frame;await process_frame
  var sandbox=current_scene
- assert(sandbox.workspace_ready and sandbox.title_label.text=="Sandbox" and sandbox.field.fighters.size()>=3)
+ assert(sandbox.workspace_ready and sandbox.title_label.text=="Sandbox" and sandbox.field.fighters.size()==2)
+ assert(not sandbox.target.practice_wooden_dummy and not is_instance_valid(sandbox.target.practice_dummy_visual))
  assert(sandbox.field.get_script().get_base_script()==load("res://scripts/combat_world.gd"))
  var actor=sandbox.actor;var target=sandbox.target
  sandbox.focused_unit=actor;sandbox.god_button.pressed.emit()

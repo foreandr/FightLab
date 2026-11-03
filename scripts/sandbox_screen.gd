@@ -2,9 +2,30 @@ extends "res://scripts/spell_creation_screen.gd"
 ## Sandbox is an adapter over the shared arena/tools, not a second combat mode.
 var god_button:Button
 var sandbox_god_modes:Dictionary={}
+var animation_browser:VBoxContainer
+func _build_world()->void:
+ super._build_world()
+ var extra=field.fighters.pop_back()
+ field.remove_child(extra);extra.queue_free()
+func _build_ui()->void:
+ super._build_ui()
+ spell_builder.human_only_targets=true
+ spell_builder.draft_path="user://sandbox_spell_draft.cfg"
+ spell_builder.preview_preferences_path="user://sandbox_spell_preview.cfg"
 func _ready()->void:
  super._ready()
  title_label.text="Sandbox"
+ var choices:Container=spell_builder.demo_screen.get_child(0).get_child(0)
+ spell_builder.demo_screen.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ spell_builder.demo_screen.get_child(0).size_flags_vertical=Control.SIZE_EXPAND_FILL
+ choices.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ spell_builder.demo_choices.clear();spell_builder.demo_type_labels.clear()
+ for child in choices.get_children():choices.remove_child(child);child.queue_free()
+ animation_browser=preload("res://scripts/sandbox_animation_browser.gd").new();choices.add_child(animation_browser);animation_browser.setup(self)
+ if spell_builder.demo_button.pressed.is_connected(spell_builder.open_demo_animation_picker):spell_builder.demo_button.pressed.disconnect(spell_builder.open_demo_animation_picker)
+ spell_builder.demo_button.pressed.connect(func():spell_builder.show_creation_step("demo"))
+ spell_builder.demo_button.text="Choose animation"
+ for back in spell_builder.find_children("BackToSpellStart","Button",true,false):back.tooltip_text="Return to the animation library"
  var row:Container=spell_builder.spell_playback_panel.get_child(0)
  god_button=button(row,"God mode",toggle_selected_god_mode)
  god_button.name="SandboxGodMode";god_button.toggle_mode=true

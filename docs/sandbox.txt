@@ -1,0 +1,26 @@
+Sandbox uses sandbox_screen.gd over the standalone spell screen/world. It shares
+the normal combat runtime, aiming, focus, resources, reactions and spell tools.
+Its only target is a human; human_only_targets suppresses the mannequin visual.
+Normal spell creation retains its original three characters and demo choices.
+Sandbox drafts/preferences use separate files so arbitrary source animations and
+testing choices do not leak into Create Spell's smaller demo-selection flow.
+
+The first Sandbox step is sandbox_animation_browser.gd: custom/owned animations,
+built-in clips, and the local community catalog, grouped in that priority order.
+Browse by Arm/Leg/Head/Movement, source, airborne/grounded, names, tags or author.
+Twelve cards per page; selection previews, Confirm advances. Existing duration
+and playback controls are shared, not reimplemented. Metadata is loaded first;
+full community records and animation resources are resolved only on selection
+through the existing Store index/backend. Static/invalid/blocked Store records
+remain excluded. Type icons identify cards; they are not fake pose thumbnails.
+Own/built-in cards are usable while the community index opens in the background.
+Search is debounced; page turns reuse matches. A bounded grid scroll protects
+Confirm and pagination at small window sizes. Worker completion is joined once
+when leaving, including leaving before catalog initialization finishes.
+
+God mode remains per selected character (button/G), as in the shared actor API.
+Tests: sandbox_animation_library_test checks the full catalog, all four types,
+search/pagination, lazy source resolution, real non-demo and community motion,
+preview/confirm separation, preserved duration, human target and reset.
+free_fight_sandbox_menu_test covers menu entry/exit and God mode isolation.
+standalone_spell_test is a graphical regression for the unchanged Create flow.

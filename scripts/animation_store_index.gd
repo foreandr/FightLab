@@ -3,7 +3,7 @@ extends RefCounted
 ## Full source records are stored as individual detail records and opened only for the visible page.
 
 const Community = preload("res://scripts/community_animation_catalog.gd")
-const CACHE_VERSION := 5
+const CACHE_VERSION := 6
 const STATIC_FILTER := "res://data/static_animation_filter.json"
 const BODY_HINTS := {
 	"Head": ["head", "neck", "face", "mouth"],
@@ -23,7 +23,8 @@ static func load_cache(index_path: String) -> Dictionary:
 	var file := FileAccess.open(index_path, FileAccess.READ)
 	if file == null: return {}
 	var data: Variant = bytes_to_var(file.get_buffer(file.get_length()))
-	if not data is Dictionary or int(data.get("version", 0)) != CACHE_VERSION: return {}
+	# v5 has the same record/detail layout; v6 only adds classification hints.
+	if not data is Dictionary or int(data.get("version", 0)) not in [5,CACHE_VERSION]: return {}
 	if data.get("source_stamp",{}) != _source_stamp(): return {}
 	data["details_path"] = details_path(index_path)
 	if not FileAccess.file_exists(data.details_path): return {}
