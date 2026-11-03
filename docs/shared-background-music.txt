@@ -14,9 +14,19 @@ or interrupt music. Music uses Master so global mute/volume applies everywhere.
 The Descent: 175-second Ogg loop, approximately 3.3 MB, 2-second boundary overlap.
 Original hour-long YouTube mixes are not part of the game or committed to Git.
 User confirmed game-use permission for The Descent on 2026-11-02. Additional
-requested candidates: Deadly Combat, Hill Giant, Dangerous Encounter. Permission
-confirmation for these additional tracks is pending; they are not playable yet.
+requested candidates: Deadly Combat, Hill Giant, Dangerous Encounter and Tense
+Fight. Permission confirmation for those exact tracks is pending; they remain
+candidate metadata only. Thirty other CC0 fantasy/orchestral tracks are now
+playable in the same pool (31 total with The Descent).
 
 Validation: tests/main_menu_music_test.gd checks menu/combat pool identity,
 looping streams, master bus, submenu continuity, no-repeat selection and persistent
 playback across scenes. combat_runtime_contract_test.gd checks a new combat host.
+
+CC0 batch (2026-11-02): 30 unique source tracks, 28.1 MB total.
+Each loop is about 21–70 s, with 2 s tail/head overlap, brief codec-edge ramps,
+and level adjustment with peak headroom. Full originals are not shipped.
+Catalog entries retain source/download URLs, creator, license URL, source/audio
+hashes, duration, edit start, overlap, seam measurement and file size.
+CREDITS.txt lists all authors and source pages. music_pool_test.gd validates every
+stream, all 30 licenses, uniqueness, compact size and loop-boundary measurements.
