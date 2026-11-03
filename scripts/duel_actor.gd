@@ -816,9 +816,11 @@ func _player_move_axes() -> Vector2:
 func advance_animation(delta: float) -> void:
 	player.advance(delta)
 
+func cast_speed_multiplier()->float:return 1.0
+
 func tick_cast(delta: float) -> bool:
 	arena.combat().advance_cast_attempt(self,mode_time)
-	cast_time += delta * CAST_SPEED
+	cast_time += delta * CAST_SPEED * cast_speed_multiplier()
 	face_rival(delta)
 	var released := false
 	if not did_release and cast_time >= current_spell.release:

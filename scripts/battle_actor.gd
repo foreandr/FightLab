@@ -16,6 +16,7 @@ var custom_idle_duration := 3.0
 var custom_motion_frames: Array = []
 var custom_motion_step := ""
 var editor_pose_locked:=false
+var parry_cast_haste=preload("res://scripts/parry_cast_haste.gd").new()
 var self_barrier=preload("res://scripts/self_barrier.gd").new()
 var practice_paused:=false
 func set_practice_paused(value:bool)->void:
@@ -250,6 +251,7 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	parry_cast_haste.clear()
 	self_barrier.clear()
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	if is_instance_valid(burn_death):burn_death.restore()
@@ -432,6 +434,9 @@ func start_cast(air: bool) -> void:
 	if air:
 		air_casts += 1
 
+func cast_speed_multiplier()->float:
+	return parry_cast_haste.multiplier()
+
 func tick_cast(delta: float) -> bool:
 	if not can_cast_with(current_spell,practice_spell_animation):
 		arena.combat().interrupt_cast_attempt(self)
@@ -449,7 +454,7 @@ func tick_cast(delta: float) -> bool:
 		if charge_held >= charge_goal * 1.25:
 			cast_phase = "release"
 		return false
-	cast_time += delta * cast_rate
+	cast_time += delta * cast_rate * cast_speed_multiplier()
 	if not did_release and charge_goal > 0 and cast_phase == "windup" and cast_time >= hold_at:
 		cast_time = hold_at
 		cast_phase = "hold"
@@ -1532,6 +1537,7 @@ func cleanse_burn() -> bool:
 	return Burn.cleanse(self)
 
 func update_status(delta: float) -> void:
+	parry_cast_haste.step(delta)
 	self_barrier.step(delta)
 	tactics.tick(self,delta)
 	flash_aura_time=maxf(0,flash_aura_time-delta)
@@ -1644,6 +1650,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	return landed
 
 func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3,cause:String="physical") -> void:
+	parry_cast_haste.clear()
 	self_barrier.clear()
 	if practice_god_mode:
 		health=MAX_HEALTH

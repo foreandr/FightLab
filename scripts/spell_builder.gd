@@ -1698,7 +1698,7 @@ func process_demo_preview(delta:float) -> void:
    repeat_wait=maxf(0.0,repeat_wait-delta)
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
   return
- elapsed+=delta
+ elapsed+=delta*editor.actor.cast_speed_multiplier()
  if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
  var progress:=clampf(elapsed/maxf(0.001,playback_duration()),0.0,1.0)
  CastPose.pose(editor.actor,playback_animation(),minf(0.9999,progress),cast_pose_aim(progress))

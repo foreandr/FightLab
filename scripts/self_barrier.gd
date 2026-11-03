@@ -45,6 +45,7 @@ func resolve_hit(damage:float)->Dictionary:
  result.absorbed=absorb(incoming)
  if incoming>0.0 and float(result.absorbed)+0.0001>=incoming:
   result.parry=parry_ready
+  if parry_ready:actor.parry_cast_haste.grant()
   if parry_ready and not parry_refunded:
    var mana_before:float=actor.mana
    actor.mana=minf(actor.MAX_MANA,actor.mana+parry_mana_refund)
