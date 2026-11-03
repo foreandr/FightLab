@@ -1,13 +1,14 @@
 extends SceneTree
 func _initialize():
  set_meta("ai_learning_enabled",false)
+ set_meta("cpu_training_view",true)
  call_deferred("run")
 func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn")
  await process_frame;await process_frame
  var world=current_scene
  await create_timer(0.25).timeout
- world.toggle_pause();world.countdown=0;world.round_active=true
+ world.set_physics_process(false);world.countdown=0;world.round_active=true
  var actor=world.fighters[0]
  var options=preload("res://scripts/cpu_duel_loadout.gd").build()
  var left:Dictionary=options[1];var right:Dictionary=options[4];var knee:Dictionary=options[10]
@@ -30,8 +31,10 @@ func run():
  assert(is_equal_approx(actor.cast_speed_multiplier(),1.0),"Same-side arm to knee received alternating bonus")
  actor.tick_cast(0.6)
  assert(world.combat().release(actor,actor.current_spell,actor.bone_point("calf_r"),knee.profile))
- assert(actor.chain_touch_cast(left.spec,left.profile),"Knee could not link back into a punch")
- assert(is_equal_approx(actor.cast_speed_multiplier(),1.12))
+ assert(not actor.chain_touch_cast(left.spec,left.profile),"Knee skipped its recovery at punch cadence")
+ actor.tick_cast(0.31)
+ assert(actor.chain_touch_cast(left.spec,left.profile),"Recovered knee could not link back into a punch")
+ assert(is_equal_approx(actor.cast_speed_multiplier(),1.0),"Leg-to-arm link retained boxing alternation speed")
  # A repeated left-side strike remains legal, at ordinary speed and full cost.
  actor.tick_cast(0.6)
  assert(world.combat().release(actor,actor.current_spell,actor.bone_point("hand_l"),left.profile))
@@ -46,5 +49,5 @@ func run():
  assert(world.combat().release(actor,actor.current_spell,actor.bone_point("hand_l"),fire.profile))
  actor.cast_time=actor.mode_length*0.7
  assert(not actor.chain_touch_cast(left.spec,left.profile),"Touch chain canceled a released projectile")
- print("TOUCH COMBO PASS: left/right/punch/knee links, release/55-percent gate, previous hit-window cleanup, blended pose, each new hit pays once, projectile commitment preserved")
+ print("TOUCH COMBO PASS: fast alternate punches, base-speed leg links with 90% recovery, previous hit-window cleanup, blended pose, each new hit pays once, projectile commitment preserved")
  quit()

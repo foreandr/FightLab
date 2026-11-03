@@ -454,3 +454,20 @@ and decision checks. Existing learned action IDs remain stable.
 authored_jump_motion_test.gd checks four real launches and landings, root height,
 minimum duration under haste, native recovery, jump pricing, exactly one launch
 and payment, and rejection of missing-cost/too-short profiles.
+
+Boxing versus leg combo cadence
+-------------------------------
+TouchComboRules grants the existing 12% alternation bonus only between arm
+contacts. Punch -> kick, kick -> knee, alternating legs and leg -> punch use
+base cast speed, so a leg strike breaks the boxing-speed chain. A subsequent
+opposite-arm pair may establish that rhythm again. Costs and authored damage
+are unchanged; this is shared combo timing, not a hidden damage multiplier.
+Leg contacts and required-jump moves must reach at least 90% of the current
+animation before a follow-up can link (ordinary punches stay at 55%, hooks 68%).
+The CPU's legal leg-link window continues to 98.5%, and it doesn't schedule a
+boxing hesitation after that long recovery. Real animation/hitbox evaluation
+continues throughout; the next animation blends through the existing entry path.
+leg_combo_cadence_test.gd checks the actual punch-punch-kick sequence, denial of
+early kick/knee exits, opposite-leg base speed, normal punch reset after legs,
+and a CPU successfully linking within the late leg window. Existing hook,
+deception, fire one-two and release/resource tests cover preserved behavior.

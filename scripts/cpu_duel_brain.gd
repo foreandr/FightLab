@@ -208,7 +208,8 @@ func defend(threat:Dictionary)->bool:
 func try_combo(allow_hesitation:bool=true)->bool:
  if str(actor.current_spell.get("effect",""))!="touch" or not actor.did_release:return false
  if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*Combo.link_progress(actor.practice_spell_animation):return false
- if actor.cast_time>actor.mode_length*0.90:return false
+ if actor.cast_time>actor.mode_length*Combo.link_end(actor.practice_spell_animation):return false
+ allow_hesitation=allow_hesitation and not Combo.needs_recovery(actor.practice_spell_animation)
  var choices:Array[Dictionary]=[]
  for item in loadout:
   if item.kind!="melee" or not can_use(item,16.0) or actor.flat_distance()>float(item.range):continue
