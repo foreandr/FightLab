@@ -5,6 +5,10 @@ static var textures:Dictionary={}
 static func get_icon(action:String) -> Texture2D:
 	if textures.has(action):return textures[action]
 	var shapes:String={
+		"shield":"<path d='M10 2 3 5v5c0 4 4 7 7 8 3-1 7-4 7-8V5Z M10 5v10'/>",
+		"absorb":"<circle cx='10' cy='10' r='3'/><path d='M1 10h5m-2-2 2 2-2 2M19 10h-5m2-2-2 2 2 2M10 1v5m-2-2 2 2 2-2M10 19v-5m-2 2 2-2 2 2'/>",
+		"reflect":"<path d='M11 2v16M2 5l6 5-6 5M8 10h10m-4-4 4 4-4 4'/>",
+		"effect":"<path d='m10 1 2 6 6 3-6 2-2 7-2-7-6-2 6-3Z'/>",
 		"head":"<circle cx='10' cy='7' r='5'/><path d='M5 18v-3l3-2M15 18v-3l-3-2'/>",
 		"arm":"<path d='M3 14 8 9l1-6h4l1 6 4 3-2 5-7 1-6-4Z M9 3h4M8 9l5 3'/>",
 		"leg":"<path d='M8 2h6l-1 7-4 6 7 1v3H4v-4l4-6Z'/>",

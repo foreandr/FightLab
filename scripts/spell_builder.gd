@@ -145,6 +145,8 @@ var demo_choice_selected:=false
 var creation_step:="demo"
 var demo_screen:VBoxContainer
 var barrier_screen:VBoxContainer
+var barrier_choices:Dictionary={}
+var barrier_kind:=""
 var delivery_screen:VBoxContainer
 var delivery_choices:Dictionary={}
 var delivery_back_button:Button
@@ -700,6 +702,17 @@ func setup(owner_editor:Node) -> void:
  barrier_screen.add_theme_constant_override("separation",8)
  add_child(barrier_screen)
  editor.menu_label(barrier_screen,"Barrier",24)
+ for kind in ["Shield","Absorb","Reflect","Effect"]:
+  var option:Button=editor.button(barrier_screen,kind,func():choose_barrier_kind(kind))
+  option.name="Barrier"+kind
+  option.icon=preload("res://scripts/animation_row_icons.gd").get_icon(kind.to_lower())
+  option.add_theme_constant_override("icon_max_width",32)
+  option.custom_minimum_size.y=58
+  option.focus_mode=Control.FOCUS_ALL
+  option.toggle_mode=true
+  option.disabled=kind!="Shield"
+  option.tooltip_text="Not available yet" if option.disabled else "Choose a shield barrier"
+  barrier_choices[kind]=option
  add_start_navigation(editor.button(barrier_screen,"← Back",func():show_creation_step("delivery")))
  barrier_screen.hide()
  projectile_screen=VBoxContainer.new()
@@ -806,6 +819,8 @@ func return_to_start()->void:
  refresh_demo_timing()
  preview_delivery_type=""
  delivery_choice_selected=false
+ barrier_kind=""
+ refresh_barrier_choices()
  fire_shapes_open=false;fire_sound_open=false;spell_save_open=false
  active_spell_provenance.clear()
  spell_save_screen.name_input.clear();spell_save_screen.status.text=""
@@ -852,6 +867,7 @@ func show_creation_step(step:String) -> void:
   anchor_right=0.32
   offset_left=0
   offset_right=0
+ refresh_barrier_choices()
  delivery_demo_label.text="Demo: %s · preview only"%str(casting_animation.get("title","Left cross"))
  refresh_delivery_choices()
  if default_type and demo_choice_selected:open_projectile_workspace(false)
@@ -898,6 +914,18 @@ func confirm_delivery_type() -> void:
  save_draft()
  save_demo_preferences()
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
+
+func choose_barrier_kind(value:String)->void:
+ if creation_step!="barrier" or value!="Shield" or cast_committed():return
+ barrier_kind=value
+ refresh_barrier_choices()
+ GameDiagnostics.log_event("barrier_type_selected",{"kind":value})
+
+func refresh_barrier_choices()->void:
+ for kind in barrier_choices:
+  var option:Button=barrier_choices[kind]
+  option.set_pressed_no_signal(kind==barrier_kind)
+  option.add_theme_color_override("font_color",Color("98703d") if kind==barrier_kind else Color("382c1c"))
 
 func open_projectile_workspace(advance:=true) -> void:
  active_spell_provenance={}
