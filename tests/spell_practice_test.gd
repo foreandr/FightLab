@@ -51,6 +51,8 @@ func run() -> void:
 	editor.actor.position=before
 	b.prepare_preview_targets()
 	editor.actor.rotation.y=atan2(dummy.position.x-before.x,dummy.position.z-before.z)
+	# After movement, explicitly lock the dummy rather than firing at the current mouse ray.
+	b.toggle_third_person_focus(dummy)
 	var health:float=dummy.health
 	var damage:float=dummy.damage_taken
 	b.projectile_preview_button.pressed.emit()
@@ -98,7 +100,7 @@ func run() -> void:
 	b.prepare_preview_targets()
 	b.open_projectile_workspace()
 	editor.frame_spell_preview(editor.actor)
-	print("SPELL PRACTICE PASSED: movement, projectile hit, mortal death persists, manual reset, God mode absorbs repeated lethal hits, full damage totals/readout and saved toggle")
+	print("SPELL PRACTICE PASSED: movement, projectile hit, mortal death persists, manual reset, internal God Mode test setup absorbs repeated lethal hits, full damage totals, no persisted cheat preference")
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/spell_practice_workspace.png")
 	if "--keep-open" not in OS.get_cmdline_user_args():quit()
