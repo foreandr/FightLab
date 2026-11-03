@@ -88,7 +88,8 @@ func _ready() -> void:
 	placeholder.add_theme_font_size_override("font_size",22)
 	placeholder.add_theme_color_override("font_color",Color("655740"))
 	cover_content.add_child(placeholder)
-	show_page("Home")
+	show_page(str(get_tree().get_meta("home_page","Home")))
+	if get_tree().has_meta("home_page"):get_tree().remove_meta("home_page")
 	if get_tree().get_meta("return_to_dev",false):
 		get_tree().remove_meta("return_to_dev")
 		show_page("Dev")
@@ -134,13 +135,19 @@ func show_page(next: String) -> void:
 			nav("Story",_open_story)
 			nav("Free Fight",func():open_scene("res://scenes/fight.tscn"))
 			navigation_buttons["Free Fight"].disabled=true
-			nav("Create",open_create_workspace)
+			nav("Create",func():show_page("Create"))
 			var menu_spacer:=Control.new()
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 			content.add_child(menu_spacer)
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
+		"Create":
+			label("CREATE",24,Color("655740"))
+			nav("Character",open_create_character)
+			nav("Animation",func():open_create_workspace("Animation"))
+			nav("Spell",func():open_create_workspace("Spell"))
+			nav("Back",func():show_page("Home"))
 		"Dev":
 			label("DEV",24,Color("655740"))
 			nav("Checkpoints",func():open_scene("res://scenes/story_dev_menu.tscn"))
@@ -164,7 +171,14 @@ func show_page(next: String) -> void:
 func open_scene(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 
-func open_create_workspace() -> void:
+func open_create_character()->void:
+	get_tree().set_meta("create_character_entry",true)
+	get_tree().set_meta("story_create_new",true)
+	if get_tree().has_meta("story_edit_existing"):get_tree().remove_meta("story_edit_existing")
+	open_scene("res://scenes/story_character_creator.tscn")
+
+func open_create_workspace(section:String="Animation") -> void:
+	get_tree().set_meta("create_workspace_entry",section)
 	var path:="res://scenes/combat_sandbox.tscn"
 	scene_loading_pacer.begin("home_to_create")
 	_show_scene_loading("OPENING CREATE")

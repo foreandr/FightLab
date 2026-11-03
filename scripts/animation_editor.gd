@@ -382,6 +382,20 @@ func _ready() -> void:
 	loading_status.text="Ready"
 	await RenderingServer.frame_post_draw
 	loading_layer.queue_free()
+	if get_tree().has_meta("create_workspace_entry"):
+		var entry_section:=str(get_tree().get_meta("create_workspace_entry"))
+		get_tree().remove_meta("create_workspace_entry")
+		_open_workspace_section("Spells" if entry_section=="Spell" else "Animations")
+
+func return_to_main_menu()->void:
+	if is_instance_valid(spell_builder):
+		spell_builder.save_draft()
+		spell_builder.stop_preview_controls(true)
+	save_workspace_layout()
+	Engine.time_scale=1.0
+	get_tree().paused=false
+	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	get_tree().change_scene_to_file("res://scenes/home.tscn")
 
 func open_case(index:int) -> void:
 	super.open_case(index)
@@ -453,6 +467,13 @@ func build_ui() -> void:
 	ui.add_child(browse_backdrop)
 	var header:=panel(ui,Vector4(0,0,0,54),true)
 	panel_zoom_roots["Header"]=header
+	var menu_navigation:=HBoxContainer.new()
+	menu_navigation.position=Vector2(UI_EDGE_GAP,UI_EDGE_GAP)
+	header.add_child(menu_navigation)
+	var main_menu:=button(menu_navigation,"Main Menu",return_to_main_menu)
+	main_menu.name="MainMenu"
+	main_menu.custom_minimum_size=Vector2(120,42)
+	main_menu.focus_mode=Control.FOCUS_ALL
 	title_label.reparent(header)
 	title_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	title_label.offset_left=20

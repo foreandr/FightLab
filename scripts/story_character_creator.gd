@@ -109,8 +109,11 @@ var last_pointer := Vector2.ZERO
 var saved := false
 var applying := false
 var editing_existing := false
+var create_menu_entry:=false
 
 func _ready() -> void:
+	create_menu_entry=bool(get_tree().get_meta("create_character_entry",false))
+	if get_tree().has_meta("create_character_entry"):get_tree().remove_meta("create_character_entry")
 	var setup_started_usec := Time.get_ticks_usec()
 	name_profanity_filter.compile("(?i)(^|[^a-z0-9])(motherfucker|fuck\\w*|shit\\w*|bitch\\w*|asshole|cunt|dick\\w*|piss\\w*|damn\\w*|bastard\\w*|whore|slut|nigger|nigga|faggot|retard)(?=$|[^a-z0-9])")
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -245,17 +248,23 @@ func _build_ui() -> void:
 	footer.add_theme_constant_override("separation", 7)
 	sidebar_stack.add_child(footer)
 	var title := Label.new()
-	title.text = "YOUR STORY"
+	title.text = "CHARACTER" if create_menu_entry else "YOUR STORY"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color("8b642d"))
-	page_content.add_child(title)
+	var title_row:=HBoxContainer.new()
+	page_content.add_child(title_row)
+	title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	title_row.add_child(title)
+	var main_menu:=_button("Main Menu",false)
+	main_menu.name="MainMenu";main_menu.pressed.connect(return_to_main_menu)
+	title_row.add_child(main_menu)
 	var heading := Label.new()
 	heading.text = "Create your fighter"
 	heading.add_theme_font_size_override("font_size", 29)
 	heading.add_theme_color_override("font_color", Color("382c1c"))
 	page_content.add_child(heading)
 	var description := Label.new()
-	description.text = "Choose how you look. You can change this any time before we begin the story."
+	description.text = "Choose how you look." if create_menu_entry else "Choose how you look. You can change this any time before we begin the story."
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.add_theme_font_size_override("font_size", 14)
 	description.add_theme_color_override("font_color", Color("655740"))
@@ -937,6 +946,9 @@ func _zoom_camera(amount: float) -> void:
 		preview_camera.position.y = lerpf(1.0, 1.64, face_zoom)
 		preview_camera.look_at(Vector3(0, focus_y, 0), Vector3.UP)
 
+func return_to_main_menu()->void:
+	get_tree().change_scene_to_file("res://scenes/home.tscn")
+
 func _confirm_character() -> void:
 	profile["name"] = name_input.text.strip_edges()
 	if str(profile["name"]).is_empty():
@@ -994,7 +1006,10 @@ func _confirm_character() -> void:
 	if result == OK:
 		saved = true
 		GameDiagnostics.log_event("character_saved", {"name":profile.get("name", ""), "character_id":profile.get("character_id", ""), "story_stage":profile.get("story_stage", 1), "editing_existing":editing_existing})
-		if not editing_existing:
+		if create_menu_entry:
+			get_tree().set_meta("home_page","Create")
+			return_to_main_menu()
+		elif not editing_existing:
 			# New story characters go straight to their animation and spell loadout.
 			# From there the player can return to the book and begin the tutorial.
 			get_tree().change_scene_to_file("res://scenes/story_loadout.tscn")
