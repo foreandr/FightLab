@@ -42,7 +42,7 @@ static func barrier_base_mana(kind:String)->float:
 static func left_jab_strike()->Array:
 	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
 
-static func self_barrier_base(strength:float=25.0,duration:float=5.0)->Dictionary:
+static func self_barrier_base(strength:float=10.0,duration:float=5.0)->Dictionary:
 	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":barrier_base_mana("Shield"),"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration)}
 
 static func neutral_projectile() -> Dictionary:
@@ -159,7 +159,8 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 	spec["physical_damage"]=physical_stats.damage
 	spec["potency"]=float(base.get("potency",1.0))*amp
 	if str(base.get("effect",""))=="self_barrier":
-		spec["shield_strength"]=float(base.get("shield_strength",25.0))*amp
+		spec["shield_strength_multiplier"]=amp/NEUTRAL_DAMAGE_AMP
+		spec["shield_strength"]=float(base.get("shield_strength",10.0))*float(spec.shield_strength_multiplier)
 		spec["spell_amplifier"]=amp
 		spec["damage"]=0.0;spec["physical_damage"]=0.0
 	if spec.has("projectile_radius"):

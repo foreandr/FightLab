@@ -20,7 +20,7 @@ func run():
  b.demo_duration=1.0;b.casting_animation.duration=1.0;b.release_fraction=0.3
  b.refresh_demo_timing()
  var spec:Dictionary=b.demo_preview_spec()
- assert(spec.effect=="self_barrier" and spec.shield_duration==2.0 and spec.shield_strength>40.0)
+ assert(spec.effect=="self_barrier" and spec.shield_duration==2.0 and is_equal_approx(spec.shield_strength,40.0))
  assert(b.demo_mana_cost_label.text=="Mana cost: %.1f"%Rules.mana_cost(spec))
  var mana:float=actor.mana;var serial:int=e.field.shot_serial
  b.play_projectile_once();b.process_demo_preview(0.29)
@@ -53,8 +53,8 @@ func run():
  actor.cleanse_burn();actor.invulnerability=0.0
  e.field.combat().dispatch(actor,{"effect":"self_barrier","shield_strength":20.0,"shield_duration":5.0},actor.global_position)
  assert(e.field.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
- assert(actor.burn_time==0.0,"Fully shielded fire applied burn")
+ assert(actor.burn_time==0.0,"Perfect parry applied burn")
  b.reset_practice_scene()
  assert(not actor.self_barrier.active())
- print("TIMED SELF BARRIER PASS: no passive coating; animation/release activation, shared mana payment, no projectile, independent expiry, shield capacity absorbs melee/fire, full shield stops burn, reset clears")
+ print("TIMED SELF BARRIER PASS: no passive coating; animation/release activation, shared mana payment, no projectile, independent expiry, shield capacity absorbs melee/fire, perfect parry stops burn, reset clears")
  quit()
