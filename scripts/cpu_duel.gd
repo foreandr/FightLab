@@ -28,6 +28,10 @@ var exploration:=0.06
 var policy_overrides:Array=[]
 var policy_training_flags:Array=[]
 var self_play:=false
+var spell_names_button:Button
+var spell_names_visible:=false
+var last_spell_labels:Dictionary={}
+var last_spell_until:Dictionary={}
 var self_play_button:Button
 var intermission_left:=2.0
 var training_view:=false
@@ -71,6 +75,8 @@ func rematch(seed_:int=0)->void:
  spell_environment.reset_environment()
  combat().cast_attempts.clear();combat().cast_recoveries.clear();combat().touch_casts.clear()
  brains.clear();match_winner=-2;finished_at=0;countdown=0.1 if training_view else 2.0;intermission_left=2.0
+ for spell_label in last_spell_labels.values():spell_label.text="";spell_label.visible=false
+ last_spell_until.clear()
  selected=null;camera_focus_target=null
  var names:Array=["Aster","Rook","Vale","Cinder","Flint","Ash","Wren","Slate"]
  var offset:=random.randi_range(0,names.size()-1)
@@ -135,7 +141,7 @@ func finish_round(winner:int)->void:
  if file:file.store_string(JSON.stringify(record,"  "))
  GameDiagnostics.log_event("cpu_demo_finished",{"seed":match_seed,"winner":winner,"seconds":elapsed})
 func button(parent:Container,text_:String,callback:Callable)->Button:
- var node:=Button.new();node.text=text_;node.custom_minimum_size=Vector2(112,38);node.focus_mode=Control.FOCUS_ALL;node.pressed.connect(callback);parent.add_child(node);return node
+ var node:=Button.new();node.text=text_;node.custom_minimum_size=Vector2(90,32);node.add_theme_font_size_override("font_size",14);node.focus_mode=Control.FOCUS_ALL;node.pressed.connect(callback);parent.add_child(node);return node
 func label(parent:Container,text_:String,size_:int=16)->Label:
  var node:=Label.new();node.text=text_;node.add_theme_font_size_override("font_size",size_);parent.add_child(node);return node
 func build_ui()->void:
@@ -145,16 +151,38 @@ func build_ui()->void:
  var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b5a27f");paper.set_border_width_all(1)
  for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:paper.set_content_margin(side,6)
  hud.theme.set_stylebox("panel","PanelContainer",paper)
- var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-54;hud.add_child(bottom)
- var buttons:=HBoxContainer.new();buttons.alignment=BoxContainer.ALIGNMENT_CENTER;bottom.add_child(buttons)
+ var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-46;bottom.grow_vertical=Control.GROW_DIRECTION_BEGIN;hud.add_child(bottom)
+ var buttons:=HFlowContainer.new();buttons.alignment=FlowContainer.ALIGNMENT_CENTER;buttons.add_theme_constant_override("h_separation",6);buttons.add_theme_constant_override("v_separation",6);bottom.add_child(buttons)
  button(buttons,"Main menu",go_home)
  pause_button=button(buttons,"Pause",toggle_pause);pause_button.tooltip_text="Space"
  button(buttons,"Rematch",func():rematch());button(buttons,"Slow mo",toggle_slow)
  button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible))
  button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible))
+ spell_names_button=button(buttons,"Spells [4]",toggle_spell_names);spell_names_button.toggle_mode=true
+ spell_names_button.tooltip_text="Show the last spell actually cast above each fighter"
  button(buttons,"Match report",show_report)
  self_play_button=button(buttons,"Self-play [T]",toggle_self_play);self_play_button.toggle_mode=true
  self_play_button.tooltip_text="Keep running matches and saving AI learning"
+func toggle_spell_names()->void:
+ spell_names_visible=not spell_names_visible
+ if is_instance_valid(spell_names_button):spell_names_button.set_pressed_no_signal(spell_names_visible)
+ update_spell_names()
+func update_spell_names()->void:
+ for id in last_spell_labels:
+  last_spell_labels[id].visible=spell_names_visible and elapsed<float(last_spell_until.get(id,0.0))
+func combat_cast_feedback(actor:CharacterBody3D,spec:Dictionary)->void:
+ super.combat_cast_feedback(actor,spec)
+ if training_view:return
+ var id:=actor.get_instance_id()
+ if not last_spell_labels.has(id):
+  var tag=actor.get_node("OverheadHealthTag")
+  var spell_label:Label3D=tag.make_label(19,0.009)
+  spell_label.name="LastSpellCast";spell_label.position.y=0.66
+  spell_label.modulate=Color("fff0bb")
+  tag.add_child(spell_label);last_spell_labels[id]=spell_label
+ last_spell_labels[id].text=str(spec.get("name",spec.get("id","Spell")))
+ last_spell_until[id]=elapsed+2.5
+ update_spell_names()
 func toggle_pause()->void:
  paused=not paused;set_physics_process(not paused)
  if is_instance_valid(pause_button):pause_button.text="Resume" if paused else "Pause"
@@ -189,6 +217,7 @@ func update_camera(delta:float)->void:
 func _process(delta:float)->void:
  if not ready_for_match:return
  update_camera(delta)
+ update_spell_names()
  hovered=Focus.pick(camera,fighters,get_viewport().get_mouse_position()) if get_viewport().gui_get_hovered_control()==null else null
  for actor in fighters:Focus.update_ring(Focus.ensure_ring(actor),actor==selected,actor==hovered,actor.health>0)
  Focus.update_marker(focus_marker,camera_focus_target)
@@ -201,6 +230,7 @@ func _unhandled_input(event:InputEvent)->void:
    KEY_ESCAPE:go_home()
    KEY_2:set_combat_hitboxes(not projectile_hitboxes_visible)
    KEY_3:set_combat_numbers(not combat_numbers_visible)
+   KEY_4:toggle_spell_names()
    KEY_F:camera_focus_target=null if camera_focus_target==selected else selected
  if event is InputEventMouseButton:
   if event.button_index==MOUSE_BUTTON_LEFT and event.pressed:selected=hovered

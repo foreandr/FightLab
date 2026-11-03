@@ -120,3 +120,8 @@ without erasing prior learning. This expands the repertoire; it does not establi
 that the expanded policy is already stronger than the previous policy.
 Validation: tests/cpu_repertoire_test.gd checks both actors can start, visibly
 animate, release and pay for every choice; cpu_duel_test.gd runs three full fights.
+
+Spectator spell labels: Spells [4] on the bottom toolbar toggles each fighter's
+last successfully released spell name for 2.5 simulation seconds. Unreleased or
+failed casts are not labelled; rematch clears old names. The compact toolbar
+wraps into extra rows when needed rather than running outside the window.
