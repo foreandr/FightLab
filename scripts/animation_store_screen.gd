@@ -27,10 +27,8 @@ var preview_exit_pose:Array[Transform3D]=[]
 var preview_exit_elapsed:=0.0
 var store_screen_ready:=false
 var zoom:=1.0
-var movement_keys:Dictionary={}
-var movement_axes:=Vector2.ZERO
-var locomotion_time:=0.0
-var sprinting:=false
+var camera_keys:Dictionary={}
+var preview_time:=0.0
 var orbiting:=false
 var panel_zoom_dragging:=false
 var zoom_drag_amount:=0.0
@@ -225,26 +223,17 @@ func play_animation_row(entry:Dictionary)->void:
 	preview_duration=actor.player.get_animation(str(entry.clip)).length if bool(entry.get("store_raw",false)) else preload("res://scripts/animation_source_pose.gd").duration(actor,str(entry.step),str(entry.clip))
 	row_preview_unit=actor
 func _notification(what:int)->void:
-	if what==NOTIFICATION_APPLICATION_FOCUS_OUT:movement_keys.clear()
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT:camera_keys.clear()
 
 func _physics_process(delta:float)->void:
-	if not is_instance_valid(actor):return
 	var focus:=get_viewport().gui_get_focus_owner()
-	var typing:=focus is LineEdit or focus is TextEdit or get_viewport().gui_get_focus_owner() is SpinBox
-	movement_axes=Vector2.ZERO if typing else preload("res://scripts/creation_locomotion.gd").axes(movement_keys)
-	var movement=preload("res://scripts/character_movement.gd")
-	sprinting=actor.use_sprint(delta,bool(movement_keys.get(KEY_SHIFT,false)),not movement_axes.is_zero_approx())
-	var direction:Vector3=movement.camera_direction(movement_axes,field.camera)
-	var speed:float=movement.gait_speed(actor,sprinting,4.0,7.0)*movement.directional_speed(movement_axes,sprinting)*actor.movement_multiplier()
-	if not movement_axes.is_zero_approx():movement.turn(actor,movement.facing(actor,field.camera),delta)
-	var before:Vector3=actor.global_position
-	field.move_character(actor,direction,speed,delta)
-	# Retain the user's inspection angle/zoom while following the moving preview.
-	camera_control.focus+=actor.global_position-before
-	locomotion_time+=delta
+	if focus is LineEdit or focus is TextEdit or focus is SpinBox:return
+	var direction:=Vector3(float(camera_keys.get(KEY_D,false))-float(camera_keys.get(KEY_A,false)),0.0,float(camera_keys.get(KEY_W,false))-float(camera_keys.get(KEY_S,false)))
+	camera_control.move(direction,delta,bool(camera_keys.get(KEY_SHIFT,false)))
 
 func _process(delta:float)->void:
 	if not is_instance_valid(actor):return
+	preview_time+=delta
 	if not preview_entry.is_empty():
 		preview_elapsed+=delta
 		preload("res://scripts/spell_cast_motion.gd").pose(actor,preview_entry,minf(0.9999,preview_elapsed/maxf(0.01,preview_duration)))
@@ -253,8 +242,7 @@ func _process(delta:float)->void:
 			preview_exit_pose=preload("res://scripts/spell_cast_motion.gd").capture(actor);preview_exit_elapsed=0.0
 			preview_entry.clear();row_preview_unit=null
 	else:
-		if movement_axes.is_zero_approx():preload("res://scripts/editor_rig_pose.gd").idle(actor,locomotion_time)
-		else:preload("res://scripts/creation_locomotion.gd").pose(actor,movement_axes,locomotion_time,sprinting)
+		preload("res://scripts/editor_rig_pose.gd").idle(actor,preview_time)
 		if not preview_exit_pose.is_empty():
 			preview_exit_elapsed+=delta
 			preload("res://scripts/spell_cast_motion.gd").blend_from(actor,preview_exit_pose,clampf(preview_exit_elapsed/0.12,0,1))
@@ -262,7 +250,7 @@ func _process(delta:float)->void:
 	camera_control.apply(field.camera)
 func _input(event:InputEvent)->void:
 	if event is InputEventKey and event.keycode in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_SHIFT]:
-		movement_keys[event.keycode]=event.pressed
+		camera_keys[event.keycode]=event.pressed
 	if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:return_to_main_menu();return
 	if event is InputEventMouseButton:
 		var in_panel:=store_panel.get_global_rect().has_point(event.position)

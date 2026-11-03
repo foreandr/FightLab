@@ -31,10 +31,10 @@ Create's removed icon row remains absent. Settings and Controls are under
 Home > Options; F9 opens universal settings in any mode.
 
 Store movement and type browsing (2026-11-02)
-- WASD moves the preview actor; Shift sprints. Shared CharacterMovement,
-  CreationLocomotion, actor sprint/resource rules and CombatWorld terrain movement
-  supply the behavior. Search/text entry suppresses movement; focus loss clears keys.
-- The inspection camera follows translation without losing its orbit or zoom.
+- WASD pans the Store inspection camera using SandboxCamera.move; Shift pans
+  faster. Middle drag orbits and the wheel zooms. The preview bot stays in place
+  and camera input never consumes its stamina. Search/text entry suppresses
+  camera movement; application focus loss clears held keys.
 - Store filters use Arm, Leg, Head and Movement. Compact metadata carries
   store_animation_type, so filtering still loads only 20 detail records per page.
 - AnimationStoreTypes preserves explicit authored types. Other entries use label,

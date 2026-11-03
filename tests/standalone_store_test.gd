@@ -24,25 +24,27 @@ func run():
  if not check(not ResourceLoader.has_cached("res://scripts/animation_editor.gd") and not ResourceLoader.has_cached("res://scripts/spell_builder.gd"),"Store loaded editor/custom authoring code"):return
  if not check(store.field.fighters.size()==1 and store.store_panel.get_script()==null and is_equal_approx(store.store_panel.anchor_right,0.57) and store.store_panel.offset_top==54,"Preview world or fixed panel is wrong"):return
  if not check(store.animation_store_list.get_child_count()>0 and store.animation_store_list.get_child_count()<=20,"Page is blank or too large"):return
- # Exercise real keyboard events, physics movement, shared sprint costs and text focus.
+ # WASD pans the shared inspection camera, never the preview character.
  var start:Vector3=store.actor.global_position
  var camera_start:Vector3=store.camera_control.focus
+ var stamina:float=store.actor.stamina
  var press:=InputEventKey.new();press.keycode=KEY_W;press.pressed=true;store._input(press)
  for i in 18:await physics_frame
  press.pressed=false;store._input(press);await physics_frame
- if not check(store.actor.global_position.distance_to(start)>0.4,"WASD did not move Store actor"):return
- if not check((store.camera_control.focus-camera_start).distance_to(store.actor.global_position-start)<0.02,"Inspection camera lost moving preview actor"):return
- var stamina:float=store.actor.stamina
+ if not check(store.camera_control.focus.distance_to(camera_start)>0.4,"WASD did not move Store camera"):return
+ if not check(store.actor.global_position.distance_to(start)<0.02,"Camera input moved preview bot"):return
  for key in [KEY_D,KEY_SHIFT]:
   var key_event:=InputEventKey.new();key_event.keycode=key;key_event.pressed=true;store._input(key_event)
  for i in 18:await physics_frame
- store.movement_keys.clear()
- if not check(store.actor.stamina<stamina,"Store sprint bypassed shared stamina cost"):return
- store.animation_store_search.grab_focus();start=store.actor.global_position
- store.movement_keys[KEY_W]=true
+ store.camera_keys.clear()
+ if not check(is_equal_approx(store.actor.stamina,stamina),"Camera input spent bot stamina"):return
+ store.animation_store_search.grab_focus();camera_start=store.camera_control.focus
+ store.camera_keys[KEY_W]=true
  for i in 8:await physics_frame
- store.movement_keys.clear();store.animation_store_search.release_focus()
- if not check(Vector2(store.actor.global_position.x-start.x,store.actor.global_position.z-start.z).length()<0.02,"Typing search moved the actor"):return
+ store.camera_keys.clear();store.animation_store_search.release_focus()
+ if not check(store.camera_control.focus.distance_to(camera_start)<0.02,"Typing search moved the camera"):return
+ store.camera_keys[KEY_W]=true;store._notification(Control.NOTIFICATION_APPLICATION_FOCUS_OUT)
+ if not check(store.camera_keys.is_empty(),"Focus loss left camera keys held"):return
  var saved_search:String=store.animation_store_search.text
  var saved_creator:int=store.store_creator_filter.selected
  var saved_view:int=store.store_view_filter.selected
@@ -65,7 +67,7 @@ func run():
  store.animation_store_search.text=saved_search;store.store_creator_filter.select(saved_creator);store.store_view_filter.select(saved_view);store.store_body_filter.select(saved_type)
  store.animation_store_search.set_block_signals(false)
  await store._populate_animation_store()
- print("STORE MOVEMENT/TYPES PASS: WASD, follow, sprint cost, typing guard; catalog counts ",counts)
+ print("STORE MOVEMENT/TYPES PASS: WASD camera, stationary bot, no stamina cost, typing/focus guard; catalog counts ",counts)
  var button:Button=store.animation_store_list.find_child("StorePlay",true,false)
  button.pressed.emit();await process_frame
  if not check(store.row_preview_unit==store.actor,"Store Play failed"):return
