@@ -871,6 +871,7 @@ func confirm_demo_choice() -> void:
  if demo_choice_selected and DEMO_ANIMATIONS.has(str(casting_animation.get("demo_choice",""))):show_creation_step("delivery")
 
 func show_creation_step(step:String) -> void:
+ if sandbox_testing and step=="demo":step="delivery"
  if step!="projectile" and cast_committed():return
  if step!="projectile":fire_style_editing=false;fire_style_preview_id="";spell_save_open=false
  if (previews_projectile() and step!="projectile") or (creation_step=="touch" and step!="touch"):
@@ -878,13 +879,13 @@ func show_creation_step(step:String) -> void:
   playing=false
   begin_demo_exit()
   clear_shots()
- var default_type:=step=="delivery" and creation_step!="delivery"
+ var default_type:=step=="delivery" and creation_step!="delivery" and not sandbox_testing
  if default_type:
   preview_delivery_type="Projectile"
   delivery_choice_selected=false
  creation_step=step if step in ["demo","delivery","projectile","barrier","shield","touch"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
- demo_screen.visible=creation_step=="demo"
+ demo_screen.visible=sandbox_testing or creation_step=="demo"
  delivery_screen.visible=creation_step=="delivery"
  barrier_screen.visible=creation_step in ["barrier","shield"]
  if is_instance_valid(projectile_screen):projectile_screen.visible=creation_step=="projectile"
@@ -920,7 +921,7 @@ func layout_connected_panels() -> void:
   demo_timing_panel.offset_bottom=bottom
 
 func previews_projectile() -> bool:
- return (sandbox_testing and sandbox_spell_selected) or creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
+ return creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
 
 func timing_panel_wanted()->bool:
  if sandbox_testing:return is_visible_in_tree()
@@ -937,7 +938,7 @@ func previews_spell_release()->bool:
 
 func refresh_playback_controls() -> void:
  var ready:=demo_choice_selected and not casting_animation.is_empty()
- if sandbox_testing:ready=ready and sandbox_spell_selected
+ if sandbox_testing:ready=ready and previews_spell_release()
  if creation_step=="shield":ready=ready and previews_barrier()
  if creation_step=="touch":ready=ready and previews_touch()
  if is_instance_valid(projectile_preview_button):projectile_preview_button.disabled=not ready
@@ -1126,7 +1127,7 @@ func open_fire_shape_picker() -> void:
  fire_style_editing=true
  fire_style_confirmed=false
  fire_style_preview_id=preload("res://assets/spells/fire/styles.gd").active_id(appearances.get("Fire",{}))
- var width:=maxf(300.0,size.x-24.0)
+ var width:=maxf(300.0,projectile_screen.size.x-24.0)
  fire_style_gallery.open_styles(appearances.get("Fire",{}),width)
  refresh_fire_shape()
 
@@ -1403,6 +1404,7 @@ func stop_preview_controls(force:=false) -> void:
  if preview_slow:set_preview_slow(false)
 
 func refresh_delivery_choices() -> void:
+ if sandbox_testing:sandbox_spell_selected=previews_spell_release()
  refresh_animation_type_visibility()
  if is_instance_valid(editor) and is_instance_valid(editor.actor) and demo_choice_selected and spell_delivery_type()=="Barrier" and creation_step in ["delivery","barrier","shield"]:
   if not is_instance_valid(barrier_tester):

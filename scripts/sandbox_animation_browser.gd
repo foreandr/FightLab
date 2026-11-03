@@ -29,8 +29,6 @@ var confirm:Button
 var debounce:Timer
 var thumbnails:Node
 var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
-var spell_selector:OptionButton
-var spell_records:Array[Dictionary]=[]
 func setup(editor:Control)->void:
  host=editor;size_flags_horizontal=Control.SIZE_EXPAND_FILL;size_flags_vertical=Control.SIZE_EXPAND_FILL;add_theme_constant_override("separation",6)
  thumbnails=preload("res://scripts/animation_thumbnail_renderer.gd").new();add_child(thumbnails)
@@ -74,17 +72,6 @@ func build_test_controls()->void:
  builder.stop_preview_controls(true)
  builder.demo_choice_selected=false
  builder.demo_duration=1.5;builder.casting_animation["duration"]=1.5
- spell_selector=OptionButton.new();spell_selector.name="SandboxSpell";spell_selector.focus_mode=Control.FOCUS_ALL
- spell_selector.add_item("Choose a spell…");spell_selector.set_item_disabled(0,true);spell_records.append({})
- var definition=preload("res://scripts/spell_definition.gd")
- for effect in ["None","Fire"]:
-  var record:Dictionary=definition.make(effect,"Projectile",{"size":0.5,"speed":0.5} if effect=="None" else {"size":0.33,"speed":0.34,"effect":0.33},{})
-  record["name"]="Physical projectile" if effect=="None" else "Fire projectile"
-  spell_selector.add_item(record.name);spell_records.append(record)
- for record in builder.saved_spells.entries():spell_selector.add_item(record.name);spell_records.append(record)
- spell_selector.select(0)
- add_child(spell_selector);move_child(spell_selector,search.get_index()+1)
- spell_selector.item_selected.connect(select_spell)
  # Reuse the exact authoring controls and their existing signals/calculations.
  var timing:=VBoxContainer.new();timing.name="SandboxCasting"
  var sidebar=builder.spell_sections.Mana.get_parent();sidebar.add_child(timing);sidebar.move_child(timing,0)
@@ -94,12 +81,22 @@ func build_test_controls()->void:
  builder.get_meta("cast_timeline").reparent(timing)
  builder.get_meta("cast_timeline").custom_minimum_size.y=98
  builder.spell_sections.Casting.hide()
+ # Reuse the existing wizard; only its presentation moves to the RHS.
+ for screen in [builder.delivery_screen,builder.barrier_screen,builder.projectile_screen,builder.touch_authoring]:
+  screen.reparent(sidebar);sidebar.move_child(screen,timing.get_index()+1)
+ var old_scroll=builder.projectile_scroll
+ builder.projectile_scroll=null;old_scroll.queue_free()
+ builder.delivery_demo_label.hide()
+ builder.delivery_choices.Projectile.text=builder.delivery_choices.Projectile.text.trim_suffix(" · Default")
+ builder.preview_delivery_type="";builder.delivery_type="";builder.delivery_choice_selected=false
+ builder.show_creation_step("delivery")
  confirm.text="Test animation + spell"
  builder.sandbox_spell_selected=false
  builder.refresh_demo_choices();builder.refresh_demo_timing();builder.get_meta("cast_timeline").fit_time();refresh_sidebar()
 func refresh_sidebar()->void:
  var builder=host.spell_builder
- for title in ["Mana","Power balance","Results"]:builder.spell_sections[title].show()
+ builder.spell_sections.Mana.show()
+ for title in ["Power balance","Results"]:builder.spell_sections[title].visible=builder.spell_delivery_type() not in ["Barrier","Touch"]
  for title in ["Mana","Power balance","Results"]:
   builder.spell_sections[title].modulate.a=1.0 if builder.sandbox_spell_selected else 0.45
  for key in builder.allocation_sliders:builder.allocation_sliders[key].editable=builder.sandbox_spell_selected
@@ -107,16 +104,6 @@ func refresh_sidebar()->void:
  if not builder.sandbox_spell_selected:
   for label in [builder.demo_mana_cost_label,builder.demo_stamina_label,builder.demo_damage_label,builder.demo_amplifier_label,builder.demo_size_bonus_label,builder.demo_speed_bonus_label,builder.demo_burn_label]:label.text="—"
   builder.demo_ragdoll_label.text="—"
-func select_spell(index:int)->void:
- if index<=0:return
- var builder=host.spell_builder
- if builder.cast_committed():spell_selector.select(int(spell_selector.get_meta("previous",0)));return
- builder.stop_preview_controls(true)
- builder.sandbox_spell_selected=true
- builder.apply_spell_record(spell_records[index],false)
- spell_selector.set_meta("previous",index)
- builder.refresh_demo_choices();builder.refresh_demo_timing();builder.refresh_projectile_allocation()
- refresh_sidebar()
 func load_catalog()->void:
  var used:Dictionary={};var clips:Dictionary={}
  var local:Array=preload("res://scripts/animation_recipe_library.gd").load_custom_motion("")
@@ -223,6 +210,11 @@ func select_animation(record:Dictionary)->bool:
 func confirm_selection()->void:
  if host.spell_builder.demo_choice_selected and not host.spell_builder.casting_animation.is_empty():host.spell_builder.play_projectile_once()
 func _process(_delta:float)->void:
+ if is_instance_valid(host):
+  var builder=host.spell_builder
+  var ready:bool=builder.previews_spell_release()
+  if ready!=builder.sandbox_spell_selected:
+   builder.sandbox_spell_selected=ready;refresh_sidebar()
  if is_instance_valid(host) and not selected_id.is_empty() and not host.spell_builder.demo_choice_selected:
   selected_id="";selection.text="Click an animation to preview it";show_page()
 func _exit_tree()->void:

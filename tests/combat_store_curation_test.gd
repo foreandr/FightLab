@@ -11,6 +11,7 @@ func run():
  assert(store.store_index_records.size()>100 and store.store_index_records.size()<1000)
  var new_clips:=0
  for entry in store.store_index_records:
+  assert(not str(entry.get("source_name","")).to_lower().contains("mocapdata"),"Rejected provider remains")
   assert(policy.accepts(entry),"Irrelevant entry remains: "+str(entry.title))
   if entry.source_name=="Motifect Martial Arts":new_clips+=1
  assert(new_clips==38,"New combat clips missing from the shared Store")

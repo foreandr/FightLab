@@ -22,7 +22,7 @@ func run():
  assert(not b.playing and not b.demo_exit_pose.is_empty(),"No smooth exit blend")
  b.process_demo_preview(0.25)
  assert(b.demo_exit_pose.is_empty(),"Exit never finished")
- browser.spell_selector.select(2);browser.select_spell(2)
+ b.choose_delivery_type("Projectile");b.confirm_delivery_type();b.preview_projectile_effect("Fire")
  assert(b.previews_projectile() and b.preview_effect=="Fire" and b.demo_timing_panel.visible)
  assert(b.get_meta("cast_timeline").is_ancestor_of(b.get_meta("cast_timeline").duration_handle))
  b.get_meta("cast_length_input").value=2.4

@@ -2,6 +2,8 @@ extends SceneTree
 func _initialize():
  var policy=preload("res://scripts/combat_animation_filter.gd").new()
  assert(policy.terms.size()>=2000)
+ assert(not policy.accepts({"title":"Accident 14 Dodge Turn Down Yokoyama","source_name":"Eyes JAPAN / mocapdata.com","combat_keyword_matches":["dodge"]}))
+ assert(not policy.accepts({"title":"Karate Kick","store_creator":"Eyes, JAPAN Co. Ltd. / mocapdata.com"}))
  for title in ["Block Crouch","LeftCross","Roundhouse_Kick_03","Headbutt","sword_parry_and_riposte","Muay Thai Knee Clinch","falling hit reaction","self mend"]:
   assert(policy.accepts({"title":title}),"Combat move rejected: "+title)
  for title in ["cowboy angry walking shooting","Chicken Walk","ClumsyWalk","CoolWalk","Conversation","Female1 D6 CartWheel","Sprint loop","Walk backwards","Backflip Copy","crossing the street","shopping cart","arm raise","head turn","desk work","dance ballet","washing dishes","Interaction 00453","neutral t pose"]:
