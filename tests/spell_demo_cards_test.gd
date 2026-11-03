@@ -30,14 +30,14 @@ func run():
  b.stop_preview_controls(true);b.confirm_demo_choice()
  if not check(b.creation_step=="delivery" and not b.demo_timing_panel.visible,"Animation Confirm must leave RHS hidden"):return
  b.choose_delivery_type("Projectile")
- if not check(not b.demo_timing_panel.visible,"Type preview reveals RHS before Confirm"):return
+ if not check(b.demo_timing_panel.visible,"Clicking a type fails to reveal RHS"):return
  b.stop_preview_controls(true);b.confirm_delivery_type()
  if not check(b.creation_step=="projectile" and b.demo_timing_panel.visible,"Type Confirm fails to reveal RHS"):return
  b.return_to_start()
  b.select_demo_choice("block",false);b.stop_preview_controls(true);b.confirm_demo_choice();b.stop_preview_controls(true)
  if not check(not b.delivery_choices.Barrier.disabled and b.delivery_choices.Touch.disabled and b.delivery_choices.Beam.disabled,"Barrier availability is wrong"):return
  b.delivery_choices.Barrier.pressed.emit()
- if not check(b.preview_delivery_type=="Barrier" and not b.delivery_confirm_button.disabled and not b.demo_timing_panel.visible,"Barrier selection is not preview/confirm"):return
+ if not check(b.preview_delivery_type=="Barrier" and not b.delivery_confirm_button.disabled and b.demo_timing_panel.visible,"Barrier click does not reveal RHS while preserving Confirm"):return
  var shots_before:int=e.field.shot_serial
  b.stop_preview_controls(true);b.confirm_delivery_type()
  if not check(b.creation_step=="barrier" and b.barrier_screen.visible and b.demo_timing_panel.visible and not b.projectile_screen.visible and not b.previews_projectile(),"Barrier Confirm routes into projectile workspace"):return
@@ -54,5 +54,5 @@ func run():
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_loading_wheel.png")
  if not check(spinner.value==45 and spinner.get_theme_stylebox("fill") is StyleBoxEmpty,"Loading wheel lost progress diagnostics or still paints a bar"):return
- print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, fixed demo panel, 1.5s defaults, RHS after both Confirm steps, selectable Barrier workspace, start hides RHS, shared spinner preserves diagnostics")
+ print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, fixed demo panel, 1.5s defaults, RHS after explicit type click, selectable Barrier workspace, start hides RHS, shared spinner preserves diagnostics")
  quit()

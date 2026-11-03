@@ -1,8 +1,8 @@
 Spell creation demo chooser
 
 Eight image cards share asset_preview_card.gd, using actual rig snapshots. Clicking an available card selects and previews it;
-Confirm advances. The RHS stays hidden until the demo animation and spell type have both been
-confirmed. It hides again on Back to start. New demo sessions start at 1.5 s. The bottom playback toolbar remains available from entry. The demo chooser is
+Confirm advances. The RHS stays hidden until the demo animation is confirmed and a spell type is
+explicitly clicked. Confirm still advances to the next tier. It hides again on Back to start. New demo sessions start at 1.5 s. The bottom playback toolbar remains available from entry. The demo chooser is
 fixed in place, with no border or keyboard resize handles.
 
 PNG snapshots are stored in assets/ui/spell_demos. They are generated from the

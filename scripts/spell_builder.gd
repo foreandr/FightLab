@@ -139,6 +139,7 @@ const DELIVERY_HELP:={
 }
 var delivery_type:=""
 var preview_delivery_type:=""
+var delivery_choice_selected:=false
 var delivery_confirm_button:Button
 var demo_choice_selected:=false
 var creation_step:="demo"
@@ -803,6 +804,7 @@ func return_to_start()->void:
  demo_duration=1.5;casting_animation["duration"]=demo_duration
  refresh_demo_timing()
  preview_delivery_type=""
+ delivery_choice_selected=false
  fire_shapes_open=false;fire_sound_open=false;spell_save_open=false
  active_spell_provenance.clear()
  spell_save_screen.name_input.clear();spell_save_screen.status.text=""
@@ -826,7 +828,9 @@ func show_creation_step(step:String) -> void:
   begin_demo_exit()
   clear_shots()
  var default_type:=step=="delivery" and creation_step!="delivery"
- if default_type:preview_delivery_type="Projectile"
+ if default_type:
+  preview_delivery_type="Projectile"
+  delivery_choice_selected=false
  creation_step=step if step in ["demo","delivery","projectile","barrier"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
  demo_screen.visible=creation_step=="demo"
@@ -838,7 +842,7 @@ func show_creation_step(step:String) -> void:
  refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
-  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
+  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier"] or (creation_step=="delivery" and delivery_choice_selected))
   demo_timing_panel.anchor_left=0.74
   demo_timing_panel.anchor_right=1.0
   demo_timing_panel.offset_left=0
@@ -880,6 +884,8 @@ func choose_delivery_type(value:String) -> void:
  else:
   stop_preview_controls(true)
   play_demo_preview()
+ delivery_choice_selected=true
+ refresh_demo_choices()
  refresh_delivery_choices()
  GameDiagnostics.log_event("spell_delivery_previewed",{"delivery_type":value})
 
@@ -1269,7 +1275,7 @@ func stop_preview_controls(force:=false) -> void:
 func refresh_delivery_choices() -> void:
  refresh_animation_type_visibility()
  for title in ["Power balance","Results"]:
-  if spell_sections.has(title):spell_sections[title].visible=creation_step!="barrier"
+  if spell_sections.has(title):spell_sections[title].visible=spell_delivery_type()!="Barrier"
  if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected
  for type in delivery_choices:
   delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
@@ -1492,7 +1498,7 @@ func refresh_animation_type_visibility() -> void:
  for badge in demo_type_labels.values():badge.visible=relevant
 
 func refresh_demo_choices() -> void:
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier"] or (creation_step=="delivery" and delivery_choice_selected))
  refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
@@ -2225,7 +2231,7 @@ func workspace_visibility_changed() -> void:
  if not is_visible_in_tree():
   stop_preview_controls()
   fire_style_editing=false;fire_style_preview_id=""
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier"] or (creation_step=="delivery" and delivery_choice_selected))
  playing=false
  repeat_wait=0
  clear_shots()
