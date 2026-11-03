@@ -285,9 +285,9 @@ func select_action() -> void:
 		mode_length = 0.24
 		var away := flat_direction(rival.position, position)
 		var side := Vector3(-away.z, 0, away.x) * (1 if decision % 2 == 0 else -1)
-		air_momentum = (side + away * 0.2).normalized() * 10.5
+		air_momentum = (side + away * 0.2).normalized() * 10.5*Movement.DASH_SPEED_MULTIPLIER
 		if not arena.level_inward(global_position,0.75).is_zero_approx():
-			air_momentum = arena.level_inward(global_position,0.75).normalized()*10.5
+			air_momentum = arena.level_inward(global_position,0.75).normalized()*10.5*Movement.DASH_SPEED_MULTIPLIER
 		count_action("dash")
 	else:
 		mode = "run"

@@ -7,6 +7,7 @@ var brains:Array=[]
 var ready_for_match:=false
 var countdown:=3.0
 var begin_flash:=0.0
+var finish_slowmo_left:=0.0
 var countdown_label:Label
 var paused:=false
 var match_seed:=0
@@ -82,6 +83,7 @@ func _ready()->void:
  update_camera(1.0)
 func rematch(seed_:int=0)->void:
  paused=false
+ finish_slowmo_left=0.0
  result_camera_frame.clear();camera_follow_ready=false
  if is_instance_valid(pause_button):pause_button.text="Pause"
  if not training_view:Engine.time_scale=1.0
@@ -163,6 +165,8 @@ func finish_round(winner:int)->void:
  result_camera_frame={"middle":(fighters[0].global_position+fighters[1].global_position)*0.5+Vector3.UP*1.3,"separation":fighters[0].global_position.distance_to(fighters[1].global_position),"focus":{}}
  for actor in fighters:result_camera_frame.focus[actor.get_instance_id()]=actor.focus_position()
  match_winner=winner;finished_at=elapsed;super.finish_round(winner)
+ if not training_view:
+  finish_slowmo_left=1.1;Engine.time_scale=0.2
  for actor in fighters:
   combat().discard_cast_attempt(actor)
  if learning_enabled:
@@ -264,7 +268,13 @@ func toggle_pause()->void:
 func toggle_self_play()->void:
  self_play=not self_play
  if is_instance_valid(self_play_button):self_play_button.set_pressed_no_signal(self_play)
-func toggle_slow()->void:Engine.time_scale=1.0 if Engine.time_scale<1.0 else 0.35
+func toggle_slow()->void:
+ finish_slowmo_left=0.0
+ Engine.time_scale=1.0 if Engine.time_scale<1.0 else 0.35
+func step_finish_slowmo(real_delta:float)->void:
+ if finish_slowmo_left<=0.0 or paused:return
+ finish_slowmo_left=maxf(0.0,finish_slowmo_left-real_delta)
+ Engine.time_scale=lerpf(1.0,0.2,clampf(finish_slowmo_left/0.4,0.0,1.0))
 func show_report()->void:
  if not is_instance_valid(report_dialog):
   report_dialog=AcceptDialog.new();report_dialog.title="Match report";report_dialog.theme=hud.theme;add_child(report_dialog)
@@ -302,6 +312,7 @@ func update_camera(delta:float)->void:
  camera.look_at(camera_follow_point)
 func _process(delta:float)->void:
  if not ready_for_match:return
+ step_finish_slowmo(delta/maxf(0.001,Engine.time_scale))
  if is_instance_valid(countdown_label):countdown_label.display(countdown,begin_flash)
  if is_instance_valid(timer_label):
   var seconds:=int(ceil(time_remaining()))

@@ -1,6 +1,7 @@
 extends RefCounted
 ## Shared world-space movement and facing; modes supply input and animation poses.
 const TURN_SPEED:=14.0
+const DASH_SPEED_MULTIPLIER:=0.85
 const Exertion=preload("res://scripts/character_exertion.gd")
 
 static func walking_only(actor:Node) -> bool:return Exertion.walking_only(actor)

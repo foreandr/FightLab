@@ -1180,7 +1180,7 @@ func start_motion_dash(direction_index: int, distance_fraction:float=1.0, held_i
 	var angle:=float(posmod(direction_index,8))*PI/4
 	# Forward, forward-right, right, back-right, back, back-left, left, forward-left.
 	motion_direction=(global_basis.z*cos(angle)-global_basis.x*sin(angle)).normalized()
-	motion_speed=12.0
+	motion_speed=12.0*Movement.DASH_SPEED_MULTIPLIER
 	mode="motion_dash"
 	mode_time=0
 	mode_length=DASH_MAX_SECONDS if held_input else lerpf(DASH_MIN_SECONDS,DASH_MAX_SECONDS,fraction)

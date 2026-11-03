@@ -21,6 +21,7 @@ var settled_time := 0.0
 var bone_order:Array[int]=[]
 
 func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
+	impulse=preload("res://scripts/combat_defense_rules.gd").ragdoll_launch_impulse(impulse)
 	fighter = owner_
 	var skeleton: Skeleton3D = fighter.skeleton
 	for i in skeleton.get_bone_count():
