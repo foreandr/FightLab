@@ -11,6 +11,7 @@ const MAX_RELEASE_FRACTION:=0.55
 const MAX_RELEASE_BONUS:=0.25
 const PROJECTILE_BASE_MANA:=10.0
 const FIRE_MANA_SURCHARGE:=10.0
+const BARRIER_BASE_MANA:={"Shield":2.0,"Absorb":4.0,"Reflect":6.0,"Effect":10.0}
 const TOUCH_EXTRA_CONTACT_STAMINA:=0.25
 const TOUCH_CONTACT_BONES:=["hand_l","hand_r","upperarm_l","upperarm_r","lowerarm_l","lowerarm_r","thigh_l","thigh_r","calf_l","calf_r","foot_l","foot_r","Head"]
 const DELIVERY_MANA_MULTIPLIERS:={"Projectile":1.0,"Beam":1.0,"Targeted":1.25,"Touch":0.5,"Barrier":0.5}
@@ -35,8 +36,14 @@ static func projectile_base(element:String,radius:float=0.16,potency:float=1.0,t
 static func earth_spell(radius:float,potency:float) -> Dictionary:
 	return {"id":"earth_wall","name":"Earth Wall","effect":"summon_earth","animation":"palm_fireball","hand":"hand_r","release":0.25,"summon_radius":radius,"potency":potency,"mana_percent":Projectile.mana_percent(radius,potency),"mana":Projectile.mana_cost(radius,potency),"damage":0.0}
 
+static func barrier_base_mana(kind:String)->float:
+	return float(BARRIER_BASE_MANA.get(kind,BARRIER_BASE_MANA.Shield))
+
+static func left_jab_strike()->Array:
+	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
+
 static func self_barrier_base(strength:float=25.0,duration:float=5.0)->Dictionary:
-	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":PROJECTILE_BASE_MANA,"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration)}
+	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":barrier_base_mana("Shield"),"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration)}
 
 static func neutral_projectile() -> Dictionary:
 	var base:=allocate(projectile_base("None"),{"size":0.5,"speed":0.5},"None",1.0)

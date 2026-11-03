@@ -719,7 +719,9 @@ func setup(owner_editor:Node) -> void:
   option.focus_mode=Control.FOCUS_ALL
   option.toggle_mode=true
   option.disabled=kind!="Shield"
-  option.tooltip_text="Not available yet" if option.disabled else "Choose a shield barrier"
+  var base_cost:float=Rules.barrier_base_mana(kind)*Rules.delivery_mana_multiplier("Barrier")
+  option.set_meta("base_mana_cost",base_cost)
+  option.tooltip_text=("Not available yet · " if option.disabled else "")+"Base mana: %.0f before cast timing"%base_cost
   barrier_choices[kind]=option
  barrier_confirm_button=editor.button(barrier_screen,"Confirm",confirm_barrier_kind)
  barrier_confirm_button.name="ConfirmBarrierType"
@@ -793,6 +795,10 @@ func setup(owner_editor:Node) -> void:
   node.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
   node.custom_minimum_size.x=140
   node.focus_mode=Control.FOCUS_ALL
+ var jab_button:Button=editor.button(playback_row,"Jab [4]",practice_left_jab)
+ jab_button.name="PracticeLeftJab";jab_button.custom_minimum_size.x=90
+ jab_button.focus_mode=Control.FOCUS_ALL
+ jab_button.tooltip_text="4 · Left jab · physical contact only · stamina, no mana"
  reset_scene_button=editor.button(playback_row,"Reset scene",reset_practice_scene)
  reset_scene_button.name="ResetSpellPracticeScene"
  reset_scene_button.custom_minimum_size.x=140
@@ -1321,6 +1327,15 @@ func refresh_projectile_allocation() -> void:
   var title:String="Burn" if key=="effect" else str(key).capitalize()
   allocation_labels[key].text="%s: %.1f%%"%[title,percent] if limiter_enabled else title
 
+func practice_left_jab()->void:
+ var actor=editor.actor
+ if not is_instance_valid(actor) or actor.combat_reaction_active() or actor.mode=="punch" or cast_committed():return
+ interrupt_preview_cast();playing=false
+ demo_enter_pose.clear();demo_exit_pose.clear()
+ set_preview_repeat(false)
+ actor.set_editor_animation_profile({},"")
+ actor.start_left_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
+
 func play_projectile_once() -> void:
  if not demo_choice_selected:return
  set_preview_repeat(false)
@@ -1560,6 +1575,15 @@ func demo_projectile_stats() -> Dictionary:
 func refresh_demo_timing() -> void:
  refresh_animation_type_visibility()
  if not is_instance_valid(demo_duration_slider):return
+ if previews_barrier():
+  demo_duration_slider.set_value_no_signal(demo_duration)
+  demo_duration_label.text="%.1f s"%demo_duration
+  var barrier_spec:=demo_preview_spec()
+  demo_mana_cost_label.text="Mana cost: %.1f"%Rules.mana_cost(barrier_spec)
+  barrier_authoring.refresh_stats(barrier_spec)
+  release_slider.set_value_no_signal(release_fraction*100.0)
+  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
+  return
  if not limiter_enabled:
   refresh_test_controls()
   return
@@ -1644,6 +1668,7 @@ func play_demo_preview() -> void:
   begin_demo_exit()
 
 func process_demo_preview(delta:float) -> void:
+ if editor.actor.mode=="punch":return
  if editor.actor.combat_reaction_active():
   interrupt_preview_cast()
   playing=false
@@ -2273,6 +2298,10 @@ func _input(event:InputEvent) -> void:
    play_projectile_once()
    get_viewport().set_input_as_handled()
    return
+  if key in [KEY_4,KEY_KP_4] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   practice_left_jab()
+   get_viewport().set_input_as_handled()
+   return
   if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    set_preview_hitboxes(not preview_hitboxes)
    get_viewport().set_input_as_handled()
@@ -2484,7 +2513,7 @@ func _physics_process(delta:float) -> void:
 
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  ensure_third_person_camera()
- if editor.actor.combat_reaction_active():return
+ if editor.actor.combat_reaction_active() or editor.actor.mode=="punch":return
  # Scriptable locomotion entry point; live input/focus checks remain above.
  var caster=editor.actor
  if playing and CastType.owns_legs(playback_animation()):

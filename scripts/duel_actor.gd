@@ -42,6 +42,7 @@ var minimum_mana := MAX_MANA
 var minimum_stamina := MAX_STAMINA
 var melee_sequence := 0
 var melee_spec: Array = []
+var melee_aim_direction:=Vector3.ZERO
 var melee_clock := 0.0
 var melee_clock_rate := 1.25
 var melee_previous := Vector3.ZERO
@@ -555,7 +556,7 @@ func tick(delta: float) -> void:
 			play("ual1/Death01", 1.3)
 	elif mode in ["chase", "recover", "punch"]:
 		face_rival(delta)
-		var toward := flat_direction(position, rival.position)
+		var toward := melee_aim_direction if mode=="punch" and not melee_aim_direction.is_zero_approx() else flat_direction(position, rival.position)
 		var distance := flat_distance()
 		if mode == "chase":
 			desired = toward * (5.6 if stamina > 25 else 2.4) if distance > 0.91 else Vector3.ZERO
@@ -830,6 +831,9 @@ func tick_cast(delta: float) -> bool:
 	return released
 
 func face_rival(delta: float) -> void:
+	if mode=="punch" and not melee_aim_direction.is_zero_approx():
+		rotation.y=lerp_angle(rotation.y,atan2(melee_aim_direction.x,melee_aim_direction.z),minf(1,delta*18))
+		return
 	if arena.story_mode and player_controlled:
 		if not is_instance_valid(arena.camera_focus_target):return
 		var focused_direction := flat_direction(global_position, arena.camera_focus_target.global_position)

@@ -62,7 +62,7 @@ static func refresh(b:Node) -> void:
 	if b.previews_barrier():
 		var spec:Dictionary=b.demo_preview_spec()
 		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
-		texts.mana="Base mana = 10\nBarrier cost = 0.5×\nWait before activation = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = 10 × 0.5 × %.3f = %.1f"%[timing.release_seconds,timing.multiplier,timing.multiplier,Rules.mana_cost(spec)]
+		texts.mana="Shield base mana = %.1f\nBarrier cost = 0.5×\nWait before activation = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = %.1f × 0.5 × %.3f = %.1f"%[Rules.barrier_base_mana("Shield"),timing.release_seconds,timing.multiplier,Rules.barrier_base_mana("Shield"),timing.multiplier,Rules.mana_cost(spec)]
 	for key in controls:
 		controls[key].mouse_filter=Control.MOUSE_FILTER_IGNORE if controls[key].has_meta("stat_hover_box") else Control.MOUSE_FILTER_PASS
 		controls[key].tooltip_text=texts[key]

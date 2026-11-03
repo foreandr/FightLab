@@ -910,6 +910,13 @@ func start_jump(kind: String) -> void:
 		return
 	super.start_jump(kind)
 
+func start_left_jab(aim:=Vector3.ZERO)->bool:
+	if combat_reaction_active() or mode=="punch" or arena.combat().cast_committed(self):return false
+	begin_strike(preload("res://scripts/combat_spell_rules.gd").left_jab_strike())
+	if mode!="punch":return false
+	melee_aim_direction=(aim*Vector3(1,0,1)).normalized()
+	return true
+
 func start_punch() -> void:
 	if arena.combat().cast_committed(self):return
 	melee_charge=0
@@ -1203,6 +1210,7 @@ func tick_air_trick(delta: float) -> void:
 			arena.movement_burst(self,true)
 
 func begin_strike(spec: Array, charge: float=0.0) -> void:
+	melee_aim_direction=Vector3.ZERO
 	if arena.combat().cast_committed(self):return
 	if editor_animation_profile.get("category","") in ["Punch","Kick","Knee","Elbow","Uppercut","Sweep","Slash"]:
 		spec=spec.duplicate()
@@ -1318,7 +1326,7 @@ func tick(delta: float) -> void:
 	stun_time=maxf(0,stun_time-delta)
 	# Editor previews yield to shared hit, restraint, recovery and death behavior.
 	# Pose ownership never pauses combat status clocks or damage-over-time.
-	if editor_pose_locked and not combat_reaction_active():
+	if editor_pose_locked and not combat_reaction_active() and mode!="punch":
 		invulnerability=maxf(0.0,invulnerability-delta)
 		return
 	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH

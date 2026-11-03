@@ -76,6 +76,6 @@ func _physics_process(delta:float)->void:
 	if clock<INTERVAL:return
 	clock=fmod(clock,INTERVAL)
 	if melee_only:
-		unit.begin_strike(["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0])
+		unit.start_left_jab()
 	else:unit.start_cast(false)
 	if unit.mode in ["cast","punch"]:casts_started+=1
