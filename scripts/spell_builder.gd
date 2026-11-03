@@ -151,6 +151,9 @@ var barrier_title:Label
 var barrier_confirm_button:Button
 var barrier_back_button:Button
 var barrier_tester:Node
+var barrier_puncher:Node
+var barrier_test_controls:VBoxContainer
+var barrier_pause_buttons:Dictionary={}
 var delivery_screen:VBoxContainer
 var delivery_choices:Dictionary={}
 var delivery_back_button:Button
@@ -720,6 +723,11 @@ func setup(owner_editor:Node) -> void:
  barrier_confirm_button=editor.button(barrier_screen,"Confirm",confirm_barrier_kind)
  barrier_confirm_button.name="ConfirmBarrierType"
  barrier_confirm_button.disabled=true
+ barrier_test_controls=VBoxContainer.new();barrier_screen.add_child(barrier_test_controls)
+ for tester_kind in ["Projectiles","Punches"]:
+  var pause_button:Button=editor.button(barrier_test_controls,"Pause "+tester_kind,func():toggle_barrier_tester(tester_kind))
+  pause_button.name="Pause"+tester_kind
+  barrier_pause_buttons[tester_kind]=pause_button
  barrier_back_button=editor.button(barrier_screen,"← Back",func():show_creation_step("barrier" if creation_step=="shield" else "delivery"))
  add_start_navigation(barrier_back_button)
  barrier_screen.hide()
@@ -934,7 +942,17 @@ func confirm_barrier_kind()->void:
  show_creation_step("shield")
  GameDiagnostics.log_event("barrier_type_confirmed",{"kind":barrier_kind})
 
+func toggle_barrier_tester(kind:String)->void:
+ var tester=barrier_tester if kind=="Projectiles" else barrier_puncher
+ if not is_instance_valid(tester):return
+ tester.set_paused(not tester.paused)
+ refresh_barrier_choices()
+
 func refresh_barrier_choices()->void:
+ if is_instance_valid(barrier_test_controls):barrier_test_controls.visible=creation_step=="shield"
+ for kind in barrier_pause_buttons:
+  var tester=barrier_tester if kind=="Projectiles" else barrier_puncher
+  barrier_pause_buttons[kind].text=("Resume " if is_instance_valid(tester) and tester.paused else "Pause ")+kind
  if is_instance_valid(barrier_title):barrier_title.text="Shield" if creation_step=="shield" else "Barrier"
  if is_instance_valid(barrier_confirm_button):
   barrier_confirm_button.visible=creation_step=="barrier"
@@ -1324,7 +1342,10 @@ func refresh_delivery_choices() -> void:
  if is_instance_valid(editor) and is_instance_valid(editor.actor) and demo_choice_selected and spell_delivery_type()=="Barrier" and creation_step in ["delivery","barrier","shield"]:
   if not is_instance_valid(barrier_tester):
    barrier_tester=preload("res://scripts/barrier_practice_caster.gd").new();add_child(barrier_tester);barrier_tester.configure(self)
- if is_instance_valid(barrier_tester):barrier_tester.set_enabled(barrier_tester.wanted())
+  if not is_instance_valid(barrier_puncher):
+   barrier_puncher=preload("res://scripts/barrier_practice_caster.gd").new();add_child(barrier_puncher);barrier_puncher.configure(self,true)
+ for tester in [barrier_tester,barrier_puncher]:
+  if is_instance_valid(tester):tester.set_enabled(tester.wanted())
  for title in ["Power balance","Results"]:
   if spell_sections.has(title):spell_sections[title].visible=spell_delivery_type()!="Barrier"
  if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected
@@ -2412,7 +2433,9 @@ func prepare_preview_targets() -> void:
    if human_tag!=null:human_tag.name_label.text="Human target"
   if editor.focused_unit not in [editor.actor,editor.target,practice_human]:editor.select_editor_unit(editor.actor)
 
- if is_instance_valid(barrier_tester):barrier_tester.reset()
+ for tester in [barrier_tester,barrier_puncher]:
+  if is_instance_valid(tester):tester.reset()
+ refresh_barrier_choices()
 
 func _physics_process(delta:float) -> void:
  if not is_visible_in_tree() or not demo_only_stage or not is_instance_valid(editor.actor):return

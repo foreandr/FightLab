@@ -13,6 +13,7 @@ func run():
  for kind in b.barrier_choices:
   var option:Button=b.barrier_choices[kind]
   assert(option.disabled==(kind!="Shield") and option.icon!=null)
+ assert(not b.barrier_tester.wanted() and not b.barrier_puncher.wanted(),"Testing began before Shield confirmation")
  var shots:int=screen.field.shot_serial
  b.barrier_choices.Shield.pressed.emit()
  assert(b.barrier_kind=="Shield" and b.barrier_choices.Shield.button_pressed)
@@ -23,11 +24,30 @@ func run():
  assert(not b.barrier_confirm_button.disabled)
  b.barrier_confirm_button.pressed.emit()
  assert(b.creation_step=="shield" and b.barrier_title.text=="Shield" and not b.barrier_confirm_button.visible)
+ assert(b.barrier_test_controls.visible)
+ var puncher=b.barrier_puncher
+ puncher.set_physics_process(false)
+ puncher._physics_process(4.01)
+ assert(puncher.unit.mode=="punch" and puncher.casts_started==1,"Punch tester did not jab")
+ var punch_shots:int=screen.field.shot_serial
+ b.barrier_pause_buttons.Punches.pressed.emit()
+ assert(puncher.paused and puncher.unit.practice_paused and puncher.unit.player.speed_scale==0.0)
+ var punch_time:float=puncher.unit.mode_time
+ puncher.unit.tick(1.0);puncher._physics_process(8.0)
+ assert(puncher.unit.mode_time==punch_time and puncher.casts_started==1 and screen.field.shot_serial==punch_shots)
+ b.barrier_pause_buttons.Punches.pressed.emit()
+ assert(not puncher.paused and puncher.unit.player.speed_scale==1.0)
  var tester=b.barrier_tester
- assert(is_instance_valid(tester) and screen.field.fighters.size()==4 and tester.unit.visible)
+ assert(is_instance_valid(tester) and screen.field.fighters.size()==5 and tester.unit.visible)
  tester.set_physics_process(false)
  b.set_physics_process(false)
  for i in 4:await physics_frame
+ b.barrier_pause_buttons.Projectiles.pressed.emit()
+ var clock:float=tester.clock
+ tester._physics_process(8.0)
+ assert(tester.paused and tester.clock==clock)
+ b.barrier_pause_buttons.Projectiles.pressed.emit()
+ assert(not tester.paused)
  tester.clock=0.0
  var started:int=tester.casts_started
  tester._physics_process(3.99)
@@ -52,8 +72,8 @@ func run():
  assert(screen.actor.damage_taken>0.0,"Test fireball did not hit the player")
  b.reset_practice_scene()
  assert(tester.clock==0.0 and tester.unit.visible and screen.actor.health==screen.actor.MAX_HEALTH)
- assert(screen.field.fighters.size()==4 and tester.unit.global_position.distance_to(screen.target.practice_home)>2.5)
+ assert(screen.field.fighters.size()==5 and tester.unit.global_position.distance_to(screen.target.practice_home)>2.5)
  b.return_to_start();tester._physics_process(0.0)
  assert(b.barrier_kind.is_empty() and not b.barrier_choices.Shield.button_pressed and not tester.unit.visible)
- print("BARRIER TESTER PASS: Confirm reaches Shield; one extra NPC, four-second cadence, real left-jab fireball hits player via shared combat, reset heals/repositions, leaving Barrier stops caster")
+ print("BARRIER TESTERS PASS: Shield confirmation starts projectile and melee testers; independent pause/resume freezes actors and cadence; real fireball hits through shared combat; reset heals and leaving stops testers")
  quit()

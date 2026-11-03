@@ -6,15 +6,18 @@ var unit:CharacterBody3D
 var enabled:=false
 var clock:=0.0
 var casts_started:=0
-func configure(owner_builder:Control)->void:
+var melee_only:=false
+var paused:=false
+func configure(owner_builder:Control,punch_only:=false)->void:
 	builder=owner_builder
+	melee_only=punch_only
 	var field=builder.editor.field
 	unit=field.spawn_combatant(1,Vector3.ZERO,preload("res://scripts/creation_bot_outfit.gd").profile(1))
-	unit.name="BarrierTestCaster"
+	unit.name="BarrierTestPuncher" if melee_only else "BarrierTestCaster"
 	unit.set_meta("barrier_test_caster",true)
 	unit.brain_enabled=false;unit.practice_return_enabled=true;unit.editor_pose_locked=false
 	unit.practice_damageable_dummy=true
-	preload("res://scripts/fighter_overhead_tag.gd").attach(unit,"Barrier test caster")
+	preload("res://scripts/fighter_overhead_tag.gd").attach(unit,"Punch tester" if melee_only else "Projectile tester")
 	for profile in preload("res://scripts/animation_catalog.gd").entries():
 		if profile.title=="Left jab":unit.practice_spell_animation=profile.duplicate(true);break
 	unit.practice_spell_animation["duration"]=1.0
@@ -27,11 +30,13 @@ func configure(owner_builder:Control)->void:
 	unit.practice_projectile_spec["hand"]="hand_l"
 	reset()
 func wanted()->bool:
-	return is_instance_valid(builder) and builder.is_visible_in_tree() and builder.demo_choice_selected and builder.creation_step in ["delivery","barrier","shield"] and builder.spell_delivery_type()=="Barrier"
+	return is_instance_valid(builder) and builder.is_visible_in_tree() and builder.demo_choice_selected and builder.creation_step=="shield" and builder.spell_delivery_type()=="Barrier"
 func reset()->void:
 	clock=0.0
+	set_paused(false)
 	if not is_instance_valid(unit):return
-	unit.practice_home=builder.editor.field.surface_placement(builder.editor.target.practice_home-builder.editor.target.global_basis.x*3.0)
+	var home:Vector3=builder.editor.actor.global_position+builder.editor.actor.global_basis.z*1.4 if melee_only else builder.editor.target.practice_home-builder.editor.target.global_basis.x*3.0
+	unit.practice_home=builder.editor.field.surface_placement(home)
 	unit.global_position=unit.practice_home;unit.velocity=Vector3.ZERO
 	unit.rival=builder.editor.actor
 	var toward:Vector3=unit.rival.global_position-unit.global_position
@@ -52,9 +57,12 @@ func set_enabled(value:bool)->void:
 	unit.collision_layer=(128<<unit.team) if value else 0
 	for item in unit.targets:item[0].collision_layer=(8<<unit.team) if value else 0
 	for item in unit.limb_targets:item[0].collision_layer=(8<<unit.team) if value else 0
+func set_paused(value:bool)->void:
+	paused=value
+	if is_instance_valid(unit):unit.set_practice_paused(value)
 func _physics_process(delta:float)->void:
 	set_enabled(wanted())
-	if not enabled or unit.health<=0.0:return
+	if not enabled or paused or unit.health<=0.0:return
 	var target=builder.editor.actor
 	if not is_instance_valid(target) or target.health<=0.0:return
 	unit.rival=target
@@ -66,5 +74,9 @@ func _physics_process(delta:float)->void:
 	clock+=delta
 	if clock<INTERVAL:return
 	clock=fmod(clock,INTERVAL)
-	unit.start_cast(false)
-	if unit.mode=="cast":casts_started+=1
+	if melee_only:
+		var toward:Vector3=target.global_position-unit.global_position
+		unit.rotation.y=atan2(toward.x,toward.z)
+		unit.begin_strike(["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0])
+	else:unit.start_cast(false)
+	if unit.mode in ["cast","punch"]:casts_started+=1

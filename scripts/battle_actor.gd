@@ -16,6 +16,11 @@ var custom_idle_duration := 3.0
 var custom_motion_frames: Array = []
 var custom_motion_step := ""
 var editor_pose_locked:=false
+var practice_paused:=false
+func set_practice_paused(value:bool)->void:
+	practice_paused=value
+	player.speed_scale=0.0 if value else 1.0
+
 var practice_immortal:=false
 var practice_damageable_dummy:=false
 var practice_wooden_dummy:=false
@@ -1293,6 +1298,7 @@ func start_burst(paid := false) -> void:
 	count_action("flash_charge")
 
 func tick(delta: float) -> void:
+	if practice_paused:return
 	if is_instance_valid(burn_death):return
 	if practice_god_mode:restore_god_resources()
 	if practice_wooden_dummy and health<=0.0:
@@ -1473,6 +1479,7 @@ func tick(delta: float) -> void:
 	brain_enabled = enabled
 
 func resolve_melee(delta:float) -> void:
+	if practice_paused:return
 	if arena.story_mode and player_controlled:_resolve_story_limb_strikes(delta)
 	if mode!="punch" or melee_spec.is_empty():return
 	var limb:=bone_point(melee_spec[2])
