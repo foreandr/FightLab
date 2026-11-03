@@ -28,8 +28,17 @@ func run():
   setup.update_preview()
   var difference:Vector3=setup.preview.global_position-before
   assert(difference.is_equal_approx(Vector3.ZERO if kind=="Place" else Vector3.RIGHT),"Attachment moved incorrectly")
-  assert(is_equal_approx(setup.preview.scale.x,2.0))
-  assert(is_equal_approx(setup.preview.scale.z,0.36 if kind=="Self" else 2.0))
+  assert(is_equal_approx(setup.preview.scale.x,1.0 if kind=="Self" else 2.0))
+  assert(is_equal_approx(setup.preview.scale.z,1.0 if kind=="Self" else 2.0))
+  assert(setup.preview.surface.visible==(kind!="Self"))
+  assert(setup.size_slider.visible==(kind!="Self"))
+  var overlays:Array=setup.preview.body_overlays
+  assert(not overlays.is_empty())
+  var body=preload("res://scripts/body_barrier_overlay.gd")
+  assert(body.apply(e.actor.skeleton)==overlays,"Repeated preview stacked material passes")
+  body.set_strength(overlays,0.0)
+  # A runtime update must not erase the authoring coating.
+  for overlay in overlays:assert(is_equal_approx(float(overlay.get_shader_parameter("barrier_strength")),1.0 if kind=="Self" else 0.0))
   if kind=="Place":
    setup.set_location(Vector3(2,0,4))
    setup.update_preview()
@@ -45,6 +54,7 @@ func run():
  b.barrier_back()
  setup.update_preview()
  assert(b.creation_step=="barrier" and not setup.preview.visible)
+ for overlay in setup.preview.body_overlays:assert(is_zero_approx(float(overlay.get_shader_parameter("barrier_strength"))))
  b.return_to_start()
  assert(setup.attachment.is_empty() and not setup.attachment_confirmed)
  print("BARRIER PLACEMENT PASS: Self block, following sphere, stationary placed sphere; preview/confirm; RHS size; location/cancel; Back and reset")

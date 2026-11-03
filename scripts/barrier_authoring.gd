@@ -26,7 +26,7 @@ func configure(owner_builder:Control,column:VBoxContainer)->void:
   button.name="Shield"+kind;button.toggle_mode=true;button.custom_minimum_size.y=64
   button.icon=Icons.get_icon({"Self":"shield_self","Follow":"shield_follow","Place":"shield_place"}[kind])
   button.add_theme_constant_override("icon_max_width",40)
-  button.tooltip_text={"Self":"A personal block in front of you.","Follow":"A sphere centered on you that moves with you.","Place":"A sphere that stays at the chosen arena location."}[kind]
+  button.tooltip_text={"Self":"A transparent barrier fitted to your body.","Follow":"A sphere centered on you that moves with you.","Place":"A sphere that stays at the chosen arena location."}[kind]
   button.focus_mode=Control.FOCUS_ALL;choices[kind]=button
  position_row=HBoxContainer.new();add_child(position_row)
  pick_button=builder.editor.button(position_row,"Choose location",func():picking_location=not picking_location;refresh())
@@ -68,7 +68,7 @@ func set_location(ground:Vector3)->void:
  placed_ground=builder.editor.field.surface_placement(ground)
  picking_location=false;size_confirmed=false;refresh()
 func definition()->Dictionary:
- return {"attachment":attachment,"radius":radius,"position":placed_ground,"shape":"self" if attachment=="Self" else "sphere"}
+ return {"attachment":attachment,"radius":radius,"position":placed_ground,"shape":"body" if attachment=="Self" else "sphere"}
 func handle_input(event:InputEvent,area:Control)->bool:
  if not picking_location or not is_visible_in_tree():return false
  if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
@@ -93,7 +93,8 @@ func refresh()->void:
  position_row.visible=attachment=="Place"
  pick_button.text="Click a surface…" if picking_location else "Choose location"
  size_card.visible=is_visible_in_tree() and attachment_confirmed
- size_label.text="Radius: %.2f m"%radius
+ size_label.text="Fitted to body" if attachment=="Self" else "Radius: %.2f m"%radius
+ size_slider.visible=attachment!="Self"
  update_preview()
 func update_preview()->void:
  if not is_instance_valid(preview):return
