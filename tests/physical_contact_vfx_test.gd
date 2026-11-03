@@ -1,18 +1,19 @@
 extends SceneTree
-func _initialize() -> void:call_deferred("run")
+func _initialize() -> void:
+	set_meta("ai_learning_enabled",false);set_meta("cpu_training_view",true);call_deferred("run")
 func check(ok:bool,message:String) -> bool:
 	if ok:return true
 	push_error("PHYSICAL CONTACT VFX FAILED: "+message)
 	quit(1)
 	return false
 func neutral_contact(vfx:Node) -> bool:
-	if vfx.motes.size()!=4:return false
+	if vfx.motes.size()!=13:return false
 	for mote in vfx.motes:
 		var texture:String=mote.node.texture.resource_path.get_file()
-		if texture not in ["light_02.png","trace_02.png"] or mote.life>0.15 or mote.grow!=0.0:return false
+		if texture not in ["light_02.png","trace_02.png"] or mote.life>0.18 or mote.grow!=0.0:return false
 	return true
 func run() -> void:
-	change_scene_to_file("res://scenes/fight.tscn")
+	change_scene_to_file("res://scenes/cpu_duel.tscn")
 	await process_frame
 	await process_frame
 	var field=current_scene
@@ -38,11 +39,11 @@ func run() -> void:
 	field.spell_impact_burst(Vector3.ZERO,0,{"effect":"orb","projectile_element":"None"},false)
 	if not check(neutral_contact(field.vfx),"Elementless ground contact uses fire"):return
 	field.vfx.clear()
-	field.spell_impact_burst(Vector3.ZERO,0,{"effect":"orb","projectile_element":"Fire"},true)
+	field.vfx.burst(Vector3.ZERO,0,true)
 	var flames:=0
 	for mote in field.vfx.motes:
 		if mote.node.texture.resource_path.get_file()=="flame_04.png":flames+=1
-	if not check(flames>0,"Actual fire spell lost its elemental burst"):return
+	if not check(flames>0,"Elemental particle implementation lost its fire burst"):return
 	# The reusable base mode also supplies physical contact without a Story host.
 	var world=load("res://scripts/combat_world.gd").new()
 	root.add_child(world)

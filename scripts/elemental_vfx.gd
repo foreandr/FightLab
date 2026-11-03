@@ -189,10 +189,21 @@ func update_ribbon(node: MeshInstance3D, path: Array, width: float) -> void:
 
 func physical_contact(point:Vector3) -> void:
 	# Tight neutral contact marks, without flame, smoke or an expanding blast ring.
-	puff(point,"light_02",1,Vector2.ONE*0.22,Vector3.ZERO,0.10,Color("f4f0df"),0.0)
-	for index in 3:
+	# Prioritize a fresh landed hit over the oldest ambient particles.
+	while motes.size()>LIMIT-13:motes.pop_front().node.queue_free()
+	# Hurtbox contacts can sit just inside the skin. Lift the mark toward the
+	# viewer so the receiving mesh cannot swallow the entire contact flash.
+	var viewer:Camera3D=camera if is_instance_valid(camera) else get_viewport().get_camera_3d()
+	if is_instance_valid(viewer):point+=(viewer.global_position-point).normalized()*0.28
+	for spoke in 3:
+		var angle:=float(spoke)*PI/3.0+0.2
+		puff(point,"trace_02",1,Vector2(0.23,0.95),Vector3.ZERO,0.16,Color("332c25"),0.0)
+		motes.back().angle=angle
+		puff(point+Vector3.UP*0.012,"trace_02",1,Vector2(0.11,0.82),Vector3.ZERO,0.14,Color("fff9e8"),0.0)
+		motes.back().angle=angle
+	for index in 7:
 		var direction:=Vector3(rng.randf_range(-1,1),rng.randf_range(-0.3,1),rng.randf_range(-1,1)).normalized()
-		puff(point,"trace_02",1,Vector2(0.035,0.14),direction*0.65,0.14,Color("e5dfce"),0.0)
+		puff(point,"trace_02",1,Vector2(0.055,0.26),direction*1.8,0.17,Color("fff9e8"),0.0,rng.randf_range(-3,3))
 
 func burst(point: Vector3, team: int, connected: bool) -> void:
 	var color := tint(team)

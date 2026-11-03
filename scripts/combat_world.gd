@@ -372,6 +372,7 @@ func speed_trail(_actor:CharacterBody3D) -> void:
 	pass
 
 func shield_impact(actor:CharacterBody3D,point:Vector3,broken:bool) -> void:
+	if broken:preload("res://scripts/block_shatter_effect.gd").show_for(actor)
 	combat_sound("shatter" if broken else "shield",point,0.85)
 	impact_burst(point,actor.team,false)
 

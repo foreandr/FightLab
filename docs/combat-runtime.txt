@@ -471,3 +471,28 @@ leg_combo_cadence_test.gd checks the actual punch-punch-kick sequence, denial of
 early kick/knee exits, opposite-leg base speed, normal punch reset after legs,
 and a CPU successfully linking within the late leg window. Existing hook,
 deception, fire one-two and release/resource tests cover preserved behavior.
+
+2026-11-03: Shared impact readability, limb clashes, and ragdoll safety
+MeleeClash resolves simultaneous relative limb sweeps before passive hurtboxes.
+Only colliding active volumes clash; an earlier torso/head hit still wins.
+Both strikes are consumed, each spends 2 extra stamina, and the striking chains
+recoil without adding hit stun, damage, burn, parry rewards, or clock freezes.
+All runtime callers use the same resolver (native, authored Touch, Story limbs).
+Physical contact uses a brief outlined off-white star and short streaks, lifted
+out of the receiving skin toward the viewer. No fire/smoke/expanding blast.
+Centre-line torso blows receive bounded angular recoil independent of action
+recovery and root knockback. Existing combo recovery and damage stay unchanged.
+SelfBarrier exhaustion and legacy guard breaks emit 32 short-lived glass shards;
+normal blocks, perfect blocks, expiry and scene reset do not trigger a break.
+CPU matches/rematches show 3, 2, 1, BEGIN. Three real seconds precede match time;
+paused matches freeze it, slow motion doesn't stretch it, training keeps its
+short start delay. The 120-second combat clock starts after countdown.
+Airborne ragdolls now apply physics rotations in parent-first order and preserve
+saved local bone positions/scales (except pelvis and intentionally severed Head).
+This prevents solver joint drift from stretching the skin. A Tornado Kick repro
+went from a 5.26x forearm length to <1.00001x, also checked on Rising Uppercut and
+Hurricane Kicks. Detached-head behavior remains independently physical.
+Tests: melee_clash_test, round_countdown_test, air_ragdoll_test,
+contact_presentation_test, physical_contact_vfx_test; existing contact knockback,
+hit recovery, perfect-parry counter, block tiers, lethal headshot and match-clock
+regressions; two complete CPU fights with finite position/resource checks.

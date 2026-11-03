@@ -18,12 +18,15 @@ var previous_velocities := {}
 var links:Dictionary={}
 var sever_impulse:=Vector3.ZERO
 var settled_time := 0.0
+var bone_order:Array[int]=[]
 
 func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	fighter = owner_
 	var skeleton: Skeleton3D = fighter.skeleton
 	for i in skeleton.get_bone_count():
-		saved[i] = [skeleton.get_bone_pose_position(i), skeleton.get_bone_pose_rotation(i)]
+		saved[i] = [skeleton.get_bone_pose_position(i), skeleton.get_bone_pose_rotation(i),skeleton.get_bone_pose_scale(i)]
+	bone_order.clear()
+	for root_bone in skeleton.get_parentless_bones():append_bone_order(skeleton,root_bone)
 	part("pelvis", "pelvis", "spine_01", 0.16, 14, ["pelvis"])
 	part("chest", "spine_01", "neck_01", 0.17, 22, ["spine_01", "spine_02", "spine_03", "neck_01"])
 	part("head", "neck_01", "Head", 0.12, 5, ["Head"])
@@ -40,6 +43,10 @@ func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	initial_impulse=impulse
 	initial_point=point
 	peak_height = bodies.pelvis.global_position.y
+
+func append_bone_order(skeleton:Skeleton3D,index:int)->void:
+	bone_order.append(index)
+	for child in skeleton.get_bone_children(index):append_bone_order(skeleton,child)
 
 func part(name_: String, from: String, to: String, radius: float, mass_: float, bones: Array) -> void:
 	var a: Vector3 = fighter.bone_point(from)
@@ -130,15 +137,18 @@ func step(delta: float) -> bool:
 		if fighter.head_severed:launch_severed_head()
 		return false
 	peak_height = maxf(peak_height, bodies.pelvis.global_position.y)
-	for bone in bindings:
+	for index in bone_order:
+		var bone:String=fighter.skeleton.get_bone_name(index)
+		if not bindings.has(bone):continue
 		var item: Array = bindings[bone]
 		var world: Transform3D = item[0].global_transform * item[1]
-		var index: int = fighter.skeleton.find_bone(bone)
 		var global_pose: Transform3D = fighter.skeleton.global_transform.affine_inverse() * world
-		# Apply the simulated transform as a global pose in Skeleton3D space.
-		# Writing its origin as a local pose offset can compound imported rest
-		# offsets and stretch the mesh, especially when several bones update.
+		# Physics supplies orientation; only the pelvis (or detached head) may
+		# translate the rig. Solver anchor drift must never lengthen a limb.
 		fighter.skeleton.set_bone_global_pose(index, global_pose)
+		if bone!="pelvis" and not (bone=="Head" and fighter.head_severed):
+			fighter.skeleton.set_bone_pose_position(index,saved[index][0])
+		fighter.skeleton.set_bone_pose_scale(index,saved[index][2])
 	# Rebuild the hierarchy once after all simulated bones have been applied.
 	fighter.skeleton.force_update_all_bone_transforms()
 	fighter.velocity = bodies.pelvis.linear_velocity
@@ -193,3 +203,4 @@ func restore_pose() -> void:
 	for i in saved:
 		fighter.skeleton.set_bone_pose_position(i, saved[i][0])
 		fighter.skeleton.set_bone_pose_rotation(i, saved[i][1])
+		fighter.skeleton.set_bone_pose_scale(i,saved[i][2])

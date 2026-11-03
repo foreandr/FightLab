@@ -340,6 +340,7 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var absorbed: float=victim.absorb_magic(pressure,point-direction*2,point)
 	var fraction:=clampf(absorbed/maxf(0.1,pressure),0,1)
 	var shattered: bool=absorbed>0 and victim.guard_energy<=0
+	if shattered:preload("res://scripts/block_shatter_effect.gd").show_for(victim)
 	if fraction>0:
 		victim.apply_physical_impact(point,impulse*fraction*0.12,"shield","lowerarm_r")
 		amount*=1-fraction
@@ -501,6 +502,7 @@ func step_actors(delta:float) -> void:
 						f.wall_crash(contact.get_position(),contact.get_normal(),speed,incoming,contact.get_collider())
 						break
 		f.update_targets()
+	preload("res://scripts/melee_clash.gd").resolve(self,delta)
 	for f in field.fighters:
 		f.resolve_melee(delta)
 	step_touch_casts(delta)

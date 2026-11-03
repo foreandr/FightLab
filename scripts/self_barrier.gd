@@ -45,6 +45,7 @@ func resolve_hit(damage:float,incoming_direction:=Vector3.ZERO)->Dictionary:
  if not parry_ready:actor.spend_stamina(minf(before,incoming))
  result.stamina_spent=maxf(0.0,before-actor.stamina)
  if exhausted:
+  preload("res://scripts/block_shatter_effect.gd").show_for(actor)
   result.broken=true;clear();return result
  result.absorbed=absorb(incoming)
  if incoming>0.0 and float(result.absorbed)+0.0001>=incoming:

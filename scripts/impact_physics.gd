@@ -77,6 +77,13 @@ func hit(skeleton: Skeleton3D, point: Vector3, impulse: Vector3, zone: String, b
 	else:
 		torque_log["spine_01"] = joint_impulse(skeleton, "spine_01", point, impulse, 0.10)
 	joint_impulse(skeleton, "pelvis", point, impulse, 0.025 if blocked else (0.065 if leg else 0.045))
+	# A centre-line blow has little lever arm but still visibly compresses the
+	# torso. Angular recoil is independent of root shove and action recovery.
+	if not blocked and not leg:
+		var local_push:Vector3=actor_basis.inverse()*impulse
+		var recoil:Vector3=Vector3(local_push.z,0.0,-local_push.x).limit_length(260.0)/145.0
+		joints["spine_03"].omega+=recoil
+		if head:joints["neck_01"].omega+=recoil*0.45
 	var loss := impulse.length() / 370.0 * (1.5 if leg else (0.55 if head else 0.8))
 	if blocked:
 		loss *= 0.15

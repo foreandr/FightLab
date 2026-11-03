@@ -1,9 +1,42 @@
 extends RefCounted
 ## Shared swept-limb hit resolution. Callers own animation clocks, not hit rules.
-static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool:
+static func active(actor:CharacterBody3D,strike:Dictionary,delta:float)->bool:
 	if strike.get("connected",false) or actor.health<=0 or not actor.arena.round_active:return false
 	var clock:=float(strike.clock)
 	if clock<float(strike.begin) or clock>float(strike.end):return false
+	var movement:Vector3=Vector3(strike.limb)-Vector3(strike.previous)
+	if movement.length()/maxf(delta,0.0001)<float(strike.get("min_speed",0.8)):return false
+	if strike.get("require_forward",false) and movement.dot(Vector3(strike.forward))<=0.0005:return false
+	return true
+
+static func hurt_query(actor:CharacterBody3D,radius:float)->PhysicsShapeQueryParameters3D:
+	var shape:=SphereShape3D.new();shape.radius=radius
+	var query:=PhysicsShapeQueryParameters3D.new();query.shape=shape
+	query.collision_mask=actor.arena.enemy_hurt_mask(actor.team)
+	query.collide_with_areas=true;query.collide_with_bodies=false
+	return query
+
+static func body_before(actor:CharacterBody3D,strike:Dictionary,other:CharacterBody3D,other_bone:String,time:float)->bool:
+	var query:=hurt_query(actor,float(strike.radius))
+	var movement:Vector3=Vector3(strike.limb)-Vector3(strike.previous)
+	var samples:=maxi(1,ceili(movement.length()/0.04))
+	var side:=other_bone.right(1)
+	var active_zone:="leg_"+side if other_bone.begins_with("foot_") or other_bone.begins_with("calf_") or other_bone.begins_with("ball_") else "arm_"+side
+	for sample in range(samples+1):
+		var t:=float(sample)/samples
+		if t>=time-0.02:break
+		query.transform=Transform3D(Basis.IDENTITY,Vector3(strike.previous).lerp(Vector3(strike.limb),t))
+		for hit in actor.get_world_3d().direct_space_state.intersect_shape(query,32):
+			var area:Area3D=hit.collider;var victim=area.get_meta("fighter",null)
+			if not is_instance_valid(victim) or victim==actor or victim.team==actor.team or victim.health<=0 or victim.invulnerability>0:continue
+			# The matching striking limb participates in the clash, not a separate
+			# passive-arm hit; an earlier head/torso/other-limb hit still wins.
+			if victim==other and str(area.get_meta("zone",""))==active_zone:continue
+			return true
+	return false
+
+static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool:
+	if not active(actor,strike,delta):return false
 	var previous:Vector3=strike.previous
 	var limb:Vector3=strike.limb
 	var movement:=limb-previous
@@ -12,13 +45,8 @@ static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool
 	if movement.length()/dt<float(strike.get("min_speed",0.8)):return false
 	if strike.get("require_forward",false) and movement.dot(forward)<=0.0005:return false
 	if not movement.is_zero_approx():surface_contact(actor,strike,previous,limb,dt)
-	var shape:=SphereShape3D.new()
-	shape.radius=float(strike.get("radius",0.105))
-	var query:=PhysicsShapeQueryParameters3D.new()
-	query.shape=shape
-	query.collision_mask=actor.arena.enemy_hurt_mask(actor.team)
-	query.collide_with_areas=true
-	query.collide_with_bodies=false
+	var query:=hurt_query(actor,float(strike.get("radius",0.105)))
+	var shape:SphereShape3D=query.shape
 	var samples:=maxi(1,ceili(movement.length()/0.04))
 	for sample in range(samples+1):
 		var point:=previous.lerp(limb,float(sample)/samples)

@@ -887,6 +887,14 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 		play(reaction,player.get_animation(reaction).length/mode_length)
 	return true
 
+func receive_melee_clash(point:Vector3,bone:String,away:Vector3)->void:
+	# Recoil the striking chain without entering hit/stun or moving its clock.
+	var side:="l" if bone.ends_with("_l") else "r"
+	var joint:="calf_"+side if bone.begins_with("foot_") or bone.begins_with("ball_") else ("lowerarm_"+side if bone.begins_with("hand_") else bone)
+	impact_physics.joint_impulse(skeleton,joint,point,away*38.0,0.5)
+	knockback=(knockback+away*0.45).limit_length(maxf(knockback.length(),0.65))
+	velocity+=away*0.45
+
 func apply_physical_impact(point: Vector3, impulse: Vector3, zone: String, bone: String, body_impulse:=Vector3.INF) -> void:
 	impact_physics.hit(skeleton, point, impulse, zone, bone, is_on_floor(), global_basis)
 	var change:Vector3 = (body_impulse if body_impulse.is_finite() else impulse) / impact_physics.BODY_MASS

@@ -5,7 +5,9 @@ const Focus=preload("res://scripts/focus_visuals.gd")
 const CameraControls=preload("res://scripts/third_person_camera.gd")
 var brains:Array=[]
 var ready_for_match:=false
-var countdown:=2.0
+var countdown:=3.0
+var begin_flash:=0.0
+var countdown_label:Label
 var paused:=false
 var match_seed:=0
 var match_winner:=-2
@@ -89,7 +91,7 @@ func rematch(seed_:int=0)->void:
  round_active=false;clear_battle_effects();events.clear();casts.clear();hits.clear();elapsed=0;projectile_clash_count=0
  spell_environment.reset_environment()
  combat().cast_attempts.clear();combat().cast_recoveries.clear();combat().touch_casts.clear()
- brains.clear();match_winner=-2;finished_at=0;finish_reason="";countdown=0.1 if training_view else 2.0;intermission_left=2.0
+ brains.clear();match_winner=-2;finished_at=0;finish_reason="";countdown=0.1 if training_view else 3.0;begin_flash=0.0;intermission_left=2.0
  for spell_label in last_spell_labels.values():spell_label.text="";spell_label.visible=false
  last_spell_until.clear()
  selected=null;camera_focus_target=null
@@ -121,9 +123,17 @@ func _physics_process(delta:float)->void:
   intermission_left-=delta
   if intermission_left<=0:rematch();return
  if countdown>0:
-  countdown=maxf(0.0,countdown-delta)
-  if countdown<=0:round_active=true;elapsed=0.0
+  var countdown_delta:=delta if training_view else delta/maxf(0.001,Engine.time_scale)
+  countdown=maxf(0.0,countdown-countdown_delta)
+  if countdown<0.00001:countdown=0.0
+  combat().step_actors(delta)
+  elapsed=0.0
+  if countdown<=0:
+   round_active=true;begin_flash=0.55
+   events.append({"time":0.0,"event":"round_start","seed":match_seed})
+  return
  else:
+  begin_flash=maxf(0.0,begin_flash-delta/maxf(0.001,Engine.time_scale))
   # Alternate evaluation order: neither team always gets the first decision.
   var order:=[0,1] if Engine.get_physics_frames()%2==0 else [1,0]
   for i in order:brains[i].step(delta)
@@ -183,7 +193,8 @@ func build_ui()->void:
  for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:paper.set_content_margin(side,6)
  hud.theme.set_stylebox("panel","PanelContainer",paper)
  var clock:=PanelContainer.new();clock.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP);clock.offset_left=-54;clock.offset_right=54;clock.offset_top=6;clock.offset_bottom=44;clock.mouse_filter=Control.MOUSE_FILTER_IGNORE;hud.add_child(clock)
- timer_label=label(clock,"1:00",24);timer_label.name="MatchTimer";timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ timer_label=label(clock,"2:00",24);timer_label.name="MatchTimer";timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ countdown_label=preload("res://scripts/round_countdown_label.gd").new();hud.add_child(countdown_label)
  var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-46;bottom.grow_vertical=Control.GROW_DIRECTION_BEGIN;hud.add_child(bottom)
  var buttons:=HFlowContainer.new();buttons.alignment=FlowContainer.ALIGNMENT_CENTER;buttons.add_theme_constant_override("h_separation",6);buttons.add_theme_constant_override("v_separation",6);bottom.add_child(buttons)
  button(buttons,"Main menu",go_home)
@@ -291,6 +302,7 @@ func update_camera(delta:float)->void:
  camera.look_at(camera_follow_point)
 func _process(delta:float)->void:
  if not ready_for_match:return
+ if is_instance_valid(countdown_label):countdown_label.display(countdown,begin_flash)
  if is_instance_valid(timer_label):
   var seconds:=int(ceil(time_remaining()))
   timer_label.text="%d:%02d"%[seconds/60,seconds%60]
