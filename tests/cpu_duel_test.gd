@@ -12,6 +12,7 @@ func run():
  var demo=current_scene
  assert(demo.ready_for_match and demo.fighters.size()==2 and demo.get_script().get_base_script()==load("res://scripts/combat_world.gd"))
  assert(Loadout.build().size()==16)
+ assert(demo.hud.find_children("*","ProgressBar",true,false).is_empty(),"Resource bars should only be on the characters")
  for brain in demo.brains:
   for item in brain.loadout:assert(brain.actor.player.has_animation(item.profile.clip),"Missing equipped animation")
  await create_timer(2.2).timeout
@@ -27,7 +28,7 @@ func run():
  demo.fighters[0].stamina=100.0;demo.fighters[0].mode="chase"
  demo.fighters[0].recover_resources(0.5)
  assert(is_equal_approx(demo.fighters[0].stamina,94.0),"CPU sprint did not use the shared 12 stamina/second rule")
- var kinds:Dictionary={};var seen_shield:=false;var seen_defense:=false;var seen_recovery:=false
+ var kinds:Dictionary={};var seen_shield:=false;var seen_defense:=false;var seen_recovery:=false;var seen_combo:=false;var seen_perfect:=false
  for seed_ in [20261103,173,917]:
   demo.rematch(seed_);Engine.time_scale=4.0
   var deadline:=Time.get_ticks_msec()+65000
@@ -40,6 +41,8 @@ func run():
   assert(not demo.round_active)
   if demo.match_winner>=0:assert(demo.fighters[1-demo.match_winner].health<=0)
   for event in demo.events:
+   if event.event=="cpu_combo":seen_combo=true
+   if event.event in ["parry","directional_parry"]:seen_perfect=true
    if event.event=="cast":
     var spell:String=event.spell
     if "shield" in spell:seen_shield=true
@@ -53,9 +56,9 @@ func run():
   var ended:float=demo.finished_at
   await create_timer(0.2).timeout
   assert(demo.finished_at==ended)
- assert(kinds.has("touch") and kinds.has("projectile") and seen_shield and seen_defense and seen_recovery)
+ assert(kinds.has("touch") and kinds.has("projectile") and seen_shield and seen_defense and seen_recovery and seen_combo and seen_perfect)
  demo.rematch(101)
  for actor in demo.fighters:assert(actor.health==actor.MAX_HEALTH and actor.mana==actor.MAX_MANA and actor.stamina==actor.MAX_STAMINA and actor.damage_dealt==0 and actor.damage_taken==0 and actor.mana_spent==0 and actor.stamina_spent==0)
  assert(demo.match_winner==-2 and demo.shots.is_empty() and demo.events.is_empty() and demo.spell_environment.patches.is_empty())
- print("CPU DUEL PASS: public Fight menu, complete reusable loadouts, native authored poses, three real full matches, melee/fire/shields/evasion/recovery, finite resources, winner, pause and clean rematch")
+ print("CPU DUEL PASS: public Fight menu, complete reusable loadouts, native authored poses, three real full matches, left/right punches, melee combos, timed perfect parries, character-only bars, melee/fire/shields/evasion/recovery, finite resources, winner, pause and clean rematch")
  quit()

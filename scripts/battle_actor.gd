@@ -29,6 +29,7 @@ var practice_wooden_dummy:=false
 var practice_dummy_visual:Node3D
 
 var practice_spell_animation:Dictionary={}
+var authored_entry_pose:Array[Transform3D]=[]
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
 var practice_face_rival:=false
@@ -257,6 +258,7 @@ func ensure_touch_contact_visual()->Node3D:
 	return touch_contact_visual
 
 func reset_fighter(location: Vector3) -> void:
+	authored_entry_pose.clear()
 	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
 	if is_instance_valid(block_notice):block_notice.age=1.0;block_notice.hide();block_notice.set_process(false)
@@ -398,6 +400,7 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
 	if not arena.round_active or health<=0 or combat_reaction_active() or arena.combat().cast_committed(self):return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if not arena.combat().can_start_cast(self,spec) or mana+0.0001<arena.mana_cost(spec):return false
+	authored_entry_pose.clear()
 	practice_projectile_spec=spec.duplicate(true)
 	practice_projectile_spec["animation"]="palm_fireball"
 	practice_spell_animation=profile.duplicate(true)
@@ -405,6 +408,18 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
 	charge_requested=0.0
 	start_cast(false)
 	return mode=="cast"
+
+## Touch can link its recovery into another Touch. Released projectiles remain locked.
+func chain_touch_cast(spec:Dictionary,profile:Dictionary)->bool:
+	if mode!="cast" or str(current_spell.get("effect",""))!="touch" or str(spec.get("effect",""))!="touch" or not did_release:return false
+	if cast_time<mode_length*0.55 or combat_reaction_active() or not arena.round_active:return false
+	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
+	if stamina<float(spec.get("stamina_cost",0.0)) or mana<arena.mana_cost(spec):return false
+	var previous_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
+	arena.combat().finish_cast(self)
+	if not start_authored_cast(spec,profile):return false
+	authored_entry_pose=previous_pose
+	return true
 
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
@@ -794,6 +809,10 @@ func advance_free_animation(delta:float) -> void:
 		apply_custom_jump_pose(clampf(progress,0,0.99999),custom_motion_frames,true)
 	if mode=="cast" and not practice_spell_animation.is_empty():
 		preload("res://scripts/spell_cast_motion.gd").pose(self,practice_spell_animation,clampf(cast_time/maxf(0.001,mode_length),0,0.9999))
+		if not authored_entry_pose.is_empty():
+			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.10,cast_time))
+			if cast_time>=0.10:authored_entry_pose.clear()
+	elif not authored_entry_pose.is_empty():authored_entry_pose.clear()
 
 func editor_uppercut_charge_duration() -> float:
 	return 0.85

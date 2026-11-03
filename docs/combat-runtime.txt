@@ -289,3 +289,20 @@ replays are not guaranteed across different simulation frame rates.
 tests/cpu_duel_test.gd exercises the public Home route, all equipped source clips,
 pause, native sprint cost, low-resource recovery, three complete live matches,
 finite resources, real melee/fire/shield/evade use, winner and rematch cleanup.
+
+CPU melee links and defense timing
+
+Left/right punches are explicit loadout entries. BattleActor.chain_touch_cast
+links an already released Touch after 55% of its animation into another Touch.
+The old contact window is disarmed, the new hit pays normally at its own release,
+and SpellCastMotion blends from the captured pose for 0.10 seconds. Released
+projectiles cannot use this route. CPU sequences stop after two links and reserve
+stamina; punches and knees can link into each other. tests/touch_combo_test.gd
+checks the gates, hand selection, hit-window cleanup and resource accounting.
+
+CPU defense checks every simulation step, forecasts visible projectile arrival
+(including cast telegraphs), and aims for impact 50 ms into the existing 120 ms
+perfect-parry window. It uses a legal 0.5-second shield animation with ordinary
+shared pricing/capacity and tries an evade when activation would be too late.
+No parry windows, invulnerability, damage or resource rules are relaxed for AI.
+The spectator HUD shows plans; all resource bars remain on the characters.

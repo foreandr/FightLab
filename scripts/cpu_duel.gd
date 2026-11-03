@@ -125,15 +125,9 @@ func build_ui()->void:
   var column:=VBoxContainer.new();column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(column)
   var title:=label(column,"",20);title.add_theme_color_override("font_color",Color("b64b44") if i==0 else Color("3981b5"))
   var style:=label(column,"",13)
-  var bars:Dictionary={};var stat_labels:Dictionary={}
-  for stat in [["HP",Color("bd413a")],["Stamina",Color("34844d")],["Mana",Color("319ad0")]]:
-   var line:=HBoxContainer.new();column.add_child(line)
-   var stat_label:=label(line,str(stat[0]),12);stat_label.custom_minimum_size.x=112;stat_labels[stat[0]]=stat_label
-   var bar=preload("res://scripts/smooth_resource_bar.gd").new();bar.custom_minimum_size=Vector2(130,13);bar.size_flags_horizontal=Control.SIZE_EXPAND_FILL;bar.show_percentage=false
-   var fill:=StyleBoxFlat.new();fill.bg_color=stat[1];bar.add_theme_stylebox_override("fill",fill);line.add_child(bar);bars[stat[0]]=bar
   var action:=label(column,"Ready",15);action.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
   var why:=label(column,"",12);why.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-  cards.append({"title":title,"style":style,"bars":bars,"stat_labels":stat_labels,"action":action,"why":why})
+  cards.append({"title":title,"style":style,"action":action,"why":why})
  var bottom:=PanelContainer.new();bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);bottom.offset_top=-54;hud.add_child(bottom)
  var buttons:=HBoxContainer.new();buttons.alignment=BoxContainer.ALIGNMENT_CENTER;bottom.add_child(buttons)
  button(buttons,"Main menu",go_home)
@@ -149,9 +143,6 @@ func update_hud()->void:
  else:result_label.text=("Paused · " if paused else "")+"%.1f s"%elapsed
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i];var card:Dictionary=cards[i]
-  for stat in [["HP",actor.health,actor.MAX_HEALTH],["Stamina",actor.stamina,actor.MAX_STAMINA],["Mana",actor.mana,actor.MAX_MANA]]:
-   var bar=card.bars[stat[0]];bar.max_value=stat[2];bar.set_target_value(maxf(0.0,stat[1]))
-   card.stat_labels[stat[0]].text="%s %.0f"%[stat[0],maxf(0.0,stat[1])]
   card.action.text=("Defeated" if actor.health<=0 else brains[i].plan)
   card.why.text=brains[i].reason+" · Damage dealt %.1f"%actor.damage_dealt
 func toggle_pause()->void:

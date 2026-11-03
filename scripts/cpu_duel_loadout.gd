@@ -3,7 +3,7 @@ extends RefCounted
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 static func build()->Array[Dictionary]:
  var result:Array[Dictionary]=[]
- for move in [["Jab","ual1/Punch_Jab","hand_l","Arm",1.05],["Cross","ual1/Punch_Cross","hand_r","Arm",1.10],["Kick","boxing/front_kick_r","foot_r","Leg",1.45],["Knee","battle/knee","calf_r","Leg",1.05]]:
+ for move in [["Left punch","ual1/Punch_Jab","hand_l","Arm",1.05],["Right punch","ual1/Punch_Cross","hand_r","Arm",1.10],["Kick","boxing/front_kick_r","foot_r","Leg",1.45],["Knee","battle/knee","calf_r","Leg",1.05]]:
   for seconds in [0.55,1.0,1.5]:
    var base:Dictionary=Rules.touch_base([move[2]])
    base["animation_type"]=move[3]
@@ -16,8 +16,8 @@ static func build()->Array[Dictionary]:
   var spec:Dictionary=Rules.author(base,float(mix[4]),0.3,true)
   spec["id"]="cpu_fire_"+str(result.size());spec["name"]=mix[0]
   result.append({"kind":"projectile","title":mix[0],"range":18.0,"duration":mix[4],"spec":spec,"profile":{"clip":"ual1/Punch_Jab","step":"Punch","store_raw":true,"duration":mix[4],"attack_bone":"hand_l","animation_type":"Arm"}})
- # Short telegraphed shield cast, ordinary shared strength/lifetime and parry rules.
- var shield:Dictionary=Rules.author(Rules.self_barrier_base(),1.0,0.3,false)
+ # Quicker shield animation, priced by the same rules as any authored cast.
+ var shield:Dictionary=Rules.author(Rules.self_barrier_base(),0.5,0.3,false)
  shield["id"]="cpu_shield";shield["name"]="Timed shield"
- result.append({"kind":"shield","title":"Timed shield","range":0.0,"duration":1.0,"spec":shield,"profile":{"clip":"duel/shield_raise_brace","step":"Brace Block","source_duration":1.0,"duration":1.0,"attack_bone":"hand_r","animation_type":"Arm"}})
+ result.append({"kind":"shield","title":"Timed shield","range":0.0,"duration":0.5,"spec":shield,"profile":{"clip":"duel/shield_raise_brace","step":"Brace Block","source_duration":1.0,"duration":0.5,"attack_bone":"hand_r","animation_type":"Arm"}})
  return result

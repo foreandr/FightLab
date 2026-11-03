@@ -14,6 +14,8 @@ var reason:=""
 var counts:Dictionary={}
 var last_progress:=0.0
 var stale_time:=0.0
+var combo_count:=0
+var combo_checked:=false
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
@@ -29,6 +31,7 @@ func can_use(item:Dictionary,reserve:float=0.0)->bool:
  return actor.stamina>=float(item.spec.stamina_cost)+reserve and actor.mana>=world.mana_cost(item.spec)
 func cast(item:Dictionary,why:String)->bool:
  if not can_use(item) or not actor.start_authored_cast(item.spec,item.profile):return false
+ combo_count=0;combo_checked=false
  note(str(item.title),why);action_left=0.18+rng.randf_range(0.0,0.18)
  return true
 func move(kind:String,why:String)->void:
@@ -46,30 +49,76 @@ func incoming()->Dictionary:
   var time:float=offset.dot(velocity)/maxf(0.001,velocity.length_squared())
   if time<0 or time>0.85:continue
   if (offset-velocity*time).length()>float(shot.radius)+0.7:continue
+  time=maxf(0.0,time-(float(shot.radius)+0.35)/maxf(0.1,velocity.length()))
   if time<earliest:earliest=time;best={"eta":time,"kind":"projectile"}
  var enemy:CharacterBody3D=actor.rival
- if enemy.mode=="cast" and not enemy.did_release and actor.flat_distance()<1.65 and str(enemy.current_spell.get("effect",""))=="touch":
-  var eta:float=maxf(0.0,float(enemy.current_spell.release)-enemy.cast_time)+0.12
-  if eta<earliest:best={"eta":eta,"kind":"melee"}
+ if enemy.mode=="cast":
+  var effect:=str(enemy.current_spell.get("effect",""))
+  var eta:=INF
+  if effect=="touch" and actor.flat_distance()<1.65 and not bool(world.combat().touch_casts.get(enemy.get_instance_id(),{}).get("connected",false)):
+   var bone:=str(enemy.current_spell.get("hand","hand_r"))
+   var apex:=0.48 if bone.begins_with("calf") else (0.44 if bone.begins_with("foot") else 0.36)
+   eta=maxf(0.0,enemy.mode_length*apex-enemy.cast_time)/enemy.cast_speed_multiplier()
+  elif effect=="orb" and not enemy.did_release:
+   var speed:float=preload("res://scripts/combat_spell_rules.gd").motion(enemy.current_spell).speed
+   eta=maxf(0.0,float(enemy.current_spell.release)-enemy.cast_time)/enemy.cast_speed_multiplier()+maxf(0.0,actor.flat_distance()-0.5)/maxf(1.0,speed)
+  if eta<earliest and eta<0.85:best={"eta":eta,"kind":"melee" if effect=="touch" else "projectile"}
  return best
+func defend(threat:Dictionary)->bool:
+ if threat.is_empty() or defense_left>0:return false
+ if actor.mode=="cast" and (actor.did_release or str(actor.current_spell.get("effect",""))!="touch"):return false
+ var shield:Dictionary=loadout.back()
+ if not can_use(shield):return false
+ var eta:float=threat.eta
+ var activation:float=float(shield.duration)*float(shield.spec.release)/actor.cast_speed_multiplier()
+ # Aim for impact about 50 ms into the real 120 ms perfect-parry window.
+ if eta>activation+0.09 and eta<0.65:
+  if actor.mode=="cast":return false
+  if plan!="Time the block":note("Time the block","Read incoming "+str(threat.kind))
+  return true
+ if eta>=activation-0.035 and eta<=activation+0.09:
+  if actor.mode=="cast":
+   world.combat().interrupt_cast_attempt(actor);actor.mode="idle"
+  if cast(shield,"Perfect-block timing · "+str(threat.kind)):
+   defense_left=0.18;return true
+ if eta<activation-0.035 and actor.mode!="cast" and actor.stamina>30:
+  if actor.start_motion_dash(2 if rng.randf()<0.5 else 6):
+   note("Evade","Too late to parry");defense_left=0.4;return true
+ return false
+func try_combo()->bool:
+ if str(actor.current_spell.get("effect",""))!="touch" or not actor.did_release:return false
+ if combo_checked or combo_count>=2 or actor.cast_time<actor.mode_length*0.58:return false
+ combo_checked=true
+ if actor.flat_distance()>1.25 or rng.randf()>0.90:return false
+ var choices:Array[Dictionary]=[]
+ var old_bone:=str(actor.current_spell.get("hand",""))
+ for item in loadout:
+  if item.kind!="melee" or not can_use(item,16.0) or actor.flat_distance()>float(item.range):continue
+  if str(item.spec.hand)==old_bone:continue
+  choices.append(item)
+ if choices.is_empty():return false
+ var next:Dictionary=choices[rng.randi_range(0,choices.size()-1)]
+ var previous:=str(actor.current_spell.get("name","Touch"))
+ if not actor.chain_touch_cast(next.spec,next.profile):return false
+ combo_count+=1;combo_checked=false
+ note(str(next.title),"Combo from "+previous)
+ world.events.append({"time":world.elapsed,"event":"cpu_combo","team":actor.team,"from":previous,"to":next.title})
+ return true
 func step(delta:float)->void:
  if not world.round_active or actor.health<=0:return
  defense_left=maxf(0.0,defense_left-delta);action_left=maxf(0.0,action_left-delta)
  if actor.damage_dealt>last_progress+0.1:last_progress=actor.damage_dealt;stale_time=0.0
  else:stale_time+=delta
- if actor.mode=="cast" or actor.combat_reaction_active() or actor.mode in ["motion_dash","takeoff","air","land"]:return
+ if actor.combat_reaction_active() or actor.mode in ["motion_dash","takeoff","air","land"]:return
+ var threat:=incoming()
+ if defend(threat):return
+ if actor.mode=="cast":
+  try_combo()
+  return
  think_left-=delta
  if think_left>0:return
  think_left=rng.randf_range(0.14,0.26)
  var distance:float=actor.flat_distance()
- var threat:=incoming()
- if not threat.is_empty() and defense_left<=0:
-  var shield:Dictionary=loadout.back()
-  if float(threat.eta)>0.24 and float(threat.eta)<0.65 and not actor.self_barrier.active() and can_use(shield,8.0) and rng.randf()<0.68:
-   if cast(shield,"Incoming "+str(threat.kind)):defense_left=1.4;return
-  if float(threat.eta)<0.45 and actor.stamina>35 and rng.randf()<0.7:
-   if actor.start_motion_dash(2 if rng.randf()<0.5 else 6):
-    note("Evade","Incoming "+str(threat.kind));defense_left=1.3;return
  if recovering:
   recovering=actor.stamina<60 or (actor.mana<22 and distance>2.0)
  elif actor.stamina<24 or (actor.mana<8 and distance>2.0):recovering=true
