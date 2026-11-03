@@ -46,7 +46,7 @@ func setup(editor:Control)->void:
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
  var tabs:=HBoxContainer.new();add_child(tabs)
- for pair in [["Movement","Movement"],["Arm","Arms"],["Leg","Legs"],["Head","Head"]]:
+ for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"]]:
   var kind:String=pair[0];var tab:Button=host.button(tabs,pair[1],func():set_type(kind));tab.toggle_mode=true;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;type_buttons[kind]=tab
  var row:=HBoxContainer.new();add_child(row)
  var group:=ButtonGroup.new();group.allow_unpress=false
@@ -145,6 +145,7 @@ func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)
  used[id]=true;clips[str(entry.get("clip",""))]=true
  var copy:=entry.duplicate();copy["_origin"]=origin;copy["_id"]=id;copy["_origin_rank"]=["Your library","Built-in","Community"].find(origin)
  copy["store_animation_type"]=str(entry.store_animation_type) if entry.has("store_animation_type") else Types.kind(entry)
+ copy["_section"]="Idle" if Types.is_idle(copy) else copy.store_animation_type
  if not copy.has("air_state"):
   var words:=" "+str(entry.get("title",""))+" "+str(entry.get("kind",""))
   copy["air_state"]="Airborne" if ["jump","flip","air","twist","fly","leap","fall","cartwheel"].any(func(h):return words.to_lower().contains(h)) else "Grounded"
@@ -160,7 +161,7 @@ func apply_filters()->void:
  page=0;matches_.clear()
  var query:=search.text.strip_edges().to_lower()
  for entry in records:
-  if entry.store_animation_type!=selected_type:continue
+  if entry._section!=selected_type:continue
   if str(entry.get("air_state","Grounded"))!=selected_air:continue
   if not query.is_empty():
    if ":" in query or '"' in query:
@@ -201,7 +202,7 @@ func select_animation(record:Dictionary)->bool:
  if entry.is_empty():selection.text="Animation data unavailable";return false
  entry["sandbox_animation"]=true;entry["demo_choice"]="sandbox"
  entry["animation_type"]=str(record.store_animation_type)
- entry["sandbox_offensive"]=str(record.get("group","Motion"))=="Attack" or record.store_animation_type in ["Arm","Leg","Head"]
+ entry["sandbox_offensive"]=record._section!="Idle" and (str(record.get("group","Motion"))=="Attack" or record.store_animation_type in ["Arm","Leg","Head"])
  entry=preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry)
  if not host.spell_builder.choose_demo_animation(entry,false):selection.text="Could not load "+str(record.title);show_page();return false
  selected_id=str(record._id);selection.text=str(record.title);confirm.disabled=false

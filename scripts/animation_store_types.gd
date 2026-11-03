@@ -3,6 +3,18 @@ extends RefCounted
 const CastType=preload("res://scripts/animation_cast_type.gd")
 const LABELS=["All types","Arm","Leg","Head","Movement"]
 
+static func is_idle(entry:Dictionary)->bool:
+	# A browsing section, not a new combat pose-ownership type.
+	var title:=str(entry.get("title",""))
+	var camel:=RegEx.new();camel.compile("([a-z])([A-Z])")
+	var regex:=RegEx.new();regex.compile("[a-z]+")
+	var words:Array[String]=[]
+	for found in regex.search_all(camel.sub(title,"$1 $2",true).to_lower()):words.append(found.get_string())
+	# Idle-to-action transitions and shield-break reactions remain actions.
+	if "idle" in words and _has(words,["to","from"]):return false
+	if _has(words,["run","walk","sprint","jump","attack","punch","kick","hit","break","death","draw","sheathe","enter","exit","start","stop"]):return false
+	return _has(words,["idle","idles","idling"]) or str(entry.get("category","")).nocasecmp_to("Idle")==0
+
 static func kind(entry:Dictionary)->String:
 	if CastType.declared(entry):return CastType.kind(entry)
 	if str(entry.get("store_animation_type","")) in CastType.TYPES:return str(entry.store_animation_type)
