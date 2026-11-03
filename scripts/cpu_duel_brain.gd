@@ -80,11 +80,16 @@ func cast(item:Dictionary,why:String)->bool:
 func can_jump()->bool:
  return jump_cooldown<=0 and actor.is_on_floor() and actor.stamina>=40 and not actor.combat_reaction_active() and not world.combat().cast_committed(actor)
 func jump(why:String)->bool:
- if not can_jump() or not actor.start_motion_jump():return false
+ var height:=rng.randf_range(0.15,0.55) if actor.flat_distance()<2.0 else rng.randf_range(0.4,1.0)
+ if not can_jump() or not actor.start_motion_jump(height):return false
  jump_cooldown=3.5;air_action_used=false
  note("Jump",why)
- world.events.append({"time":world.elapsed,"event":"cpu_jump","team":actor.team,"stamina":actor.stamina})
+ world.events.append({"time":world.elapsed,"event":"cpu_jump","team":actor.team,"stamina":actor.stamina,"height_fraction":height})
  return true
+func dash(direction:int)->bool:
+ # Close only the useful distance; lateral evasion can also be a short burst.
+ var distance:=clampf(actor.flat_distance()-0.85,0.96,3.6) if direction==0 else rng.randf_range(1.0,2.4)
+ return actor.start_motion_dash(direction,clampf((distance/12.0-0.08)/0.22,0.0,1.0))
 func air_step(delta:float)->void:
  if air_action_used or actor.air_clock<0.08:return
  think_left-=delta
@@ -170,7 +175,7 @@ func defend(threat:Dictionary)->bool:
  if eta<activation-0.035 and actor.mode!="cast" and actor.stamina>30:
   if str(threat.kind)=="melee" and rng.randf()<0.35 and jump("Jump away from the incoming strike"):
    defense_left=0.4;return true
-  if actor.start_motion_dash(2 if rng.randf()<0.5 else 6):
+  if dash(2 if rng.randf()<0.5 else 6):
    note("Evade","Too late to parry");defense_left=0.4;return true
  return false
 func try_combo(allow_hesitation:bool=true)->bool:
@@ -233,7 +238,7 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  var kind:=str(selected.action).trim_prefix("move/")
  if kind=="jump":return jump("Change elevation / airborne opening")
  if kind=="dash":
-  if actor.start_motion_dash(0):note("Dash in","Learned movement choice");defense_left=1.2;return true
+  if dash(0):note("Dash in","Learned movement choice");defense_left=1.2;return true
   return false
  move(kind,"Learned movement choice");action_left=0.45
  return true
@@ -296,7 +301,7 @@ func step(delta:float)->void:
   for i in scores.size():if scores[i]>scores[best]:best=i
   if cast(choices[best],"Close contact" if distance<1.8 else "Ranged opening"):return
  if distance>3.5 and actor.stamina>55:
-  if distance<7.0 and defense_left<=0 and rng.randf()<0.15 and actor.start_motion_dash(0):
+  if distance<7.0 and defense_left<=0 and rng.randf()<0.15 and dash(0):
    note("Dash in","Close the gap");defense_left=1.2;return
   move("chase","Pressure at range")
  elif distance>0.85:move("approach","Find contact range")

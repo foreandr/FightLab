@@ -10,7 +10,7 @@ var paused:=false
 var match_seed:=0
 var match_winner:=-2
 var finished_at:=0.0
-var match_duration:=60.0
+var match_duration:=120.0
 var finish_reason:=""
 var timer_label:Label
 var hitboxes_button:Button

@@ -72,6 +72,15 @@ var combo_time := 0.0
 var combo_speed := 0.0
 var motion_direction := Vector3.ZERO
 var motion_speed := 0.0
+var motion_jump_fraction:=1.0
+var motion_jump_held:=false
+var motion_jump_variable:=false
+var motion_jump_hold_time:=0.0
+var motion_dash_held:=false
+var motion_dash_variable:=false
+const JUMP_HOLD_SECONDS:=0.25
+const DASH_MIN_SECONDS:=0.08
+const DASH_MAX_SECONDS:=0.30
 var air_trick := ""
 const TWIST_DELAY := 0.12
 const TWIST_DURATION := 0.54
@@ -324,6 +333,10 @@ func reset_fighter(location: Vector3) -> void:
 	combo_time = 0
 	motion_direction=Vector3.ZERO
 	motion_speed=0
+	motion_jump_variable=false
+	motion_dash_variable=false
+	motion_jump_held=false
+	motion_dash_held=false
 	air_trick=""
 	twist_age=-1
 	model.rotation.y=0
@@ -1101,19 +1114,22 @@ func start_story_front_kick(charge_profile:Dictionary={},aim_direction:Vector3=V
 		return
 	begin_strike(["front_kick", "boxing/front_kick_r", "ball_r", 0.25, 0.48, 15.0, 15.0, 1.35])
 
-func start_motion_dash(direction_index: int) -> bool:
+func start_motion_dash(direction_index: int, distance_fraction:float=1.0, held_input:bool=false) -> bool:
 	if arena.combat().cast_committed(self):return false
 	if health<=0 or freeze_time>0 or is_instance_valid(ragdoll) or not is_on_floor():
 		return false
-	if not spend_stamina(12):
+	var fraction:=clampf(distance_fraction,0.0,1.0)
+	if not spend_stamina(4.0 if held_input else lerpf(4.0,12.0,fraction)):
 		return false
+	motion_dash_variable=held_input
+	motion_dash_held=held_input
 	var angle:=float(posmod(direction_index,8))*PI/4
 	# Forward, forward-right, right, back-right, back, back-left, left, forward-left.
 	motion_direction=(global_basis.z*cos(angle)-global_basis.x*sin(angle)).normalized()
 	motion_speed=12.0
 	mode="motion_dash"
 	mode_time=0
-	mode_length=0.30
+	mode_length=DASH_MAX_SECONDS if held_input else lerpf(DASH_MIN_SECONDS,DASH_MAX_SECONDS,fraction)
 	combo_speed=0
 	combo_time=0
 	clip=""
@@ -1123,17 +1139,55 @@ func start_motion_dash(direction_index: int) -> bool:
 	arena.audio.impact("dash",global_position,0.5)
 	return true
 
-func start_motion_jump() -> bool:
+func start_motion_jump(height_fraction:float=1.0, held_input:bool=false) -> bool:
 	if arena.combat().cast_committed(self):return false
 	if water_depth>0.5:
 		swim_up()
 		return not ice_trapped and freeze_time<=0 and stun_time<=0 and not drowned
-	if not is_on_floor() or stamina<12 or health<=0:
+	var fraction:=clampf(height_fraction,0.0,1.0)
+	var cost:=4.0 if held_input else lerpf(4.0,12.0,fraction)
+	if not is_on_floor() or stamina<cost or health<=0 or combat_reaction_active() or mode=="takeoff":
 		return false
 	var carry:=motion_direction*minf(6,combo_speed) if combo_time>0 else drive_velocity.limit_length(6)
-	start_jump("motion_jump")
+	# Keep legacy authored jumps unchanged; this entry owns variable player/CPU hops.
+	if not spend_stamina(cost):return false
+	motion_jump_fraction=fraction
+	motion_jump_variable=held_input
+	motion_jump_held=held_input
+	motion_jump_hold_time=0.0
+	mode="takeoff"
+	mode_time=0.0
+	mode_length=0.14
+	jump_kind="motion_jump"
+	air_dash_used=false
+	clip=""
+	play("duel/takeoff",1.35)
+	count_action("motion_jump")
 	air_momentum=carry
 	return mode=="takeoff"
+
+func set_motion_jump_held(value:bool)->void:
+	motion_jump_held=value
+
+func set_motion_dash_held(value:bool)->void:
+	motion_dash_held=value
+
+func tick_variable_jump(delta:float)->void:
+	if not motion_jump_variable:return
+	if health<=0 or combat_reaction_active() or (is_on_floor() and mode!="takeoff"):
+		motion_jump_variable=false
+		return
+	if mode=="takeoff":return
+	if not motion_jump_held or motion_jump_hold_time>=JUMP_HOLD_SECONDS:
+		if not motion_jump_held and velocity.y>5.4:velocity.y=5.4
+		motion_jump_variable=false
+		return
+	var step:=minf(delta,JUMP_HOLD_SECONDS-motion_jump_hold_time)
+	if not spend_stamina(8.0*step/JUMP_HOLD_SECONDS,false):
+		velocity.y=minf(velocity.y,5.4)
+		motion_jump_variable=false
+		return
+	motion_jump_hold_time+=step
 
 func start_editor_motion(kind: String) -> bool:
 	if arena.combat().cast_committed(self):return false
@@ -1192,7 +1246,7 @@ func launch() -> void:
 	if jump_kind!="motion_jump":
 		super.launch()
 		return
-	velocity.y=10.8
+	velocity.y=(10.8 if motion_jump_held else 5.4) if motion_jump_variable else sqrt(lerpf(5.4*5.4,10.8*10.8,motion_jump_fraction))
 	air_clock=0
 	custom_jump_elapsed=0.0
 	mode="air"
@@ -1203,6 +1257,11 @@ func launch() -> void:
 
 func tick_motion_dash(delta: float) -> void:
 	impact_physics.restore(skeleton)
+	if motion_dash_variable:
+		if not motion_dash_held:mode_length=minf(mode_length,maxf(DASH_MIN_SECONDS,mode_time))
+		var charged_step:=maxf(0.0,minf(mode_time+delta,mode_length)-maxf(mode_time,DASH_MIN_SECONDS))
+		if charged_step>0 and not spend_stamina(8.0*charged_step/(DASH_MAX_SECONDS-DASH_MIN_SECONDS),false):
+			mode_length=mode_time
 	mode_time+=delta
 	recover_resources(delta)
 	var speed:=motion_speed*(0.6 if chill_time>0 else 1.0)
@@ -1385,6 +1444,7 @@ func combat_reaction_active()->bool:
 
 func tick(delta: float) -> void:
 	if practice_paused:return
+	tick_variable_jump(delta)
 	if is_instance_valid(burn_death):return
 	if practice_god_mode:restore_god_resources()
 	if practice_wooden_dummy and health<=0.0:
@@ -1667,17 +1727,17 @@ func receive_status(attacker: CharacterBody3D, spec: Dictionary) -> void:
 			freezes += 1
 			arena.events.append({"time":arena.elapsed,"event":"freeze","victim":team})
 
-func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
-	if not practice_immortal and not practice_god_mode:return receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
+func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO, body_impulse := Vector3.INF) -> bool:
+	if not practice_immortal and not practice_god_mode:return receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse,body_impulse)
 	# Keep damage, guard, status and physical reactions; prevent lethal branches.
 	var previous_health:=health
 	var previous_damage:=damage_taken
 	health=maxf(MAX_HEALTH,maxf(0,amount)+MAX_HEALTH+1)
-	var landed:=receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse)
+	var landed:=receive_magic_impact(amount,direction,attacker,point,zone,bone,impulse,body_impulse)
 	health=maxf(0.0,previous_health-(damage_taken-previous_damage)) if practice_damageable_dummy and not practice_god_mode else MAX_HEALTH
 	return landed
 
-func receive_magic_impact(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
+func receive_magic_impact(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO, body_impulse := Vector3.INF) -> bool:
 	if health<=0 or invulnerability>0 or not arena.round_active:
 		return false
 	if not point.is_finite():
@@ -1711,7 +1771,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 		apply_physical_impact(point,impulse,zone,bone)
 		enter_death(attacker,impulse,point)
 		return true
-	var landed := super.receive_magic(amount, direction, attacker, point, zone, bone, impulse)
+	var landed := super.receive_magic(amount, direction, attacker, point, zone, bone, impulse,body_impulse)
 	if landed and preload("res://scripts/combat_defense_rules.gd").ragdolls(amount):
 		start_ragdoll(impulse, point)
 	return landed

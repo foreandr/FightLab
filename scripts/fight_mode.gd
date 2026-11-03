@@ -1546,6 +1546,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	var player = fighters[0]
+	if event.keycode==KEY_SPACE:
+		if event.pressed:player.start_motion_jump(1.0,true)
+		else:player.set_motion_jump_held(false)
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode==KEY_W and not event.pressed:player.set_motion_dash_held(false)
 	if event.keycode in [KEY_KP_7,KEY_KP_9,KEY_KP_0]:
 		var binding := "mouse_left" if event.keycode==KEY_KP_7 else ("mouse_right" if event.keycode==KEY_KP_9 else "mouse_both")
 		var ability := _story_ability_for_input(binding)
@@ -1597,7 +1603,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.keycode == KEY_W and story_stage >= 5 and player.has_story_ability("dash"):
 		var now := Time.get_ticks_msec() / 1000.0
 		if now - last_forward_press <= 0.32 and player.mode in ["idle", "run"]:
-			player.start_motion_dash(0)
+			player.start_motion_dash(0,1.0,true)
 			last_forward_press = -10.0
 			get_viewport().set_input_as_handled()
 		else:

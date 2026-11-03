@@ -252,7 +252,7 @@ CPU jumping and airborne decisions
 ---------------------------------
 move/jump is a legal learned choice at 1.6-9m when grounded, sufficiently rested
 and not committed to a cast. Late melee evasion may also choose a jump. Uses
-BattleActor.start_motion_jump: ordinary 12-stamina payment, carried movement,
+BattleActor.start_motion_jump: variable 4-12-stamina payment, carried movement,
 takeoff, gravity and landing. A 3.5s controller cooldown prevents repeat jumps;
 the controller reserves 40 stamina before choosing one. No invulnerability,
 teleports, damage buffs or duplicate jump physics are added.
@@ -264,15 +264,15 @@ Projectile casts use the existing matching duel/air_* animation variants, with
 the tucked-leg palm fireball as fallback. Specs/costs stay shared; Touch keeps
 its actual chosen contact animation. Flight continues through casts and tricks.
 Events record cpu_jump, cpu_air_attack (including actual height), cpu_air_trick.
-cpu_jump_test.gd checks policy selection, exact jump cost, cooldown, real height
+cpu_jump_test.gd checks policy selection, bounded jump cost, cooldown, real height
 and landing, real aerial projectile release/pose, paid flip/twist and low-stamina
 rejection. Three full fights and defense/deception regression tests passed.
 A copy of the saved policy completed an 81.9s fight with 33 jumps, 21 airborne
 attacks and nine air tricks across both fighters. This verifies use, not optimality.
 
-One-minute rounds and resource recovery
+Two-minute rounds and resource recovery
 --------------------------------------
-CPU rounds now last at most 60 simulation seconds after the initial countdown.
+CPU rounds now last at most 120 simulation seconds after the initial countdown.
 Pause stops the clock; slow motion slows it with the fight. A small top-centre
 clock turns red in the last ten seconds. Knockout ends a round earlier. At the
 deadline, higher current HP wins; HP equal within 0.001 is a draw. Survivors are

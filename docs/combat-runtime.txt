@@ -355,3 +355,31 @@ Block events now include spell ID, delivery_type and incoming_direction so
 diagnostics distinguish Touch golds from projectile golds. See
 tests/touch_directional_parry_test.gd for real collision-query coverage of gold,
 blue and normal blocks, effect prevention, resource rewards and colored feedback.
+
+Contact push and variable movement
+----------------------------------
+CombatDefenseRules.contact_body_impulse reduces ordinary non-ragdoll Touch/melee
+body translation to 20% of the original impulse, capped at 33.75 kg*m/s (0.45m/s
+for a 75kg actor). Accumulated ordinary horizontal push is capped at 0.6m/s,
+without truncating an already stronger launch. Skeleton response and leg stamina
+chips still use the full original impact. Physical damage, flinch timing, status,
+projectile impacts, explicit launches, high charge, Wind, lethal hits and ragdoll
+impulses retain their existing rules. Runtime supplies this policy to the common
+actor path; modes don't implement their own version. contact_knockback_test.gd
+verifies actual swept kick -> punch contact without moving either fighter.
+
+BattleActor.start_motion_jump(height_fraction, held_input) and
+start_motion_dash(direction, distance_fraction, held_input) expose variable
+movement to any mode/controller. Fractions clamp to 0..1. Default scripted calls
+retain full travel. CPU jumps choose smaller heights near an opponent and a
+wider height range at distance; dash approach chooses only the distance needed
+to reach punching space, and lateral evasion varies its burst length.
+Fixed choices cost 4..12 stamina. Held jumps begin at 4, add up to 8 across
+0.25 airborne seconds, and cut remaining upward velocity to 5.4m/s on release.
+Full launch stays 10.8m/s with ordinary gravity and landing. Held dashes begin
+at 4, last 0.08..0.30s at 12m/s, and add up to 8 stamina for extended travel.
+No extra stamina means the extension ends. Story Space starts/releases a held
+jump; releasing W ends a double-tap forward dash. Authored choreography and
+legacy special jumps keep their explicit animation behavior.
+variable_motion_test.gd measures actual heights, distances, stamina, landing,
+low-resource rejection, duplicate takeoff rejection and fractional script calls.

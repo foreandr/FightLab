@@ -356,7 +356,7 @@ func spend_mana(amount: float) -> bool:
 	if is_instance_valid(arena):arena.show_combat_number(self,"magicka",amount)
 	return true
 
-func spend_stamina(amount: float) -> bool:
+func spend_stamina(amount: float, show_number:bool=true) -> bool:
 	if practice_god_mode:
 		stamina=MAX_STAMINA
 		return true
@@ -366,7 +366,7 @@ func spend_stamina(amount: float) -> bool:
 	stamina_spent += amount
 	stamina_delay = RESOURCE_RECOVERY_DELAY
 	minimum_stamina = minf(minimum_stamina, stamina)
-	if is_instance_valid(arena):arena.show_combat_number(self,"stamina",amount)
+	if show_number and is_instance_valid(arena):arena.show_combat_number(self,"stamina",amount)
 	return true
 
 func spend_cast_resources(stamina_cost:float,mana_cost_:float) -> bool:
@@ -854,7 +854,7 @@ func face_rival(delta: float) -> void:
 	var direction := flat_direction(position, rival.position)
 	rotation.y = lerp_angle(rotation.y, atan2(direction.x, direction.z), minf(1, delta * 18))
 
-func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO) -> bool:
+func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D, point := Vector3.INF, zone := "chest", bone := "spine_03", impulse := Vector3.ZERO, body_impulse := Vector3.INF) -> bool:
 	if health <= 0 or invulnerability > 0 or not arena.round_active:
 		return false
 	var applied := minf(health, amount)
@@ -866,7 +866,7 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 	invulnerability = 0.16
 	if not point.is_finite():
 		point = bone_point("spine_03")
-	apply_physical_impact(point, impulse if not impulse.is_zero_approx() else direction.normalized() * amount * 12.0, zone, bone)
+	apply_physical_impact(point, impulse if not impulse.is_zero_approx() else direction.normalized() * amount * 12.0, zone, bone, body_impulse)
 	if health <= 0:
 		mode = "ko"
 		ko_count += 1
@@ -882,10 +882,11 @@ func receive_magic(amount: float, direction: Vector3, attacker: CharacterBody3D,
 		play(reaction,player.get_animation(reaction).length/mode_length)
 	return true
 
-func apply_physical_impact(point: Vector3, impulse: Vector3, zone: String, bone: String) -> void:
+func apply_physical_impact(point: Vector3, impulse: Vector3, zone: String, bone: String, body_impulse:=Vector3.INF) -> void:
 	impact_physics.hit(skeleton, point, impulse, zone, bone, is_on_floor(), global_basis)
-	var change := impulse / impact_physics.BODY_MASS
-	knockback = (knockback + Vector3(change.x, 0, change.z)).limit_length(6.0)
+	var change:Vector3 = (body_impulse if body_impulse.is_finite() else impulse) / impact_physics.BODY_MASS
+	var push_limit:=maxf(knockback.length(),0.6) if body_impulse.is_finite() and not body_impulse.is_equal_approx(impulse) else 6.0
+	knockback = (knockback + Vector3(change.x, 0, change.z)).limit_length(push_limit)
 	velocity += change
 	if not is_on_floor():
 		air_momentum = (air_momentum + Vector3(change.x, 0, change.z) * 0.55).limit_length(9)

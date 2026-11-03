@@ -19,7 +19,7 @@ func run():
  var empty:Array[Dictionary]=[];var scores:Array[float]=[]
  var stamina:float=a.stamina
  assert(brain.adaptive_decision(a.flat_distance(),empty,scores))
- assert(a.mode=="takeoff" and is_equal_approx(stamina-a.stamina,12.0),"Jump choice did not use the real paid jump")
+ assert(a.mode=="takeoff" and stamina-a.stamina>=4.0 and stamina-a.stamina<=12.0,"Jump choice did not use the real paid variable jump")
  assert(not brain.jump("repeat"),"Jump repeated without landing/cooldown")
  var peak:=0.0;var airborne_cast:=false;var landed:=false
  for i in 180:
@@ -30,7 +30,7 @@ func run():
    airborne_cast=true
    assert(str(a.practice_spell_animation.clip).begins_with("duel/air_"),"Ground pose used for airborne projectile")
   if peak>1 and a.is_on_floor():landed=true;break
- assert(peak>2.0 and airborne_cast and landed,"Missing real ascent, aerial cast or gravity-driven landing")
+ assert(peak>1.0 and airborne_cast and landed,"Missing real ascent, aerial cast or gravity-driven landing")
  assert(w.events.any(func(e):return e.event=="cpu_air_attack"))
  assert(not w.casts.is_empty(),"Airborne attack was only cosmetic")
  # Both trick choices use the existing airborne controller and its resource cost.

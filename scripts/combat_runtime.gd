@@ -374,7 +374,8 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken
 	if victim.has_method("set_hit_context"):victim.set_hit_context(q,shattered,bool(spec.get("launch",false)))
-	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400)):
+	var body_impulse:Vector3=preload("res://scripts/combat_defense_rules.gd").contact_body_impulse(spec,amount,impulse.limit_length(1400))
+	if not victim.receive_magic(amount,direction,attacker,point,zone,bone,impulse.limit_length(1400),body_impulse):
 		return fraction>0
 	if preload("res://scripts/combat_hit_regions.gd").is_head(zone) and victim.health<=0 and victim.has_method("sever_head") and victim.sever_head(impulse):
 		field.events.append({"time":field.elapsed,"event":"headshot_kill","victim":victim.team,"attacker":attacker.team})
