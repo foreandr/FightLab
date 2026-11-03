@@ -1755,6 +1755,8 @@ func apply_recovery_blend(weight: float) -> void:
 		skeleton.set_bone_pose_rotation(i,recovery_source[i][1].slerp(recovery_target[i][1],weight))
 
 func tick_return_home(delta:float) -> void:
+	# This path returns before DuelActor.tick, so advance its shared recovery once.
+	recover_idle_resources(delta)
 	invulnerability=maxf(0,invulnerability-delta)
 	var offset:Vector3=practice_home-global_position
 	offset.y=0
