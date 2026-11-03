@@ -10,7 +10,7 @@ func run():
  var e=current_scene;var b=e.spell_builder
  if not check(not b.demo_timing_panel.visible and not b.demo_choice_selected,"RHS is visible before selecting a demo"):return
  var grid:GridContainer=b.demo_screen.find_child("DemoAnimationGrid",true,false)
- if not check(grid.get_child_count()==9 and b.grab_demo_button.get_parent()==grid and b.grab_demo_button.disabled,"Grab is not part of the same card grid"):return
+ if not check(grid.get_child_count()==8 and b.demo_screen.find_child("DemoGrab",true,false)==null,"Grab still appears in the demo grid"):return
  for card in grid.get_children():
   var preview:TextureRect=card.find_child("PreviewImage",true,false)
   if not check(preview!=null and preview.texture!=null and card.focus_mode==Control.FOCUS_ALL,"Missing image or keyboard focus"):return
@@ -24,11 +24,14 @@ func run():
  if not check(b.creation_step=="delivery","Confirm no longer advances"):return
  b.return_to_start()
  if not check(not b.demo_timing_panel.visible,"Back to start exposes RHS before choosing"):return
+ e.select_group("Motion")
+ if not check(e.category_buttons.has("Grab") and e.category_buttons.Grab.disabled,"Motion lacks the disabled Grab category"):return
+ e.select_group("Spells")
  var spinner=preload("res://scripts/loading_spinner.gd").new();root.add_child(spinner)
  spinner.size=Vector2(320,36);spinner.position=Vector2(700,850)
  spinner.value=45
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_loading_wheel.png")
  if not check(spinner.value==45 and spinner.get_theme_stylebox("fill") is StyleBoxEmpty,"Loading wheel lost progress diagnostics or still paints a bar"):return
- print("SPELL DEMO CARDS PASS: actual pose images, uniform disabled Grab, RHS revealed on choice, explicit Confirm, start hides RHS, shared spinner preserves diagnostics")
+ print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, RHS revealed on choice, explicit Confirm, start hides RHS, shared spinner preserves diagnostics")
  quit()

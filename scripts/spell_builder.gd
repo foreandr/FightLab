@@ -49,7 +49,6 @@ var demo_entries:Array[Dictionary]=[]
 var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
-var grab_demo_button:Button
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -524,9 +523,6 @@ func setup(owner_editor:Node) -> void:
   node.get_child(0).get_child(0).add_child(badge)
   demo_type_labels[choice]=badge
   demo_choices[choice]=node
- grab_demo_button=preload("res://scripts/asset_preview_card.gd").create("DemoGrab","Grab",load("res://assets/ui/spell_demos/grab.svg"),"Grab mechanics are not available yet.")
- demo_grid.add_child(grab_demo_button)
- grab_demo_button.disabled=true
  var help:Label=editor.menu_label(choices_column,"Preview only. You can change this anytime.",14)
  help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  demo_confirm_button=editor.button(choices_column,"Confirm",confirm_demo_choice)

@@ -3379,6 +3379,10 @@ func populate_group(group: String,preferred_category: String="",preserve_preview
 		node.clip_text=true
 		node.tooltip_text="Drag to rearrange folders · "+category
 		category_buttons[category]=node
+		if group=="Motion" and category=="Grab":
+			node.set_script(null)
+			node.disabled=true
+			node.tooltip_text="Grab mechanics are not available yet."
 		if custom:
 			var remove:=button(row,"−",func():remove_category(group,category))
 			remove.custom_minimum_size=Vector2(30,34)

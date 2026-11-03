@@ -1,7 +1,6 @@
 Spell creation demo chooser
 
-Nine image cards share asset_preview_card.gd: eight actual rig snapshots and a
-disabled Grab placeholder. Clicking an available card selects and previews it;
+Eight image cards share asset_preview_card.gd, using actual rig snapshots. Clicking an available card selects and previews it;
 Confirm advances. The RHS is hidden until a demo is selected and hides again
 on Back to start. The bottom playback toolbar remains available from entry.
 
@@ -9,7 +8,7 @@ PNG snapshots are stored in assets/ui/spell_demos. They are generated from the
 same source profiles and spell_cast_motion.gd pose sampling used by the editor.
 There are no extra live thumbnail rigs in the UI. Regenerate with Godot using
 --path . --script res://scripts/vendor/render_spell_demo_cards.gd, then import.
-Grab is an intentionally disabled hand illustration, not an animation preview.
+Grab is not a spell demo; it is a disabled category under Animations > Motion.
 
 Loading screens use loading_spinner.gd. It inherits ProgressBar only to retain
 existing progress/status diagnostics and loading completion interfaces. It draws
