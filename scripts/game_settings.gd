@@ -13,6 +13,7 @@ var muted:=false
 var distance_audio:=true
 var dialog:AcceptDialog
 var cog:Button
+var sections:TabContainer
 var near_input:SpinBox
 var far_input:SpinBox
 var master_slider:HSlider
@@ -83,14 +84,16 @@ func _build_ui()->void:
  dialog=AcceptDialog.new();dialog.name="UniversalSettingsDialog";dialog.title="Settings";dialog.ok_button_text="Close";dialog.borderless=true
  dialog.process_mode=Node.PROCESS_MODE_ALWAYS
  var book:=Theme.new();book.default_font=load("res://assets/fonts/game_font.tres");book.default_font_size=18
- for type in ["Label","Button","CheckButton","LineEdit"]:
+ for type in ["Label","Button","CheckButton","LineEdit","TabBar"]:
   for color in ["font_color","font_pressed_color","font_hover_color","font_hover_pressed_color","font_focus_color","font_uneditable_color"]:book.set_color(color,type,Color("382c1c"))
  var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b49c70");paper.set_border_width_all(1);paper.set_corner_radius_all(6)
  for side in ["left","right","top","bottom"]:paper.set("content_margin_"+side,12.0)
  book.set_stylebox("panel","AcceptDialog",paper)
+ book.set_stylebox("panel","TabContainer",paper)
  var button:=paper.duplicate();button.bg_color=Color("d8c7a4");book.set_stylebox("normal","Button",button)
  var hover:=button.duplicate();hover.bg_color=Color("f2e9d3");book.set_stylebox("hover","Button",hover)
  var pressed:=button.duplicate();pressed.bg_color=Color("c9af7b");book.set_stylebox("pressed","Button",pressed)
+ book.set_stylebox("tab_selected","TabBar",pressed);book.set_stylebox("tab_unselected","TabBar",button);book.set_stylebox("tab_hovered","TabBar",hover)
  var field:=paper.duplicate();field.bg_color=Color("f2e9d3")
  book.set_stylebox("normal","LineEdit",field);book.set_stylebox("read_only","LineEdit",field)
  var focus:=field.duplicate();focus.border_color=Color("98703d");book.set_stylebox("focus","LineEdit",focus)
@@ -101,14 +104,15 @@ func _build_ui()->void:
  dialog.theme=book;add_child(dialog)
  var box:=VBoxContainer.new();box.custom_minimum_size.x=390;box.add_theme_constant_override("separation",6);dialog.add_child(box)
  _label(box,"Settings",24)
- _label(box,"Camera",20)
- near_input=_distance_row(box,"Closest zoom (m)","closest")
- far_input=_distance_row(box,"Farthest zoom (m)","farthest")
- _label(box,"Audio",20)
- master_slider=_volume_row(box,"Master volume","master")
- combat_slider=_volume_row(box,"Combat volume","combat")
- mute_toggle=CheckButton.new();mute_toggle.name="MuteAudio";mute_toggle.text="Mute";box.add_child(mute_toggle);mute_toggle.toggled.connect(func(value:bool):set_value("muted",value))
- distance_toggle=CheckButton.new();distance_toggle.name="DistanceAudio";distance_toggle.text="Distance affects volume";box.add_child(distance_toggle);distance_toggle.toggled.connect(func(value:bool):set_value("distance",value))
+ sections=TabContainer.new();sections.name="SettingsSections";box.add_child(sections)
+ var camera:=VBoxContainer.new();camera.name="Camera";camera.add_theme_constant_override("separation",6);sections.add_child(camera)
+ near_input=_distance_row(camera,"Closest zoom (m)","closest")
+ far_input=_distance_row(camera,"Farthest zoom (m)","farthest")
+ var sound:=VBoxContainer.new();sound.name="Sound";sound.add_theme_constant_override("separation",6);sections.add_child(sound)
+ mute_toggle=CheckButton.new();mute_toggle.name="MuteAudio";mute_toggle.text="Mute game";mute_toggle.tooltip_text="Mute all audio, including music and effects";mute_toggle.focus_mode=Control.FOCUS_ALL;sound.add_child(mute_toggle);mute_toggle.toggled.connect(func(value:bool):set_value("muted",value))
+ master_slider=_volume_row(sound,"Master volume","master")
+ combat_slider=_volume_row(sound,"Combat volume","combat")
+ distance_toggle=CheckButton.new();distance_toggle.name="DistanceAudio";distance_toggle.text="Distance affects volume";sound.add_child(distance_toggle);distance_toggle.toggled.connect(func(value:bool):set_value("distance",value))
  dialog.confirmed.connect(close);dialog.canceled.connect(close)
  dialog.window_input.connect(func(event:InputEvent):
   if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_F9:
@@ -135,11 +139,16 @@ func _refresh_ui()->void:
 func toggle()->void:
  if opened:close()
  else:open()
-func open()->void:
+func open(section:String="")->void:
+ if not section.is_empty():
+  for i in sections.get_tab_count():
+   if sections.get_tab_title(i)==section:sections.current_tab=i;break
  if opened:return
  opened=true;previous_pause=get_tree().paused;previous_mouse=Input.mouse_mode
  get_tree().paused=true;Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
- _refresh_ui();dialog.popup_centered(Vector2i(450,390));near_input.grab_focus()
+ _refresh_ui();dialog.popup_centered(Vector2i(450,390))
+ if sections.current_tab==1:mute_toggle.grab_focus()
+ else:near_input.grab_focus()
 func close()->void:
  if not opened:return
  dialog.hide();opened=false;get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse

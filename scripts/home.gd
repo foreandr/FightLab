@@ -163,6 +163,7 @@ func show_page(next: String) -> void:
 		"Options":
 			label("OPTIONS",24,Color("655740"))
 			nav("Settings",func():preload("res://scripts/game_settings_access.gd").service().open())
+			nav("Sound",func():preload("res://scripts/game_settings_access.gd").service().open("Sound"))
 			nav("Controls",open_controls)
 			var fullscreen := get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
 			label("Display: " + ("Fullscreen" if fullscreen else "Windowed"),20,Color("655740"))
