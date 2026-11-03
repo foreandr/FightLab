@@ -105,9 +105,9 @@ func label(text_: String,size: int,color:=Color.WHITE) -> void:
 func nav(text_: String,callback: Callable) -> void:
 	var node:=Button.new()
 	node.text=text_
-	node.custom_minimum_size=Vector2(0,66)
+	node.custom_minimum_size=Vector2(0,44)
 	node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	node.add_theme_font_size_override("font_size",24)
+	node.add_theme_font_size_override("font_size",20)
 	var normal:=StyleBoxFlat.new()
 	normal.bg_color=Color("20354a")
 	normal.set_corner_radius_all(8)
@@ -137,10 +137,10 @@ func show_page(next: String) -> void:
 			navigation_buttons["Free Fight"].disabled=true
 			nav("Sandbox",func():pass)
 			navigation_buttons["Sandbox"].disabled=true
-			nav("Create",func():show_page("Create"))
 			var menu_spacer:=Control.new()
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 			content.add_child(menu_spacer)
+			nav("Create",func():show_page("Create"))
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
