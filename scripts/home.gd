@@ -3,6 +3,7 @@ const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
 var page := "Home"
 var content: VBoxContainer
 var navigation_buttons := {}
+var controls_dialog:AcceptDialog
 var scene_loading_overlay: Control
 var scene_loading_progress: ProgressBar
 var scene_loading_status: Label
@@ -141,6 +142,7 @@ func show_page(next: String) -> void:
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 			content.add_child(menu_spacer)
 			nav("Create",func():show_page("Create"))
+			nav("Store",func():open_create_workspace("Store"))
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
@@ -158,6 +160,8 @@ func show_page(next: String) -> void:
 			nav("Back",func():show_page("Home"))
 		"Options":
 			label("OPTIONS",24,Color("655740"))
+			nav("Settings",func():preload("res://scripts/game_settings_access.gd").service().open())
+			nav("Controls",open_controls)
 			var fullscreen := get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
 			label("Display: " + ("Fullscreen" if fullscreen else "Windowed"),20,Color("655740"))
 			nav("Fullscreen",func():_set_fullscreen(true))
@@ -170,6 +174,19 @@ func show_page(next: String) -> void:
 	var first: Button=navigation_buttons.values()[0]
 	first.grab_focus()
 
+func open_controls()->void:
+	if not is_instance_valid(controls_dialog):
+		controls_dialog=AcceptDialog.new();controls_dialog.title="Controls";controls_dialog.ok_button_text="Close"
+		controls_dialog.theme=preload("res://scripts/game_settings_access.gd").service().dialog.theme
+		add_child(controls_dialog)
+		var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(520,400);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+		controls_dialog.add_child(scroll)
+		var legend:=Label.new();legend.custom_minimum_size.x=490;legend.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		legend.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		legend.text=preload("res://scripts/editor_controls.gd").TEXT
+		scroll.add_child(legend)
+	controls_dialog.popup_centered()
+
 func open_scene(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 
@@ -181,13 +198,14 @@ func open_create_character()->void:
 
 func open_create_workspace(section:String="Animation") -> void:
 	get_tree().set_meta("create_workspace_entry",section)
+	var destination_name:="Store" if section=="Store" else "Create"
 	var path:="res://scenes/combat_sandbox.tscn"
 	scene_loading_pacer.begin("home_to_create")
-	_show_scene_loading("OPENING CREATE")
+	_show_scene_loading("OPENING STORE" if section=="Store" else "OPENING CREATE")
 	await RenderingServer.frame_post_draw
 	var request_error:=ResourceLoader.load_threaded_request(path)
 	if request_error!=OK:
-		if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening Create scene…"
+		if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening %s…"%destination_name
 		_clear_scene_loading()
 		open_scene(path)
 		return
@@ -195,13 +213,13 @@ func open_create_workspace(section:String="Animation") -> void:
 	var status:=ResourceLoader.load_threaded_get_status(path,progress)
 	while status==ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		if is_instance_valid(scene_loading_status):
-			if not progress.is_empty():scene_loading_status.text="Loading Create scene · %d%%"%int(round(float(progress[0])*100.0))
-			else:scene_loading_status.text="Loading Create scene…"
+			if not progress.is_empty():scene_loading_status.text="Loading %s · %d%%"%[destination_name,int(round(float(progress[0])*100.0))]
+			else:scene_loading_status.text="Loading %s…"%destination_name
 		if is_instance_valid(scene_loading_progress):scene_loading_progress.value=scene_loading_pacer.progress_percent(float(progress[0]) if not progress.is_empty() else 0.0)
 		await get_tree().process_frame
 		status=ResourceLoader.load_threaded_get_status(path,progress)
 	if status==ResourceLoader.THREAD_LOAD_LOADED:
-		if is_instance_valid(scene_loading_status):scene_loading_status.text="Starting Create workspace…"
+		if is_instance_valid(scene_loading_status):scene_loading_status.text="Starting %s…"%destination_name
 		while not scene_loading_pacer.target_reached():
 			if is_instance_valid(scene_loading_progress):scene_loading_progress.value=scene_loading_pacer.progress_percent(1.0)
 			await get_tree().process_frame
@@ -211,7 +229,7 @@ func open_create_workspace(section:String="Animation") -> void:
 		if packed_scene!=null:
 			get_tree().change_scene_to_packed(packed_scene)
 			return
-	if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening Create scene…"
+	if is_instance_valid(scene_loading_status):scene_loading_status.text="Opening %s…"%destination_name
 	_clear_scene_loading()
 	open_scene(path)
 

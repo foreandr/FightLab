@@ -1,0 +1,19 @@
+Home Store and simplified Create navigation
+
+Home > Store opens the existing animation Store controller in a dedicated view.
+It reuses the same index, 20-item pages, sources, filters, preferences, owned /
+blocked lists, project-copy download path, and preview code. A default bot stays
+in the arena for previews. Authoring panels and the playback footer are hidden;
+Close or Main Menu returns Home. Downloading does not navigate into a folder.
+The preview host is still the editor scene, with its UI in Store-only mode;
+this does not yet split Store loading into an independent lightweight scene.
+
+Create > Character / Animation / Spell are the entry points for authoring.
+The old top Animations, Spells, Simulations, Store and Options icon row is gone.
+One bot spawns and is selected by default in Animation, as before. Spell keeps
+its caster, dummy and human practice targets. Main Menu remains at the top.
+
+Universal settings remain accessible from F9 and Home > Options > Settings.
+Home > Options > Controls uses the same editor_controls.gd legend. No settings
+cog is drawn. Internal editor methods are retained for scripting and regression
+coverage; there is no visible Store or simulation shortcut inside Create.

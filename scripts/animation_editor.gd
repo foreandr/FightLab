@@ -64,6 +64,7 @@ var options_panel: PanelContainer
 var unit_source:Button
 var added_units:Array[CharacterBody3D]=[]
 var default_unit_ready:=false
+var home_store_mode:=false
 var next_editor_unit_number:=1
 var focused_unit:CharacterBody3D
 var hovered_unit:CharacterBody3D
@@ -301,6 +302,7 @@ const JUMP_JOINTS := [
 ]
 
 func _ready() -> void:
+	home_store_mode=str(get_tree().get_meta("create_workspace_entry",""))=="Store"
 	create_loading_pacer.begin("create_workspace")
 	loading_layer=CanvasLayer.new()
 	loading_layer.layer=110
@@ -329,7 +331,7 @@ func _ready() -> void:
 	loading_content.add_theme_constant_override("separation",UI_EDGE_GAP)
 	loading_card.add_child(loading_content)
 	var loading_title:=Label.new()
-	loading_title.text="OPENING CREATE"
+	loading_title.text="OPENING STORE" if home_store_mode else "OPENING CREATE"
 	loading_title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	loading_title.add_theme_font_size_override("font_size",22)
 	loading_title.add_theme_color_override("font_color",BOOK_INK)
@@ -355,7 +357,7 @@ func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS
 	custom_random.randomize()
 	deleted_animation_records=AnimationTrash.list_deleted(animation_trash_directory)
-	loading_status.text="Building arena, character rigs and editor…"
+	loading_status.text="Preparing Store preview…" if home_store_mode else "Building arena, character rigs and editor…"
 	loading_bar.value=create_loading_pacer.progress_percent()
 	await get_tree().process_frame
 	super._ready()
@@ -385,7 +387,8 @@ func _ready() -> void:
 	if get_tree().has_meta("create_workspace_entry"):
 		var entry_section:=str(get_tree().get_meta("create_workspace_entry"))
 		get_tree().remove_meta("create_workspace_entry")
-		_open_workspace_section("Spells" if entry_section=="Spell" else "Animations")
+		if entry_section=="Store":open_home_store()
+		else:_open_workspace_section("Spells" if entry_section=="Spell" else "Animations")
 
 func return_to_main_menu()->void:
 	if is_instance_valid(spell_builder):
@@ -498,33 +501,7 @@ func build_ui() -> void:
 	options_button.offset_top=UI_EDGE_GAP
 	options_button.offset_right=21
 	options_button.offset_bottom=48
-	var navigation:=HBoxContainer.new()
-	navigation.name="WorkspaceNavigation"
-	navigation.anchor_left=0.5
-	navigation.anchor_right=0.5
-	navigation.offset_left=-117
-	navigation.offset_right=117
-	navigation.offset_top=6
-	navigation.offset_bottom=48
-	navigation.add_theme_constant_override("separation",6)
-	header.add_child(navigation)
-	for item in [["Animations","person"],["Spells","cast"],["Simulations","simulation"],["Store","store"]]:
-		var section:String=item[0]
-		var icon_color:Color={"Animations":Color("3278b8"),"Spells":Color("b27608"),"Simulations":Color("38835b"),"Story":Color("8656a3"),"Store":Color("b85d36")}[section]
-		var tab:=button(navigation,"",func():_open_workspace_section(section))
-		tab.name=section
-		tab.icon=RowIcons.get_icon(item[1])
-		tab.add_theme_color_override("icon_normal_color",icon_color)
-		tab.add_theme_color_override("icon_hover_color",icon_color.lightened(0.12))
-		tab.add_theme_color_override("icon_pressed_color",icon_color.darkened(0.12))
-		tab.custom_minimum_size=Vector2(42,42)
-		tab.tooltip_text=section
-	options_button.reparent(navigation)
-	options_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	options_button.custom_minimum_size=Vector2(42,42)
-	options_button.tooltip_text="Options"
-	options_button.add_theme_color_override("font_color",Color("727e94"))
-	options_button.add_theme_color_override("font_hover_color",Color("586981"))
+	options_button.hide()
 	browser=Control.new()
 	browser.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	browser.offset_top=54
@@ -683,7 +660,7 @@ func build_ui() -> void:
 	animation_store_count=menu_label(store_header,"Animation Store",16)
 	animation_store_count.clip_text=true
 	animation_store_count.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	button(store_header,"Close",func():store_panel.hide())
+	button(store_header,"Close",close_animation_store)
 	store_loading_indicator=VBoxContainer.new()
 	store_loading_indicator.name="StoreLoadingProgress"
 	store_loading_indicator.add_theme_constant_override("separation",2)
@@ -775,10 +752,7 @@ func build_ui() -> void:
 	legend.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	legend.add_theme_color_override("font_color",BOOK_INK)
 	legend.add_theme_font_size_override("font_size",15)
-	legend.text="UNITS\nSimulations → Units: drag a bot into the arena.\nClick the bot card or press Enter to add one.\nHover a unit to highlight it; click to focus it.\nDrag a unit to move it around the arena.\nReset position / Ctrl+R: restore original placement.\nAlt+arrows: nudge the selected unit (outside clip editing).\n[ / ]: switch the focused unit.\nF: focus the camera on the selected character.\n\nTAKE CONTROL\nSelect a bot, then click Take Control in the bottom bar.\nWASD moves, Shift sprints, Space jumps. Wheel zooms the camera; middle/right-drag or arrows orbit. −/+ zoom, Home resets camera. Gamepad: left stick move, right stick orbit, R3 zoom out, A jump, X/RB timeline, B release.\nClick the arena or use Play to perform the current timeline once.\nOther added units are contact-based practice targets.\nBackspace restores test units; Escape or Release Control returns to editing.\n\nPREVIEW & PLAY\n▶ beside an animation: preview its whole body once on the focused unit. The timeline stays unchanged.\nDrag an animation onto a timeline track, then use the bottom ▶ to play it on the focused unit.\nEVERYTHING affects the whole body; other tracks affect that body part. Higher numbers win overlapping pose conflicts. Jump height continues beneath other poses.\nOverlap a backflip with jump airtime, then add a higher-priority slash on LEFT ARM.\n\nEDIT CLIPS\nDrag the middle: move the clip.\nDrag an edge: stretch/shrink playback (changes speed).\nShift-drag an edge: cut/trim (keeps speed).\nShift-click inside a clip: split at that point.\nSelect a clip, place the playhead, then press S: cut there.\nRight-click a clip or press Delete: remove it.\nShaded time is beyond Length and will not play.\n\nSHORTCUTS\nCtrl+Z: undo an animation or timeline edit.\nCtrl+Y: redo.\nCtrl+C: copy the selected clip.\nCtrl+P (or Ctrl+V): paste at the playhead.\nWith a clip focused: S splits at the playhead.\nAlt+← / →: trim the end by one frame.\nCtrl+Alt+← / →: trim the start.\nShift+← / →: stretch/shrink by one frame.\nWith the ruler focused: ← / → seeks one frame; Shift seeks ten; Home / End goes to start/end.\n\nPANELS\nDrag a divider to resize the panels.\nDouble-click a divider to reset it.\nWith a divider focused: arrows resize by 6 px; Shift+arrows resize by 24 px.\nYour panel sizes are remembered.\nUse − to collapse a side panel and + to reopen it."
-	legend.text+="\n\nJUMP STAMINA\nStamina depletion controls jump height and airtime. Extending a jump automatically increases its stamina requirement, up to 100. Put Jump on EVERYTHING and a jab on its arm track to combine them. At equal priority the specific body-part track wins."
-	legend.text+="\n\nPANEL ZOOM\nCtrl+mouse wheel over a panel: shrink or enlarge its text and controls. On Spells, middle-mouse drag up/down also zooms; on Store, hold Ctrl and middle-drag up/down. Each panel zooms independently. Time zoom − / + spreads or compresses seconds without changing the animation. Ctrl+Shift+wheel over Timeline changes time zoom. Ctrl+wheel changes panel text and control sizing, including Timeline. Time zoom is saved independently. Ctrl+- / Ctrl+= works over a panel; Ctrl+0 resets it. Zoom levels are saved with your layout."
-	legend.text+="\n\nSTORE & PERSONAL LIBRARY\nSearch words or quoted phrases. Combine tag:arm body:head state:airborne source:ual2 author:name; use -tag:fall to exclude. Filters cover body part, air/ground and Available/Taken/Blocked/All items. Drag a Store animation onto a category folder or anywhere in the open category list, including its blank space. Drag the Store title to move it; drag any border or corner to resize the actual window. Taken items hide from Available. Duplicate names receive (1), (2), etc. Use the pencil beside an animation to rename it; its original source and credits remain in metadata. Block hides unwanted items; switch to Blocked to undo it. Source metadata and the full credit history are retained with every animation. New changes are automatically credited to foreandr while preserving prior contributors."
+	legend.text=preload("res://scripts/editor_controls.gd").TEXT
 	controls_scroll.add_child(legend)
 	var global_settings_button:=button(options_column,"SETTINGS",func():
 		options_panel.hide();options_button.set_pressed_no_signal(false);Settings.service().open())
@@ -1034,6 +1008,26 @@ func _open_workspace_section(section:String) -> void:
 	if workspace_nav_panels.has(section):
 		workspace_nav_panels[section].visible=true if section=="Store" else not was_visible
 		if not was_visible:base_ui.move_child(workspace_nav_panels[section],base_ui.get_child_count()-1)
+
+func close_animation_store()->void:
+	if home_store_mode:return_to_main_menu()
+	else:workspace_nav_panels["Store"].hide()
+
+func open_home_store()->void:
+	browser.hide();timeline_panel.hide();animation_footer.hide()
+	for divider in workspace_dividers:divider.hide()
+	for restore in workspace_restore_buttons.values():restore.hide()
+	var store:Control=workspace_nav_panels["Store"]
+	store.anchor_left=0.0;store.anchor_right=0.57
+	store.anchor_top=0.0;store.anchor_bottom=1.0
+	store.offset_left=6;store.offset_right=-6;store.offset_top=60;store.offset_bottom=-6
+	_open_workspace_section("Store")
+	if is_instance_valid(focused_unit):
+		var center:Vector3=focused_unit.focus_position()-Vector3.RIGHT*2.6
+		field.camera.h_offset=0;field.camera.v_offset=0;field.camera.fov=45
+		field.camera.global_position=center+Vector3(0,1.4,6)
+		field.camera.look_at(center)
+		inspection_camera.capture_view(field.camera,6.0)
 
 func _load_animation_store() -> void:
 	if store_loaded or store_loading_in_progress:return
@@ -1384,8 +1378,9 @@ func take_store_animation(entry:Dictionary,group:String,category:String) -> void
 			_show_library_notice("Could not make a project copy of this animation")
 			return
 		if store_library.move(owned_id,group,category):
-			if selected_group!=group:select_group(group)
-			select_category(category,true)
+			if not home_store_mode:
+				if selected_group!=group:select_group(group)
+				select_category(category,true)
 			_populate_animation_store()
 			_show_library_notice("Moved %s → %s"%[entry.title,category])
 		return
@@ -1396,8 +1391,9 @@ func take_store_animation(entry:Dictionary,group:String,category:String) -> void
 		selection_status.text="Could not save animation as a project asset"
 		return
 	_populate_animation_store()
-	if selected_group!=group:select_group(group)
-	select_category(category,true)
+	if not home_store_mode:
+		if selected_group!=group:select_group(group)
+		select_category(category,true)
 	selection_status.text="Added %s to %s / %s"%[entry.title,group,category]
 	_log_store_action("download_complete",entry,{"project_asset":store_library.last_taken_entry.get("animation_resource",""),"tracks":project_animation.get_track_count(),"duration":project_animation.length})
 	_show_library_notice("Added %s → %s · project asset ready for Git"%[store_library.last_taken_entry.get("title",entry.title),category])
@@ -2308,7 +2304,7 @@ func show_unit_selection_warning() -> void:
 		unit_selection_warning=AcceptDialog.new()
 		unit_selection_warning.name="SelectBotWarning"
 		unit_selection_warning.title="Select a bot first"
-		unit_selection_warning.dialog_text="Add a bot through Simulations → Units, then click the bot to select it.\nYou can then add animations to its timeline."
+		unit_selection_warning.dialog_text="Click the bot in the arena to select it.\nYou can then add animations to its timeline."
 		unit_selection_warning.theme=_book_theme()
 		unit_selection_warning.add_theme_stylebox_override("panel",_book_box(BOOK_PAPER,BOOK_BORDER))
 		add_child(unit_selection_warning)

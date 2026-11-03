@@ -57,8 +57,8 @@ func run():
  settings.close()
  if not check(not settings.opened and not self.paused,"Closing settings failed to resume"):return
  change_scene_to_file("res://scenes/fight.tscn");await process_frame;await process_frame
- if not check(settings.cog.visible,"Story lacks universal settings toggle"):return
- settings.cog.pressed.emit()
+ if not check(not settings.cog.visible,"Removed settings cog reappeared"):return
+ settings.toggle()
  if not check(settings.dialog.visible and settings.near_input.value==settings.min_camera_distance,"Story uses another settings dialog"):return
  settings.close()
  # Restore real user preferences; test writes stay under user://logs.

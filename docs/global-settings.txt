@@ -1,8 +1,8 @@
 Universal settings
 
-Open Settings from the Create options cog, the cog in other modes, or F9.
+Open Settings from Home > Options > Settings, or F9 in any mode.
 The shared dialog pauses the scene while open and restores its previous pause
-and mouse state when closed. Controls remain under the existing Create menu.
+and mouse state when closed. The shared controls legend is under Home > Options.
 
 Camera: closest and farthest orbit distance, in meters. Defaults preserve the
 previous third-person limits (2.97 to 20.52). Limits are shared by Story, Create,

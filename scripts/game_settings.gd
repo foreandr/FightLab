@@ -79,7 +79,7 @@ func _build_ui()->void:
  var root:=Control.new();root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);root.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(root)
  cog=Button.new();cog.name="UniversalSettings";cog.text="⚙";cog.tooltip_text="Settings · F9";cog.focus_mode=Control.FOCUS_ALL
  cog.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);cog.offset_left=-50;cog.offset_right=-6;cog.offset_top=6;cog.offset_bottom=48
- root.add_child(cog);cog.pressed.connect(toggle)
+ root.add_child(cog);cog.hide();cog.pressed.connect(toggle)
  dialog=AcceptDialog.new();dialog.name="UniversalSettingsDialog";dialog.title="Settings";dialog.ok_button_text="Close";dialog.borderless=true
  dialog.process_mode=Node.PROCESS_MODE_ALWAYS
  var book:=Theme.new();book.default_font=load("res://assets/fonts/game_font.tres");book.default_font_size=18
@@ -143,9 +143,6 @@ func open()->void:
 func close()->void:
  if not opened:return
  dialog.hide();opened=false;get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse
-func _process(_delta:float)->void:
- var scene:=get_tree().current_scene
- cog.visible=not is_instance_valid(scene) or not scene.has_method("_toggle_options_menu")
 func _unhandled_key_input(event:InputEvent)->void:
  if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_F9:
   toggle();get_viewport().set_input_as_handled()
