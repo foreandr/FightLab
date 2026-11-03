@@ -23,7 +23,7 @@ void fragment() {
 }
 """
 	for mesh: MeshInstance3D in skeleton.find_children("*", "MeshInstance3D", true, false):
-		if mesh.mesh == null:continue
+		if mesh.mesh == null or mesh.get_meta("presentation_overlay",false):continue
 		for surface in mesh.mesh.get_surface_count():
 			var original:=mesh.get_active_material(surface)
 			var base: Material=original.duplicate() if original != null else StandardMaterial3D.new()

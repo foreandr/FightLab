@@ -12,11 +12,7 @@ func restore() -> void:
 	head_triangles=0
 
 func bone_index(node:MeshInstance3D,skeleton:Skeleton3D,bind:int) -> int:
-	if node.skin!=null and bind<node.skin.get_bind_count():
-		var name_:=node.skin.get_bind_name(bind)
-		if not name_.is_empty():return skeleton.find_bone(name_)
-		return node.skin.get_bind_bone(bind)
-	return bind if bind<skeleton.get_bone_count() else -1
+	return preload("res://scripts/skinned_mesh_regions.gd").bone_index(node,skeleton,bind)
 
 func split(actor:Node) -> bool:
 	if not originals.is_empty():return true
@@ -24,7 +20,7 @@ func split(actor:Node) -> bool:
 	var head:int=skeleton.find_bone("Head")
 	if head<0:return false
 	for node:MeshInstance3D in skeleton.find_children("*","MeshInstance3D",true,false):
-		if not node.mesh is ArrayMesh or not node.is_visible_in_tree():continue
+		if node.get_meta("presentation_overlay",false) or not node.mesh is ArrayMesh or not node.is_visible_in_tree():continue
 		var source:ArrayMesh=node.mesh
 		var result:=ArrayMesh.new()
 		var changed:=false

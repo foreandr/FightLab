@@ -62,7 +62,8 @@ static func refresh(b:Node) -> void:
 	if b.previews_touch():
 		var spec:Dictionary=b.demo_preview_spec()
 		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
-		texts.mana="Base mana = 10\nTouch cost = 0.5×\nActivation wait = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = 10 × 0.5 × %.3f = %.1f"%[timing.release_seconds,timing.multiplier,timing.multiplier,Rules.mana_cost(spec)]
+		var base:float=float(b.touch_authoring.base_spec().mana)
+		texts.mana="Base mana = %.1f\nTouch cost = 0.5×\nActivation wait = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = %.1f × 0.5 × %.3f = %.1f"%[base,timing.release_seconds,timing.multiplier,base,timing.multiplier,Rules.mana_cost(spec)]
 	if b.previews_barrier():
 		var spec:Dictionary=b.demo_preview_spec()
 		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)

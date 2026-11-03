@@ -19,6 +19,7 @@ func cast_committed(actor:CharacterBody3D) -> bool:
 	return true
 
 func finish_cast(actor:CharacterBody3D) -> void:
+	if is_instance_valid(actor.touch_contact_visual):actor.touch_contact_visual.clear_runtime()
 	touch_casts.erase(actor.get_instance_id())
 	cast_recoveries.erase(actor.get_instance_id())
 
@@ -137,6 +138,8 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dicti
 				for i in 5:field.vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color("85ffc1"),0.55,4)
 			field.combat_sound("ice",recipient.global_position,0.45)
 		"touch":
+			actor.ensure_touch_contact_visual().set_runtime(spec)
+			field.combat_cast_sound(spec,origin,0.45,profile)
 			var previous:Dictionary={}
 			for bone in spec.get("touch_contacts",[spec.get("hand","hand_l")]):
 				if bone in Rules.TOUCH_CONTACT_BONES:previous[bone]=actor.bone_point(bone)
@@ -495,6 +498,7 @@ func step_touch_casts(delta:float)->void:
 		var contact:Dictionary=touch_casts[key]
 		var actor=contact.actor.get_ref()
 		if not is_instance_valid(actor) or actor.health<=0.0 or actor.mode!=contact.mode or not field.round_active:
+			if is_instance_valid(actor) and is_instance_valid(actor.touch_contact_visual):actor.touch_contact_visual.clear_runtime()
 			touch_casts.erase(key);continue
 		if contact.connected:continue
 		for bone in contact.previous.keys():

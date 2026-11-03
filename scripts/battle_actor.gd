@@ -56,6 +56,7 @@ var burn_clock := 0.0
 var burn_source: CharacterBody3D
 var burn_visual:Node3D
 var burn_death:Node3D
+var touch_contact_visual:Node3D
 var status_visual:Node3D
 var last_physical_impact_damage:=0.0
 var chill_time := 0.0
@@ -250,7 +251,13 @@ func _ready() -> void:
 	decision = team * 2
 	spell_cursor = team
 
+func ensure_touch_contact_visual()->Node3D:
+	if not is_instance_valid(touch_contact_visual):
+		touch_contact_visual=preload("res://scripts/touch_contact_visual.gd").new();add_child(touch_contact_visual);touch_contact_visual.setup(self)
+	return touch_contact_visual
+
 func reset_fighter(location: Vector3) -> void:
+	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
 	if is_instance_valid(block_notice):block_notice.age=1.0;block_notice.hide();block_notice.set_process(false)
 	parry_cast_haste.clear()
@@ -1652,6 +1659,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	return landed
 
 func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3,cause:String="physical") -> void:
+	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	parry_cast_haste.clear()
 	self_barrier.clear()
 	if practice_god_mode:
