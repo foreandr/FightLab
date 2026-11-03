@@ -8,14 +8,14 @@ func run():
  while not browser.ready_catalog and Time.get_ticks_msec()<deadline:await process_frame
  assert(browser.ready_catalog,"Catalog did not finish loading")
  assert(browser.records.size()>1000,"Sandbox exposes only a short demo list")
- assert(browser.grid.get_child_count()<=12 and browser.detail_loads==0,"Catalog loaded all animation resources")
+ assert(browser.grid.get_child_count()<=9 and browser.detail_loads==0,"Catalog loaded all animation resources")
  assert(sandbox.field.fighters.size()==2 and not sandbox.target.practice_wooden_dummy and sandbox.target.model.visible)
  assert(sandbox.target.get_node("OverheadHealthTag").name_label.text=="Human target")
  for kind in ["Arm","Leg","Head","Movement"]:
   browser.set_type(kind)
   assert(not browser.matches_.is_empty())
   for record in browser.matches_:assert(record.store_animation_type==kind)
- browser.set_type("All");browser.turn_page(1);assert(browser.page==1 and browser.grid.get_child_count()<=12 and browser.detail_loads==0)
+ browser.set_type("All");browser.turn_page(1);assert(browser.page==1 and browser.grid.get_child_count()<=9 and browser.detail_loads==0)
  var chosen:Dictionary={}
  for record in browser.records:
   if record._origin=="Built-in" and record.clip=="fight/backfist":chosen=record;break
@@ -24,7 +24,7 @@ func run():
  assert(browser.select_animation(chosen))
  assert(builder.creation_step=="demo" and builder.casting_animation.clip=="fight/backfist" and is_equal_approx(builder.demo_duration,2.3))
  assert(builder.demo_choice_selected and builder.demo_offensive() and not browser.confirm.disabled)
- browser.confirm_selection();assert(builder.creation_step=="delivery","Arbitrary animation cannot confirm")
+ browser.confirm_selection();assert(builder.creation_step=="demo" and builder.playing,"Arbitrary animation cannot test")
  builder.show_creation_step("demo")
  browser.source_filter.select(3);browser.search.text="walk";browser.apply_filters()
  assert(not browser.matches_.is_empty())
@@ -37,9 +37,10 @@ func run():
  var after:Vector3=sandbox.actor.bone_point("foot_l")
  assert(before.distance_to(after)>0.001,"Imported preview has no visible limb motion")
  assert(builder.creation_step=="demo")
- browser.confirm_selection();assert(builder.creation_step=="delivery")
+ browser.confirm_selection();assert(builder.creation_step=="demo" and builder.playing)
  builder.reset_training_dummy();assert(not sandbox.target.practice_wooden_dummy and sandbox.target.model.visible)
  browser.source_filter.select(0);browser.search.text="punch -jump";browser.apply_filters()
  for record in browser.matches_:assert(str(record._search).contains("punch") and not str(record._search).contains("jump"))
- print("SANDBOX LIBRARY PASS: ",browser.records.size()," animations; own/builtin/community; all four types, search, paged 12; metadata-only browse; non-demo Backfist + real community preview/confirm; duration retained; human-only targets/reset")
+ while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
+ print("SANDBOX LIBRARY PASS: ",browser.records.size()," animations; own/builtin/community; all four types, search, paged 9; non-demo Backfist + real community preview/test; duration retained; human-only targets/reset")
  quit()

@@ -62,6 +62,9 @@ static func leg_takeover(profile:Dictionary) -> float:
 	return 1.0 if preload("res://scripts/animation_cast_type.gd").owns_legs(profile) else 0.0
 
 static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,sprinting:bool) -> void:
+	# An authored airborne move supplies its own leg pose; ground locomotion
+	# must not replace the aerial kick/flip while gravity carries the actor.
+	if not actor.is_on_floor() and not preload("res://scripts/animation_jump_motion.gd").settings(profile).is_empty():return
 	var type_=preload("res://scripts/animation_cast_type.gd")
 	if not type_.applies(profile):
 		# Non-Touch casts keep their full pose while still; moving uses the gait.

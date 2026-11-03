@@ -80,7 +80,7 @@ func refresh() -> void:
 	if not is_instance_valid(builder) or not is_instance_valid(release_handle):return
 	# Grow the scale during a drag, not only when the mouse is released.
 	view_span=maxf(view_span,maxf(0.2,maxf(duration_value(),float(builder.playback_duration()))*1.12))
-	toolbar.size.x=size.x
+	toolbar.size=Vector2(size.x,toolbar.get_combined_minimum_size().y)
 	var end:=time_x(duration_value())
 	duration_handle.position=Vector2(end-8,lane_y())
 	duration_handle.size=Vector2(16,28)

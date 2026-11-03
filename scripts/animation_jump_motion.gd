@@ -6,6 +6,11 @@ const SOURCES:={
  "fight/rising_uppercut":{"minimum_duration":1.35,"takeoff":0.12,"landing":0.62},
  "fight/rising_kick":{"minimum_duration":1.40,"takeoff":0.14,"landing":0.70},
  "fight/hurricane_kicks":{"minimum_duration":1.85,"takeoff":0.12,"landing":0.68}}
+static func with_airborne_takeoff(profile:Dictionary)->Dictionary:
+ var result:=profile.duplicate(true)
+ if str(result.get("air_state",""))=="Airborne" and settings(result).is_empty():
+  result["jump_motion"]={"minimum_duration":1.0,"takeoff":0.0,"landing":0.9,"maximum_airtime":1.2}
+ return result
 static func settings(profile:Dictionary)->Dictionary:
  var declared:Variant=profile.get("jump_motion",{})
  return declared.duplicate(true) if declared is Dictionary and not declared.is_empty() else SOURCES.get(str(profile.get("clip","")),{}).duplicate(true)
@@ -13,7 +18,8 @@ static func minimum(profile:Dictionary)->float:return float(settings(profile).ge
 static func playback_rate(profile:Dictionary,duration:float,requested:float)->float:
  return minf(requested,duration/minimum(profile)) if not settings(profile).is_empty() else requested
 static func launch_speed(duration:float,motion:Dictionary)->float:
- return GRAVITY*maxf(0.0,duration)*(float(motion.get("landing",0.7))-float(motion.get("takeoff",0.12)))*0.5
+ var airtime:=maxf(0.0,duration)*(float(motion.get("landing",0.7))-float(motion.get("takeoff",0.12)))
+ return GRAVITY*minf(airtime,float(motion.get("maximum_airtime",INF)))*0.5
 static func stamina(duration:float,motion:Dictionary)->float:
  if motion.is_empty():return 0.0
  var speed:=launch_speed(duration,motion)

@@ -50,6 +50,8 @@ var demo_visible_entries:Array[Dictionary]=[]
 var demo_only_stage:=true
 var demo_choices:Dictionary={}
 var human_only_targets:=false
+var sandbox_testing:=false
+var sandbox_spell_selected:=false
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -891,7 +893,7 @@ func show_creation_step(step:String) -> void:
  refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
-  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
+  demo_timing_panel.visible=timing_panel_wanted()
   demo_timing_panel.anchor_left=0.74
   demo_timing_panel.anchor_right=1.0
   demo_timing_panel.offset_left=0
@@ -918,7 +920,11 @@ func layout_connected_panels() -> void:
   demo_timing_panel.offset_bottom=bottom
 
 func previews_projectile() -> bool:
- return creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
+ return (sandbox_testing and sandbox_spell_selected) or creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
+
+func timing_panel_wanted()->bool:
+ if sandbox_testing:return is_visible_in_tree() and demo_choice_selected
+ return is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
 
 func previews_barrier()->bool:
  return creation_step=="shield" and is_instance_valid(barrier_authoring) and barrier_authoring.attachment=="Self" and barrier_authoring.attachment_confirmed
@@ -1248,6 +1254,10 @@ func load_named_spell(id:String)->bool:
  if cast_committed():return false
  var record:Dictionary=saved_spells.find(id)
  if record.is_empty():return false
+ return apply_spell_record(record)
+
+func apply_spell_record(record:Dictionary,open_editor:=true)->bool:
+ if cast_committed() or record.is_empty():return false
  stop_preview_controls(true)
  if not limiter_enabled:set_limiter_enabled(true)
  element=record.element;preview_effect=element
@@ -1264,10 +1274,11 @@ func load_named_spell(id:String)->bool:
  fire_sound_preview_id=str(record.appearance.get("sound_id",""))
  refresh_fire_sound()
  active_spell_provenance=record.provenance.duplicate(true)
- show_creation_step("projectile")
- open_spell_save()
- spell_save_screen.name_input.text=record.name
- spell_save_screen.status.text="Loaded: "+str(record.name)
+ if open_editor:
+  show_creation_step("projectile")
+  open_spell_save()
+  spell_save_screen.name_input.text=record.name
+  spell_save_screen.status.text="Loaded: "+str(record.name)
  refresh_demo_timing()
  refresh_projectile_allocation()
  return true
@@ -1647,7 +1658,7 @@ func refresh_animation_type_visibility() -> void:
  for badge in demo_type_labels.values():badge.visible=relevant
 
 func refresh_demo_choices() -> void:
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=timing_panel_wanted()
  refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
@@ -2400,7 +2411,7 @@ func workspace_visibility_changed() -> void:
  if not is_visible_in_tree():
   stop_preview_controls()
   fire_style_editing=false;fire_style_preview_id=""
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=timing_panel_wanted()
  playing=false
  repeat_wait=0
  clear_shots()
@@ -2539,7 +2550,7 @@ func _physics_process(delta:float) -> void:
  if not is_visible_in_tree() or not demo_only_stage or not is_instance_valid(editor.actor):return
  if not get_window().has_focus() or editor.camera_text_editing():
   movement_keys.clear()
-  editor.actor.velocity=Vector3.ZERO
+  if not editor.actor.combat_reaction_active():editor.field.move_character(editor.actor,Vector3.ZERO,0.0,delta)
   caster_moving=false
   caster_move_axes=Vector2.ZERO
   caster_sprinting=false

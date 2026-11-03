@@ -3,7 +3,7 @@ extends VBoxContainer
 const Index=preload("res://scripts/animation_store_index.gd")
 const Library=preload("res://scripts/animation_store_library.gd")
 const Types=preload("res://scripts/animation_store_types.gd")
-const PAGE_SIZE:=12
+const PAGE_SIZE:=9
 var host:Control
 var records:Array[Dictionary]=[]
 var matches_:Array[Dictionary]=[]
@@ -29,10 +29,19 @@ var confirm:Button
 var debounce:Timer
 var thumbnails:Node
 var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
+var spell_selector:OptionButton
+var spell_records:Array[Dictionary]=[]
 func setup(editor:Control)->void:
  host=editor;size_flags_horizontal=Control.SIZE_EXPAND_FILL;size_flags_vertical=Control.SIZE_EXPAND_FILL;add_theme_constant_override("separation",6)
  thumbnails=preload("res://scripts/animation_thumbnail_renderer.gd").new();add_child(thumbnails)
- host.menu_label(self,"Choose an animation",20)
+ theme=host.theme.duplicate(true);theme.default_font_size=11
+ for type_ in ["Button","OptionButton","LineEdit","SpinBox"]:
+  for state in ["normal","hover","pressed","focus","read_only"]:
+   if theme.has_stylebox(state,type_):
+    var style:StyleBox=theme.get_stylebox(state,type_).duplicate()
+    for side in [SIDE_TOP,SIDE_BOTTOM]:style.set_content_margin(side,3)
+    theme.set_stylebox(state,type_,style)
+ host.menu_label(self,"Choose an animation",16)
  search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",Color("806d4d"));add_child(search)
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
@@ -55,7 +64,46 @@ func setup(editor:Control)->void:
  next=host.button(paging,"Next →",func():turn_page(1))
  selection=host.menu_label(self,"Click an animation to preview it",12);selection.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  confirm=host.button(self,"Confirm",confirm_selection);confirm.disabled=true;host.spell_builder.demo_confirm_button=confirm
+ build_test_controls()
+ for control in find_children("*","Button",true,false):control.custom_minimum_size.y=24
  call_deferred("load_catalog")
+func build_test_controls()->void:
+ var builder=host.spell_builder
+ builder.sandbox_testing=true
+ spell_selector=OptionButton.new();spell_selector.name="SandboxSpell";spell_selector.focus_mode=Control.FOCUS_ALL
+ spell_selector.add_item("Animation only")
+ spell_records.append({})
+ var definition=preload("res://scripts/spell_definition.gd")
+ for effect in ["None","Fire"]:
+  var record:Dictionary=definition.make(effect,"Projectile",{"size":0.5,"speed":0.5} if effect=="None" else {"size":0.33,"speed":0.34,"effect":0.33},{})
+  record["name"]="Physical projectile" if effect=="None" else "Fire projectile"
+  spell_selector.add_item(record.name);spell_records.append(record)
+ for record in builder.saved_spells.entries():spell_selector.add_item(record.name);spell_records.append(record)
+ add_child(spell_selector);move_child(spell_selector,search.get_index()+1)
+ spell_selector.item_selected.connect(select_spell)
+ # Reuse the exact authoring controls and their existing signals/calculations.
+ var timing:=VBoxContainer.new();timing.name="SandboxCasting"
+ var sidebar=builder.spell_sections.Mana.get_parent();sidebar.add_child(timing);sidebar.move_child(timing,0)
+ var length_row:=HBoxContainer.new();timing.add_child(length_row)
+ var label:Label=host.menu_label(length_row,"Animation length",14);label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ builder.get_meta("cast_length_input").reparent(length_row)
+ builder.get_meta("cast_timeline").reparent(timing)
+ builder.get_meta("cast_timeline").custom_minimum_size.y=98
+ builder.spell_sections.Casting.hide()
+ confirm.text="Test animation + spell"
+ refresh_sidebar()
+func refresh_sidebar()->void:
+ var builder=host.spell_builder
+ for title in ["Mana","Power balance","Results"]:builder.spell_sections[title].visible=builder.sandbox_spell_selected
+func select_spell(index:int)->void:
+ var builder=host.spell_builder
+ if builder.cast_committed():spell_selector.select(int(spell_selector.get_meta("previous",0)));return
+ builder.stop_preview_controls(true)
+ builder.sandbox_spell_selected=index>0
+ if index>0:builder.apply_spell_record(spell_records[index],false)
+ spell_selector.set_meta("previous",index)
+ builder.refresh_demo_choices();builder.refresh_demo_timing();builder.refresh_projectile_allocation()
+ refresh_sidebar()
 func load_catalog()->void:
  var used:Dictionary={};var clips:Dictionary={}
  var local:Array=preload("res://scripts/animation_recipe_library.gd").load_custom_motion("")
@@ -148,13 +196,14 @@ func select_animation(record:Dictionary)->bool:
  if entry.is_empty():selection.text="Animation data unavailable";return false
  entry["sandbox_animation"]=true;entry["demo_choice"]="sandbox"
  entry["animation_type"]=str(record.store_animation_type)
- entry["sandbox_offensive"]=record.store_animation_type in ["Arm","Leg","Head"]
+ entry["sandbox_offensive"]=str(record.get("group","Motion"))=="Attack" or record.store_animation_type in ["Arm","Leg","Head"]
+ entry=preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry)
  if not host.spell_builder.choose_demo_animation(entry,false):selection.text="Could not load "+str(record.title);show_page();return false
  selected_id=str(record._id);selection.text=str(record.title);confirm.disabled=false
- host.spell_builder.play_demo_preview();show_page()
+ host.spell_builder.play_demo_preview();show_page();refresh_sidebar()
  return true
 func confirm_selection()->void:
- if host.spell_builder.demo_choice_selected and not host.spell_builder.casting_animation.is_empty():host.spell_builder.show_creation_step("delivery")
+ if host.spell_builder.demo_choice_selected and not host.spell_builder.casting_animation.is_empty():host.spell_builder.play_projectile_once()
 func _process(_delta:float)->void:
  if is_instance_valid(host) and not selected_id.is_empty() and not host.spell_builder.demo_choice_selected:
   selected_id="";selection.text="Click an animation to preview it";show_page()
