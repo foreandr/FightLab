@@ -1,8 +1,8 @@
 Spell creation demo chooser
 
 Eight image cards share asset_preview_card.gd, using actual rig snapshots. Clicking an available card selects and previews it;
-Confirm advances. The RHS is hidden until a demo is selected and hides again
-on Back to start. The bottom playback toolbar remains available from entry. The demo chooser is
+Confirm advances. The RHS stays hidden until the demo animation and spell type have both been
+confirmed. It hides again on Back to start. New demo sessions start at 1.5 s. The bottom playback toolbar remains available from entry. The demo chooser is
 fixed in place, with no border or keyboard resize handles.
 
 PNG snapshots are stored in assets/ui/spell_demos. They are generated from the
@@ -17,4 +17,6 @@ a spinning wheel instead of a bar, using real time independently of slow motion.
 Used by Home-to-Create, Create setup, Store setup, Fight loading and legacy arena.
 Resource bars and power allocation controls are unchanged.
 
-Barrier mechanics have not been enabled by this UI change.
+Barrier is selectable and Confirm opens its own authoring tier. Only Mana and
+Casting sections are shown there for now. Play previews the chosen demo without
+launching a projectile; barrier gameplay/effect options are not implemented yet.

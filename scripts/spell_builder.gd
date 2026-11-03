@@ -62,7 +62,7 @@ const DEMO_ANIMATIONS:={
  "block":{"title":"Block stand","source":"block stand","animation_type":"Arm"},
  "mend":{"title":"Self mend","source":"self mend","animation_type":"Arm"}
 }
-var demo_duration:=1.0
+var demo_duration:=1.5
 var limiter_enabled:=true
 var limiter_toggle:CheckButton
 var limiter_notice:Label
@@ -143,6 +143,7 @@ var delivery_confirm_button:Button
 var demo_choice_selected:=false
 var creation_step:="demo"
 var demo_screen:VBoxContainer
+var barrier_screen:VBoxContainer
 var delivery_screen:VBoxContainer
 var delivery_choices:Dictionary={}
 var delivery_back_button:Button
@@ -681,7 +682,7 @@ func setup(owner_editor:Node) -> void:
   var node:Button=editor.button(delivery_screen,caption,func():choose_delivery_type(type))
   node.name="SpellType"+type
   node.custom_minimum_size.y=40
-  node.disabled=type!="Projectile"
+  node.disabled=type not in ["Projectile","Barrier"]
   node.tooltip_text=DELIVERY_HELP[type]+"\nMana: %.0f%% of the standard cost."%cost_percent+("\nNot available yet." if node.disabled else "")
   delivery_choices[type]=node
  delivery_demo_label=editor.menu_label(delivery_screen,"",13)
@@ -692,6 +693,13 @@ func setup(owner_editor:Node) -> void:
  delivery_back_button=editor.button(delivery_screen,"← Back",func():show_creation_step("demo"))
  delivery_back_button.tooltip_text="Back to demo animation choices"
  add_start_navigation(delivery_back_button)
+ barrier_screen=VBoxContainer.new()
+ barrier_screen.name="BarrierWorkspace"
+ barrier_screen.add_theme_constant_override("separation",8)
+ add_child(barrier_screen)
+ editor.menu_label(barrier_screen,"Barrier",24)
+ add_start_navigation(editor.button(barrier_screen,"← Back",func():show_creation_step("delivery")))
+ barrier_screen.hide()
  projectile_screen=VBoxContainer.new()
  projectile_screen.name="ProjectileWorkspace"
  projectile_screen.add_theme_constant_override("separation",8)
@@ -792,6 +800,8 @@ func return_to_start()->void:
  begin_demo_exit()
  movement_keys.clear()
  demo_choice_selected=false
+ demo_duration=1.5;casting_animation["duration"]=demo_duration
+ refresh_demo_timing()
  preview_delivery_type=""
  fire_shapes_open=false;fire_sound_open=false;spell_save_open=false
  active_spell_provenance.clear()
@@ -817,17 +827,18 @@ func show_creation_step(step:String) -> void:
   clear_shots()
  var default_type:=step=="delivery" and creation_step!="delivery"
  if default_type:preview_delivery_type="Projectile"
- creation_step=step if step in ["demo","delivery","projectile"] else "demo"
+ creation_step=step if step in ["demo","delivery","projectile","barrier"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
  demo_screen.visible=creation_step=="demo"
  delivery_screen.visible=creation_step=="delivery"
+ barrier_screen.visible=creation_step=="barrier"
  if is_instance_valid(projectile_screen):projectile_screen.visible=creation_step=="projectile"
  if is_instance_valid(projectile_scroll):projectile_scroll.visible=creation_step=="projectile"
  if is_instance_valid(spell_playback_panel):spell_playback_panel.visible=is_visible_in_tree()
  refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
-  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
+  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
   demo_timing_panel.anchor_left=0.74
   demo_timing_panel.anchor_right=1.0
   demo_timing_panel.offset_left=0
@@ -862,18 +873,21 @@ func refresh_playback_controls() -> void:
  if is_instance_valid(demo_confirm_button):demo_confirm_button.disabled=not ready
 
 func choose_delivery_type(value:String) -> void:
- if value!="Projectile" or not demo_choice_selected or cast_committed():return
+ if value not in ["Projectile","Barrier"] or not demo_choice_selected or cast_committed():return
  var first_preview:=preview_delivery_type!=value
  preview_delivery_type=value
- if first_preview:open_projectile_workspace(false)
- else:play_demo_preview()
+ if first_preview and value=="Projectile":open_projectile_workspace(false)
+ else:
+  stop_preview_controls(true)
+  play_demo_preview()
  refresh_delivery_choices()
  GameDiagnostics.log_event("spell_delivery_previewed",{"delivery_type":value})
 
 func confirm_delivery_type() -> void:
- if preview_delivery_type!="Projectile" or not demo_choice_selected:return
+ if preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected:return
  delivery_type=preview_delivery_type
- show_creation_step("projectile")
+ show_creation_step("barrier" if delivery_type=="Barrier" else "projectile")
+ refresh_demo_timing()
  save_draft()
  save_demo_preferences()
  GameDiagnostics.log_event("spell_delivery_selected",{"delivery_type":delivery_type,"demo":casting_animation.get("demo_choice","")})
@@ -1254,7 +1268,9 @@ func stop_preview_controls(force:=false) -> void:
 
 func refresh_delivery_choices() -> void:
  refresh_animation_type_visibility()
- if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type!="Projectile" or not demo_choice_selected
+ for title in ["Power balance","Results"]:
+  if spell_sections.has(title):spell_sections[title].visible=creation_step!="barrier"
+ if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected
  for type in delivery_choices:
   delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
 
@@ -1476,7 +1492,7 @@ func refresh_animation_type_visibility() -> void:
  for badge in demo_type_labels.values():badge.visible=relevant
 
 func refresh_demo_choices() -> void:
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
  refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
@@ -1662,7 +1678,7 @@ func load_demo_preferences() -> void:
  for title in spell_sections:spell_sections[title].set_collapsed(bool(collapsed_spell_sections.get(title,false)),false)
  var saved_takeovers:Variant=cfg.get_value("preview","animation_types",{})
  demo_animation_types=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
- demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)
+ demo_duration=clampf(float(cfg.get_value("preview","duration",1.5)),0.1,60.0)
  # Old spellcraft God Mode preferences must not grant unlimited resources.
  dummy_god_mode=false
  character_god_modes.clear()
@@ -2209,7 +2225,7 @@ func workspace_visibility_changed() -> void:
  if not is_visible_in_tree():
   stop_preview_controls()
   fire_style_editing=false;fire_style_preview_id=""
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and creation_step in ["projectile","barrier"]
  playing=false
  repeat_wait=0
  clear_shots()
@@ -2223,6 +2239,8 @@ func workspace_visibility_changed() -> void:
   refresh()
   if demo_only_stage:
    demo_choice_selected=false
+   demo_duration=1.5;casting_animation["duration"]=demo_duration
+   refresh_demo_timing()
    preview_delivery_type=""
    show_creation_step("demo")
    refresh_demo_choices()

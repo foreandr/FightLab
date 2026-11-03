@@ -8,6 +8,7 @@ func run():
  change_scene_to_file("res://scenes/combat_sandbox.tscn")
  while current_scene==null or not current_scene.default_unit_ready or is_instance_valid(current_scene.loading_layer):await process_frame
  var e=current_scene;var b=e.spell_builder
+ if not check(is_equal_approx(b.demo_duration,1.5),"New demo defaults must be 1.5 seconds"):return
  if not check(not b.demo_timing_panel.visible and not b.demo_choice_selected,"RHS is visible before selecting a demo"):return
  var fixed_rect:Rect2=b.get_global_rect()
  b.begin_border_resize(Vector2.ONE);b.resize_window_by(Vector2(90,-100));b._resize_to(Vector2(400,400))
@@ -23,11 +24,25 @@ func run():
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_cards_initial.png")
  b.demo_choices.knee.pressed.emit()
- if not check(b.demo_choice_selected and b.creation_step=="demo" and b.demo_timing_panel.visible and b.demo_choices.knee.button_pressed and not b.demo_confirm_button.disabled,"Selection fails to preview/reveal RHS without advancing"):return
+ if not check(b.demo_choice_selected and b.creation_step=="demo" and not b.demo_timing_panel.visible and b.demo_choices.knee.button_pressed and not b.demo_confirm_button.disabled,"Selection fails to preview or reveals RHS before both Confirm steps"):return
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_cards_selected.png")
  b.stop_preview_controls(true);b.confirm_demo_choice()
- if not check(b.creation_step=="delivery","Confirm no longer advances"):return
+ if not check(b.creation_step=="delivery" and not b.demo_timing_panel.visible,"Animation Confirm must leave RHS hidden"):return
+ b.choose_delivery_type("Projectile")
+ if not check(not b.demo_timing_panel.visible,"Type preview reveals RHS before Confirm"):return
+ b.stop_preview_controls(true);b.confirm_delivery_type()
+ if not check(b.creation_step=="projectile" and b.demo_timing_panel.visible,"Type Confirm fails to reveal RHS"):return
+ b.return_to_start()
+ b.select_demo_choice("block",false);b.stop_preview_controls(true);b.confirm_demo_choice();b.stop_preview_controls(true)
+ if not check(not b.delivery_choices.Barrier.disabled and b.delivery_choices.Touch.disabled and b.delivery_choices.Beam.disabled,"Barrier availability is wrong"):return
+ b.delivery_choices.Barrier.pressed.emit()
+ if not check(b.preview_delivery_type=="Barrier" and not b.delivery_confirm_button.disabled and not b.demo_timing_panel.visible,"Barrier selection is not preview/confirm"):return
+ var shots_before:int=e.field.shot_serial
+ b.stop_preview_controls(true);b.confirm_delivery_type()
+ if not check(b.creation_step=="barrier" and b.barrier_screen.visible and b.demo_timing_panel.visible and not b.projectile_screen.visible and not b.previews_projectile(),"Barrier Confirm routes into projectile workspace"):return
+ b.play_projectile_once();b.stop_preview_controls(true)
+ if not check(e.field.shot_serial==shots_before,"Barrier preview incorrectly launches projectile"):return
  b.return_to_start()
  if not check(not b.demo_timing_panel.visible,"Back to start exposes RHS before choosing"):return
  e.select_group("Motion")
@@ -39,5 +54,5 @@ func run():
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_loading_wheel.png")
  if not check(spinner.value==45 and spinner.get_theme_stylebox("fill") is StyleBoxEmpty,"Loading wheel lost progress diagnostics or still paints a bar"):return
- print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, fixed demo panel, RHS revealed on choice, explicit Confirm, start hides RHS, shared spinner preserves diagnostics")
+ print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, fixed demo panel, 1.5s defaults, RHS after both Confirm steps, selectable Barrier workspace, start hides RHS, shared spinner preserves diagnostics")
  quit()
