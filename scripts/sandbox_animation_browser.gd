@@ -29,6 +29,7 @@ var confirm:Button
 var debounce:Timer
 var thumbnails:Node
 var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
+var spell_pages:VBoxContainer
 func setup(editor:Control)->void:
  host=editor;size_flags_horizontal=Control.SIZE_EXPAND_FILL;size_flags_vertical=Control.SIZE_EXPAND_FILL;add_theme_constant_override("separation",6)
  thumbnails=preload("res://scripts/animation_thumbnail_renderer.gd").new();add_child(thumbnails)
@@ -93,6 +94,8 @@ func build_test_controls()->void:
  confirm.text="Test animation + spell"
  builder.sandbox_spell_selected=false
  builder.refresh_demo_choices();builder.refresh_demo_timing();builder.get_meta("cast_timeline").fit_time();refresh_sidebar()
+ spell_pages=preload("res://scripts/sandbox_spell_pages.gd").new()
+ spell_pages.setup(builder,sidebar,timing)
 func refresh_sidebar()->void:
  var builder=host.spell_builder
  builder.spell_sections.Mana.show()

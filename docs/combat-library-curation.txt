@@ -27,6 +27,11 @@ is hosted on the RHS: spell type and confirmation, then the existing Projectile,
 Touch or Barrier steps, effects, styles, audio and save controls as applicable.
 The animation browser remains visible on the left at every wizard stage.
 “Animation only” is removed; no spell type or animation is selected at launch.
+The RHS is paged rather than scrolled: animation timing, the existing choice
+steps, Mana, Power balance, Results, and Save. sandbox_spell_pages.gd owns only
+page visibility/navigation and compact gallery sizing; it reuses the builder's
+controls, values, validation, signals, and runtime. Touch and Shield use their
+existing authoring/result controls. Back retains the in-progress definition.
 
 Earlier broad-pass record:
 
