@@ -153,6 +153,7 @@ var barrier_back_button:Button
 var barrier_tester:Node
 var barrier_puncher:Node
 var barrier_authoring:VBoxContainer
+var touch_authoring:VBoxContainer
 var barrier_test_controls:HBoxContainer
 var barrier_pause_buttons:Dictionary={}
 var delivery_screen:VBoxContainer
@@ -694,7 +695,7 @@ func setup(owner_editor:Node) -> void:
   var node:Button=editor.button(delivery_screen,caption,func():choose_delivery_type(type))
   node.name="SpellType"+type
   node.custom_minimum_size.y=40
-  node.disabled=type not in ["Projectile","Barrier"]
+  node.disabled=type not in ["Projectile","Barrier","Touch"]
   node.tooltip_text=DELIVERY_HELP[type]+"\nMana: %.0f%% of the standard cost."%cost_percent+("\nNot available yet." if node.disabled else "")
   delivery_choices[type]=node
  delivery_demo_label=editor.menu_label(delivery_screen,"",13)
@@ -823,6 +824,7 @@ func setup(owner_editor:Node) -> void:
  barrier_authoring=preload("res://scripts/barrier_authoring.gd").new();barrier_screen.add_child(barrier_authoring)
  barrier_screen.move_child(barrier_authoring,barrier_title.get_index()+1)
  barrier_authoring.configure(self,timing_column)
+ touch_authoring=preload("res://scripts/touch_authoring.gd").new();add_child(touch_authoring);touch_authoring.configure(self,timing_column)
  show_creation_step("demo")
  refresh_demo_choices()
  visibility_changed.connect(workspace_visibility_changed)
@@ -868,7 +870,7 @@ func confirm_demo_choice() -> void:
 func show_creation_step(step:String) -> void:
  if step!="projectile" and cast_committed():return
  if step!="projectile":fire_style_editing=false;fire_style_preview_id="";spell_save_open=false
- if previews_projectile() and step!="projectile":
+ if (previews_projectile() and step!="projectile") or (creation_step=="touch" and step!="touch"):
   stop_preview_controls()
   playing=false
   begin_demo_exit()
@@ -877,7 +879,7 @@ func show_creation_step(step:String) -> void:
  if default_type:
   preview_delivery_type="Projectile"
   delivery_choice_selected=false
- creation_step=step if step in ["demo","delivery","projectile","barrier","shield"] else "demo"
+ creation_step=step if step in ["demo","delivery","projectile","barrier","shield","touch"] else "demo"
  if not is_instance_valid(demo_screen) or not is_instance_valid(delivery_screen):return
  demo_screen.visible=creation_step=="demo"
  delivery_screen.visible=creation_step=="delivery"
@@ -888,7 +890,7 @@ func show_creation_step(step:String) -> void:
  refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
-  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield"] or (creation_step=="delivery" and delivery_choice_selected))
+  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
   demo_timing_panel.anchor_left=0.74
   demo_timing_panel.anchor_right=1.0
   demo_timing_panel.offset_left=0
@@ -920,18 +922,22 @@ func previews_projectile() -> bool:
 func previews_barrier()->bool:
  return creation_step=="shield" and is_instance_valid(barrier_authoring) and barrier_authoring.attachment=="Self" and barrier_authoring.attachment_confirmed
 
+func previews_touch()->bool:
+ return creation_step=="touch" and is_instance_valid(touch_authoring) and touch_authoring.confirmed and not touch_authoring.selected.is_empty()
+
 func previews_spell_release()->bool:
- return previews_projectile() or previews_barrier()
+ return previews_projectile() or previews_barrier() or previews_touch()
 
 func refresh_playback_controls() -> void:
  var ready:=demo_choice_selected and not casting_animation.is_empty()
  if creation_step=="shield":ready=ready and previews_barrier()
+ if creation_step=="touch":ready=ready and previews_touch()
  if is_instance_valid(projectile_preview_button):projectile_preview_button.disabled=not ready
  if is_instance_valid(projectile_repeat_button):projectile_repeat_button.disabled=not ready
  if is_instance_valid(demo_confirm_button):demo_confirm_button.disabled=not ready
 
 func choose_delivery_type(value:String) -> void:
- if value not in ["Projectile","Barrier"] or not demo_choice_selected or cast_committed():return
+ if value not in ["Projectile","Barrier","Touch"] or not demo_choice_selected or cast_committed():return
  var first_preview:=preview_delivery_type!=value
  preview_delivery_type=value
  if first_preview and value=="Projectile":open_projectile_workspace(false)
@@ -944,9 +950,12 @@ func choose_delivery_type(value:String) -> void:
  GameDiagnostics.log_event("spell_delivery_previewed",{"delivery_type":value})
 
 func confirm_delivery_type() -> void:
- if preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected:return
+ if preview_delivery_type not in ["Projectile","Barrier","Touch"] or not demo_choice_selected:return
  delivery_type=preview_delivery_type
- show_creation_step("barrier" if delivery_type=="Barrier" else "projectile")
+ if delivery_type=="Touch":
+  stop_preview_controls();begin_demo_exit()
+  touch_authoring.reset_for_animation()
+ show_creation_step("barrier" if delivery_type=="Barrier" else ("touch" if delivery_type=="Touch" else "projectile"))
  refresh_demo_timing()
  save_draft()
  save_demo_preferences()
@@ -982,6 +991,7 @@ func toggle_barrier_tester(kind:String)->void:
 
 func refresh_barrier_choices()->void:
  if is_instance_valid(barrier_authoring):barrier_authoring.refresh()
+ if is_instance_valid(touch_authoring):touch_authoring.refresh()
  if is_instance_valid(barrier_test_controls):barrier_test_controls.visible=creation_step=="shield"
  for kind in barrier_pause_buttons:
   var tester=barrier_tester if kind=="Projectiles" else barrier_puncher
@@ -1389,8 +1399,8 @@ func refresh_delivery_choices() -> void:
  for tester in [barrier_tester,barrier_puncher]:
   if is_instance_valid(tester):tester.set_enabled(tester.wanted())
  for title in ["Power balance","Results"]:
-  if spell_sections.has(title):spell_sections[title].visible=spell_delivery_type()!="Barrier"
- if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier"] or not demo_choice_selected
+  if spell_sections.has(title):spell_sections[title].visible=spell_delivery_type() not in ["Barrier","Touch"]
+ if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier","Touch"] or not demo_choice_selected
  for type in delivery_choices:
   delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
 
@@ -1577,6 +1587,15 @@ func demo_projectile_stats() -> Dictionary:
 func refresh_demo_timing() -> void:
  refresh_animation_type_visibility()
  if not is_instance_valid(demo_duration_slider):return
+ if previews_touch():
+  demo_duration_slider.set_value_no_signal(demo_duration)
+  demo_duration_label.text="%.1f s"%demo_duration
+  var touch_spec:=demo_preview_spec()
+  demo_mana_cost_label.text="Mana cost: %.1f"%Rules.mana_cost(touch_spec)
+  touch_authoring.refresh_stats(touch_spec)
+  release_slider.set_value_no_signal(release_fraction*100.0)
+  preload("res://scripts/spell_timing_layout.gd").refresh_details(self)
+  return
  if previews_barrier():
   demo_duration_slider.set_value_no_signal(demo_duration)
   demo_duration_label.text="%.1f s"%demo_duration
@@ -1621,7 +1640,7 @@ func refresh_animation_type_visibility() -> void:
  for badge in demo_type_labels.values():badge.visible=relevant
 
 func refresh_demo_choices() -> void:
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield"] or (creation_step=="delivery" and delivery_choice_selected))
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
  refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
@@ -1999,7 +2018,7 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  return spec
 
 func demo_preview_spec() -> Dictionary:
- var base:=Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec())
+ var base:Dictionary=touch_authoring.base_spec() if previews_touch() else (Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()))
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
  spec.hand=CombatAim.emitter(playback_animation())
  return spec if limiter_enabled else test_overrides.apply(spec)
@@ -2083,7 +2102,7 @@ func launch_projectile() -> void:
   committed_spec=preload("res://scripts/combat_spec.gd").copy(spec)
   committed_duration=cast_duration()
  var fired_damage:float=float(spec.get("damage",0))
- if spec.effect!="summon_earth" and not editor.field.shots.is_empty():fired_damage=float(editor.field.shots.back().spec.damage)
+ if previews_projectile() and spec.effect!="summon_earth" and not editor.field.shots.is_empty():fired_damage=float(editor.field.shots.back().spec.damage)
  GameDiagnostics.log_event("spell_preview_fired",{"name":spec.get("name",""),"element":spec.get("projectile_element",""),"duration":demo_duration,"mana":spec.get("mana",0),"potency":spec.get("potency",1),"damage":fired_damage,"nominal_damage":spec.get("damage",0)})
 
 func _process(delta:float) -> void:
@@ -2367,7 +2386,7 @@ func workspace_visibility_changed() -> void:
  if not is_visible_in_tree():
   stop_preview_controls()
   fire_style_editing=false;fire_style_preview_id=""
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield"] or (creation_step=="delivery" and delivery_choice_selected))
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
  playing=false
  repeat_wait=0
  clear_shots()

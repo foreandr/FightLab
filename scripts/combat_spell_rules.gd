@@ -43,6 +43,9 @@ static func barrier_base_mana(kind:String)->float:
 static func left_jab_strike()->Array:
 	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
 
+static func touch_base(contacts:Array)->Dictionary:
+	return {"id":"physical_touch","name":"Physical Touch","effect":"touch","delivery_type":"Touch","hand":str(contacts[0]) if not contacts.is_empty() else "hand_l","mana":PROJECTILE_BASE_MANA,"damage":0.0,"projectile_element":"None","potency":0.0,"touch_contacts":contacts.duplicate()}
+
 static func self_barrier_base(strength:float=10.0,duration:float=1.0)->Dictionary:
 	return {"id":"self_block","name":"Self Block","effect":"self_barrier","delivery_type":"Barrier","hand":"hand_r","mana":barrier_base_mana("Shield"),"damage":0.0,"shield_strength":maxf(0.0,strength),"shield_duration":maxf(0.0,duration),"parry_mana_refund":5.0}
 
@@ -160,6 +163,9 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 	spec["damage"]=float(physical_stats.damage)*amp
 	spec["physical_damage"]=physical_stats.damage
 	spec["potency"]=float(base.get("potency",1.0))*amp
+	if str(base.get("effect",""))=="touch":
+		spec["damage"]=float(physical_stats.damage)*amp/NEUTRAL_DAMAGE_AMP
+		spec["physical_damage"]=spec.damage
 	if str(base.get("effect",""))=="self_barrier":
 		spec["shield_strength_multiplier"]=amp/NEUTRAL_DAMAGE_AMP
 		spec["shield_strength"]=float(base.get("shield_strength",10.0))*float(spec.shield_strength_multiplier)

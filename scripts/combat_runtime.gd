@@ -7,6 +7,7 @@ const Rules=preload("res://scripts/combat_spell_rules.gd")
 var field:Node
 var cast_attempts:Dictionary={}
 var cast_recoveries:Dictionary={}
+var touch_casts:Dictionary={}
 
 func cast_committed(actor:CharacterBody3D) -> bool:
 	var key:=actor.get_instance_id()
@@ -18,6 +19,7 @@ func cast_committed(actor:CharacterBody3D) -> bool:
 	return true
 
 func finish_cast(actor:CharacterBody3D) -> void:
+	touch_casts.erase(actor.get_instance_id())
 	cast_recoveries.erase(actor.get_instance_id())
 
 func _init(host:Node) -> void:
@@ -134,6 +136,11 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dicti
 			if is_instance_valid(field.vfx):
 				for i in 5:field.vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color("85ffc1"),0.55,4)
 			field.combat_sound("ice",recipient.global_position,0.45)
+		"touch":
+			var previous:Dictionary={}
+			for bone in spec.get("touch_contacts",[spec.get("hand","hand_l")]):
+				if bone in Rules.TOUCH_CONTACT_BONES:previous[bone]=actor.bone_point(bone)
+			touch_casts[actor.get_instance_id()]={"actor":weakref(actor),"mode":actor.mode,"spec":preload("res://scripts/combat_spec.gd").copy(spec),"previous":previous,"connected":false}
 		"self_barrier":
 			actor.self_barrier.activate(actor,float(spec.get("shield_strength",10.0)),float(spec.get("shield_duration",1.0)),float(spec.get("parry_mana_refund",5.0)))
 			field.combat_sound("shield",actor.global_position,0.6)
@@ -481,3 +488,18 @@ func step_actors(delta:float) -> void:
 		f.update_targets()
 	for f in field.fighters:
 		f.resolve_melee(delta)
+	step_touch_casts(delta)
+
+func step_touch_casts(delta:float)->void:
+	for key in touch_casts.keys():
+		var contact:Dictionary=touch_casts[key]
+		var actor=contact.actor.get_ref()
+		if not is_instance_valid(actor) or actor.health<=0.0 or actor.mode!=contact.mode or not field.round_active:
+			touch_casts.erase(key);continue
+		if contact.connected:continue
+		for bone in contact.previous.keys():
+			var limb:Vector3=actor.bone_point(bone)
+			var strike:Dictionary={"id":str(contact.spec.get("id","physical_touch")),"clock":0.5,"begin":0.0,"end":1.0,"previous":contact.previous[bone],"limb":limb,"forward":actor.global_basis.z,"min_speed":0.0,"dynamic_damage":false,"pre_scaled":true,"radius":0.14,"damage":damage_for(contact.spec),"metadata":contact.spec}
+			contact.previous[bone]=limb
+			if preload("res://scripts/melee_contact.gd").resolve(actor,strike,delta):
+				contact.connected=true;break

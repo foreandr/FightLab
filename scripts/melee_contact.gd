@@ -11,7 +11,7 @@ static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool
 	var forward:Vector3=strike.forward
 	if movement.length()/dt<float(strike.get("min_speed",0.8)):return false
 	if strike.get("require_forward",false) and movement.dot(forward)<=0.0005:return false
-	surface_contact(actor,strike,previous,limb,dt)
+	if not movement.is_zero_approx():surface_contact(actor,strike,previous,limb,dt)
 	var shape:=SphereShape3D.new()
 	shape.radius=float(strike.get("radius",0.105))
 	var query:=PhysicsShapeQueryParameters3D.new()
