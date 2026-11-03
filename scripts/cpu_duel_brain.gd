@@ -29,7 +29,7 @@ func expected_damage(item:Dictionary)->float:
   damage+=maxf(0.0,fresh_burn-pending)
  return damage
 func combo_score(item:Dictionary)->float:
- var score:=1.0+expected_damage(item)*0.03
+ var score:=1.0+expected_damage(item)*0.03+range_fit(item,actor.flat_distance())*0.5
  var old_bone:=str(actor.current_spell.get("hand",""))
  var new_bone:=str(item.spec.get("hand",""))
  if Combo.speed(actor.current_spell,item.spec)>1.0:
@@ -39,6 +39,21 @@ func combo_score(item:Dictionary)->float:
   if old_bone.begins_with("hand_") and new_bone.begins_with("hand_"):
    score+=0.5/maxf(0.5,float(item.duration))
  return score
+func range_fit(item:Dictionary,distance:float)->float:
+ var bone:=str(item.spec.get("hand",""))
+ if "elbow" in str(item.title).to_lower():return 1.6*(1.0-smoothstep(0.62,0.90,distance))
+ if bone.begins_with("hand_"):return 0.9*(1.0-smoothstep(0.82,1.05,distance))
+ if bone.begins_with("foot_"):return -1.8*(1.0-smoothstep(0.65,0.95,distance))
+ if bone.begins_with("calf_"):return 0.6*(1.0-smoothstep(0.65,0.95,distance))
+ return 0.0
+func melee_score(item:Dictionary,distance:float)->float:
+ # Damage per animation second, not just the largest single-hit number.
+ var damage:=expected_damage(item)
+ var score:=2.0+aggression+damage*0.025+minf(2.0,damage/maxf(0.25,float(item.duration))*0.06)+range_fit(item,distance)
+ if actor.rival.mode=="cast":score+=0.8/float(item.duration)
+ if float(item.spec.damage)>=actor.rival.health:score+=3.0
+ if actor.rival.self_barrier.active():score*=0.35
+ return score
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
@@ -47,13 +62,13 @@ func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  preload("res://scripts/cpu_duel_loadout.gd").prepare(actor)
 func note(action:String,why:String)->void:
  if plan!=action or reason!=why:
-  world.events.append({"time":world.elapsed,"event":"cpu_decision","team":actor.team,"action":action,"reason":why,"stamina":actor.stamina,"mana":actor.mana})
+  world.events.append({"time":world.elapsed,"event":"cpu_decision","team":actor.team,"action":action,"reason":why,"distance":actor.flat_distance(),"stamina":actor.stamina,"mana":actor.mana})
  plan=action;reason=why
  counts[action]=int(counts.get(action,0))+1
 func can_use(item:Dictionary,reserve:float=0.0)->bool:
  return actor.stamina>=float(item.spec.stamina_cost)+reserve and actor.mana>=world.mana_cost(item.spec)
 func cast(item:Dictionary,why:String)->bool:
- if not can_use(item) or not actor.start_authored_cast(item.spec,item.profile):return false
+ if not can_use(item) or not actor.start_authored_cast(item.spec,item.profile,actor.rival):return false
  combo_count=0;combo_checked=false
  note(str(item.title),why);action_left=0.18+rng.randf_range(0.0,0.18)
  return true
@@ -132,7 +147,7 @@ func try_combo()->bool:
   if str(selected.action)=="combo/stop":return false
   next=selected.item
  var previous:=str(actor.current_spell.get("name","Touch"))
- if not actor.chain_touch_cast(next.spec,next.profile):return false
+ if not actor.chain_touch_cast(next.spec,next.profile,actor.rival):return false
  combo_count+=1;combo_checked=false
  note(str(next.title),"Combo from "+previous)
  world.events.append({"time":world.elapsed,"event":"cpu_combo","team":actor.team,"from":previous,"to":next.title})
@@ -141,7 +156,9 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  var options:Array[Dictionary]=[]
  for i in choices.size():options.append({"action":"cast/"+str(choices[i].spec.id),"prior":scores[i],"item":choices[i]})
  options.append({"action":"move/strafe","prior":0.4})
- if distance>0.85:options.append({"action":"move/approach","prior":0.9 if distance<3 else 0.35})
+ if distance>0.56:
+  var inside:bool=distance<1.6 and actor.stamina>40 and actor.rival.mode!="cast"
+  options.append({"action":"move/approach","prior":4.0+aggression if inside else (0.9 if distance<3 else 0.35)})
  if distance<4.5:options.append({"action":"move/retreat","prior":0.7 if actor.stamina<45 else 0.2})
  if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":1.2 if aggression>0.6 else 0.6})
  if distance>2 and distance<7 and actor.stamina>55 and defense_left<=0:options.append({"action":"move/dash","prior":0.5})
@@ -187,10 +204,7 @@ func step(delta:float)->void:
   if item.kind=="shield" or not can_use(item,10.0):continue
   var score:=0.0
   if item.kind=="melee" and distance<=float(item.range):
-   score=2.0+aggression+expected_damage(item)*0.055
-   if actor.rival.mode=="cast":score+=0.8/float(item.duration)
-   if float(item.spec.damage)>=actor.rival.health:score+=3.0
-   if actor.rival.self_barrier.active():score*=0.35
+   score=melee_score(item,distance)
   elif item.kind=="projectile" and distance>1.8 and distance<18.0:
    score=1.0+(1.0-aggression)*1.3
    if float(item.duration)<=0.8 and actor.rival.drive_velocity.length()>2.0:score+=1.0
@@ -205,6 +219,8 @@ func step(delta:float)->void:
   adaptive_decision(distance,choices,scores)
   return
  if not choices.is_empty():
+  if distance>0.78 and distance<1.6 and actor.stamina>40 and actor.rival.mode!="cast" and rng.randf()<0.35:
+   move("approach","Work into punching range");action_left=0.2;return
   var best:=0
   for i in scores.size():if scores[i]>scores[best]:best=i
   if cast(choices[best],"Close contact" if distance<1.8 else "Ranged opening"):return

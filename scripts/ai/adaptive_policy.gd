@@ -19,9 +19,20 @@ func state(actor:CharacterBody3D)->String:
  var mana:=0 if actor.mana<15 else (1 if actor.mana<40 else 2)
  var health:=0 if actor.health<actor.MAX_HEALTH*0.33 else (1 if actor.health<actor.MAX_HEALTH*0.66 else 2)
  var enemy_health:=0 if actor.rival.health<actor.rival.MAX_HEALTH*0.33 else (1 if actor.rival.health<actor.rival.MAX_HEALTH*0.66 else 2)
- return "%d:%d:%d:%d:%d:%d:%d"%[range_bucket,stamina,mana,health,enemy_health,1 if actor.rival.mode=="cast" else 0,1 if actor.rival.self_barrier.active() else 0]
+ var legacy:="%d:%d:%d:%d:%d:%d:%d"%[range_bucket,stamina,mana,health,enemy_health,1 if actor.rival.mode=="cast" else 0,1 if actor.rival.self_barrier.active() else 0]
+ # Separate elbow/clinch, boxing, kicking and outside distance. Keep the old
+ # context as a suffix so archived policies remain readable without rewriting.
+ var pocket:=0 if distance<=0.68 else (1 if distance<=1.05 else (2 if distance<=1.65 else 3))
+ return "range%d|%s"%[pocket,legacy]
 func value(context:String,action:String,prior:float)->float:
- return float(model.get(context,{}).get(action,{}).get("q",prior))
+ var entry:Dictionary=model.get(context,{}).get(action,{})
+ if not entry.is_empty():return float(entry.q)
+ if "|" in context:
+  var legacy:Dictionary=model.get(context.get_slice("|",1),{}).get(action,{})
+  # Old distance buckets were too broad. Retain some prior learning while
+  # allowing the more specific range's tactical prior to seed new experience.
+  if not legacy.is_empty():return lerpf(prior,float(legacy.q),0.25)
+ return prior
 func pick(actor:CharacterBody3D,options:Array[Dictionary])->Dictionary:
  assert(not options.is_empty())
  if learning and rng.randf()<epsilon:return options[rng.randi_range(0,options.size()-1)]
@@ -41,7 +52,7 @@ func update(actor:CharacterBody3D,time:float,next_value:float,terminal_bonus:flo
  if not learning or pending.is_empty():return
  var context:String=pending.state;var action:String=pending.action
  if not model.has(context):model[context]={}
- var entry:Dictionary=model[context].get(action,{"q":pending.prior,"n":0})
+ var entry:Dictionary=model[context].get(action,{"q":value(context,action,float(pending.prior)),"n":0})
  var seconds:=maxf(0.0,time-float(pending.observation.time))
  var target:=reward(actor,time)+terminal_bonus+(0.0 if terminal else pow(0.97,seconds)*next_value)
  var alpha:=0.12/sqrt(1.0+float(entry.n)*0.02)

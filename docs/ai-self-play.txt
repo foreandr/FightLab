@@ -176,3 +176,29 @@ from before archiving began cannot be recreated from the current learner.
 Tests: ai_model_archive_test.gd (round-trip, immutability, ten-match cadence,
 name collisions, chooser selection, frozen comparison, no learner writes,
 invalid paths, resume), ai_learning_test.gd and ai_self_play_ui_test.gd.
+
+Close-range attack audit
+------------------------
+Measured actual swept Touch contact against the idle target, rather than using
+the menu's maximum reach as proof that an attack connects. The old elbow pose
+missed even at 0.5m: its shoulder stayed back and its elbow swung wide. Its
+reproducible clip builder now drives the shoulder forward with planted feet.
+Physical and fire elbows land at 0.5-0.6m in the real contact test; AI elbow
+selection range is 0.68m. Base jab/cross/kick/knee ranges are calibrated more
+conservatively. No damage or hitbox-radius buffs were used.
+BattleActor's shared authored-cast and chain APIs accept an optional target.
+CPUs pass their opponent; Touch poses use the existing bounded, collision-safe
+aim layer. Manual/free-aim callers can leave it unset. Elbow aim now compares
+the actual shoulder/elbow segment to the target rather than just actor facing.
+AI scoring accounts for attack duration and close-range suitability. It can
+step inside kick range to box; kicks remain available at their useful distance.
+Policy contexts distinguish <=0.68m, <=1.05m, <=1.65m and outside. Old broad
+contexts remain intact: an unseen detailed context starts with 25% old value
+and 75% its current tactical prior, then learns its own value. Frozen snapshots
+are read without mutation; this compatibility path does not rewrite archives.
+Decision events include distance for future frequency/contact audits.
+Validation: cpu_close_range_test.gd checks real physical/fire elbow hits,
+range scoring and old-policy compatibility. Three full CPU fights, the combo
+selection test, AI learning test, and graphical regional aiming test passed.
+A frozen copy of the live policy completed a 65.6s match with 32 punches/hooks
+and five elbows. This is a behavior sample, not evidence of optimal balance.

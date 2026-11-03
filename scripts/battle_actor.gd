@@ -83,6 +83,7 @@ var charge_value := 0.0
 var cast_phase := "windup"
 var cast_rate := 2.9
 var touch_chain_speed:=1.0
+var authored_aim_target:WeakRef
 var beam_clock := 0.0
 var melee_charge := 0.0
 var last_hit_charge := 0.0
@@ -254,6 +255,7 @@ func _ready() -> void:
 
 func reset_fighter(location: Vector3) -> void:
 	touch_chain_speed=1.0
+	authored_aim_target=null
 	authored_entry_pose.clear()
 	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
@@ -392,7 +394,7 @@ func choose_spell(air: bool) -> Dictionary:
 	return spec
 
 ## Scripted controllers submit the same authored spells/poses as the editors.
-func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
+func start_authored_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)->bool:
 	if not arena.round_active or health<=0 or combat_reaction_active() or arena.combat().cast_committed(self):return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if not arena.combat().can_start_cast(self,spec) or mana+0.0001<arena.mana_cost(spec):return false
@@ -403,10 +405,11 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary)->bool:
 	practice_release_fraction=float(spec.get("release",0.3))
 	charge_requested=0.0
 	start_cast(false)
+	authored_aim_target=weakref(aim_target) if is_instance_valid(aim_target) else null
 	return mode=="cast"
 
 ## Touch can link its recovery into another Touch. Released projectiles remain locked.
-func chain_touch_cast(spec:Dictionary,profile:Dictionary)->bool:
+func chain_touch_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)->bool:
 	if mode!="cast" or str(current_spell.get("effect",""))!="touch" or str(spec.get("effect",""))!="touch" or not did_release:return false
 	if cast_time<mode_length*preload("res://scripts/touch_combo_rules.gd").LINK_PROGRESS or combat_reaction_active() or not arena.round_active:return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
@@ -414,7 +417,7 @@ func chain_touch_cast(spec:Dictionary,profile:Dictionary)->bool:
 	var previous_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
 	var next_speed:=preload("res://scripts/touch_combo_rules.gd").speed(current_spell,spec)
 	arena.combat().finish_cast(self)
-	if not start_authored_cast(spec,profile):return false
+	if not start_authored_cast(spec,profile,aim_target):return false
 	authored_entry_pose=previous_pose
 	touch_chain_speed=next_speed
 	return true
@@ -422,6 +425,7 @@ func chain_touch_cast(spec:Dictionary,profile:Dictionary)->bool:
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
 	touch_chain_speed=1.0
+	authored_aim_target=null
 	arena.combat().interrupt_cast_attempt(self)
 	if arena.story_mode:
 		set_close_combat(true)
@@ -807,7 +811,12 @@ func advance_free_animation(delta:float) -> void:
 		if custom_motion_step=="Uppercut":progress=editor_attack_progress()
 		apply_custom_jump_pose(clampf(progress,0,0.99999),custom_motion_frames,true)
 	if mode=="cast" and not practice_spell_animation.is_empty():
-		preload("res://scripts/spell_cast_motion.gd").pose(self,practice_spell_animation,clampf(cast_time/maxf(0.001,mode_length),0,0.9999))
+		var progress:=clampf(cast_time/maxf(0.001,mode_length),0,0.9999)
+		var aim:Dictionary={}
+		var target:Node3D=authored_aim_target.get_ref() if authored_aim_target!=null else null
+		if str(current_spell.get("effect",""))=="touch" and is_instance_valid(target):
+			aim={"target":target.bone_point("spine_03"),"emitter":str(current_spell.get("hand","hand_r")),"weight":smoothstep(0.0,0.2,progress)*(1.0-smoothstep(0.7,1.0,progress))}
+		preload("res://scripts/spell_cast_motion.gd").pose(self,practice_spell_animation,progress,aim)
 		if not authored_entry_pose.is_empty():
 			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.10,cast_time))
 			if cast_time>=0.10:authored_entry_pose.clear()

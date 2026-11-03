@@ -7,12 +7,14 @@ func _initialize() -> void:
 	var chamber:=duplicate_pose(base)
 	rotate_bone(chamber,"spine_02",Vector3.UP,-24)
 	solve_ik(chamber,"upperarm_r","lowerarm_r","hand_r",Vector3(-0.18,1.52,-0.06),Vector3(-1,0.35,-0.2))
-	var strike:=duplicate_pose(base)
-	rotate_bone(strike,"spine_02",Vector3.UP,32)
-	solve_ik(strike,"upperarm_r","lowerarm_r","hand_r",Vector3(-0.10,1.48,0.08),Vector3(-0.2,0.15,1))
+	# Drive the shoulder behind the elbow instead of leaving the contact joint
+	# beside the ribs. Keep the wrist folded back and both support feet planted.
+	var strike:=body_pose(base,0.025,18,32)
+	move_bone(strike,"pelvis",Vector3(0,0,0.10))
+	solve_ik(strike,"upperarm_r","lowerarm_r","hand_r",Vector3(-0.05,1.42,0.25),Vector3(-0.05,-0.1,1))
 	var library:=AnimationLibrary.new()
-	library.add_animation("elbow",make_animation([[0.0,base],[0.16,chamber],[0.29,strike],[0.36,strike],[0.65,base]],false))
 	guard=base
+	library.add_animation("elbow",bake_planted([[0.0,base],[0.16,chamber],[0.29,strike],[0.36,strike],[0.65,base]],["l","r"]))
 	library.add_animation("sky_palm",build_sky_palm(base))
 	library.add_animation("stomp",build_stomp(base))
 	library.add_animation("ground_punch",build_ground_punch(base))

@@ -3,7 +3,7 @@ extends RefCounted
 const Rules=preload("res://scripts/combat_spell_rules.gd")
 static func build()->Array[Dictionary]:
  var result:Array[Dictionary]=[]
- for move in [["Left punch","ual1/Punch_Jab","hand_l","Arm",1.05],["Right punch","ual1/Punch_Cross","hand_r","Arm",1.10],["Kick","boxing/front_kick_r","foot_r","Leg",1.45],["Knee","battle/knee","calf_r","Leg",1.05]]:
+ for move in [["Left punch","ual1/Punch_Jab","hand_l","Arm",0.98],["Right punch","ual1/Punch_Cross","hand_r","Arm",0.95],["Kick","boxing/front_kick_r","foot_r","Leg",1.20],["Knee","battle/knee","calf_r","Leg",0.62]]:
   for seconds in [0.55,1.0,1.5]:
    var base:Dictionary=Rules.touch_base([move[2]])
    base["animation_type"]=move[3]
@@ -23,7 +23,7 @@ static func build()->Array[Dictionary]:
   ["Right hook","boxing/hook_r","hand_r","Arm",1.15,0.85],
   ["Uppercut","battle/uppercut","hand_r","Arm",1.05,0.9],
   ["Backfist","fight/backfist","hand_r","Arm",1.15,0.75],
-  ["Elbow","editor_attacks/elbow","lowerarm_r","Arm",0.95,0.7],
+  ["Elbow","editor_attacks/elbow","lowerarm_r","Arm",0.68,0.7],
   ["Body slash","editor_attacks/body_slash","hand_r","Arm",1.2,0.8],
   ["Crouch jab","fight/crouch_jab","hand_l","Arm",1.0,0.65],
   ["Chain punch","fight/chain_punch_short","hand_r","Arm",1.1,0.85],
@@ -50,9 +50,9 @@ static func build()->Array[Dictionary]:
   ["Flame right cross","ual1/Punch_Cross","hand_r","Arm",1.10,0.7],
   ["Flame left hook","boxing/hook_l","hand_l","Arm",1.15,1.0],
   ["Flame right hook","boxing/hook_r","hand_r","Arm",1.15,1.0],
-  ["Flame elbow","editor_attacks/elbow","lowerarm_r","Arm",0.95,0.9],
+  ["Flame elbow","editor_attacks/elbow","lowerarm_r","Arm",0.68,0.9],
   ["Flame high kick","boxing/high_kick_r","foot_r","Leg",1.45,1.1],
-  ["Flame knee","battle/knee","calf_r","Leg",1.05,0.9]
+  ["Flame knee","battle/knee","calf_r","Leg",0.62,0.9]
  ]:
   result.append(touch_move(move,"Fire"))
  for cast in [

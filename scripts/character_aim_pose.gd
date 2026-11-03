@@ -99,7 +99,18 @@ static func aim_leg(actor:Node,side:String,direction:Vector3,weight:float=1.0) -
 
 static func aim_elbow(actor:Node,side:String,direction:Vector3,weight:float=1.0) -> void:
 	# An elbow strike steers its upper arm, not an unrelated casting hand.
-	_aim_joint(actor,"upperarm_"+side,direction,weight,deg_to_rad(35.0),deg_to_rad(30.0),["arm_"+side,"forearm_"+side,"hand_"+side])
+	# Compare the actual shoulder-to-elbow segment with the target, rather than
+	# the actor's facing: a forward-facing actor can still swing an elbow wide.
+	var bone:="upperarm_"+side
+	var reference:=Safety.capture(actor,[bone])
+	var shoulder:Vector3=actor.bone_point(bone)
+	var current:Vector3=actor.bone_point("lowerarm_"+side)-shoulder
+	var desired:Vector3=actor.bone_point("spine_03")+direction-shoulder
+	if current.length_squared()<0.0001 or desired.length_squared()<0.0001:return
+	var turn:=Quaternion(current.normalized(),desired.normalized())
+	var angle:=minf(Quaternion.IDENTITY.angle_to(turn),deg_to_rad(35.0))*clampf(weight,0.0,1.0)
+	if angle>0.0001:rotate_bone(actor,bone,turn.get_axis(),angle)
+	Safety.constrain(actor,reference,["arm_"+side,"forearm_"+side,"hand_"+side])
 
 static func aim_head(actor:Node,target:Vector3,weight:float=1.0) -> void:
 	weight=clampf(weight,0.0,1.0)
