@@ -10,7 +10,7 @@ func run():
  var brain=w.brains[0];var a=brain.actor;var b=a.rival
  var charged:Array[Dictionary]=[]
  for item in brain.loadout:
-  if float(item.duration)>=3.0:charged.append(item)
+  if str(item.spec.id).begins_with("cpu_charge_"):charged.append(item)
  assert(charged.size()==4 and brain.loadout.back().kind=="shield")
  var small:Dictionary=brain.loadout[13];var last_radius:=0.0
  for item in charged:

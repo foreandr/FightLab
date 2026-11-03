@@ -298,7 +298,8 @@ shared-rule Fire spells now use 3, 4.5, 6 and 8-second animations, releasing at
 55% of the animation. Size/speed/burn allocations shift increasingly to size;
 duration/timing amplification, mana, stamina, burn, flight and collision still
 come from CombatSpellRules and the common runtime. Existing attack IDs and
-indices remain intact; the shield remains last. Total repertoire: 58 choices.
+indices remain intact; the shield remains last. This brought the repertoire to
+58 choices before the heavy-impact additions below.
 ai/cast_opening.gd estimates observable rush time from distance and a fast
 ground approach, with extra space only for actual committed enemy recovery.
 projectile_score weighs long-cast damage against this exposure, preserves a
@@ -312,3 +313,25 @@ Nested fallback preserves prior and frozen policy data without rewriting it.
 cpu_long_cast_test.gd checks all four real specs, size/cost scaling, exposure,
 committed recovery, deadline handling, learned selection, real launch timing,
 actual projectile radius, resource spending and post-release commitment.
+
+Heavy-impact choices and actual knockdowns
+-----------------------------------------
+The wide charged fireballs put most power into size, yielding only 21.4-38.4
+physical body damage at 3-8s, below the shared 40-damage ragdoll threshold.
+Five appended choices trade time and allocation for actual impact: Heavy fire
+lance (3s, 50.5 physical), Siege fire lance (4.5s, 74.0), Heavy right cross
+(3.5s, 43.1), Heavy front kick and knee (3s, 42.4). All stats come from normal
+CombatSpellRules authoring; no hidden damage/force bonus or threshold reduction.
+The Touch choices retain their source-aligned 22% release window. Total: 63.
+AI values a nonlethal knockdown against an unshielded standing opponent, and
+discounts long melee windups unless there is committed recovery or an exhausted
+opponent to punish. Existing distance, opening, affordability and threat-defense
+rules still apply. Wide spells, quick attacks and normal combo push are unchanged.
+Ragdoll diagnostics include health at entry and last physical damage, separating
+live knockdowns from death ragdolls. cpu_heavy_impact_test.gd checks all five
+real surviving-target knockdowns. Saved-policy copy fights also landed the new
+heavy projectiles and produced nonlethal knockdowns without forced move choices.
+Full-round regression runs retain live 1/60s physics when accelerated. It checks
+both actors act, resources, results and reset; it reports tactical variety rather
+than requiring every round to contain every move or a consolation hit by the
+loser. Actual combo/parry behavior remains covered by dedicated collision tests.

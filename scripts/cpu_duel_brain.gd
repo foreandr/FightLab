@@ -23,6 +23,10 @@ var deception=preload("res://scripts/ai/combat_deception.gd").new()
 const Combo=preload("res://scripts/touch_combo_rules.gd")
 const Burn=preload("res://scripts/burn_rules.gd")
 const CastOpening=preload("res://scripts/ai/cast_opening.gd")
+func knockdown_value(item:Dictionary)->float:
+ var rules=preload("res://scripts/combat_defense_rules.gd")
+ if not rules.ragdolls(float(item.spec.damage)) or is_instance_valid(actor.rival.ragdoll) or actor.rival.self_barrier.active():return 0.0
+ return 1.25 if actor.rival.health>float(item.spec.damage) else 0.0
 func projectile_score(item:Dictionary,distance:float)->float:
  if distance<=1.8 or distance>=18.0:return 0.0
  var score:=1.0+(1.0-aggression)*1.3
@@ -32,7 +36,7 @@ func projectile_score(item:Dictionary,distance:float)->float:
   var safety:=CastOpening.safety(actor,item)
   # Long casts buy area/damage at real exposure and resource cost. A choice,
   # never a quota; incoming threats can still interrupt it through normal defense.
-  score=(2.0+minf(4.0,expected_damage(item)*0.035))*lerpf(0.08,1.0,safety)
+  score=(2.0+minf(4.0,expected_damage(item)*0.035)+knockdown_value(item))*lerpf(0.08,1.0,safety)
   if float(item.spec.stamina_cost)>actor.stamina-20.0:score*=0.5
   if world.has_method("time_remaining") and world.time_remaining()<float(item.duration)*float(item.spec.release)+0.5:return 0.0
  if actor.mana<35:score*=0.25
@@ -73,6 +77,11 @@ func melee_score(item:Dictionary,distance:float)->float:
  if actor.rival.mode=="cast":score+=0.8/float(item.duration)
  if float(item.spec.damage)>=actor.rival.health:score+=3.0
  if actor.rival.self_barrier.active():score*=0.35
+ if float(item.duration)>=2.5:
+  var opening:=CastOpening.safety(actor,item)
+  # A low-resource opponent or committed recovery creates a heavy punish window.
+  if actor.rival.stamina<15 or actor.rival.mana<5:opening=maxf(opening,0.8)
+  score=(score+knockdown_value(item))*lerpf(0.2,1.0,opening)
  return score
 func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  actor=unit;world=host;rng.seed=seed_;aggression=pressure

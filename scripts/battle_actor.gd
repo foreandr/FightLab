@@ -1897,7 +1897,7 @@ func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 	arena.add_child(ragdoll)
 	ragdoll.build(self, impulse, point)
 	ragdoll_count += 1
-	arena.events.append({"time":arena.elapsed,"event":"ragdoll","team":team,"impulse":impulse.length()})
+	arena.events.append({"time":arena.elapsed,"event":"ragdoll","team":team,"impulse":impulse.length(),"health":health,"physical_damage":last_physical_impact_damage})
 	arena.audio.impact("heavy", point, 1)
 
 func finish_ragdoll() -> void:

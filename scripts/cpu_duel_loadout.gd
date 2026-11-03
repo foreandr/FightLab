@@ -77,6 +77,18 @@ static func build()->Array[Dictionary]:
   var spec:Dictionary=Rules.author(base,seconds,0.55,true)
   spec.id="cpu_charge_"+str(charge[0]).to_snake_case();spec.name=charge[0]
   result.append({"kind":"projectile","title":charge[0],"range":18.0,"duration":seconds,"spec":spec,"profile":{"clip":"spells/overhead_cleave","step":"Overhead fireball","store_raw":true,"duration":seconds,"attack_bone":"hand_r","animation_type":"Arm"}})
+ # Impact-focused counterparts to the wide, slower fireballs above.
+ for heavy in [["Heavy fire lance",3.0,0.25,0.65,0.10],["Siege fire lance",4.5,0.40,0.55,0.05]]:
+  var base:Dictionary=Rules.allocate(Rules.projectile_base("Fire"),{"size":heavy[2],"speed":heavy[3],"effect":heavy[4]},"Fire",1.0)
+  var seconds:=float(heavy[1])
+  var spec:Dictionary=Rules.author(base,seconds,0.50,true)
+  spec.id="cpu_impact_"+str(heavy[0]).to_snake_case();spec.name=heavy[0]
+  result.append({"kind":"projectile","title":heavy[0],"range":18.0,"duration":seconds,"spec":spec,"profile":{"clip":"spells/sun_spear","step":"Heavy fire cast","store_raw":true,"duration":seconds,"attack_bone":"hand_r","animation_type":"Arm"}})
+ for move in [["Heavy right cross","ual1/Punch_Cross","hand_r","Arm",0.95,3.5],["Heavy front kick","boxing/front_kick_r","foot_r","Leg",1.20,3.0],["Heavy knee","battle/knee","calf_r","Leg",0.62,3.0]]:
+  var item:=touch_move(move)
+  # Keep the existing contact window aligned with the source limb's actual swing.
+  item.spec.id="cpu_impact_"+str(move[0]).to_snake_case();item.spec.name=move[0]
+  result.append(item)
  # Quicker shield animation, priced by the same rules as any authored cast.
  var shield:Dictionary=Rules.author(Rules.self_barrier_base(),0.5,0.3,false)
  shield["id"]="cpu_shield";shield["name"]="Timed shield"
