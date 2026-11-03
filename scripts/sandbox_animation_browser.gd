@@ -1,5 +1,5 @@
 extends VBoxContainer
-## Catalog metadata only; load/import a real animation only when selected.
+## Metadata index with real screenshots generated only for the visible page.
 const Index=preload("res://scripts/animation_store_index.gd")
 const Library=preload("res://scripts/animation_store_library.gd")
 const Types=preload("res://scripts/animation_store_types.gd")
@@ -27,8 +27,10 @@ var next:Button
 var page_label:Label
 var confirm:Button
 var debounce:Timer
+var thumbnails:Node
 func setup(editor:Control)->void:
  host=editor;size_flags_horizontal=Control.SIZE_EXPAND_FILL;size_flags_vertical=Control.SIZE_EXPAND_FILL;add_theme_constant_override("separation",6)
+ thumbnails=preload("res://scripts/animation_thumbnail_renderer.gd").new();add_child(thumbnails)
  host.menu_label(self,"Choose an animation",20)
  search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",Color("806d4d"));add_child(search)
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
@@ -122,18 +124,20 @@ func apply_filters()->void:
 func turn_page(direction:int)->void:
  page=clampi(page+direction,0,maxi(0,ceili(matches_.size()/float(PAGE_SIZE))-1));show_page()
 func show_page()->void:
+ var visible_entries:Array=[];var cards:Array=[]
  for child in grid.get_children():grid.remove_child(child);child.queue_free()
  status.text="%d animations · %d matching"%[records.size(),matches_.size()]
  for index in range(page*PAGE_SIZE,mini(matches_.size(),(page+1)*PAGE_SIZE)):
   var entry:Dictionary=matches_[index]
-  var icon=preload("res://scripts/animation_row_icons.gd").get_icon(str(entry.store_animation_type).to_lower())
-  var card:Button=preload("res://scripts/asset_preview_card.gd").create("Animation"+str(index),str(entry.title),icon,str(entry.title)+"\n"+entry.store_animation_type+" · "+entry._origin+"\n"+str(entry.get("store_creator","")))
-  card.custom_minimum_size.y=58
-  card.find_child("PreviewImage",true,false).custom_minimum_size.y=24
+  var card:Button=preload("res://scripts/asset_preview_card.gd").create("Animation"+str(index),str(entry.title),null,str(entry.title)+"\n"+entry.store_animation_type+" · "+entry._origin+"\n"+str(entry.get("store_creator","")))
+  card.custom_minimum_size.y=86
+  card.find_child("PreviewImage",true,false).custom_minimum_size.y=52
   grid.add_child(card);card.set_pressed_no_signal(entry._id==selected_id)
+  visible_entries.append(entry);cards.append(card)
   card.pressed.connect(func():select_animation(entry))
  var pages:=maxi(1,ceili(matches_.size()/float(PAGE_SIZE)))
  page_label.text="%d / %d"%[page+1,pages];previous.disabled=page==0;next.disabled=page+1>=pages
+ thumbnails.request_page(visible_entries,cards,details_path)
 func select_animation(record:Dictionary)->bool:
  if host.spell_builder.cast_committed():return false
  var entry:=record.duplicate(true)
