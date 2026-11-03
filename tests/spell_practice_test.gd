@@ -76,8 +76,7 @@ func run() -> void:
 	b.reset_training_dummy()
 	if not check(dummy.health>0.0 and not dummy.practice_god_mode,"Manual reset did not restore mortal mannequin"):return
 	editor.select_editor_unit(dummy)
-	b.refresh_dummy_controls()
-	b.dummy_god_button.set_pressed(true)
+	b.set_dummy_god_mode(true)
 	if not check(dummy.practice_god_mode and dummy.practice_immortal,"God mode toggle did not apply"):return
 	for hit in 2:
 		dummy.invulnerability=0.0
@@ -85,9 +84,9 @@ func run() -> void:
 		await RenderingServer.frame_post_draw
 		if not check(dummy.health>0.0,"God mode mannequin died from a lethal hit"):return
 	if not check(b.dummy_total_damage>=20000.0 and not dummy.has_meta("practice_damage_readout"),"God mode damage bookkeeping failed or removed overhead readout returned"):return
-	b.dummy_god_button.set_pressed(false)
+	b.set_dummy_god_mode(false)
 	b.load_demo_preferences()
-	if not check(not b.dummy_god_mode and not b.dummy_god_button.button_pressed,"God mode preference was not saved"):return
+	if not check(not b.dummy_god_mode,"Legacy God mode preference leaked into spellcraft"):return
 	editor.select_group("Motion")
 	if not check(not dummy.practice_wooden_dummy and not dummy.practice_dummy_visual.enabled and dummy.model.visible,"Dummy appearance leaked outside spellcrafting"):return
 	editor.select_group("Spells")

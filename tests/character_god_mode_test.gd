@@ -22,19 +22,14 @@ func run() -> void:
 	b.set_character_god_mode(caster,false)
 	b.set_character_god_mode(dummy,true)
 	b.set_character_god_mode(human,false)
-	editor.select_editor_unit(caster)
-	b.refresh_dummy_controls()
-	if not check(b.dummy_god_button.text=="God mode" and b.dummy_god_button.tooltip_text.contains("You") and not b.dummy_god_button.button_pressed,"Self selection not reflected in fixed-label toggle"):return
-	b.dummy_god_button.set_pressed(true)
+	if not check(b.spell_playback_panel.find_child("MannequinGodMode",true,false)==null,"God mode control still exposed in spell creation"):return
+	b.set_character_god_mode(caster,true)
 	if not check(caster.practice_god_mode and dummy.practice_god_mode and not human.practice_god_mode,"Self toggle changed another character"):return
 	if not check(caster.spend_cast_resources(600.0,600.0) and caster.stamina==caster.MAX_STAMINA and caster.mana==caster.MAX_MANA,"God resources not unlimited above max pool"):return
 	if not check(caster.spend_mana(1000.0) and caster.spend_stamina(1000.0),"Single-resource actions still limited"):return
 	editor._spend_unit_stamina(caster,1000.0)
 	if not check(caster.stamina==caster.MAX_STAMINA,"Timeline drains God Mode stamina"):return
-	editor.select_editor_unit(human)
-	b.refresh_dummy_controls()
-	if not check(not b.dummy_god_button.button_pressed and b.dummy_god_button.text=="God mode" and b.dummy_god_button.tooltip_text.contains("Human target"),"Selection shows wrong character state"):return
-	b.dummy_god_button.set_pressed(true)
+	b.set_character_god_mode(human,true)
 	human.guard_energy=0.0
 	human.invulnerability=0.0
 	var before:float=human.damage_taken
@@ -49,15 +44,10 @@ func run() -> void:
 	human.wall_crash_cooldown=0.0
 	human.wall_crash(human.global_position,Vector3.BACK,10.0,Vector3.FORWARD*10.0)
 	if not check(human.health==human.MAX_HEALTH and human.stamina==human.MAX_STAMINA,"Wall crash consumes God resources"):return
-	editor.select_editor_unit(dummy)
-	b.refresh_dummy_controls()
-	b.dummy_god_button.set_pressed(false)
+	b.set_character_god_mode(dummy,false)
 	if not check(not dummy.practice_god_mode and caster.practice_god_mode and human.practice_god_mode,"Disabling dummy altered another actor"):return
 	b.reset_practice_scene()
 	if not check(caster.practice_god_mode and human.practice_god_mode and not dummy.practice_god_mode,"Reset overwrote per-character choices"):return
-	editor.clear_editor_unit_selection()
-	b.refresh_dummy_controls()
-	if not check(b.dummy_god_button.disabled,"No selection silently edits another character"):return
 	b.set_character_god_mode(caster,false)
 	caster.stamina=100;caster.mana=100
 	if not check(caster.spend_cast_resources(10,10) and caster.stamina==90 and caster.mana==90,"Normal resource costs broken"):return
@@ -65,9 +55,15 @@ func run() -> void:
 	dummy.invulnerability=0.0;dummy.guard_energy=0.0
 	dummy.receive_magic(10000,Vector3.FORWARD,caster,dummy.bone_point("spine_03"))
 	if not check(dummy.health<=0.0,"God-off dummy cannot die"):return
+	# Legacy preferences are ignored, while core actor God Mode stays reusable.
 	var cfg:=ConfigFile.new()
-	cfg.load(b.preview_preferences_path)
-	var saved:Dictionary=cfg.get_value("practice","character_god_modes",{})
-	if not check(saved.get("caster")==false and saved.get("dummy")==false and saved.get("human")==true,"Per-character settings not saved"):return
-	print("CHARACTER GOD MODE PASSED: selected self/dummy/human isolated, unlimited costs, damage/status retained, reset persistence, off-mode costs/death, no-selection guard")
+	cfg.set_value("practice","dummy_god_mode",true)
+	cfg.set_value("practice","character_god_modes",{"caster":true,"dummy":true,"human":true})
+	cfg.save(b.preview_preferences_path)
+	b.load_demo_preferences();b.prepare_preview_targets()
+	if not check(not caster.practice_god_mode and not dummy.practice_god_mode and not human.practice_god_mode,"Legacy cheats leaked into Create"):return
+	b.save_demo_preferences();cfg=ConfigFile.new();cfg.load(b.preview_preferences_path)
+	if not check(not cfg.has_section_key("practice","character_god_modes"),"Create persisted God Mode settings"):return
+	DirAccess.remove_absolute(b.preview_preferences_path)
+	print("CHARACTER GOD MODE PASS: absent from Create UI/defaults/preferences; legacy flags ignored; shared actor capability preserved for future Sandbox")
 	quit()

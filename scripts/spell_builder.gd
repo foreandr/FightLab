@@ -229,9 +229,8 @@ var movement_keys:Dictionary={}
 var caster_moving:=false
 var caster_move_axes:=Vector2.ZERO
 var caster_sprinting:=false
-var dummy_god_mode:=true
+var dummy_god_mode:=false
 var character_god_modes:Dictionary={}
-var dummy_god_button:Button
 var dummy_total_damage:=0.0
 var dummy_last_damage:=0.0
 var dummy_damage_mark:=0.0
@@ -780,21 +779,11 @@ func setup(owner_editor:Node) -> void:
  projectile_back_button=editor.button(projectile_screen,"← Back",func():show_creation_step("delivery"))
  projectile_back_button.tooltip_text="Back to spell types"
  add_start_navigation(projectile_back_button)
- dummy_god_button=editor.button(playback_row,"God mode",func():pass)
- dummy_god_button.custom_minimum_size.x=140
- dummy_god_button.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
- dummy_god_button.clip_text=true
- dummy_god_button.name="MannequinGodMode"
- dummy_god_button.toggle_mode=true
- dummy_god_button.focus_mode=Control.FOCUS_ALL
- dummy_god_button.toggled.connect(set_selected_god_mode)
- dummy_god_button.tooltip_text="Click a character, including yourself, then toggle unlimited health, stamina and mana. Hits and reactions still apply."
  var dummy_reset_button:Button=editor.button(projectile_screen,"Reset mannequin",reset_training_dummy)
  dummy_reset_button.name="ResetPracticeMannequin"
  dummy_reset_button.focus_mode=Control.FOCUS_ALL
  build_fire_shape_panel()
  preload("res://scripts/spell_timing_layout.gd").build(self,timing_column)
- refresh_dummy_controls()
  show_creation_step("demo")
  refresh_demo_choices()
  visibility_changed.connect(workspace_visibility_changed)
@@ -1671,8 +1660,6 @@ func save_demo_preferences() -> void:
  cfg.set_value("preview","choice",str(casting_animation.get("demo_choice","cross")))
  cfg.set_value("preview","duration",demo_duration)
  cfg.set_value("preview","animation_types",demo_animation_types)
- cfg.set_value("practice","dummy_god_mode",dummy_god_mode)
- cfg.set_value("practice","character_god_modes",character_god_modes)
  cfg.set_value("preview","hitboxes",preview_hitboxes)
  cfg.set_value("layout","collapsed_spell_sections",collapsed_spell_sections)
  cfg.save(preview_preferences_path)
@@ -1687,10 +1674,10 @@ func load_demo_preferences() -> void:
  var saved_takeovers:Variant=cfg.get_value("preview","animation_types",{})
  demo_animation_types=saved_takeovers.duplicate(true) if saved_takeovers is Dictionary else {}
  demo_duration=clampf(float(cfg.get_value("preview","duration",1.0)),0.1,60.0)
- dummy_god_mode=bool(cfg.get_value("practice","dummy_god_mode",true))
- character_god_modes=cfg.get_value("practice","character_god_modes",{})
+ # Old spellcraft God Mode preferences must not grant unlimited resources.
+ dummy_god_mode=false
+ character_god_modes.clear()
  preview_hitboxes=bool(cfg.get_value("preview","hitboxes",false))
- refresh_dummy_controls()
  var saved:String=str(cfg.get_value("preview","choice","cross"))
  saved=str({"straight":"cross","up":"mend","sky":"mend","down":"knee","stomp":"knee"}.get(saved,saved))
  select_demo_choice(saved if DEMO_ANIMATIONS.has(saved) else "cross",false)
@@ -2397,7 +2384,6 @@ func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  Movement.turn(caster,Movement.facing(caster,editor.field.camera,spell_focus_target),delta)
 
 func update_training_dummy(_delta:float) -> void:
- refresh_dummy_controls()
  if not demo_only_stage or not is_instance_valid(editor.target) or not editor.target.practice_damageable_dummy:return
  var dummy=editor.target
  if dummy.damage_taken>dummy_damage_mark:
@@ -2406,32 +2392,14 @@ func update_training_dummy(_delta:float) -> void:
   dummy_total_damage+=amount
   dummy_last_damage=amount
 
-func refresh_dummy_controls() -> void:
- if not is_instance_valid(dummy_god_button):return
- var unit=editor.focused_unit
- var valid:bool=is_instance_valid(unit) and unit.is_visible_in_tree()
- dummy_god_button.disabled=not valid
- if not valid:
-  dummy_god_button.tooltip_text="Click a character to enable this toggle."
-  dummy_god_button.set_pressed_no_signal(false)
-  return
- var label:String="You" if unit==editor.actor else ("Combat dummy" if unit==editor.target else ("Human target" if unit==practice_human else str(unit.name)))
- dummy_god_button.tooltip_text="%s · God mode: %s\nUnlimited health, stamina and mana for this character. Hits and reactions still apply."%[label,"On" if unit.practice_god_mode else "Off"]
- dummy_god_button.set_pressed_no_signal(unit.practice_god_mode)
-
 func god_mode_key(unit:Node) -> String:
  if unit==editor.actor:return "caster"
  if unit==editor.target:return "dummy"
  if unit==practice_human:return "human"
  return str(unit.name)
 
-func set_selected_god_mode(enabled:bool) -> void:
- var unit=editor.focused_unit
- if not is_instance_valid(unit) or not unit.is_visible_in_tree():
-  refresh_dummy_controls()
-  return
- set_character_god_mode(unit,enabled)
-
+## Internal test setup only; no Create UI or persisted preference. Sandbox can
+## reuse actor-level God Mode without adding cheats to spell authoring.
 func set_character_god_mode(unit:CharacterBody3D,enabled:bool) -> void:
  if not is_instance_valid(unit):return
  character_god_modes[god_mode_key(unit)]=enabled
@@ -2441,7 +2409,6 @@ func set_character_god_mode(unit:CharacterBody3D,enabled:bool) -> void:
  unit.practice_immortal=enabled
  unit.practice_damageable_dummy=true
  if enabled:unit.restore_god_resources()
- refresh_dummy_controls()
  save_demo_preferences()
 
 func set_dummy_god_mode(enabled:bool) -> void:

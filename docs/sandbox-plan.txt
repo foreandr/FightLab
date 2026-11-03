@@ -1,0 +1,8 @@
+Sandbox mode (planned)
+
+A separate mode alongside Story and Free Fight for unrestricted experiments.
+God Mode belongs there, not in Create > Spell. Keep the shared actor-level
+unlimited-resource capability reusable; do not duplicate combat mechanics.
+Spell creation exposes no God Mode control, defaults to finite resources,
+and ignores old God Mode preferences. Reset Scene still heals/restores targets.
+Sandbox entry and mechanics have not been implemented yet.
