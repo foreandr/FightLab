@@ -154,3 +154,25 @@ Validation: touch_combo_test.gd checks speed/costs/same-side/projectile exclusio
 cpu_combo_choices_test.gd checks burn scoring, range retry and a real physical
 jab into fire cross. Three full fights passed; the last fixture recorded five
 fire Touch casts and nine combo links. Perfect-block timing tests also passed.
+
+Permanent model archive and exhibition matches
+---------------------------------------------
+Models [M] opens the red/blue model chooser. Save current archives a version
+manually. The first version is archived when opening the normal demo; training
+also archives every ten completed matches (and its first completion if no
+archive exists). Archives are never rotated out with the small training league.
+Default folder: user://ai/self_play_models/ alongside the live self_play.json.
+Each immutable JSON includes learned policy, match/update counts, UTC creation
+time, caption, format/ruleset, engine version and a verified policy hash. Unique
+names prevent overwrites. Snapshot files are finished via temporary-file rename.
+Both chosen opponents are copied into frozen policies: no exploration, learning
+updates or writes to the live learner. Their model labels appear on the fighters,
+and selected paths are recorded in the match report data. Resume learning
+restores the live learner. Comparison rematches keep the same frozen opponents.
+These archive learned decisions, not old game executables: all versions fight
+under the current shared mechanics and available loadout. Invalid/incompatible
+snapshots are excluded or rejected rather than silently used. Past versions
+from before archiving began cannot be recreated from the current learner.
+Tests: ai_model_archive_test.gd (round-trip, immutability, ten-match cadence,
+name collisions, chooser selection, frozen comparison, no learner writes,
+invalid paths, resume), ai_learning_test.gd and ai_self_play_ui_test.gd.

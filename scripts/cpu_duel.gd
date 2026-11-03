@@ -39,6 +39,9 @@ var self_play_button:Button
 var intermission_left:=2.0
 var training_view:=false
 var learning_save_ok:=true
+var model_dialog:AcceptDialog
+var model_match_labels:Array[String]=[]
+var model_match_paths:Array[String]=[]
 func _ready()->void:
  super._ready()
  training_view=bool(get_tree().get_meta("cpu_training_view",false))
@@ -62,7 +65,10 @@ func _ready()->void:
   Focus.ensure_ring(actor)
   preload("res://scripts/fighter_overhead_tag.gd").attach(actor,"CPU "+str(team+1))
  focus_marker=Focus.create_marker(self)
- if not training_view:build_ui()
+ if not training_view:
+  build_ui()
+  if learning_enabled and not learning_store.has_snapshots():
+   if learning_store.save_snapshot("First archived model").is_empty():push_warning(learning_store.snapshot_error)
  else:set_process(false)
  ready_for_match=true
  rematch()
@@ -95,6 +101,9 @@ func rematch(seed_:int=0)->void:
   actor.rival=fighters[1-team];actor.rotation.y=PI/2 if team==0 else -PI/2
   actor.get_node("OverheadHealthTag").name_label.text=names[(offset+team)%names.size()]
   actor.story_profile["name"]=names[(offset+team)%names.size()]
+  if model_match_labels.size()==2:
+   actor.story_profile.name+=" · "+model_match_labels[team]
+   actor.get_node("OverheadHealthTag").name_label.text=actor.story_profile.name
   var brain=Brain.new();brain.setup(actor,self,match_seed+team*7919,random.randf_range(0.35,0.80));brains.append(brain)
   if learning_enabled:
    var table:Dictionary=policy_overrides[team] if policy_overrides.size()==2 else learning_store.data.learner
@@ -141,7 +150,7 @@ func finish_round(winner:int)->void:
    if not learning_save_ok:push_warning("Could not save AI learning profile: "+str(learning_store.last_save_error))
  if winner>=0:
   fighters[winner].get_node("OverheadHealthTag").name_label.text=str(fighters[winner].story_profile.name)+" · Winner"
- var record:Dictionary={"seed":match_seed,"winner":winner,"seconds":elapsed,"fighters":[],"events":events}
+ var record:Dictionary={"seed":match_seed,"winner":winner,"seconds":elapsed,"fighters":[],"events":events,"model_paths":model_match_paths.duplicate(),"learning":learning_updates}
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i]
   record.fighters.append({"name":actor.story_profile.name,"health":actor.health,"damage_dealt":actor.damage_dealt,"stamina_spent":actor.stamina_spent,"mana_spent":actor.mana_spent,"decisions":brains[i].counts})
@@ -171,6 +180,29 @@ func build_ui()->void:
  button(buttons,"Match report",show_report)
  self_play_button=button(buttons,"Self-play [T]",toggle_self_play);self_play_button.toggle_mode=true
  self_play_button.tooltip_text="Keep running matches and saving AI learning"
+ var models_button:=button(buttons,"Models [M]",show_models);models_button.disabled=not learning_enabled
+func show_models()->void:
+ if not learning_enabled:return
+ if not is_instance_valid(model_dialog):
+  model_dialog=preload("res://scripts/ai/model_match_dialog.gd").new();add_child(model_dialog);model_dialog.setup(self)
+ model_dialog.open()
+func start_model_match(red_path:String,blue_path:String)->bool:
+ if not learning_enabled:return false
+ var models:Array=[];var captions:Array[String]=[]
+ for file_path in [red_path,blue_path]:
+  if file_path.is_empty():
+   models.append(learning_store.data.learner.duplicate(true));captions.append("Current AI")
+  else:
+   var snapshot:Dictionary=learning_store.load_snapshot(file_path)
+   if snapshot.is_empty():return false
+   models.append(snapshot.learner.duplicate(true));captions.append("AI %d matches"%int(snapshot.matches))
+ policy_overrides=models;policy_training_flags=[false,false];learning_updates=false
+ model_match_labels=captions;model_match_paths.assign([red_path,blue_path])
+ if self_play:toggle_self_play()
+ rematch();return true
+func resume_model_learning()->void:
+ policy_overrides=[];policy_training_flags=[];learning_updates=true;model_match_labels.clear();model_match_paths.clear()
+ rematch()
 func toggle_spell_names()->void:
  spell_names_visible=not spell_names_visible
  if is_instance_valid(spell_names_button):spell_names_button.set_pressed_no_signal(spell_names_visible)
@@ -207,6 +239,7 @@ func show_report()->void:
  text_+="Winner: "+("In progress" if match_winner==-2 else ("Draw" if match_winner<0 else str(fighters[match_winner].story_profile.name)))+"\n"
  if learning_store!=null and not learning_enabled:text_+="Learning unavailable: "+str(learning_store.error)+"\n"
  if learning_enabled:text_+="Learning: %d completed matches · %d updates · champion generation %d\n"%[learning_store.data.matches,learning_store.data.updates,learning_store.data.generation]
+ if not model_match_labels.is_empty():text_+="Frozen comparison: Red %s vs Blue %s\n"%model_match_labels
  if not learning_save_ok:text_+="Learning was not saved: "+str(learning_store.last_save_error)+"\n"
  for i in fighters.size():
   var actor:CharacterBody3D=fighters[i]
@@ -244,6 +277,7 @@ func _unhandled_input(event:InputEvent)->void:
    KEY_SPACE:toggle_pause()
    KEY_R:rematch()
    KEY_T:toggle_self_play()
+   KEY_M:show_models()
    KEY_ESCAPE:go_home()
    KEY_2:set_combat_hitboxes(not projectile_hitboxes_visible)
    KEY_3:set_combat_numbers(not combat_numbers_visible)
