@@ -506,36 +506,27 @@ func setup(owner_editor:Node) -> void:
  choices_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  demo_columns.add_child(choices_column)
  editor.menu_label(choices_column,"Choose a demo animation",20)
+ var demo_grid:=GridContainer.new()
+ demo_grid.name="DemoAnimationGrid";demo_grid.columns=3
+ demo_grid.add_theme_constant_override("h_separation",6)
+ demo_grid.add_theme_constant_override("v_separation",6)
+ choices_column.add_child(demo_grid)
  for choice_key in DEMO_ANIMATIONS:
   var choice:String=choice_key
-  var row:=HBoxContainer.new()
-  row.add_theme_constant_override("separation",6)
-  choices_column.add_child(row)
-  var node:Button=editor.button(row,str(DEMO_ANIMATIONS[choice].title),func():select_demo_choice(choice))
-  node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  node.clip_text=true
-  var badge:Label=editor.menu_label(row,"",12)
-  badge.name="DemoType"+choice.capitalize()
-  badge.custom_minimum_size.x=144
+  var texture:Texture2D=load("res://assets/ui/spell_demos/"+choice+".png")
+  var node:Button=preload("res://scripts/asset_preview_card.gd").create("Demo"+choice.capitalize(),str(DEMO_ANIMATIONS[choice].title),texture)
+  demo_grid.add_child(node)
+  node.pressed.connect(func():select_demo_choice(choice))
+  var badge:=Label.new();badge.text="";badge.name="DemoType"+choice.capitalize()
   badge.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-  badge.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-  badge.add_theme_color_override("font_color",Color("775b34"))
+  badge.add_theme_font_size_override("font_size",11)
+  badge.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  node.get_child(0).get_child(0).add_child(badge)
   demo_type_labels[choice]=badge
-  node.name="Demo"+choice.capitalize()
-  node.custom_minimum_size.y=40
   demo_choices[choice]=node
- var grab_row:=HBoxContainer.new()
- grab_row.add_theme_constant_override("separation",6)
- choices_column.add_child(grab_row)
- grab_demo_button=editor.button(grab_row,"Grab",func():pass)
- grab_demo_button.name="DemoGrab"
- grab_demo_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
- grab_demo_button.custom_minimum_size.y=40
+ grab_demo_button=preload("res://scripts/asset_preview_card.gd").create("DemoGrab","Grab",load("res://assets/ui/spell_demos/grab.svg"),"Grab mechanics are not available yet.")
+ demo_grid.add_child(grab_demo_button)
  grab_demo_button.disabled=true
- grab_demo_button.tooltip_text="Grab mechanics are not available yet."
- var grab_badge_space:=Control.new()
- grab_badge_space.custom_minimum_size.x=144
- grab_row.add_child(grab_badge_space)
  var help:Label=editor.menu_label(choices_column,"Preview only. You can change this anytime.",14)
  help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  demo_confirm_button=editor.button(choices_column,"Confirm",confirm_demo_choice)
@@ -840,7 +831,7 @@ func show_creation_step(step:String) -> void:
  refresh_playback_controls()
  layout_connected_panels()
  if is_instance_valid(demo_timing_panel):
-  demo_timing_panel.visible=is_visible_in_tree()
+  demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
   demo_timing_panel.anchor_left=0.74
   demo_timing_panel.anchor_right=1.0
   demo_timing_panel.offset_left=0
@@ -1489,10 +1480,12 @@ func refresh_animation_type_visibility() -> void:
  for badge in demo_type_labels.values():badge.visible=relevant
 
 func refresh_demo_choices() -> void:
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
  refresh_animation_type_visibility()
  refresh_playback_controls()
  for choice in demo_choices:
   var selected:bool=demo_choice_selected and str(casting_animation.get("demo_choice","cross"))==choice
+  demo_choices[choice].set_pressed_no_signal(selected)
   demo_choices[choice].add_theme_color_override("font_color",Color("98703d") if selected else Color("382c1c"))
   var profile:Dictionary=demo_source_cache.get(choice,DEMO_ANIMATIONS[choice].get("profile",DEMO_ANIMATIONS[choice]))
   var type_:=CastType.normalize(str(demo_animation_types.get(choice,DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))))
@@ -2213,7 +2206,7 @@ func workspace_visibility_changed() -> void:
  if not is_visible_in_tree():
   stop_preview_controls()
   fire_style_editing=false;fire_style_preview_id=""
- if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree()
+ if is_instance_valid(demo_timing_panel):demo_timing_panel.visible=is_visible_in_tree() and demo_choice_selected
  playing=false
  repeat_wait=0
  clear_shots()

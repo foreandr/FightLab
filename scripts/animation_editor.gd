@@ -340,12 +340,12 @@ func _ready() -> void:
 	loading_status.add_theme_font_size_override("font_size",13)
 	loading_status.add_theme_color_override("font_color",BOOK_INK)
 	loading_content.add_child(loading_status)
-	loading_bar=ProgressBar.new()
+	loading_bar=preload("res://scripts/loading_spinner.gd").new()
 	loading_bar.min_value=0
 	loading_bar.max_value=100
 	loading_bar.value=0
 	loading_bar.show_percentage=false
-	loading_bar.custom_minimum_size=Vector2(320,18)
+	loading_bar.custom_minimum_size=Vector2(320,36)
 	loading_content.add_child(loading_bar)
 	await RenderingServer.frame_post_draw
 	animation_favorites.path=favorites_path
@@ -689,11 +689,11 @@ func build_ui() -> void:
 	store_loading_indicator.add_theme_constant_override("separation",2)
 	store_loading_status=menu_label(store_loading_indicator,"Preparing animation catalog…",12)
 	store_loading_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	store_loading_bar=ProgressBar.new()
+	store_loading_bar=preload("res://scripts/loading_spinner.gd").new()
 	store_loading_bar.min_value=0
 	store_loading_bar.max_value=100
 	store_loading_bar.show_percentage=false
-	store_loading_bar.custom_minimum_size=Vector2(0,14)
+	store_loading_bar.custom_minimum_size=Vector2(0,36)
 	store_loading_indicator.add_child(store_loading_bar)
 	store_content.add_child(store_loading_indicator)
 	store_loading_indicator.hide()

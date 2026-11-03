@@ -231,9 +231,9 @@ func _build_screen() -> void:
 	progress_label.add_theme_font_size_override("font_size", 15)
 	progress_label.add_theme_color_override("font_color", Color("b8c6d2"))
 	center.add_child(progress_label)
-	progress_bar = ProgressBar.new()
+	progress_bar = preload("res://scripts/loading_spinner.gd").new()
 	progress_bar.min_value = 0
 	progress_bar.max_value = 100
 	progress_bar.show_percentage = false
-	progress_bar.custom_minimum_size = Vector2(0, 14)
+	progress_bar.custom_minimum_size = Vector2(0, 36)
 	center.add_child(progress_bar)

@@ -204,9 +204,9 @@ func build_grassland() -> void:
 	subtitle.add_theme_constant_override("shadow_offset_x", 1)
 	subtitle.add_theme_constant_override("shadow_offset_y", 1)
 	layer.add_child(subtitle)
-	progress = ProgressBar.new()
+	progress = preload("res://scripts/loading_spinner.gd").new()
 	progress.position = Vector2(24, 150)
-	progress.size = Vector2(340, 5)
+	progress.size = Vector2(340, 36)
 	progress.show_percentage = false
 	var background := StyleBoxFlat.new()
 	background.bg_color = Color(0.07, 0.12, 0.08, 0.5)

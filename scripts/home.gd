@@ -257,11 +257,11 @@ func _show_scene_loading(title_text:String) -> void:
 	scene_loading_status.add_theme_font_size_override("font_size",13)
 	scene_loading_status.add_theme_color_override("font_color",Color("382c1c"))
 	content_box.add_child(scene_loading_status)
-	scene_loading_progress=ProgressBar.new()
+	scene_loading_progress=preload("res://scripts/loading_spinner.gd").new()
 	scene_loading_progress.min_value=0
 	scene_loading_progress.max_value=100
 	scene_loading_progress.show_percentage=false
-	scene_loading_progress.custom_minimum_size=Vector2(320,18)
+	scene_loading_progress.custom_minimum_size=Vector2(320,36)
 	content_box.add_child(scene_loading_progress)
 
 func _clear_scene_loading() -> void:
