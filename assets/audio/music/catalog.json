@@ -1,0 +1,27 @@
+{
+  "active": "the_descent",
+  "tracks": [
+    {
+      "id": "the_descent",
+      "title": "The Descent",
+      "creator": "Travis Savoie / RPG Music Maker",
+      "album": "Warmonger",
+      "reference_video": "https://www.youtube.com/watch?v=t3B802PIuB0",
+      "reference_video_start_seconds": 0,
+      "audio_source": "https://travissavoie.bandcamp.com/track/the-descent",
+      "asset": "res://assets/audio/music/the_descent_menu_loop.ogg",
+      "loop_seconds": 175,
+      "edit": "Source 0\u2013177 s; 2 s tail/head crossfade, loop begins at source 2 s",
+      "permission": "User confirmed game-use permission/license in chat on 2026-11-02",
+      "status": "active"
+    },
+    {
+      "id": "deadly_combat",
+      "title": "Deadly Combat",
+      "creator": "RPG Soundtracks",
+      "reference_video": "https://www.youtube.com/watch?v=m-1S1V1PZHA",
+      "status": "candidate_only",
+      "asset": null
+    }
+  ]
+}

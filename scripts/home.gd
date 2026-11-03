@@ -13,6 +13,7 @@ func _ready() -> void:
 	get_tree().paused=false
 	Engine.time_scale=1
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	add_child(preload("res://scripts/main_menu_music.gd").new())
 	var background:=TextureRect.new()
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter=Control.MOUSE_FILTER_IGNORE
