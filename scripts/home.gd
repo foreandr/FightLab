@@ -135,6 +135,8 @@ func show_page(next: String) -> void:
 			nav("Story",_open_story)
 			nav("Free Fight",func():open_scene("res://scenes/fight.tscn"))
 			navigation_buttons["Free Fight"].disabled=true
+			nav("Sandbox",func():pass)
+			navigation_buttons["Sandbox"].disabled=true
 			nav("Create",func():show_page("Create"))
 			var menu_spacer:=Control.new()
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
