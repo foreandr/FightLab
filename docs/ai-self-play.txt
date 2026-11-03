@@ -102,3 +102,21 @@ tests/ai_self_play_ui_test.gd: no top panel, learner/opponent training flags,
 completed-match persistence, automatic rematch, retained policy and stop toggle.
 Headless smoke batches validate real fights, saving, resume and frozen evaluation.
 They validate the pipeline; they are not a thousand-match strength benchmark.
+
+Expanded CPU repertoire
+-----------------------
+Both fighters equip 52 authored choices across 36 existing animation clips:
+40 Touch choices (physical and five fire-enhanced contacts), 11 fireball choices,
+and the timed shield. The original twelve melee timing variants, three fireballs
+and their action IDs are retained; new choices have stable descriptive IDs.
+Hooks, uppercuts, elbows, headbutts, slashes, sweeps and spinning kicks use explicit
+contact regions. Flame contacts use the same allocation, mana, burn and hit rules
+as player-authored Touch spells. Different fireball gestures remain ordinary
+projectiles, not new delivery mechanics. Costs, combos, parries and movement
+remain owned by the shared actor/runtime; no special damage or style buffs.
+Headbutt is registered once per actor; contact geometry is warmed at setup.
+The learned profile is preserved. New legal actions enter policy exploration
+without erasing prior learning. This expands the repertoire; it does not establish
+that the expanded policy is already stronger than the previous policy.
+Validation: tests/cpu_repertoire_test.gd checks both actors can start, visibly
+animate, release and pay for every choice; cpu_duel_test.gd runs three full fights.

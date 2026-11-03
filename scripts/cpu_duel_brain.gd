@@ -22,7 +22,7 @@ func setup(unit:CharacterBody3D,host:Node3D,seed_:int,pressure:float)->void:
  loadout=preload("res://scripts/cpu_duel_loadout.gd").build()
  think_left=rng.randf_range(0.05,0.2)
  # Warm immutable contact geometry before the fight, rather than on first hit.
- for bone in ["hand_l","hand_r","foot_r","calf_r"]:actor.ensure_touch_contact_visual().ensure_region(bone)
+ preload("res://scripts/cpu_duel_loadout.gd").prepare(actor)
 func note(action:String,why:String)->void:
  if plan!=action or reason!=why:
   world.events.append({"time":world.elapsed,"event":"cpu_decision","team":actor.team,"action":action,"reason":why,"stamina":actor.stamina,"mana":actor.mana})
@@ -168,8 +168,8 @@ func step(delta:float)->void:
    if actor.rival.self_barrier.active():score*=0.35
   elif item.kind=="projectile" and distance>1.8 and distance<18.0:
    score=1.0+(1.0-aggression)*1.3
-   if str(item.title)=="Quick fireball" and actor.rival.drive_velocity.length()>2.0:score+=1.0
-   if str(item.title)=="Large fireball" and actor.rival.mode=="cast":score+=0.8
+   if float(item.duration)<=0.8 and actor.rival.drive_velocity.length()>2.0:score+=1.0
+   if float(item.duration)>=1.25 and actor.rival.mode=="cast":score+=0.8
    if actor.mana<35:score*=0.25
    # Preserve one defensive cast unless this shot could finish the opponent.
    if actor.mana-world.mana_cost(item.spec)<12 and actor.rival.health>float(item.spec.damage)*1.5:score=0.0
