@@ -152,6 +152,7 @@ var barrier_confirm_button:Button
 var barrier_back_button:Button
 var barrier_tester:Node
 var barrier_puncher:Node
+var barrier_authoring:VBoxContainer
 var barrier_test_controls:HBoxContainer
 var barrier_pause_buttons:Dictionary={}
 var delivery_screen:VBoxContainer
@@ -723,7 +724,7 @@ func setup(owner_editor:Node) -> void:
  barrier_confirm_button=editor.button(barrier_screen,"Confirm",confirm_barrier_kind)
  barrier_confirm_button.name="ConfirmBarrierType"
  barrier_confirm_button.disabled=true
- barrier_back_button=editor.button(barrier_screen,"← Back",func():show_creation_step("barrier" if creation_step=="shield" else "delivery"))
+ barrier_back_button=editor.button(barrier_screen,"← Back",barrier_back)
  add_start_navigation(barrier_back_button)
  barrier_screen.hide()
  projectile_screen=VBoxContainer.new()
@@ -813,6 +814,9 @@ func setup(owner_editor:Node) -> void:
  dummy_reset_button.focus_mode=Control.FOCUS_ALL
  build_fire_shape_panel()
  preload("res://scripts/spell_timing_layout.gd").build(self,timing_column)
+ barrier_authoring=preload("res://scripts/barrier_authoring.gd").new();barrier_screen.add_child(barrier_authoring)
+ barrier_screen.move_child(barrier_authoring,barrier_title.get_index()+1)
+ barrier_authoring.configure(self,timing_column)
  show_creation_step("demo")
  refresh_demo_choices()
  visibility_changed.connect(workspace_visibility_changed)
@@ -839,6 +843,7 @@ func return_to_start()->void:
  preview_delivery_type=""
  delivery_choice_selected=false
  barrier_kind=""
+ if is_instance_valid(barrier_authoring):barrier_authoring.reset()
  refresh_barrier_choices()
  fire_shapes_open=false;fire_sound_open=false;spell_save_open=false
  active_spell_provenance.clear()
@@ -940,6 +945,12 @@ func choose_barrier_kind(value:String)->void:
  refresh_barrier_choices()
  GameDiagnostics.log_event("barrier_type_selected",{"kind":value})
 
+func barrier_back()->void:
+ if creation_step=="shield":
+  if is_instance_valid(barrier_authoring) and barrier_authoring.go_back():return
+  show_creation_step("barrier")
+ else:show_creation_step("delivery")
+
 func confirm_barrier_kind()->void:
  if creation_step!="barrier" or barrier_kind!="Shield":return
  show_creation_step("shield")
@@ -955,6 +966,7 @@ func toggle_barrier_tester(kind:String)->void:
  refresh_barrier_choices()
 
 func refresh_barrier_choices()->void:
+ if is_instance_valid(barrier_authoring):barrier_authoring.refresh()
  if is_instance_valid(barrier_test_controls):barrier_test_controls.visible=creation_step=="shield"
  for kind in barrier_pause_buttons:
   var tester=barrier_tester if kind=="Projectiles" else barrier_puncher
@@ -2184,6 +2196,7 @@ func handle_third_person_input(event:InputEvent) -> bool:
  if not is_visible_in_tree() or not demo_only_stage:return false
  if CombatPointer.dialog_open(get_viewport()):return false
  var area:Control=editor.base_ui.get_node_or_null("ArenaUnitDrop")
+ if is_instance_valid(barrier_authoring) and barrier_authoring.handle_input(event,area):return true
  if event is InputEventMouseButton:
   if event.button_index==MOUSE_BUTTON_MIDDLE and not event.ctrl_pressed:
    if event.pressed and is_instance_valid(area) and area.get_global_rect().has_point(event.position):
