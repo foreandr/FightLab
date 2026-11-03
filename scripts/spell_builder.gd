@@ -1540,7 +1540,7 @@ func set_demo_duration(value:float) -> void:
  if not limiter_enabled:
   set_test_value("duration",value)
   return
- demo_duration=clampf(value,0.1,60.0)
+ demo_duration=clampf(value,preload("res://scripts/animation_jump_motion.gd").minimum(casting_animation),60.0)
  casting_animation["duration"]=demo_duration
  # Reprice the whole preview instead of changing the cost midway through a cast.
  if is_visible_in_tree():play_demo_preview()
@@ -1587,6 +1587,11 @@ func demo_projectile_stats() -> Dictionary:
 func refresh_demo_timing() -> void:
  refresh_animation_type_visibility()
  if not is_instance_valid(demo_duration_slider):return
+ if limiter_enabled and not casting_animation.is_empty():
+  var minimum:=preload("res://scripts/animation_jump_motion.gd").minimum(casting_animation)
+  demo_duration=maxf(demo_duration,minimum)
+  casting_animation["duration"]=demo_duration
+  demo_duration_slider.min_value=minimum
  if previews_touch():
   demo_duration_slider.set_value_no_signal(demo_duration)
   demo_duration_label.text="%.1f s"%demo_duration
@@ -1674,6 +1679,7 @@ func play_demo_preview() -> void:
  blend_demo_pose(demo_enter_pose,0.0)
  elapsed=0
  CastType.begin(editor.actor,playback_animation())
+ preload("res://scripts/animation_jump_motion.gd").begin(editor.actor)
  playing=true
  released=false
  if previews_spell_release():
@@ -1717,7 +1723,10 @@ func process_demo_preview(delta:float) -> void:
    repeat_wait=maxf(0.0,repeat_wait-delta)
    if repeat_wait<=0.0 and demo_exit_pose.is_empty():play_demo_preview()
   return
- elapsed+=delta*editor.actor.cast_speed_multiplier()
+ var rate:float=editor.actor.cast_speed_multiplier()
+ if limiter_enabled:rate=preload("res://scripts/animation_jump_motion.gd").playback_rate(playback_animation(),playback_duration(),rate)
+ elapsed+=delta*rate
+ preload("res://scripts/animation_jump_motion.gd").advance(editor.actor,playback_animation(),elapsed,playback_duration())
  if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
  var progress:=clampf(elapsed/maxf(0.001,playback_duration()),0.0,1.0)
  CastPose.pose(editor.actor,playback_animation(),minf(0.9999,progress),cast_pose_aim(progress))
@@ -2019,13 +2028,15 @@ func projectile_effect_spec(effect:String) -> Dictionary:
 
 func demo_preview_spec() -> Dictionary:
  var base:Dictionary=touch_authoring.base_spec() if previews_touch() else (Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()))
+ var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
+ if not jump.is_empty():base.jump_motion=jump
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
  spec.hand=CombatAim.emitter(playback_animation())
  return spec if limiter_enabled else test_overrides.apply(spec)
 
 func cast_duration() -> float:
  if not limiter_enabled:return float(test_overrides.values.duration)
- if casting_animation.has("duration"):return float(casting_animation.duration)
+ if casting_animation.has("duration"):return maxf(float(casting_animation.duration),preload("res://scripts/animation_jump_motion.gd").minimum(casting_animation))
  if not is_instance_valid(editor.actor):return 0.64
  if casting_animation.get("store_raw",false) and editor.actor.player.has_animation(str(casting_animation.clip)):return editor.actor.player.get_animation(str(casting_animation.clip)).length
  return CastPose.Source.duration(editor.actor,casting_animation.step,casting_animation.clip)
@@ -2059,6 +2070,7 @@ func play_cast_preview() -> void:
  reset_caster_pose()
  elapsed=0
  CastType.begin(editor.actor,playback_animation())
+ preload("res://scripts/animation_jump_motion.gd").begin(editor.actor)
  playing=true
  released=false
  cast_attempt_actor=editor.actor

@@ -428,3 +428,29 @@ Tests: cast_footwork_test.gd checks actual pre-release leg/Movement translation,
 caps, smooth reversal and normal recovery; touch_directional_parry_test.gd checks
 which block tiers apply it; touch_parry_counter_test.gd uses an actual parried
 jab and verifies the defender lands the first equal-speed counter punch.
+
+Authored jump composition
+-------------------------
+animation_jump_motion.gd declares required airborne motion on an animation's
+jump_motion metadata: minimum_duration, takeoff and landing fractions. Existing
+sources are registered for Rising uppercut (1.35s), Rising kick (1.40s), Tornado
+kick (1.65s), and Hurricane kicks (1.85s). Ground sweeps, spinning back kicks and
+slide kicks are not automatically classified as jumping merely because they spin.
+The shared helper launches the actual CharacterBody using its existing gravity,
+with launch speed chosen to span the declared airborne portion of the cast.
+It adds the jump's energy-based stamina cost to the normal authored cast price;
+the same release/cancellation payment rules apply, with no double payment.
+The actor rejects under-length or unpriced jump profiles. Haste and Touch-chain
+speed cannot make the clip faster than its minimum. Already-airborne starts
+do not launch again. Landing preserves the authored recovery tail instead of
+prematurely replacing the spin with a generic landing pose. Gravity continues
+normally if a cast is interrupted. Horizontal pelvis drift is removed in source
+sampling while its rotation and small vertical body bob remain; the actor root,
+mesh, hurtboxes and chosen contact region move together through the real jump.
+Create uses the same launch, duration and pricing helpers, including duration
+control clamping. Limiter-off remains the explicit independent testing override.
+CPU loadouts price/declare these required jumps before the normal affordability
+and decision checks. Existing learned action IDs remain stable.
+authored_jump_motion_test.gd checks four real launches and landings, root height,
+minimum duration under haste, native recovery, jump pricing, exactly one launch
+and payment, and rejection of missing-cost/too-short profiles.

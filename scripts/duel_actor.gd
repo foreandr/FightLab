@@ -753,7 +753,7 @@ func tick(delta: float) -> void:
 	move_and_slide()
 	arena.settle_actor_on_ground(self)
 	if is_on_floor() and was_air and mode in ["flip", "air", "cast"]:
-		if mode != "cast" or did_release:
+		if mode != "cast" or (did_release and not keep_cast_on_landing()):
 			mode = "land"
 			mode_time = 0
 			mode_length = 0.24
@@ -792,6 +792,8 @@ func tick(delta: float) -> void:
 
 func movement_multiplier() -> float:
 	return 1.0
+
+func keep_cast_on_landing()->bool:return false
 
 func cast_locomotion_velocity(desired:Vector3,_delta:float)->Vector3:
 	return desired

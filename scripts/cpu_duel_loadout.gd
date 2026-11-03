@@ -99,10 +99,15 @@ static func touch_move(move:Array,element:String="None")->Dictionary:
  var base:Dictionary=Rules.touch_base([move[2]],element)
  if element=="Fire":base=Rules.allocate(base,{"size":0.15,"speed":0.55,"effect":0.30},"Fire",1.0)
  base.animation_type=move[3]
- var seconds:=float(move[5])
+ var jump:Dictionary=preload("res://scripts/animation_jump_motion.gd").settings({"clip":move[1]})
+ if not jump.is_empty():base.jump_motion=jump
+ var seconds:=maxf(float(move[5]),float(jump.get("minimum_duration",0.1)))
  var spec:Dictionary=Rules.author(base,seconds,0.22,true)
  spec.id="cpu_touch_"+str(move[0]).to_snake_case();spec.name=move[0]
  var result:Dictionary={"kind":"melee","title":move[0],"range":move[4],"duration":seconds,"spec":spec,"profile":{"clip":move[1],"step":move[0],"store_raw":true,"duration":seconds,"attack_bone":move[2],"animation_type":move[3]}}
+ if not jump.is_empty():
+  result.profile.jump_motion=jump
+  result.profile.preserve_arm_arc=true
  if str(move[1]).begins_with("boxing/hook_"):
   result.profile["combo_link_progress"]=0.68
   result.profile["contact_progress"]=0.44

@@ -33,6 +33,7 @@ var authored_entry_pose:Array[Transform3D]=[]
 var authored_entry_duration:=0.10
 var cast_movement_input:=Vector3.ZERO
 var touch_parry_recovery:=0.0
+var authored_jump_launched:=false
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
 var practice_face_rival:=false
@@ -272,6 +273,7 @@ func reset_fighter(location: Vector3) -> void:
 	authored_entry_pose.clear()
 	cast_movement_input=Vector3.ZERO
 	touch_parry_recovery=0.0
+	authored_jump_launched=false
 	if is_instance_valid(touch_contact_visual):touch_contact_visual.clear_all()
 	var block_notice=get_node_or_null("BlockTierFeedback")
 	if is_instance_valid(block_notice):block_notice.age=1.0;block_notice.hide();block_notice.set_process(false)
@@ -515,6 +517,7 @@ func start_cast(air: bool) -> void:
 	if air:
 		cast_rate=1.65
 	mode = "cast"
+	preload("res://scripts/animation_jump_motion.gd").begin(self)
 	mode_time = 0
 	cast_time = 0
 	did_release = false
@@ -538,7 +541,14 @@ func start_cast(air: bool) -> void:
 		air_casts += 1
 
 func cast_speed_multiplier()->float:
-	return parry_cast_haste.multiplier()*(touch_chain_speed if mode=="cast" and str(current_spell.get("effect",""))=="touch" else 1.0)
+	var speed:=parry_cast_haste.multiplier()*(touch_chain_speed if mode=="cast" and str(current_spell.get("effect",""))=="touch" else 1.0)
+	return preload("res://scripts/animation_jump_motion.gd").playback_rate(practice_spell_animation,mode_length,speed) if mode=="cast" else speed
+
+func keep_cast_on_landing()->bool:
+	return mode=="cast" and not preload("res://scripts/animation_jump_motion.gd").settings(practice_spell_animation).is_empty()
+
+func tick_authored_jump()->void:
+	if mode=="cast":preload("res://scripts/animation_jump_motion.gd").advance(self,practice_spell_animation,cast_time,mode_length)
 
 func tick_cast(delta: float) -> bool:
 	if not can_cast_with(current_spell,practice_spell_animation):
@@ -558,6 +568,7 @@ func tick_cast(delta: float) -> bool:
 			cast_phase = "release"
 		return false
 	cast_time += delta * cast_rate * cast_speed_multiplier()
+	tick_authored_jump()
 	if not did_release and charge_goal > 0 and cast_phase == "windup" and cast_time >= hold_at:
 		cast_time = hold_at
 		cast_phase = "hold"
@@ -2057,6 +2068,12 @@ func restore_ice_pose() -> void:
 	skeleton.force_update_all_bone_transforms()
 
 func can_cast_with(spec:Dictionary,profile:Dictionary={}) -> bool:
+	var jump:Dictionary=preload("res://scripts/animation_jump_motion.gd").settings(profile)
+	if not jump.is_empty() and not bool(spec.get("unrestricted_preview",false)):
+		var duration:=float(profile.get("duration",spec.get("animation_duration",0.0)))
+		if duration+0.0001<float(jump.minimum_duration):return false
+		var needed:=preload("res://scripts/animation_jump_motion.gd").stamina(duration,jump)
+		if float(spec.get("jump_stamina_cost",0.0))+0.0001<needed:return false
 	if drowned or health<=0 or stun_time>0:return false
 	var emitter:String=str(spec.get("cast_limb",profile.get("attack_bone",spec.get("hand","hand_r"))))
 	var required:Array=[]
