@@ -16,6 +16,7 @@ var custom_idle_duration := 3.0
 var custom_motion_frames: Array = []
 var custom_motion_step := ""
 var editor_pose_locked:=false
+var self_barrier=preload("res://scripts/self_barrier.gd").new()
 var practice_paused:=false
 func set_practice_paused(value:bool)->void:
 	practice_paused=value
@@ -249,6 +250,7 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	self_barrier.clear()
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
 	if is_instance_valid(burn_death):burn_death.restore()
 	burn_death=null
@@ -1522,6 +1524,7 @@ func cleanse_burn() -> bool:
 	return Burn.cleanse(self)
 
 func update_status(delta: float) -> void:
+	self_barrier.step(delta)
 	tactics.tick(self,delta)
 	flash_aura_time=maxf(0,flash_aura_time-delta)
 	wall_crash_cooldown=maxf(0,wall_crash_cooldown-delta)
@@ -1633,6 +1636,7 @@ func receive_magic_impact(amount: float, direction: Vector3, attacker: Character
 	return landed
 
 func enter_death(attacker: CharacterBody3D,impulse: Vector3,point: Vector3,cause:String="physical") -> void:
+	self_barrier.clear()
 	if practice_god_mode:
 		health=MAX_HEALTH
 		return

@@ -911,8 +911,15 @@ func layout_connected_panels() -> void:
 func previews_projectile() -> bool:
  return creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
 
+func previews_barrier()->bool:
+ return creation_step=="shield" and is_instance_valid(barrier_authoring) and barrier_authoring.attachment=="Self" and barrier_authoring.attachment_confirmed
+
+func previews_spell_release()->bool:
+ return previews_projectile() or previews_barrier()
+
 func refresh_playback_controls() -> void:
  var ready:=demo_choice_selected and not casting_animation.is_empty()
+ if creation_step=="shield":ready=ready and previews_barrier()
  if is_instance_valid(projectile_preview_button):projectile_preview_button.disabled=not ready
  if is_instance_valid(projectile_repeat_button):projectile_repeat_button.disabled=not ready
  if is_instance_valid(demo_confirm_button):demo_confirm_button.disabled=not ready
@@ -1624,13 +1631,13 @@ func play_demo_preview() -> void:
  CastType.begin(editor.actor,playback_animation())
  playing=true
  released=false
- if previews_projectile():
+ if previews_spell_release():
   cast_attempt_actor=editor.actor
   var attempt_spec:=demo_preview_spec()
   editor.field.combat().begin_cast_attempt(cast_attempt_actor,attempt_spec,cast_duration()*float(attempt_spec.release),false)
 
  if not limiter_enabled and cast_duration()<=0.0:
-  if previews_projectile():launch_projectile()
+  if previews_spell_release():launch_projectile()
   editor.field.combat().finish_cast(editor.actor)
   released=true
   playing=false
@@ -1644,7 +1651,7 @@ func process_demo_preview(delta:float) -> void:
   caster_moving=false
   return
  idle_elapsed+=delta
- if playing and previews_projectile() and not editor.actor.can_cast_with(committed_spec if cast_committed() else demo_preview_spec(),playback_animation()):
+ if playing and previews_spell_release() and not editor.actor.can_cast_with(committed_spec if cast_committed() else demo_preview_spec(),playback_animation()):
   editor.field.combat().finish_cast(editor.actor)
   playing=false
   repeat_wait=REPEAT_DELAY
@@ -1674,7 +1681,7 @@ func process_demo_preview(delta:float) -> void:
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
  Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
- if previews_projectile() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
+ if previews_spell_release() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
  if progress>=1.0:
@@ -1689,9 +1696,9 @@ func process_demo_preview(delta:float) -> void:
   else:begin_demo_exit()
 
 func cast_recovery_weight() -> float:
- if not playing or (previews_projectile() and not released):return 0.0
+ if not playing or (previews_spell_release() and not released):return 0.0
  var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else (release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0)
- return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if previews_projectile() else 0.0)
+ return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if previews_spell_release() else 0.0)
 
 func capture_demo_pose() -> Array[Transform3D]:
  return CastPose.capture(editor.actor)
@@ -1965,7 +1972,7 @@ func projectile_effect_spec(effect:String) -> Dictionary:
  return spec
 
 func demo_preview_spec() -> Dictionary:
- var base:=projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()
+ var base:=Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec())
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
  spec.hand=CombatAim.emitter(playback_animation())
  return spec if limiter_enabled else test_overrides.apply(spec)

@@ -59,6 +59,10 @@ static func refresh(b:Node) -> void:
 		texts.size="Limiter off: %.4f maximum radius × %.6f calibration\n× %.3f%% ÷ 100 × 2 = %.2f m diameter"%[Projectile.MAX_RADIUS,Projectile.CAST_RADIUS_SCALE,float(b.test_overrides.values.size),float(spec.projectile_radius)*2.0]
 		texts.speed="Limiter off: %.3f maximum speed × %.3f%% ÷ 100 = %.1f m/s"%[Projectile.MAX_VELOCITY,float(b.test_overrides.values.speed),float(spec.projectile_velocity)]
 		texts.burn="Limiter off: %.1f tick damage ÷ %.1f s\n× (4 × %.3f%% ÷ 100) = %.1f burn damage/s"%[Burn.TICK_DAMAGE,Burn.TICK_INTERVAL,float(b.test_overrides.values.effect),Burn.dps(float(spec.potency))]
+	if b.previews_barrier():
+		var spec:Dictionary=b.demo_preview_spec()
+		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
+		texts.mana="Base mana = 10\nBarrier cost = 0.5×\nWait before activation = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = 10 × 0.5 × %.3f = %.1f"%[timing.release_seconds,timing.multiplier,timing.multiplier,Rules.mana_cost(spec)]
 	for key in controls:
 		controls[key].mouse_filter=Control.MOUSE_FILTER_IGNORE if controls[key].has_meta("stat_hover_box") else Control.MOUSE_FILTER_PASS
 		controls[key].tooltip_text=texts[key]

@@ -134,6 +134,9 @@ func dispatch(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,profile:Dicti
 			if is_instance_valid(field.vfx):
 				for i in 5:field.vfx.puff(recipient.global_position+Vector3.UP*(0.35+i*0.24),"magic_01",recipient.team,Vector2.ONE*0.48,Vector3.UP*0.42,0.75,Color("85ffc1"),0.55,4)
 			field.combat_sound("ice",recipient.global_position,0.45)
+		"self_barrier":
+			actor.self_barrier.activate(actor,float(spec.get("shield_strength",25.0)),float(spec.get("shield_duration",5.0)))
+			field.combat_sound("shield",actor.global_position,0.6)
 		"armor":
 			pass # Legacy armor content is cosmetic; it grants no combat benefit.
 		"haste":
@@ -335,6 +338,14 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var physical_multiplier:=preload("res://scripts/combat_hit_regions.gd").physical_multiplier(zone)
 	var contact_damage:=amount
 	amount*=physical_multiplier
+	if victim.self_barrier.active():
+		var shield_absorbed:float=victim.self_barrier.absorb(amount)
+		if shield_absorbed>0.0:
+			impulse*=maxf(0.0,1.0-shield_absorbed/maxf(0.001,amount))
+			amount-=shield_absorbed
+			field.combat_sound("shield",point,0.65)
+			field.show_hit_region(area)
+			if amount<=0.0001:return true
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken
 	if victim.has_method("set_hit_context"):victim.set_hit_context(q,shattered,bool(spec.get("launch",false)))

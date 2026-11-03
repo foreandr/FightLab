@@ -96,6 +96,14 @@ func run() -> void:
 	actor.editor_pose_locked=false;target.editor_pose_locked=false
 	actor.mode="idle";target.mode="idle"
 	for frame in 5:world.tick_combat(1.0/60.0)
+	# The same timed self barrier must work without a Create or Story host.
+	target.invulnerability=0.0;target.cleanse_burn()
+	world.combat().dispatch(target,{"effect":"self_barrier","shield_strength":25.0,"shield_duration":0.5},target.global_position)
+	var barrier_hp:float=target.health
+	if not check(world.combat().apply_impact(actor,target,{"effect":"orb","damage":10.0},target.bone_point("spine_03"),Vector3.BACK),"Independent mode barrier contact failed"):return
+	if not check(target.health==barrier_hp and is_equal_approx(target.self_barrier.remaining,15.0),"Independent mode barrier did not absorb damage"):return
+	target.update_status(0.51)
+	if not check(not target.self_barrier.active(),"Independent mode barrier failed to expire"):return
 	actor.practice_god_mode=true
 	var raw:=spec.duplicate(true)
 	raw.mana=1000;raw.mana_percent=1000;raw.stamina_cost=1000

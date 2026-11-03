@@ -1,5 +1,5 @@
 extends VBoxContainer
-## Shield setup UI. Preview geometry is separate from future protection rules.
+## Shield setup UI. Shared casting/runtime own activation, absorption and expiry.
 const Icons=preload("res://scripts/animation_row_icons.gd")
 var builder:Control
 var choices:Dictionary={}
@@ -16,6 +16,14 @@ var pick_button:Button
 var size_card:Control
 var size_label:Label
 var size_slider:HSlider
+var strength:=25.0
+var lifetime:=5.0
+var strength_label:Label
+var strength_slider:HSlider
+var lifetime_label:Label
+var lifetime_slider:HSlider
+var amp_label:Label
+var stamina_label:Label
 var preview:Node3D
 func configure(owner_builder:Control,column:VBoxContainer)->void:
  builder=owner_builder;name="ShieldPlacement"
@@ -36,18 +44,37 @@ func configure(owner_builder:Control,column:VBoxContainer)->void:
  var ahead:Button=builder.editor.button(position_row,"Place ahead",place_ahead)
  ahead.name="PlaceShieldAhead"
  confirm=builder.editor.button(self,"Confirm",confirm_choice);confirm.name="ConfirmShieldPlacement"
- var content:VBoxContainer=preload("res://scripts/spell_timing_layout.gd").card(builder,column,"Barrier size")
- size_card=builder.spell_sections["Barrier size"]
+ var content:VBoxContainer=preload("res://scripts/spell_timing_layout.gd").card(builder,column,"Shield")
+ size_card=builder.spell_sections["Shield"]
  size_label=builder.editor.menu_label(content,"Radius: 1.5 m",18)
  size_slider=HSlider.new();content.add_child(size_slider)
  size_slider.name="BarrierRadius";size_slider.min_value=0.25;size_slider.max_value=10.0;size_slider.step=0.05;size_slider.value=radius
  size_slider.custom_minimum_size.y=28;size_slider.focus_mode=Control.FOCUS_ALL
  size_slider.value_changed.connect(func(value:float):radius=value;size_confirmed=false;refresh())
+ strength_label=builder.editor.menu_label(content,"Shield strength: 25",18)
+ strength_slider=HSlider.new();content.add_child(strength_slider)
+ strength_slider.name="ShieldStrength";strength_slider.min_value=1.0;strength_slider.max_value=100.0;strength_slider.step=1.0;strength_slider.value=strength;strength_slider.custom_minimum_size.y=28
+ strength_slider.focus_mode=Control.FOCUS_ALL
+ strength_slider.tooltip_text="Damage the shield can absorb before breaking. Cast amplification increases this."
+ strength_slider.value_changed.connect(func(value:float):strength=value;size_confirmed=false;refresh();builder.refresh_demo_timing())
+ lifetime_label=builder.editor.menu_label(content,"Duration: 5.0 s",18)
+ lifetime_slider=HSlider.new();content.add_child(lifetime_slider)
+ lifetime_slider.name="ShieldDuration";lifetime_slider.min_value=0.1;lifetime_slider.max_value=30.0;lifetime_slider.step=0.1;lifetime_slider.value=lifetime;lifetime_slider.custom_minimum_size.y=28
+ lifetime_slider.focus_mode=Control.FOCUS_ALL
+ lifetime_slider.tooltip_text="Time after activation before the shield expires."
+ lifetime_slider.value_changed.connect(func(value:float):lifetime=value;size_confirmed=false;refresh();builder.refresh_demo_timing())
+ amp_label=builder.editor.menu_label(content,"Spell amp: +0%",16)
+ amp_label.add_theme_color_override("font_color",Color("8b56b8"))
+ stamina_label=builder.editor.menu_label(content,"Stamina depletion: 0",16)
+ stamina_label.add_theme_color_override("font_color",Color("34844d"))
  preview=preload("res://scripts/barrier_volume_preview.gd").new();builder.editor.field.add_child(preview)
  place_ahead();refresh()
 func reset()->void:
  attachment="";attachment_confirmed=false;size_confirmed=false;picking_location=false
- radius=1.5;size_slider.set_value_no_signal(radius);place_ahead();refresh()
+ radius=1.5;size_slider.set_value_no_signal(radius)
+ strength=25.0;lifetime=5.0;strength_slider.set_value_no_signal(strength);lifetime_slider.set_value_no_signal(lifetime)
+ builder.editor.actor.self_barrier.clear()
+ place_ahead();refresh()
 func choose(kind:String)->void:
  if not choices.has(kind) or choices[kind].disabled:return
  attachment=kind;attachment_confirmed=false;size_confirmed=false;picking_location=false
@@ -57,7 +84,7 @@ func confirm_choice()->void:
  if attachment.is_empty():return
  if not attachment_confirmed:attachment_confirmed=true
  else:size_confirmed=true
- picking_location=false;refresh()
+ picking_location=false;refresh();builder.refresh_playback_controls();builder.refresh_demo_timing()
 func go_back()->bool:
  if attachment_confirmed:
   attachment_confirmed=false;size_confirmed=false;picking_location=false;refresh();return true
@@ -70,7 +97,7 @@ func set_location(ground:Vector3)->void:
  placed_ground=builder.editor.field.surface_placement(ground)
  picking_location=false;size_confirmed=false;refresh()
 func definition()->Dictionary:
- return {"attachment":attachment,"radius":radius,"position":placed_ground,"shape":"body" if attachment=="Self" else "sphere"}
+ return {"attachment":attachment,"radius":radius,"position":placed_ground,"shape":"body" if attachment=="Self" else "sphere","shield_strength":strength,"shield_duration":lifetime}
 func handle_input(event:InputEvent,area:Control)->bool:
  if not picking_location or not is_visible_in_tree():return false
  if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
@@ -86,21 +113,32 @@ func handle_input(event:InputEvent,area:Control)->bool:
 func refresh()->void:
  if not is_instance_valid(builder) or not is_instance_valid(confirm):return
  visible=builder.creation_step=="shield"
- heading.text="Barrier size" if attachment_confirmed else "Where is the shield?"
+ heading.text="Self Block" if attachment_confirmed else "Where is the shield?"
  for kind in choices:
   choices[kind].visible=not attachment_confirmed or attachment==kind
   choices[kind].set_pressed_no_signal(attachment==kind)
  confirm.disabled=attachment.is_empty() or size_confirmed
- confirm.text="Size confirmed" if size_confirmed else "Confirm"
+ confirm.text="Confirmed" if size_confirmed else "Confirm"
  position_row.visible=attachment=="Place"
  pick_button.text="Click a surface…" if picking_location else "Choose location"
  size_card.visible=is_visible_in_tree() and attachment_confirmed
- size_label.text="Fitted to body" if attachment=="Self" else "Radius: %.2f m"%radius
+ size_label.visible=attachment!="Self"
+ size_label.text="Radius: %.2f m"%radius
+ strength_label.text="Shield strength: %.0f"%strength
+ lifetime_label.text="Duration: %.1f s"%lifetime
  size_slider.visible=attachment!="Self"
+ if attachment_confirmed:refresh_stats(builder.demo_preview_spec())
  update_preview()
+func refresh_stats(spec:Dictionary)->void:
+ amp_label.text="Spell amp: +%.1f%%"%((float(spec.get("spell_amplifier",1.0))-1.0)*100.0)
+ stamina_label.text="Stamina depletion: %.1f"%float(spec.get("stamina_cost",0.0))
+ strength_label.text="Shield strength: %.0f → %.1f"%[strength,float(spec.get("shield_strength",strength))]
+ strength_label.tooltip_text="Base strength × spell amp = damage absorbed\n%.1f × %.3f = %.1f"%[strength,float(spec.get("spell_amplifier",1.0)),float(spec.get("shield_strength",strength))]
+ lifetime_label.text="Duration: %.1f s"%lifetime
+
 func update_preview()->void:
  if not is_instance_valid(preview):return
- preview.visible=is_visible_in_tree() and not attachment.is_empty() and builder.editor.actor.health>0.0
+ preview.visible=is_visible_in_tree() and attachment!="Self" and not attachment.is_empty() and builder.editor.actor.health>0.0
  if preview.visible:preview.update_volume(builder.editor.actor,attachment,radius,placed_ground)
 func _process(_delta:float)->void:
  if is_instance_valid(size_card):size_card.visible=is_visible_in_tree() and attachment_confirmed
