@@ -125,3 +125,15 @@ Spectator spell labels: Spells [4] on the bottom toolbar toggles each fighter's
 last successfully released spell name for 2.5 simulation seconds. Unreleased or
 failed casts are not labelled; rematch clears old names. The compact toolbar
 wraps into extra rows when needed rather than running outside the window.
+
+CPU spectator result framing
+---------------------------
+Camera eye and look point use matching exponential smoothing. At finish_round,
+cache the match midpoint, separation and each fighter's focus point; use those
+stable anchors until rematch. Settling corpse physics and residual movement no
+longer reframe the arena after the result. Orbit, zoom and selecting another
+fighter remain available. Rematch clears the cached anchors. No combat or
+ragdoll physics are disabled by this presentation fix.
+tests/cpu_result_camera_test.gd exercises a real lethal hit/ragdoll, live target
+smoothing, uneven frame times and settling movement, result stability, camera
+controls after death, and rematch reset.

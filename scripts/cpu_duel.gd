@@ -17,6 +17,9 @@ var camera_zoom:=1.0
 var camera_orbit_yaw:=0.35
 var camera_orbit_pitch:=0.38
 var camera_dragging:=false
+var camera_follow_point:=Vector3.ZERO
+var camera_follow_ready:=false
+var result_camera_frame:Dictionary={}
 var selected:CharacterBody3D
 var hovered:CharacterBody3D
 var focus_marker:Label3D
@@ -66,6 +69,7 @@ func _ready()->void:
  update_camera(1.0)
 func rematch(seed_:int=0)->void:
  paused=false
+ result_camera_frame.clear();camera_follow_ready=false
  if is_instance_valid(pause_button):pause_button.text="Pause"
  if not training_view:Engine.time_scale=1.0
  set_physics_process(true)
@@ -121,6 +125,10 @@ func projectile_aim_target(actor:CharacterBody3D,spec:Dictionary,origin:Vector3,
  return chest+Vector3(target.velocity.x,0,target.velocity.z)*lead*0.65
 func finish_round(winner:int)->void:
  if match_winner!=-2:return
+ # Result framing must not track settling corpses or residual actor movement.
+ # Keep orbit, zoom and changing focus available after the fight.
+ result_camera_frame={"middle":(fighters[0].global_position+fighters[1].global_position)*0.5+Vector3.UP*1.3,"separation":fighters[0].global_position.distance_to(fighters[1].global_position),"focus":{}}
+ for actor in fighters:result_camera_frame.focus[actor.get_instance_id()]=actor.focus_position()
  match_winner=winner;finished_at=elapsed;super.finish_round(winner)
  for actor in fighters:
   combat().discard_cast_attempt(actor)
@@ -209,11 +217,20 @@ func show_report()->void:
 func update_camera(delta:float)->void:
  if fighters.size()!=2:return
  var middle:Vector3=(fighters[0].global_position+fighters[1].global_position)*0.5+Vector3.UP*1.3
- if is_instance_valid(camera_focus_target):middle=middle.lerp(camera_focus_target.focus_position(),0.4)
  var separation:float=fighters[0].global_position.distance_to(fighters[1].global_position)
+ if not result_camera_frame.is_empty():
+  middle=result_camera_frame.middle;separation=result_camera_frame.separation
+ if is_instance_valid(camera_focus_target):
+  var focus:Vector3=result_camera_frame.get("focus",{}).get(camera_focus_target.get_instance_id(),camera_focus_target.focus_position())
+  middle=middle.lerp(focus,0.4)
  var distance:float=preload("res://scripts/game_settings_access.gd").service().clamp_camera_distance(maxf(8.0,separation*1.2+5.0)*camera_zoom)
  var backward:=Vector3(sin(camera_orbit_yaw)*cos(camera_orbit_pitch),sin(camera_orbit_pitch),cos(camera_orbit_yaw)*cos(camera_orbit_pitch))
- camera.global_position=camera.global_position.lerp(middle+backward*distance,1.0-exp(-5.0*delta));camera.look_at(middle)
+ var weight:=1.0-exp(-5.0*maxf(0.0,delta))
+ if not camera_follow_ready:camera_follow_point=middle;camera_follow_ready=true
+ # Smooth aim and eye together, so physics corrections cannot snap the view.
+ camera_follow_point=camera_follow_point.lerp(middle,weight)
+ camera.global_position=camera.global_position.lerp(middle+backward*distance,weight)
+ camera.look_at(camera_follow_point)
 func _process(delta:float)->void:
  if not ready_for_match:return
  update_camera(delta)
