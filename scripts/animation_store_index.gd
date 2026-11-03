@@ -31,7 +31,7 @@ static func load_cache(index_path: String) -> Dictionary:
 	return data
 
 static func _source_stamp() -> Dictionary:
-	return {"manifest_modified":FileAccess.get_modified_time(Community.MANIFEST),"combat_vocabulary":FileAccess.get_file_as_string("res://data/combat_animation_keywords.json").sha256_text(),"static_filter":FileAccess.get_file_as_string(STATIC_FILTER).sha256_text() if FileAccess.file_exists(STATIC_FILTER) else ""}
+	return {"combat_policy":preload("res://scripts/combat_animation_filter.gd").POLICY_VERSION,"manifest_modified":FileAccess.get_modified_time(Community.MANIFEST),"combat_vocabulary":FileAccess.get_file_as_string("res://data/combat_animation_keywords.json").sha256_text(),"static_filter":FileAccess.get_file_as_string(STATIC_FILTER).sha256_text() if FileAccess.file_exists(STATIC_FILTER) else ""}
 
 static func build_cache(index_path: String) -> Dictionary:
 	var json_path := ProjectSettings.globalize_path(Community.MANIFEST)

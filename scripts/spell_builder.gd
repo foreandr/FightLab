@@ -923,7 +923,7 @@ func previews_projectile() -> bool:
  return (sandbox_testing and sandbox_spell_selected) or creation_step=="projectile" or (creation_step=="delivery" and preview_delivery_type=="Projectile")
 
 func timing_panel_wanted()->bool:
- if sandbox_testing:return is_visible_in_tree() and demo_choice_selected
+ if sandbox_testing:return is_visible_in_tree()
  return is_visible_in_tree() and demo_choice_selected and (creation_step in ["projectile","barrier","shield","touch"] or (creation_step=="delivery" and delivery_choice_selected))
 
 func previews_barrier()->bool:
@@ -937,6 +937,7 @@ func previews_spell_release()->bool:
 
 func refresh_playback_controls() -> void:
  var ready:=demo_choice_selected and not casting_animation.is_empty()
+ if sandbox_testing:ready=ready and sandbox_spell_selected
  if creation_step=="shield":ready=ready and previews_barrier()
  if creation_step=="touch":ready=ready and previews_touch()
  if is_instance_valid(projectile_preview_button):projectile_preview_button.disabled=not ready

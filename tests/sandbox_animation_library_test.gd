@@ -7,7 +7,7 @@ func run():
  var deadline:=Time.get_ticks_msec()+60000
  while not browser.ready_catalog and Time.get_ticks_msec()<deadline:await process_frame
  assert(browser.ready_catalog,"Catalog did not finish loading")
- assert(browser.records.size()>1000,"Sandbox exposes only a short demo list")
+ assert(browser.records.size()>100,"Sandbox exposes only a short demo list")
  assert(browser.grid.get_child_count()<=9 and browser.detail_loads==0,"Catalog loaded all animation resources")
  assert(sandbox.field.fighters.size()==2 and not sandbox.target.practice_wooden_dummy and sandbox.target.model.visible)
  assert(sandbox.target.get_node("OverheadHealthTag").name_label.text=="Human target")
@@ -26,7 +26,7 @@ func run():
  assert(builder.demo_choice_selected and builder.demo_offensive() and not browser.confirm.disabled)
  browser.confirm_selection();assert(builder.creation_step=="demo" and builder.playing,"Arbitrary animation cannot test")
  builder.show_creation_step("demo")
- browser.set_type("Movement");browser.search.text="walk";browser.apply_filters()
+ browser.set_type("Movement");browser.set_air("Airborne");browser.search.text="jump";browser.apply_filters()
  assert(not browser.matches_.is_empty())
  assert(browser.detail_loads==0)
  var community:Dictionary={}

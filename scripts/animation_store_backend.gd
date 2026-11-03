@@ -49,7 +49,7 @@ static func _load_animation_store(host) -> void:
 		entry["duration"]=host.actor.player.get_animation(name_).length
 		host.animation_store_entries.append(entry)
 	var combat_filter=preload("res://scripts/combat_animation_filter.gd").new()
-	host.animation_store_entries=host.animation_store_entries.filter(func(entry):return entry.has("path") or host.store_library.taken.has(host.StoreLibrary.key(entry)) or combat_filter.accepts(entry))
+	host.animation_store_entries=host.animation_store_entries.filter(func(entry):return combat_filter.accepts(entry))
 	var total_entries=host.animation_store_entries.size()
 	for index in total_entries:
 		var entry:Dictionary=host.animation_store_entries[index]

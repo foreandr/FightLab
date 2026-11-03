@@ -8,7 +8,7 @@ func run():
   assert(Time.get_ticks_msec()<deadline,"Store did not open")
   await process_frame
  var policy=preload("res://scripts/combat_animation_filter.gd").new()
- assert(store.store_index_records.size()>1000 and store.store_index_records.size()<6000)
+ assert(store.store_index_records.size()>100 and store.store_index_records.size()<1000)
  var new_clips:=0
  for entry in store.store_index_records:
   assert(policy.accepts(entry),"Irrelevant entry remains: "+str(entry.title))

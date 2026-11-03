@@ -1,5 +1,27 @@
 Combat library cleanup — 2026-11-03
 
+LATEST POLICY (supersedes the broad movement allowlist described below):
+Only explicitly combat-related actions qualify. Generic walking, running,
+jumping, flips, idling, acting and personality styles no longer qualify merely
+because of those words. The original vocabulary remains a reference inventory;
+the admission gate now requires one of 242 explicit combat terms/phrases.
+Cowboy gestures and known general acting/style collections are excluded outright,
+even if a title mentions shooting. An owned Store download gets no exemption.
+Authored custom poses remain protected; core game movement assets remain on disk.
+
+Additional removals: 4,051 of the previous 4,770 community entries.
+Current active community catalog: 719. Sandbox currently exposes 825 records
+including authored poses and built-in combat clips. The 38 validated Motifect
+combat downloads remain available. Archives for this stricter pass:
+  assets/animations/community/quarantine/noncombat-2026-11-03T23-07-22/
+  assets/animations/community/quarantine/noncombat-2026-11-03T23-09-05/
+The compact index stamp includes the policy version to invalidate old results.
+
+Sandbox now keeps the RHS open from launch with no selected animation or spell.
+“Choose a spell…” is an unselected prompt; “Animation only” is removed.
+
+Earlier broad-pass record:
+
 The shared Store index and Sandbox picker now accept combat actions, defensive
 actions, weapons, spell gestures, acrobatics, locomotion and combat recovery.
 data/combat_animation_keywords.json contains 2,557 word-aware terms and phrases.
