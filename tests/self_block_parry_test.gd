@@ -24,7 +24,7 @@ func run():
  world.combat().dispatch(actor,block,actor.global_position)
  actor.update_status(Barrier.PARRY_WINDOW+0.01)
  assert(not actor.self_barrier.can_parry())
- assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
+ assert(world.combat().apply_impact(attacker,actor,fire,point,actor.global_basis.x,area))
  assert(actor.health==hp and actor.burn_time>0.0 and not actor.self_barrier.active())
  assert(world.events.back().event=="self_block" and not world.events.back().effects_blocked)
  actor.cleanse_burn();actor.invulnerability=0.0
@@ -32,14 +32,14 @@ func run():
  world.combat().dispatch(actor,block,actor.global_position)
  actor.update_status(Barrier.PARRY_WINDOW*0.5)
  assert(actor.self_barrier.can_parry())
- assert(world.combat().apply_impact(attacker,actor,fire,point,Vector3.FORWARD,area))
+ assert(world.combat().apply_impact(attacker,actor,fire,point,actor.global_basis.x,area))
  assert(actor.health==hp and actor.burn_time==0.0 and not actor.self_barrier.active())
  assert(world.events.back().event=="parry" and world.events.back().effects_blocked)
  # Perfect timing cannot cover physical damage beyond shield capacity.
  actor.invulnerability=0.0
  world.combat().dispatch(actor,block,actor.global_position)
  var heavy=fire.duplicate();heavy.damage=15.0
- assert(world.combat().apply_impact(attacker,actor,heavy,point,Vector3.FORWARD,area))
+ assert(world.combat().apply_impact(attacker,actor,heavy,point,actor.global_basis.x,area))
  assert(is_equal_approx(actor.health,hp-5.0) and actor.burn_time>0.0)
  print("SELF BLOCK/PARRY PASS: neutral 1s block exactly cancels neutral 10-damage spell; held block passes effects; fresh parry cancels both; insufficient capacity passes overflow and effect; shared new-mode runtime")
  quit()

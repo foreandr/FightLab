@@ -63,7 +63,7 @@ static func refresh(b:Node) -> void:
 		var spec:Dictionary=b.demo_preview_spec()
 		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
 		var reference:float=preload("res://scripts/animation_mana_scaling.gd").multiplier(Rules.BARRIER_NEUTRAL_WAIT)
-		texts.mana="Default block mana = 10\nActivation wait = %.2f seconds\nTiming factor = %.3f ÷ %.3f\n\nMana cost = 10 × %.3f = %.1f\nPerfect parry refund = 5 (once per cast)"%[timing.release_seconds,timing.multiplier,reference,timing.multiplier/reference,Rules.mana_cost(spec)]
+		texts.mana="Default block mana = 10\nActivation wait = %.2f seconds\nTiming factor = %.3f ÷ %.3f\n\nMana cost = 10 × %.3f = %.1f\nPerfect timing refund = 5\nDirectional perfect refund = 10 (per-cast cap)"%[timing.release_seconds,timing.multiplier,reference,timing.multiplier/reference,Rules.mana_cost(spec)]
 	for key in controls:
 		controls[key].mouse_filter=Control.MOUSE_FILTER_IGNORE if controls[key].has_meta("stat_hover_box") else Control.MOUSE_FILTER_PASS
 		controls[key].tooltip_text=texts[key]

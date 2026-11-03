@@ -339,7 +339,7 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 	var contact_damage:=amount
 	amount*=physical_multiplier
 	if victim.self_barrier.active():
-		var block_result:Dictionary=victim.self_barrier.resolve_hit(amount)
+		var block_result:Dictionary=victim.self_barrier.resolve_hit(amount,direction)
 		var parry_ready:bool=block_result.parry
 		var shield_absorbed:float=block_result.absorbed
 		if block_result.broken:
@@ -352,7 +352,8 @@ func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictio
 			field.show_hit_region(area)
 			if amount<=0.0001:
 				if not parry_ready and victim.has_method("receive_status"):victim.receive_status(attacker,spec)
-				field.events.append({"time":field.elapsed,"event":"parry" if parry_ready else "self_block","victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund})
+				preload("res://scripts/block_tier_feedback.gd").show_for(victim,int(block_result.tier))
+				field.events.append({"time":field.elapsed,"event":"directional_parry" if int(block_result.tier)==3 else ("parry" if parry_ready else "self_block"),"tier":block_result.tier,"tier_name":block_result.tier_name,"victim":victim.team,"attacker":attacker.team,"physical_blocked":shield_absorbed,"effects_blocked":parry_ready,"stamina_spent":block_result.stamina_spent,"mana_refund":block_result.mana_refund})
 				return true
 	var health_before: float=victim.health
 	var damage_before:float=victim.damage_taken

@@ -11,13 +11,14 @@ shader_type spatial;
 render_mode blend_mix, cull_back, unshaded;
 uniform float barrier_strength : hint_range(0.0, 1.0) = 0.0;
 uniform float block_flash : hint_range(0.0, 1.0) = 0.0;
+uniform vec4 block_flash_color : source_color = vec4(0.25, 1.0, 0.48, 1.0);
 void vertex() {
 	VERTEX += NORMAL * 0.045;
 }
 void fragment() {
 	float rim = pow(1.0 - abs(dot(normalize(NORMAL), normalize(VIEW))), 2.4);
-	ALBEDO = mix(vec3(0.72, 0.90, 1.0), vec3(0.25, 1.0, 0.48), block_flash);
-	EMISSION = mix(vec3(0.34, 0.66, 0.84), vec3(0.15, 0.85, 0.3), block_flash) * (0.25 + rim * 1.1);
+	ALBEDO = mix(vec3(0.72, 0.90, 1.0), block_flash_color.rgb, block_flash);
+	EMISSION = mix(vec3(0.34, 0.66, 0.84), block_flash_color.rgb * 0.85, block_flash) * (0.25 + rim * 1.1);
 	ALPHA = max(barrier_strength * (0.16 + rim * 0.36), block_flash * (0.25 + rim * 0.4));
 }
 """
@@ -47,6 +48,8 @@ static func set_strength(overlays: Array, strength: float,source:String="combat"
 		for value in sources.values():combined=maxf(combined,float(value))
 		overlay.set_shader_parameter("barrier_strength",combined)
 
-static func set_block_flash(overlays:Array,value:float)->void:
+static func set_block_flash(overlays:Array,value:float,color:Color=Color("60e88a"))->void:
 	for overlay:ShaderMaterial in overlays:
-		if is_instance_valid(overlay):overlay.set_shader_parameter("block_flash",clampf(value,0.0,1.0))
+		if is_instance_valid(overlay):
+			overlay.set_shader_parameter("block_flash",clampf(value,0.0,1.0))
+			overlay.set_shader_parameter("block_flash_color",color)

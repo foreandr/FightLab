@@ -24,7 +24,7 @@ func run():
  e.field.combat().dispatch(actor,strong,actor.global_position)
  var point:Vector3=actor.bone_point("spine_03");var area:Area3D=actor.nearest_hurtbox(point)
  var attack={"effect":"orb","damage":10.0,"projectile_element":"None","potency":0.0}
- for i in 2:assert(e.field.combat().apply_impact(attacker,actor,attack,point,Vector3.FORWARD,area))
+ for i in 2:assert(e.field.combat().apply_impact(attacker,actor,attack,point,actor.global_basis.x,area))
  assert(actor.parry_cast_haste.stacks==2 and actor.parry_cast_haste.time_left==1.0)
  assert(is_equal_approx(actor.cast_speed_multiplier(),1.2))
  assert(b.demo_preview_spec()==baseline,"Haste changed authored costs/damage")

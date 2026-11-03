@@ -251,6 +251,8 @@ func _ready() -> void:
 	spell_cursor = team
 
 func reset_fighter(location: Vector3) -> void:
+	var block_notice=get_node_or_null("BlockTierFeedback")
+	if is_instance_valid(block_notice):block_notice.age=1.0;block_notice.hide();block_notice.set_process(false)
 	parry_cast_haste.clear()
 	self_barrier.clear()
 	if is_instance_valid(arena):arena.combat().discard_cast_attempt(self)
