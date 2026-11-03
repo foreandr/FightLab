@@ -12,8 +12,9 @@ func run():
 		[{"title":"Unknown source 123"},"Movement"]]:
 		assert(Types.kind(sample[0])==sample[1],str(sample))
 	var library=load("res://scripts/animation_store_library.gd")
-	var hook:=library.enrich({"title":"Melee Hook","category":"Punch"})
+	var hook:Dictionary=library.enrich({"title":"Melee Hook","category":"Punch"})
 	assert(library.matches(hook,"type:arm") and not library.matches(hook,"type:leg"))
 	assert(Types.kind(hook)=="Arm")
 	print("STORE TYPE CLASSIFICATION PASS: four types, whole-motion precedence, explicit declarations preserved")
 	quit()
+
