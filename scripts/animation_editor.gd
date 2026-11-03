@@ -302,7 +302,6 @@ const JUMP_JOINTS := [
 ]
 
 func _ready() -> void:
-	home_store_mode=str(get_tree().get_meta("create_workspace_entry",""))=="Store"
 	create_loading_pacer.begin("create_workspace")
 	loading_layer=CanvasLayer.new()
 	loading_layer.layer=110
@@ -387,8 +386,7 @@ func _ready() -> void:
 	if get_tree().has_meta("create_workspace_entry"):
 		var entry_section:=str(get_tree().get_meta("create_workspace_entry"))
 		get_tree().remove_meta("create_workspace_entry")
-		if entry_section=="Store":open_home_store()
-		else:_open_workspace_section("Spells" if entry_section=="Spell" else "Animations")
+		_open_workspace_section("Spells" if entry_section=="Spell" else "Animations")
 
 func return_to_main_menu()->void:
 	if is_instance_valid(spell_builder):
@@ -1013,411 +1011,63 @@ func close_animation_store()->void:
 	if home_store_mode:return_to_main_menu()
 	else:workspace_nav_panels["Store"].hide()
 
-func open_home_store()->void:
-	browser.hide();timeline_panel.hide();animation_footer.hide()
-	for divider in workspace_dividers:divider.hide()
-	for restore in workspace_restore_buttons.values():restore.hide()
-	var store:Control=workspace_nav_panels["Store"]
-	store.anchor_left=0.0;store.anchor_right=0.57
-	store.anchor_top=0.0;store.anchor_bottom=1.0
-	store.offset_left=6;store.offset_right=-6;store.offset_top=60;store.offset_bottom=-6
-	_open_workspace_section("Store")
-	if is_instance_valid(focused_unit):
-		var center:Vector3=focused_unit.focus_position()-Vector3.RIGHT*2.6
-		field.camera.h_offset=0;field.camera.v_offset=0;field.camera.fov=45
-		field.camera.global_position=center+Vector3(0,1.4,6)
-		field.camera.look_at(center)
-		inspection_camera.capture_view(field.camera,6.0)
 
 func _load_animation_store() -> void:
-	if store_loaded or store_loading_in_progress:return
-	store_loading_in_progress=true
-	var cache_path:=ProjectSettings.globalize_path(StoreIndex.cache_path())
-	store_loading_pacer.begin("store_index_cold_build" if not FileAccess.file_exists(cache_path) else "store_index_build")
-	store_loading_indicator.show()
-	store_loading_bar.value=0
-	store_loading_status.text="Opening the local Store index…"
-	clear_list(animation_store_list)
-	await RenderingServer.frame_post_draw
-	var cached:Dictionary={}
-	if FileAccess.file_exists(cache_path):
-		var cache_thread:=Thread.new()
-		if cache_thread.start(func():return StoreIndex.load_cache(cache_path))==OK:
-			var result:Variant=await _wait_for_store_thread(cache_thread,0.15,"Reading the compact Store index…")
-			if result is Dictionary:cached=result
-	if cached.is_empty():
-		_set_store_loading_progress(0.12,"Building your local search index · first visit only…")
-		var build_thread:=Thread.new()
-		if build_thread.start(func():return StoreIndex.build_cache(cache_path))==OK:
-			var result:Variant=await _wait_for_store_thread(build_thread,0.12,"Indexing animation titles and tags…")
-			if result is Dictionary:cached=result
-	store_index_records.clear()
-	for record in cached.get("records",[]):
-		if record is Dictionary:store_index_records.append(record)
-	store_index_details_path=str(cached.get("details_path",StoreIndex.details_path(cache_path)))
-	animation_store_entries=Library.entries()
-	for group in Library.GROUPS:
-		for category in category_store.names_for(group):animation_store_entries.append_array(load_custom_motion(category))
-	# Include source clips beyond the curated Motion/Attack browser.
-	var auxiliary:=load("res://assets/combat/animations/UAL2_Standard.glb") as AnimationLibrary
-	var used:Dictionary={}
-	for entry in animation_store_entries:used[str(entry.get("clip",""))]=true
-	if auxiliary!=null:
-		for name_ in auxiliary.get_animation_list():
-			if used.has("ual2/"+name_) or name_=="RESET":continue
-			animation_store_entries.append({"group":"Motion","category":"Source clips","title":name_.replace("_"," "),"step":"Idle","clip":"store_preview/"+name_,"source_animation":name_,"store_raw":true,"duration":auxiliary.get_animation(name_).length})
-	for name_ in actor.player.get_animation_list():
-		if name_.begins_with("store_preview/"):continue
-		if name_.ends_with("RESET") or used.has(name_):continue
-		if name_.begins_with("store_ual2/") and used.has("ual2/"+name_.get_slice("/",1)):continue
-		var entry:Dictionary={"group":"Motion","category":"Source clips","title":name_.get_slice("/",1).replace("_"," "),"step":"Idle","clip":name_,"store_raw":true}
-		entry["duration"]=actor.player.get_animation(name_).length
-		animation_store_entries.append(entry)
-	var total_entries:=animation_store_entries.size()
-	for index in total_entries:
-		var entry:Dictionary=animation_store_entries[index]
-		if not (entry.has("store_asset_id") and entry.has("body_parts")):
-			var animation:Animation
-			if entry.has("source_animation") and auxiliary!=null:animation=auxiliary.get_animation(str(entry.source_animation))
-			elif actor.player.has_animation(str(entry.clip)):animation=actor.player.get_animation(str(entry.clip))
-			animation_store_entries[index]=StoreLibrary.enrich(entry,animation)
-	_set_store_loading_progress(0.96,"Loading the first 20 matching records…")
-	_populate_store_creators()
-	_load_store_preferences()
-	await _populate_animation_store()
-	while not store_loading_pacer.target_reached():
-		_set_store_loading_progress(0.99,"Finishing the Store’s local setup…")
-		await get_tree().create_timer(minf(store_loading_pacer.remaining_seconds(),0.1)).timeout
-	store_loaded=true
-	store_loading_bar.value=100
-	store_loading_status.text="Store ready · 20 results per page"
-	await RenderingServer.frame_post_draw
-	store_loading_indicator.hide()
-	store_loading_in_progress=false
+	await preload("res://scripts/animation_store_backend.gd")._load_animation_store(self)
 
 func _set_store_loading_progress(fraction:float,status:String) -> void:
-	if not is_instance_valid(store_loading_bar) or not is_instance_valid(store_loading_status):return
-	store_loading_status.text=status
-	store_loading_bar.value=store_loading_pacer.progress_percent(fraction)
+	preload("res://scripts/animation_store_backend.gd")._set_store_loading_progress(self ,fraction,status)
 
 func _wait_for_store_thread(thread:Thread,fraction:float,status:String) -> Variant:
-	while thread.is_alive():
-		_set_store_loading_progress(fraction,status)
-		await get_tree().process_frame
-	return thread.wait_to_finish()
+	return await preload("res://scripts/animation_store_backend.gd")._wait_for_store_thread(self ,thread,fraction,status)
 
 func _save_store_preferences() -> void:
-	if not is_instance_valid(store_view_filter):return
-	var config:=ConfigFile.new()
-	config.set_value("store","search",animation_store_search.text)
-	config.set_value("store","body",store_body_filter.selected)
-	config.set_value("store","air",store_air_filter.selected)
-	config.set_value("store","view",store_view_filter.selected)
-	config.set_value("store","sort",store_sort_filter.selected)
-	config.set_value("store","creator",store_creator_filter.get_item_text(store_creator_filter.selected))
-	config.save("user://animation_store_preferences.cfg")
+	preload("res://scripts/animation_store_backend.gd")._save_store_preferences(self)
 
 func _load_store_preferences() -> void:
-	var config:=ConfigFile.new()
-	if config.load("user://animation_store_preferences.cfg")!=OK:return
-	animation_store_search.text=str(config.get_value("store","search",""))
-	for pair in [[store_body_filter,"body"],[store_air_filter,"air"],[store_view_filter,"view"],[store_sort_filter,"sort"]]:
-		var filter:OptionButton=pair[0]
-		filter.select(clampi(int(config.get_value("store",pair[1],0)),0,filter.item_count-1))
-	var creator:=str(config.get_value("store","creator","All creators"))
-	for index in store_creator_filter.item_count:
-		if store_creator_filter.get_item_text(index)==creator:store_creator_filter.select(index);break
+	preload("res://scripts/animation_store_backend.gd")._load_store_preferences(self)
 
 func _store_creator(entry:Dictionary) -> String:
-	if entry.has("store_creator"):return str(entry.store_creator)
-	var provenance:Dictionary=entry.get("provenance",{})
-	var nodes:Dictionary=provenance.get("nodes",{})
-	for node in nodes.values():
-		var author:=str(node.get("author","")).strip_edges()
-		if not author.is_empty():return author
-	var source:=str(entry.get("source_name","")).strip_edges()
-	return source if not source.is_empty() else "FightLab"
+	return preload("res://scripts/animation_store_backend.gd")._store_creator(self ,entry)
 
 func _populate_store_creators() -> void:
-	if not is_instance_valid(store_creator_filter):return
-	var config:=ConfigFile.new()
-	config.load("user://animation_store_preferences.cfg")
-	var wanted:=str(config.get_value("store","creator","All creators"))
-	var creators:Dictionary={}
-	for entry in store_index_records:creators[_store_creator(entry)]=true
-	for entry in animation_store_entries:creators[_store_creator(entry)]=true
-	var names:=creators.keys()
-	names.sort_custom(func(a:String,b:String):return a.naturalnocasecmp_to(b)<0)
-	store_creator_filter.clear()
-	store_creator_filter.add_item("All creators")
-	for name_ in names:store_creator_filter.add_item(str(name_))
-	for index in store_creator_filter.item_count:
-		if store_creator_filter.get_item_text(index)==wanted:store_creator_filter.select(index);break
+	preload("res://scripts/animation_store_backend.gd")._populate_store_creators(self)
 
 func _style_store_action(control:Button,color:Color) -> void:
-	control.add_theme_stylebox_override("normal",_book_box(color,color.darkened(0.2)))
-	control.add_theme_stylebox_override("hover",_book_box(color.lightened(0.15),color.darkened(0.2)))
-	control.add_theme_stylebox_override("pressed",_book_box(color.darkened(0.15),color.darkened(0.3)))
+	preload("res://scripts/animation_store_backend.gd")._style_store_action(self ,control,color)
 
 func _store_top_score(entry:Dictionary) -> int:
-	var score:=0
-	if animation_favorites.has(entry):score+=1000
-	if entry.has("store_top_score"):return score+int(entry.store_top_score)
-	var tags:Array=entry.get("tags",[])
-	for pair in [["acrobatics",100],["spin",70],["jump",55],["weapon",50],["punch",40],["kick",40],["dodge",30],["block",20],["dance",10]]:
-		if str(pair[0]) in tags:score+=int(pair[1])
-	return score
+	return preload("res://scripts/animation_store_backend.gd")._store_top_score(self ,entry)
 
 func _download_store_animation(entry:Dictionary) -> void:
-	var group:="Attack" if str(entry.get("group",""))=="Attack" else "Motion"
-	take_store_animation(entry,group,"Downloaded")
+	preload("res://scripts/animation_store_backend.gd")._download_store_animation(self ,entry)
 
 func _log_store_action(action:String,entry:Dictionary,details:Dictionary={}) -> void:
-	var record:Dictionary={"title":entry.get("title",""),"asset_id":StoreLibrary.key(entry),"clip":entry.get("clip",""),"source":entry.get("bvh_source",""),"resource":entry.get("animation_resource",""),"entry_keys":entry.keys(),"focused_unit":str(focused_unit.name) if is_instance_valid(focused_unit) else ""}
-	record.merge(details,true)
-	GameDiagnostics.log_event("animation_store_"+action,record)
+	preload("res://scripts/animation_store_backend.gd")._log_store_action(self ,action,entry,details)
 
 func _resolve_store_record(entry:Dictionary) -> Dictionary:
-	if not entry.has("_detail_offset"):return entry
-	var full:Dictionary=StoreIndex.load_entry(store_index_details_path,int(entry.get("_detail_offset",-1)),int(entry.get("_detail_size",0)))
-	if full.is_empty() or StoreLibrary.key(full)!=StoreLibrary.key(entry):
-		_log_store_action("detail_failed",entry,{"details_file":store_index_details_path,"offset":entry.get("_detail_offset",-1),"size":entry.get("_detail_size",0)})
-		_show_library_notice("Could not read this Store item · details saved in the logs")
-		return {}
-	return StoreLibrary.enrich(full)
+	return preload("res://scripts/animation_store_backend.gd")._resolve_store_record(self ,entry)
 
 func _toggle_store_block(entry:Dictionary,currently_blocked:bool) -> void:
-	if store_library.set_blocked(entry,not currently_blocked):_populate_animation_store()
+	preload("res://scripts/animation_store_backend.gd")._toggle_store_block(self ,entry,currently_blocked)
 
 func _populate_animation_store() -> void:
-	if not is_instance_valid(animation_store_list):return
-	store_page_generation+=1
-	var generation:=store_page_generation
-	clear_list(animation_store_list)
-	var query:=animation_store_search.text.strip_edges().to_lower()
-	var query_key:="%s|%d|%d|%d|%d|%d"%[query,store_body_filter.selected,store_air_filter.selected,store_view_filter.selected,store_sort_filter.selected,store_creator_filter.selected]
-	if query_key!=store_last_query:store_page=0;store_last_query=query_key
-	var count:=0
-	var matches_:Array[Dictionary]=[]
-	var all_records:Array[Dictionary]=[]
-	all_records.append_array(store_index_records)
-	all_records.append_array(animation_store_entries)
-	for entry in all_records:
-		var id:=StoreLibrary.key(entry)
-		var taken:bool=store_library.is_taken(entry) or entry.has("path")
-		var blocked:bool=store_library.blocked.has(id)
-		if store_view_filter.selected==0 and (taken or blocked):continue
-		if store_view_filter.selected==1 and not taken:continue
-		if store_view_filter.selected==2 and not blocked:continue
-		if store_library.taken.has(id):entry=store_library.taken[id].duplicate(true)
-		if store_body_filter.selected>0 and store_body_filter.get_item_text(store_body_filter.selected) not in entry.get("body_parts",[]):continue
-		if store_air_filter.selected>0 and str(entry.get("air_state",""))!=store_air_filter.get_item_text(store_air_filter.selected):continue
-		if store_creator_filter.selected>0 and _store_creator(entry)!=store_creator_filter.get_item_text(store_creator_filter.selected):continue
-		if not query.is_empty() and not StoreLibrary.matches(entry,query):continue
-		count+=1
-		matches_.append(entry)
-	if store_sort_filter.selected==0:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
-			var score_a:=_store_top_score(a);var score_b:=_store_top_score(b)
-			if score_a!=score_b:return score_a>score_b
-			return str(a.title).naturalnocasecmp_to(str(b.title))<0)
-	elif store_sort_filter.selected==2:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):
-			var creator_order:=_store_creator(a).naturalnocasecmp_to(_store_creator(b))
-			return creator_order<0 if creator_order!=0 else str(a.title).naturalnocasecmp_to(str(b.title))<0)
-	else:
-		matches_.sort_custom(func(a:Dictionary,b:Dictionary):return str(a.title).naturalnocasecmp_to(str(b.title))<0)
-	store_page=clampi(store_page,0,maxi(0,ceili(float(count)/STORE_PAGE_SIZE)-1))
-	store_page_label.text="Page %d / %d · %d matches"%[store_page+1,maxi(1,ceili(float(count)/STORE_PAGE_SIZE)),count]
-	store_page_previous.disabled=store_page==0
-	store_page_next.disabled=(store_page+1)*STORE_PAGE_SIZE>=count
-	var visible:Array[Dictionary]=matches_.slice(store_page*STORE_PAGE_SIZE,(store_page+1)*STORE_PAGE_SIZE)
-	var detail_thread:=Thread.new()
-	var page_details:Dictionary={}
-	var page_source:=store_index_details_path
-	var page_records:=visible.duplicate(true)
-	var thread_error:=detail_thread.start(func():
-		var loaded:Dictionary={}
-		for record in page_records:
-			if not record.has("_detail_offset"):continue
-			var id:=StoreLibrary.key(record)
-			if loaded.has(id):continue
-			loaded[id]=StoreIndex.load_entry(page_source,int(record.get("_detail_offset",0)),int(record.get("_detail_size",0)))
-		return loaded)
-	if thread_error==OK:
-		var detail_result:Variant=await _wait_for_store_thread(detail_thread,0.98,"Loading this page’s 20 animation records…")
-		if detail_result is Dictionary:page_details=detail_result
-	if generation!=store_page_generation:return
-	for compact_entry in visible:
-		var entry:Dictionary=compact_entry
-		var id:=StoreLibrary.key(entry)
-		if page_details.has(id) and page_details[id] is Dictionary and not page_details[id].is_empty() and StoreLibrary.key(page_details[id])==id:
-			entry=StoreLibrary.enrich(page_details[id])
-			entry["store_creator"]=str(compact_entry.get("store_creator","FightLab"))
-			entry["store_top_score"]=int(compact_entry.get("store_top_score",0))
-			if not entry.has("store_asset_id"):entry["store_asset_id"]=id
-			if store_library.taken.has(id):entry=store_library.taken[id].duplicate(true)
-		elif compact_entry.has("_detail_offset"):
-			_log_store_action("page_detail_failed",compact_entry,{"details_file":page_source})
-		if str(entry.get("title","")).strip_edges().is_empty():entry["title"]=str(compact_entry.get("title","Animation"))
-		if not entry.has("body_parts"):entry=StoreLibrary.enrich(entry)
-		id=StoreLibrary.key(entry)
-		var blocked:bool=store_library.blocked.has(id)
-		var row_entry:Dictionary=entry.duplicate(true)
-		var row:=HBoxContainer.new()
-		row.add_theme_constant_override("separation",6)
-		animation_store_list.add_child(row)
-		var title:=button(row,str(row_entry.get("title","Animation")),Callable(self,"_play_store_animation").bind(row_entry))
-		title.set_script(preload("res://scripts/animation_clip_source.gd"))
-		title.set("entry",row_entry.duplicate(true))
-		title.set("editor",self)
-		title.set("store_origin",true)
-		title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-		title.clip_text=true
-		title.tooltip_text=animation_info_text(entry)+"\nTags\t"+", ".join(entry.get("tags",[]))+"\nBody\t"+", ".join(entry.get("body_parts",[]))+"\nState\t"+str(entry.get("air_state","Grounded"))
-		if entry.has("source_name"):title.tooltip_text+="\nSource\t"+str(entry.source_name)+"\nLicense\t"+str(entry.get("license","Unspecified"))
-		var play:=animation_icon_button(row,"play","Play once on selected bot",Callable(self,"_play_store_animation").bind(row_entry))
-		play.name="StorePlay"
-		_style_store_action(play,Color("388753"))
-		var downloaded:=store_library.is_taken(row_entry)
-		var download:=animation_icon_button(row,"downloaded" if downloaded else "download","Already in Downloaded" if downloaded else "Download to your Downloaded folder and save a project copy",Callable(self,"_download_store_animation").bind(row_entry))
-		download.name="StoreDownload"
-		if downloaded:
-			download.disabled=true
-			_style_store_action(download,Color("6b9876"))
-		else:_style_store_action(download,Color("a87935"))
-		var reject:=animation_icon_button(row,"undo" if blocked else "block","Unblock this animation" if blocked else "Block this animation from the Store",Callable(self,"_toggle_store_block").bind(row_entry,blocked))
-		reject.name="StoreBlock"
-		_style_store_action(reject,Color("b8443e") if not blocked else Color("9c743d"))
-	animation_store_count.text="Animations · %d / %d"%[count,store_index_records.size()+animation_store_entries.size()]
-	GameDiagnostics.log_event("animation_store_page_ready",{"page":store_page,"matches":count,"visible":visible.size(),"details_expected":visible.filter(func(value):return value.has("_detail_offset")).size(),"details_loaded":page_details.values().filter(func(value):return value is Dictionary and not value.is_empty()).size(),"details_file":page_source})
-	call_deferred("_apply_panel_zoom","Store")
+	await preload("res://scripts/animation_store_backend.gd")._populate_animation_store(self)
 
 func _play_store_animation(entry:Dictionary) -> void:
-	entry=_resolve_store_record(entry)
-	if entry.is_empty():return
-	_log_store_action("play_clicked",entry)
-	if not can_add_unit_animation():
-		show_unit_selection_warning()
-		return
-	var preview_entry:=entry.duplicate(true)
-	# Store rows represent real clips, not pose-recipe names. Imported records
-	# often have generic steps like "Imported Motion"; sending those through
-	# SourcePose silently samples a fallback pose instead of the selected clip.
-	if preview_entry.has("animation_resource") or preview_entry.has("bvh_source") or preview_entry.has("source_animation"):
-		preview_entry["store_raw"]=true
-	if selected_group=="Spells":
-		select_group("Motion")
-		workspace_nav_panels.Store.show()
-	play_animation_row(preview_entry)
+	preload("res://scripts/animation_store_backend.gd")._play_store_animation(self ,entry)
 
 func _ensure_animation_source(entry:Dictionary) -> bool:
-	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
-		_show_library_notice("Could not import this source animation · original file preserved")
-		_log_store_action("import_failed",entry)
-		return false
-	if entry.has("animation_resource"):
-		var clip_name:=str(entry.get("clip",""))
-		if actor.player.has_animation(clip_name):return true
-		var animation:=load(str(entry.animation_resource)) as Animation
-		if animation==null:
-			_log_store_action("resource_load_failed",entry,{"file_exists":FileAccess.file_exists(str(entry.animation_resource))})
-			_show_library_notice("Could not load the animation clip · try the preview again")
-			return false
-		var namespace_:="store_preview"
-		var animation_name:=clip_name
-		if clip_name.contains("/"):
-			namespace_=clip_name.get_slice("/",0)
-			animation_name=clip_name.get_slice("/",1)
-		if not actor.player.has_animation_library(namespace_):actor.player.add_animation_library(namespace_,AnimationLibrary.new())
-		actor.player.get_animation_library(namespace_).add_animation(animation_name,animation)
-		return true
-	if entry.has("source_animation") and not actor.player.has_animation(str(entry.clip)):
-		actor.player.stop()
-		var source:=load("res://assets/combat/animations/UAL2_Standard.glb") as AnimationLibrary
-		if source==null or source.get_animation(str(entry.source_animation))==null:
-			_show_library_notice("Could not find this source animation")
-			return false
-		if not actor.player.has_animation_library("store_preview"):actor.player.add_animation_library("store_preview",AnimationLibrary.new())
-		var library:AnimationLibrary=actor.player.get_animation_library("store_preview")
-		library.add_animation(str(entry.source_animation),source.get_animation(str(entry.source_animation)).duplicate(true))
-	var ready:bool=actor.player.has_animation(str(entry.get("clip","")))
-	if not ready:
-		_log_store_action("clip_missing",entry,{"available_animation_count":actor.player.get_animation_list().size()})
-		_show_library_notice("This animation has no playable clip · details saved in the logs")
-	return ready
+	return preload("res://scripts/animation_store_backend.gd")._ensure_animation_source(self ,entry)
 
 func _portable_store_animation(entry:Dictionary) -> Animation:
-	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
-		return null
-	return preload("res://scripts/animation_project_assets.gd").resolve(entry,actor.player)
+	return preload("res://scripts/animation_store_backend.gd")._portable_store_animation(self ,entry)
 
 func take_store_animation(entry:Dictionary,group:String,category:String) -> void:
-	entry=_resolve_store_record(entry)
-	if entry.is_empty():return
-	if not preload("res://scripts/animation_cast_type.gd").declared(entry):
-		open_animation_type_dialog(entry,group,category)
-		return
-	_log_store_action("download_clicked",entry,{"destination_group":group,"destination_folder":category})
-	if entry.has("bvh_source") and not preload("res://scripts/community_animation_catalog.gd").ensure(entry,actor):
-		_show_library_notice("Not added · this source could not be imported onto the character rig")
-		return
-	var project_animation:=_portable_store_animation(entry)
-	if project_animation==null:
-		_log_store_action("project_resolve_failed",entry,{"file_exists":FileAccess.file_exists(str(entry.get("animation_resource","")))})
-		_show_library_notice("Not added · could not create a project copy of this animation")
-		return
-	var quality:Dictionary=preload("res://scripts/animation_quality_gate.gd").inspect(project_animation,actor.skeleton)
-	if not bool(quality.get("ok",false)):
-		_log_store_action("quality_rejected",entry,quality)
-		_show_library_notice("Not added · quality check: "+str(quality.get("reason","animation failed validation")))
-		return
-	if entry.has("store_asset_id") and store_library.taken.has(StoreLibrary.key(entry)):
-		var owned_id:=StoreLibrary.key(entry)
-		if not store_library.ensure_project_copy(owned_id,project_animation):
-			_show_library_notice("Could not make a project copy of this animation")
-			return
-		if store_library.move(owned_id,group,category):
-			if not home_store_mode:
-				if selected_group!=group:select_group(group)
-				select_category(category,true)
-			_populate_animation_store()
-			_show_library_notice("Moved %s → %s"%[entry.title,category])
-		return
-	var names:Array=[]
-	for animation in Library.entries()+load_custom_motion(category):names.append(str(animation.title))
-	if not store_library.take(entry,group,category,names,project_animation):
-		_log_store_action("project_save_failed",entry)
-		selection_status.text="Could not save animation as a project asset"
-		return
-	_populate_animation_store()
-	if not home_store_mode:
-		if selected_group!=group:select_group(group)
-		select_category(category,true)
-	selection_status.text="Added %s to %s / %s"%[entry.title,group,category]
-	_log_store_action("download_complete",entry,{"project_asset":store_library.last_taken_entry.get("animation_resource",""),"tracks":project_animation.get_track_count(),"duration":project_animation.length})
-	_show_library_notice("Added %s → %s · project asset ready for Git"%[store_library.last_taken_entry.get("title",entry.title),category])
+	preload("res://scripts/animation_store_backend.gd").take_store_animation(self ,entry,group,category)
 
 func open_animation_type_dialog(entry:Dictionary,group:String,category:String) -> void:
-	var dialog:=ConfirmationDialog.new()
-	dialog.title="Animation type · "+str(entry.get("title","Animation"))
-	dialog.theme=_book_theme()
-	var control:=preload("res://scripts/animation_movement_control.gd").new()
-	dialog.add_child(control)
-	dialog.get_ok_button().disabled=true
-	var selected:Dictionary=entry.duplicate(true)
-	control.value_changed.connect(func(value:String):
-		selected["animation_type"]=value
-		dialog.get_ok_button().disabled=false)
-	dialog.confirmed.connect(func():
-		selected.erase("_detail_offset")
-		take_store_animation(selected,group,category)
-		dialog.queue_free())
-	dialog.canceled.connect(dialog.queue_free)
-	add_child(dialog)
-	dialog.popup_centered(Vector2i(400,180))
-	control.menu.grab_focus()
-
+	preload("res://scripts/animation_store_backend.gd").open_animation_type_dialog(self ,entry,group,category)
 func open_rename_animation(entry:Dictionary) -> void:
 	var dialog:=ConfirmationDialog.new()
 	dialog.title="Rename animation"

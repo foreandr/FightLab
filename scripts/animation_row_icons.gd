@@ -5,6 +5,16 @@ static var textures:Dictionary={}
 static func get_icon(action:String) -> Texture2D:
 	if textures.has(action):return textures[action]
 	var shapes:String={
+		"head":"<circle cx='10' cy='7' r='5'/><path d='M5 18v-3l3-2M15 18v-3l-3-2'/>",
+		"arm":"<path d='M3 14 8 9l1-6h4l1 6 4 3-2 5-7 1-6-4Z M9 3h4M8 9l5 3'/>",
+		"leg":"<path d='M8 2h6l-1 7-4 6 7 1v3H4v-4l4-6Z'/>",
+		"movement":"<circle cx='12' cy='3' r='2'/><path d='m10 6-3 5 5 2 2 5M10 6l4 4 4-1M10 13l-5 5M2 5h4M1 9h3'/>",
+		"search":"<circle cx='8' cy='8' r='5'/><path d='m12 12 6 6'/>",
+		"air":"<path d='M2 6h11q6-4 5 1t-6 2H4M2 13h10q6 0 4 4t-5-1'/>",
+		"ground":"<path d='M2 16h16M4 12l6-6 6 6M10 6v9'/>",
+		"home":"<path d='m2 9 8-7 8 7M4 8v10h12V8M8 18v-6h4v6'/>",
+		"previous":"<path d='m12 3-7 7 7 7'/>",
+		"next":"<path d='m8 3 7 7-7 7'/>",
 		"folder":"<path d='M2 5h6l2 2h8v10H2Z M2 5V3h6l2 2h8v2'/>",
 		"rename":"<path d='m4 13 9-10 4 4-10 9-4 1Z M11 5l4 4M3 18h14'/>",
 		"info":"<circle cx='10' cy='10' r='8'/><path d='M10 9v6M10 5v.5'/>",

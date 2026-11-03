@@ -1,19 +1,31 @@
-Home Store and simplified Create navigation
+Standalone Home animation Store
 
-Home > Store opens the existing animation Store controller in a dedicated view.
-It reuses the same index, 20-item pages, sources, filters, preferences, owned /
-blocked lists, project-copy download path, and preview code. A default bot stays
-in the arena for previews. Authoring panels and the playback footer are hidden;
-Close or Main Menu returns Home. Downloading does not navigate into a folder.
-The preview host is still the editor scene, with its UI in Store-only mode;
-this does not yet split Store loading into an independent lightweight scene.
+Home > Store opens scenes/animation_store.tscn and animation_store_screen.gd.
+It loads the reusable pit map, one preview actor, and Store controls. It does
+not load animation_editor.gd, spell_builder.gd, the custom frame editor,
+timeline UI, or saved custom-animation frame files. Account-owned metadata is
+read so Downloaded items stay visible; bulk animation resources load on Play or
+Download. The LHS is anchored below the header to the bottom, with no floating
+header, resize script, drag handles, or border adjustment.
 
-Create > Character / Animation / Spell are the entry points for authoring.
-The old top Animations, Spells, Simulations, Store and Options icon row is gone.
-One bot spawns and is selected by default in Animation, as before. Spell keeps
-its caster, dummy and human practice targets. Main Menu remains at the top.
+animation_store_backend.gd owns the existing index/query, 20-item page hydration,
+filters/preferences, creator ranking, blocking, source import, quality gate,
+and acquisition workflow. The legacy editor methods delegate to this same
+backend. Downloads still use animation_store_library.gd and
+animation_project_assets.gd: same account cfg, unique names, provenance and
+project-copy manifest, same Downloaded folders. Bulk source assets stay local.
 
-Universal settings remain accessible from F9 and Home > Options > Settings.
-Home > Options > Controls uses the same editor_controls.gd legend. No settings
-cog is drawn. Internal editor methods are retained for scripting and regression
-coverage; there is no visible Store or simulation shortcut inside Create.
+Home, page navigation and row actions use icons with tooltips and keyboard
+focus. Filters and animation rows have type/state icons, with readable names.
+Ctrl+wheel or Ctrl+middle-drag zooms Store controls; the setting persists in
+user://animation_store_view.cfg. Outside the panel, wheel zooms the preview
+camera and middle-drag orbits it. Escape / Home icon returns Main Menu.
+
+Preview uses shared spell_cast_motion.gd pose sampling, retargeting and safety,
+with short entry/exit blends and a single actor, not a second animation editor.
+standalone_store_test.gd verifies the editor scripts are absent from Godot's
+resource cache, actual cartwheel bone movement, fixed layout, paginated rows,
+and the shared download pipeline without writing to the user's inventory.
+
+Create's removed icon row remains absent. Settings and Controls are under
+Home > Options; F9 opens universal settings in any mode.

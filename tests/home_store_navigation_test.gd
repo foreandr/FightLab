@@ -25,9 +25,10 @@ func run():
  if not check(editor.base_ui.find_child("WorkspaceNavigation",true,false)==null and not editor.options_button.visible and not settings.cog.visible,"Create top icons remain"):return
  if not check(editor.added_units.size()==1 and editor.focused_unit==editor.added_units[0],"Create does not start with one selected bot"):return
  editor.return_to_main_menu();await home_ready()
- current_scene.navigation_buttons.Store.pressed.emit();await editor_ready()
+ current_scene.navigation_buttons.Store.pressed.emit()
+ while current_scene==null or current_scene.scene_file_path!="res://scenes/animation_store.tscn" or not current_scene.store_screen_ready:await process_frame
  editor=current_scene
- if not check(editor.home_store_mode and editor.workspace_nav_panels.Store.visible and not editor.browser.visible and not editor.timeline_panel.visible and not editor.animation_footer.visible,"Home Store exposes authoring panels"):return
+ if not check(editor.store_panel.visible and editor.store_panel.get_script()==null and editor.get_node_or_null("SpellBuilder")==null,"Home Store exposes authoring panels"):return
  var deadline:=Time.get_ticks_msec()+120000
  while (not editor.store_loaded or editor.store_loading_in_progress or editor.animation_store_list.get_child_count()==0) and Time.get_ticks_msec()<deadline:await process_frame
  if not check(editor.store_loaded and editor.animation_store_list.get_child_count()>0,"Home Store did not load paginated records"):return

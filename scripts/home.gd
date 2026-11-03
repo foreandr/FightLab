@@ -142,7 +142,7 @@ func show_page(next: String) -> void:
 			menu_spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 			content.add_child(menu_spacer)
 			nav("Create",func():show_page("Create"))
-			nav("Store",func():open_create_workspace("Store"))
+			nav("Store",func():open_scene("res://scenes/animation_store.tscn"))
 			nav("Options",func():show_page("Options"))
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
@@ -197,6 +197,9 @@ func open_create_character()->void:
 	open_scene("res://scenes/story_character_creator.tscn")
 
 func open_create_workspace(section:String="Animation") -> void:
+	if section=="Store":
+		open_scene("res://scenes/animation_store.tscn")
+		return
 	get_tree().set_meta("create_workspace_entry",section)
 	var destination_name:="Store" if section=="Store" else "Create"
 	var path:="res://scenes/combat_sandbox.tscn"
