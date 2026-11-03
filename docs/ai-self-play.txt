@@ -247,3 +247,25 @@ cpu_hook_test.gd verifies bent left/right elbows, actual sideways sweep, aiming
 preserves the bend, real physical and fire contacts, and the shared link gate.
 Measured impact angles are about 72 degrees left / 124 degrees right in the
 existing asymmetric stance. Normal combo and expert-defense tests also pass.
+
+CPU jumping and airborne decisions
+---------------------------------
+move/jump is a legal learned choice at 1.6-9m when grounded, sufficiently rested
+and not committed to a cast. Late melee evasion may also choose a jump. Uses
+BattleActor.start_motion_jump: ordinary 12-stamina payment, carried movement,
+takeoff, gravity and landing. A 3.5s controller cooldown prevents repeat jumps;
+the controller reserves 40 stamina before choosing one. No invulnerability,
+teleports, damage buffs or duplicate jump physics are added.
+The decision loop no longer skips airborne actors. Once clear of takeoff they
+can choose a paid airborne projectile, a contact attack whose limb can reach,
+or the existing paid Flip/Twist controllers. Only one optional airborne action
+is chosen per jump; defensive shields remain available under the normal rules.
+Projectile casts use the existing matching duel/air_* animation variants, with
+the tucked-leg palm fireball as fallback. Specs/costs stay shared; Touch keeps
+its actual chosen contact animation. Flight continues through casts and tricks.
+Events record cpu_jump, cpu_air_attack (including actual height), cpu_air_trick.
+cpu_jump_test.gd checks policy selection, exact jump cost, cooldown, real height
+and landing, real aerial projectile release/pose, paid flip/twist and low-stamina
+rejection. Three full fights and defense/deception regression tests passed.
+A copy of the saved policy completed an 81.9s fight with 33 jumps, 21 airborne
+attacks and nine air tricks across both fighters. This verifies use, not optimality.

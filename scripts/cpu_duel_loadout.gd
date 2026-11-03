@@ -101,3 +101,12 @@ static func prepare(actor:Node)->void:
   assert(actor.player.has_animation(item.profile.clip),"Missing CPU source: "+str(item.profile.clip))
   for bone in item.spec.get("touch_contacts",[]):contacts[str(bone)]=true
  for bone in contacts:actor.ensure_touch_contact_visual().ensure_region(bone)
+
+static func cast_profile(actor:Node,item:Dictionary)->Dictionary:
+ var profile:Dictionary=item.profile.duplicate(true)
+ if not actor.is_on_floor() and item.kind=="projectile":
+  var air_clip:="duel/air_"+str(profile.clip).trim_prefix("spells/")
+  if not actor.player.has_animation(air_clip):
+   air_clip="duel/air_palm_fireball";profile.attack_bone="hand_r"
+  profile.clip=air_clip;profile.store_raw=true
+ return profile

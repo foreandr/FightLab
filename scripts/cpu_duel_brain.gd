@@ -17,6 +17,8 @@ var stale_time:=0.0
 var combo_count:=0
 var combo_checked:=false
 var policy:RefCounted
+var jump_cooldown:=0.0
+var air_action_used:=false
 var deception=preload("res://scripts/ai/combat_deception.gd").new()
 const Combo=preload("res://scripts/touch_combo_rules.gd")
 const Burn=preload("res://scripts/burn_rules.gd")
@@ -70,10 +72,52 @@ func note(action:String,why:String)->void:
 func can_use(item:Dictionary,reserve:float=0.0)->bool:
  return actor.stamina>=float(item.spec.stamina_cost)+reserve and actor.mana>=world.mana_cost(item.spec)
 func cast(item:Dictionary,why:String)->bool:
- if not can_use(item) or not actor.start_authored_cast(item.spec,item.profile,actor.rival):return false
+ var profile:Dictionary=preload("res://scripts/cpu_duel_loadout.gd").cast_profile(actor,item)
+ if not can_use(item) or not actor.start_authored_cast(item.spec,profile,actor.rival):return false
  combo_count=0;combo_checked=false
  note(str(item.title),why);action_left=0.18+rng.randf_range(0.0,0.18)
  return true
+func can_jump()->bool:
+ return jump_cooldown<=0 and actor.is_on_floor() and actor.stamina>=40 and not actor.combat_reaction_active() and not world.combat().cast_committed(actor)
+func jump(why:String)->bool:
+ if not can_jump() or not actor.start_motion_jump():return false
+ jump_cooldown=3.5;air_action_used=false
+ note("Jump",why)
+ world.events.append({"time":world.elapsed,"event":"cpu_jump","team":actor.team,"stamina":actor.stamina})
+ return true
+func air_step(delta:float)->void:
+ if air_action_used or actor.air_clock<0.08:return
+ think_left-=delta
+ if think_left>0:return
+ think_left=0.12
+ var distance:float=actor.flat_distance()
+ var options:Array[Dictionary]=[{"action":"air/wait","prior":0.4}]
+ for item in loadout:
+  if not can_use(item,12.0):continue
+  if item.kind=="projectile" and distance>1.8 and distance<18:
+   options.append({"action":"air/cast/"+str(item.spec.id),"prior":1.5+expected_damage(item)*0.02,"item":item})
+  elif item.kind=="melee" and distance<=float(item.range) and actor.bone_point(str(item.spec.hand)).distance_to(actor.rival.bone_point("spine_03"))<float(item.range)+0.2:
+   options.append({"action":"air/cast/"+str(item.spec.id),"prior":melee_score(item,distance),"item":item})
+ if actor.velocity.y>3 and actor.stamina>=30:
+  options.append({"action":"air/flip","prior":1.7 if distance<2 else 1.1})
+  options.append({"action":"air/twist","prior":1.3 if distance<2 else 0.9})
+ var selected:Dictionary=options[0]
+ if policy!=null:
+  selected=policy.pick(actor,options);policy.begin(actor,selected,options,world.elapsed)
+ else:
+  var best:=-INF
+  for option in options:
+   var score:float=float(option.prior)*rng.randf_range(0.75,1.25)
+   if score>best:best=score;selected=option
+ if selected.has("item"):
+  if cast(selected.item,"Airborne attack"):
+   air_action_used=true
+   world.events.append({"time":world.elapsed,"event":"cpu_air_attack","team":actor.team,"spell":selected.item.spec.id,"height":actor.global_position.y-world.ground_height(actor.global_position)})
+ elif str(selected.action) in ["air/flip","air/twist"]:
+  var trick:="Flip" if str(selected.action)=="air/flip" else "Twist"
+  if actor.start_air_trick(trick):
+   air_action_used=true;note(trick,"Airborne reposition")
+   world.events.append({"time":world.elapsed,"event":"cpu_air_trick","team":actor.team,"trick":trick})
 func move(kind:String,why:String)->void:
  if actor.mode!=kind:
   if kind=="chase":
@@ -124,6 +168,8 @@ func defend(threat:Dictionary)->bool:
   if cast(shield,"Perfect-block timing · "+str(threat.kind)):
    defense_left=0.18;return true
  if eta<activation-0.035 and actor.mode!="cast" and actor.stamina>30:
+  if str(threat.kind)=="melee" and rng.randf()<0.35 and jump("Jump away from the incoming strike"):
+   defense_left=0.4;return true
   if actor.start_motion_dash(2 if rng.randf()<0.5 else 6):
    note("Evade","Too late to parry");defense_left=0.4;return true
  return false
@@ -171,6 +217,9 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  if distance<4.5:options.append({"action":"move/retreat","prior":0.7 if actor.stamina<45 else 0.2})
  if distance>3.5 and actor.stamina>55:options.append({"action":"move/chase","prior":1.2 if aggression>0.6 else 0.6})
  if distance>2 and distance<7 and actor.stamina>55 and defense_left<=0:options.append({"action":"move/dash","prior":0.5})
+ if distance>1.6 and distance<9 and can_jump():
+  var jump_score:=3.0+(0.6 if actor.drive_velocity.length()>2 else 0.0)+(0.5 if actor.rival.mode=="cast" else 0.0)
+  options.append({"action":"move/jump","prior":jump_score})
  var feint:Dictionary=deception.feint_source()
  if not feint.is_empty():options.append({"action":"tactic/feint","prior":4.6+aggression,"feint":feint})
  var selected:Dictionary=policy.pick(actor,options)
@@ -178,6 +227,7 @@ func adaptive_decision(distance:float,choices:Array[Dictionary],scores:Array[flo
  if selected.has("item"):return cast(selected.item,"Learned attack choice")
  if selected.has("feint"):return deception.begin_feint(selected.feint)
  var kind:=str(selected.action).trim_prefix("move/")
+ if kind=="jump":return jump("Change elevation / airborne opening")
  if kind=="dash":
   if actor.start_motion_dash(0):note("Dash in","Learned movement choice");defense_left=1.2;return true
   return false
@@ -187,12 +237,13 @@ func step(delta:float)->void:
  if not world.round_active or actor.health<=0:return
  # Reassess immediately when a physical flinch ends, without an extra think delay.
  if actor.mode=="hit":think_left=0.0
- defense_left=maxf(0.0,defense_left-delta);action_left=maxf(0.0,action_left-delta)
+ defense_left=maxf(0.0,defense_left-delta);action_left=maxf(0.0,action_left-delta);jump_cooldown=maxf(0.0,jump_cooldown-delta)
  if actor.damage_dealt>last_progress+0.1:last_progress=actor.damage_dealt;stale_time=0.0
  else:stale_time+=delta
- if actor.combat_reaction_active() or actor.mode in ["motion_dash","takeoff","air","land"]:return
+ if actor.combat_reaction_active() or actor.mode in ["motion_dash","takeoff","air_trick","land"]:return
  var threat:=incoming()
  if defend(threat):return
+ if actor.mode=="air":air_step(delta);return
  if deception.step(delta):return
  if actor.mode=="cast":
   try_combo()
@@ -208,6 +259,7 @@ func step(delta:float)->void:
   move("retreat" if distance<3.0 else "strafe","Recover stamina / mana")
   return
  if action_left>0:return
+ if policy==null and distance>1.6 and distance<9 and can_jump() and rng.randf()<0.20 and jump("Change elevation / airborne opening"):return
  # Pressure fighters sometimes spend movement stamina to deny a ranged reset.
  if policy==null and distance>3.0 and distance<10.0 and actor.stamina>55 and aggression>0.6 and rng.randf()<0.35:
   move("chase","Deny a ranged opening");action_left=0.45;return
