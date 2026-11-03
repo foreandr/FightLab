@@ -736,7 +736,7 @@ func tick(delta: float) -> void:
 		desired+=inward.normalized()*minf(3.0,inward.length()*2.0)
 	var acceleration := 45.0 if mode == "dash" or not is_on_floor() else 24.0
 	desired = Movement.walking_velocity(self,desired,4.8)
-	desired = locomotion_velocity(desired)*clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
+	desired = cast_locomotion_velocity(locomotion_velocity(desired),delta)*clampf(1.0 - impact_physics.support_loss * 0.35, 0.45, 1.0)
 	if player_controlled and mode in ["idle","run","block_recoil"] and is_on_floor():
 		var axes:=_player_move_axes()
 		desired*=Movement.directional_speed(Vector2(axes.x,-axes.y),_player_sprint_active())
@@ -792,6 +792,9 @@ func tick(delta: float) -> void:
 
 func movement_multiplier() -> float:
 	return 1.0
+
+func cast_locomotion_velocity(desired:Vector3,_delta:float)->Vector3:
+	return desired
 
 func locomotion_velocity(desired: Vector3) -> Vector3:
 	return desired*movement_multiplier()

@@ -69,6 +69,6 @@ static func surface_contact(actor:CharacterBody3D,strike:Dictionary,previous:Vec
 	var multiplier:=1.0+clampf((speed-5.0)/8.0,0,2.5) if strike.get("dynamic_damage",true) else 1.0
 	var charge:=float(strike.get("charge",0.0))
 	var damage:float=float(strike.damage)*multiplier*(1.0 if strike.get("pre_scaled",false) else 1.0+charge*0.7)
-	damage*=preload("res://scripts/physical_momentum.gd").melee_multiplier(actor.velocity,motion,{"effect":"melee"})
+	damage*=preload("res://scripts/physical_momentum.gd").melee_multiplier(preload("res://scripts/physical_momentum.gd").melee_movement(actor),motion,{"effect":"melee"})
 	actor.arena.surface_impact(hit.collider,hit.position,hit.normal,damage,motion/dt*8.0)
 	entry.marked=true

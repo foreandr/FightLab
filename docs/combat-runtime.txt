@@ -383,3 +383,23 @@ jump; releasing W ends a double-tap forward dash. Authored choreography and
 legacy special jumps keep their explicit animation behavior.
 variable_motion_test.gd measures actual heights, distances, stamina, landing,
 low-resource rejection, duplicate takeoff rejection and fractional script calls.
+
+Running into authored attacks
+-----------------------------
+BattleActor captures the rendered pose when starting an authored cast, blending
+into its source over at most 160ms (shortened to finish before release). Touch
+chains use the same entry path. Finished casts blend back into idle/locomotion
+over 140ms. No animation asset is edited, no contact window is delayed, and
+post-release commitment is unchanged.
+Shared cast locomotion carries incoming movement, excluding knockback, through
+the existing AnimationCastType drag curve. Leg attacks retain their leg pose
+and progressively return player movement through the existing recovery rule.
+Player arm/head attacks allow movement input; CPUs coast rather than snapping
+to a halt. Airborne casts retain their existing gravity and air momentum.
+PhysicalMomentum.melee_movement uses the greater of actual horizontal speed and
+the still-decaying cast carry, so body capsules stopping root travel immediately
+before limb contact do not erase all running momentum. The coefficient remains
+3% per m/s, applied once; there is no fixed running/sprinting damage tier, no
+extra mana/burn/size bonus, and no momentum retained outside the current cast.
+run_attack_transition_test.gd verifies identical first pose, smooth deceleration,
+actual static/walking/sprinting knee hits and exact damage, plus clean recovery.

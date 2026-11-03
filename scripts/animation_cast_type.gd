@@ -40,10 +40,10 @@ static func applies(profile:Dictionary) -> bool:
 static func owns_legs(profile:Dictionary) -> bool:return applies(profile) and kind(profile) in [LEGS,WHOLE_BODY]
 static func physical_multiplier(profile:Dictionary) -> float:
  return 1.0+LEG_PHYSICAL_BONUS if str(profile.get("delivery_type",""))=="Touch" and kind(profile)==LEGS else 1.0
-static func begin(actor:Node3D,profile:Dictionary) -> void:
- var velocity:Vector3=actor.velocity
+static func begin(actor:Node3D,profile:Dictionary,movement:Vector3=Vector3.INF) -> void:
+ var velocity:Vector3=movement if movement.is_finite() else actor.velocity
  velocity.y=0.0
- actor.set_meta("animation_cast_momentum",velocity if owns_legs(profile) else Vector3.ZERO)
+ actor.set_meta("animation_cast_momentum",velocity if applies(profile) else Vector3.ZERO)
 static func drift(actor:Node3D,profile:Dictionary,delta:float) -> Vector3:
  if not applies(profile):return Vector3.ZERO
  var velocity:Vector3=actor.get_meta("animation_cast_momentum",Vector3.ZERO)

@@ -327,7 +327,7 @@ func clash_projectiles(delta:float)->void:
 func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictionary,point: Vector3,direction: Vector3,hit_area: Area3D=null,incoming_impulse:=Vector3.ZERO)->bool:
 	if victim==attacker or victim.health<=0 or not field.round_active or victim.invulnerability>0:
 		return false
-	var amount:=damage_for(spec)*Momentum.melee_multiplier(attacker.velocity,direction,spec)
+	var amount:=damage_for(spec)*Momentum.melee_multiplier(Momentum.melee_movement(attacker),direction,spec)
 	var q: float=clampf(spec.get("charge",0),0,1)
 	var impulse: Vector3=incoming_impulse if not incoming_impulse.is_zero_approx() else direction*amount*9
 	if spec.get("projectile_element","")=="Wind":

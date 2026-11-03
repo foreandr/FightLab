@@ -30,6 +30,7 @@ var practice_dummy_visual:Node3D
 
 var practice_spell_animation:Dictionary={}
 var authored_entry_pose:Array[Transform3D]=[]
+var authored_entry_duration:=0.10
 var practice_projectile_spec:Dictionary={}
 var practice_return_enabled:=false
 var practice_face_rival:=false
@@ -412,15 +413,32 @@ func start_authored_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=nu
 	if not arena.round_active or health<=0 or combat_reaction_active() or arena.combat().cast_committed(self):return false
 	if not player.has_animation(str(profile.get("clip",""))) or not can_cast_with(spec,profile):return false
 	if not arena.combat().can_start_cast(self,spec) or mana+0.0001<arena.mana_cost(spec):return false
-	authored_entry_pose.clear()
+	var incoming_pose:=preload("res://scripts/spell_cast_motion.gd").capture(self)
 	practice_projectile_spec=spec.duplicate(true)
 	practice_projectile_spec["animation"]="palm_fireball"
 	practice_spell_animation=profile.duplicate(true)
+	practice_spell_animation["delivery_type"]=str(spec.get("delivery_type","Touch" if spec.get("effect","")=="touch" else "Projectile"))
 	practice_release_fraction=float(spec.get("release",0.3))
 	charge_requested=0.0
 	start_cast(false)
+	if mode=="cast":
+		authored_entry_pose=incoming_pose
+		authored_entry_duration=clampf(float(current_spell.release)*0.8,0.02,0.16)
 	authored_aim_target=weakref(aim_target) if is_instance_valid(aim_target) else null
 	return mode=="cast"
+
+func cast_locomotion_velocity(desired:Vector3,delta:float)->Vector3:
+	if mode!="cast" or editor_pose_locked or not is_on_floor() or str(current_spell.get("effect",""))!="touch":return desired
+	var type_=preload("res://scripts/animation_cast_type.gd")
+	var carry:Vector3=type_.drift(self,practice_spell_animation,delta)
+	if not player_controlled:return carry
+	var axes:=_player_move_axes()
+	var sprinting_now:=_player_sprint_active()
+	var speed:=Movement.gait_speed(self,sprinting_now,4.8,8.2)*Movement.directional_speed(Vector2(axes.x,-axes.y),sprinting_now)*movement_multiplier()
+	var requested:=_player_move_direction()*speed
+	if not type_.owns_legs(practice_spell_animation):return requested
+	var recovery:=type_.recovery_weight(practice_spell_animation,cast_time,mode_length,float(current_spell.release)/maxf(0.001,mode_length))
+	return carry.lerp(requested,recovery)
 
 ## Touch can link its recovery into another Touch. Released projectiles remain locked.
 func chain_touch_cast(spec:Dictionary,profile:Dictionary,aim_target:Node3D=null)->bool:
@@ -450,6 +468,7 @@ func cancel_authored_windup()->Dictionary:
 
 func start_cast(air: bool) -> void:
 	if arena.combat().cast_committed(self):return
+	var incoming_motion:=velocity-knockback
 	touch_chain_speed=1.0
 	authored_aim_target=null
 	arena.combat().interrupt_cast_attempt(self)
@@ -495,6 +514,7 @@ func start_cast(air: bool) -> void:
 		current_spell.release=mode_length*practice_release_fraction
 		var hand:String=str(practice_spell_animation.get("attack_bone",current_spell.get("hand","hand_r")))
 		current_spell.hand="Head" if hand in ["mouth","head"] else hand
+	preload("res://scripts/animation_cast_type.gd").begin(self,practice_spell_animation,incoming_motion)
 	arena.combat().begin_cast_attempt(self,current_spell,float(current_spell.release))
 	count_action("air_cast" if air else "cast")
 	if air:
@@ -535,10 +555,14 @@ func tick_cast(delta: float) -> bool:
 			charged_casts += 1
 		release = true
 	if cast_time >= mode_length:
+		authored_entry_pose=preload("res://scripts/spell_cast_motion.gd").capture(self)
+		authored_return_elapsed=0.0
 		arena.combat().finish_cast(self)
 		mode = "idle" if is_on_floor() else "air"
 		mode_time = 0
 		mode_length = 0.12
+		clip=""
+		play("ual1/Idle" if is_on_floor() else "duel/air")
 	return release
 
 func set_editor_animation_profile(profile:Dictionary,step:String) -> void:
@@ -844,10 +868,10 @@ func advance_free_animation(delta:float) -> void:
 			aim={"target":target.bone_point("spine_03"),"emitter":str(current_spell.get("hand","hand_r")),"weight":smoothstep(0.0,0.2,progress)*(1.0-smoothstep(0.7,1.0,progress))}
 		preload("res://scripts/spell_cast_motion.gd").pose(self,practice_spell_animation,progress,aim)
 		if not authored_entry_pose.is_empty():
-			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.10,cast_time))
-			if cast_time>=0.10:authored_entry_pose.clear()
+			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,authored_entry_duration,cast_time))
+			if cast_time>=authored_entry_duration:authored_entry_pose.clear()
 	elif not authored_entry_pose.is_empty():
-		if mode=="idle":
+		if mode in ["idle","run","chase","approach","retreat","strafe","air"]:
 			authored_return_elapsed+=delta
 			preload("res://scripts/spell_cast_motion.gd").blend_from(self,authored_entry_pose,smoothstep(0.0,0.14,authored_return_elapsed))
 			if authored_return_elapsed>=0.14:authored_entry_pose.clear()

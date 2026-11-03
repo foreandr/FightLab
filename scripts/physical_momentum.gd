@@ -7,6 +7,15 @@ static func horizontal_speed(movement:Vector3) -> float:
 	movement.y=0.0
 	return movement.length()
 
+static func melee_movement(actor:Node) -> Vector3:
+	var movement:Vector3=actor.velocity
+	# Capsule contact can stop root travel just before the knee/hand connects.
+	# Transfer the still-decaying cast momentum, never a permanent sprint bonus.
+	if actor.mode=="cast" and str(actor.current_spell.get("effect",""))=="touch":
+		var carry:Vector3=actor.get_meta("animation_cast_momentum",Vector3.ZERO)
+		if horizontal_speed(carry)>horizontal_speed(movement):movement=carry
+	return movement
+
 static func melee_multiplier(movement:Vector3,_direction:Vector3,spec:Dictionary) -> float:
 	if str(spec.get("effect",""))!="melee" or spec.get("unrestricted_preview",false):return 1.0
 	return 1.0+horizontal_speed(movement)*MELEE_BONUS_PER_MPS
