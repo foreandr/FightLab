@@ -29,3 +29,17 @@ and the shared download pipeline without writing to the user's inventory.
 
 Create's removed icon row remains absent. Settings and Controls are under
 Home > Options; F9 opens universal settings in any mode.
+
+Store movement and type browsing (2026-11-02)
+- WASD moves the preview actor; Shift sprints. Shared CharacterMovement,
+  CreationLocomotion, actor sprint/resource rules and CombatWorld terrain movement
+  supply the behavior. Search/text entry suppresses movement; focus loss clears keys.
+- The inspection camera follows translation without losing its orbit or zoom.
+- Store filters use Arm, Leg, Head and Movement. Compact metadata carries
+  store_animation_type, so filtering still loads only 20 detail records per page.
+- AnimationStoreTypes preserves explicit authored types. Other entries use label,
+  category and tag hints, with whole-motion actions taking precedence and unknown
+  clips falling back to Movement. These browsing hints do not change combat types.
+- Body-part metadata and body: searches remain available; type: searches are added.
+- Cache version 5 rebuilds the local metadata index once. Source assets, creator
+  credits and account ownership remain intact; old body-filter indices are ignored.

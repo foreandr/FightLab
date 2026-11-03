@@ -27,6 +27,10 @@ var preview_exit_pose:Array[Transform3D]=[]
 var preview_exit_elapsed:=0.0
 var store_screen_ready:=false
 var zoom:=1.0
+var movement_keys:Dictionary={}
+var movement_axes:=Vector2.ZERO
+var locomotion_time:=0.0
+var sprinting:=false
 var orbiting:=false
 var panel_zoom_dragging:=false
 var zoom_drag_amount:=0.0
@@ -70,7 +74,7 @@ func _ready()->void:
 	GameDiagnostics.log_event("standalone_animation_store_ready",{"records":store_index_records.size(),"rows":animation_store_list.get_child_count(),"editor_loaded":false})
 
 func _build_preview_world()->void:
-	field=preload("res://scripts/combat_world.gd").new();field.name="StorePreviewWorld";add_child(field);field.set_physics_process(false)
+	field=preload("res://scripts/combat_world.gd").new();field.name="StorePreviewWorld";add_child(field)
 	var level=preload("res://scenes/maps/gladiatorial_pit.tscn").instantiate();field.add_child(level);field.use_level(level)
 	var environment:=WorldEnvironment.new();environment.environment=Environment.new()
 	environment.environment.background_mode=Environment.BG_COLOR;environment.environment.background_color=Color("9cb4b9")
@@ -108,7 +112,7 @@ func _build_ui()->void:
 	store_content.add_child(store_loading_indicator)
 	store_loading_indicator.hide()
 	animation_store_search=LineEdit.new()
-	animation_store_search.placeholder_text="Search · tag:arm body:head state:airborne -tag:fall"
+	animation_store_search.placeholder_text="Search · type:arm tag:hook state:airborne -tag:fall"
 	animation_store_search.text_changed.connect(func(_text:String):_save_store_preferences();_populate_animation_store())
 	animation_store_search.right_icon=RowIcons.get_icon("search")
 	animation_store_search.clear_button_enabled=true
@@ -131,8 +135,8 @@ func _build_ui()->void:
 	filters.add_theme_constant_override("separation",6)
 	store_content.add_child(filters)
 	store_body_filter=OptionButton.new()
-	for name_ in ["All body parts","Head","Torso","Arms","Legs","Misc"]:store_body_filter.add_item(name_)
-	store_body_filter.tooltip_text="Filter by intended body part"
+	for name_ in preload("res://scripts/animation_store_types.gd").LABELS:store_body_filter.add_item(name_)
+	store_body_filter.tooltip_text="Filter by animation type: arm, leg, head or movement"
 	filters.add_child(store_body_filter)
 	store_air_filter=OptionButton.new()
 	for name_ in ["Air + ground","Airborne","Grounded"]:store_air_filter.add_item(name_)
@@ -144,7 +148,7 @@ func _build_ui()->void:
 	for filter in [store_body_filter,store_air_filter,store_view_filter]:
 		filter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		filter.item_selected.connect(func(_index:int):_save_store_preferences();_populate_animation_store())
-	for i in store_body_filter.item_count:store_body_filter.set_item_icon(i,RowIcons.get_icon(["person","head","arm","arm","leg","info"][i]))
+	for i in store_body_filter.item_count:store_body_filter.set_item_icon(i,RowIcons.get_icon(["person","arm","leg","head","movement"][i]))
 	for i in store_air_filter.item_count:store_air_filter.set_item_icon(i,RowIcons.get_icon("air" if i<2 else "ground"))
 	for i in store_view_filter.item_count:store_view_filter.set_item_icon(i,RowIcons.get_icon(["store","downloaded","block","folder"][i]))
 	for i in store_sort_filter.item_count:store_sort_filter.set_item_icon(i,RowIcons.get_icon(["favorite","folder","person"][i]))
@@ -215,6 +219,25 @@ func play_animation_row(entry:Dictionary)->void:
 	preview_entry=entry.duplicate(true);preview_elapsed=0.0
 	preview_duration=actor.player.get_animation(str(entry.clip)).length if bool(entry.get("store_raw",false)) else preload("res://scripts/animation_source_pose.gd").duration(actor,str(entry.step),str(entry.clip))
 	row_preview_unit=actor
+func _notification(what:int)->void:
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT:movement_keys.clear()
+
+func _physics_process(delta:float)->void:
+	if not is_instance_valid(actor):return
+	var focus:=get_viewport().gui_get_focus_owner()
+	var typing:=focus is LineEdit or focus is TextEdit or get_viewport().gui_get_focus_owner() is SpinBox
+	movement_axes=Vector2.ZERO if typing else preload("res://scripts/creation_locomotion.gd").axes(movement_keys)
+	var movement=preload("res://scripts/character_movement.gd")
+	sprinting=actor.use_sprint(delta,bool(movement_keys.get(KEY_SHIFT,false)),not movement_axes.is_zero_approx())
+	var direction:Vector3=movement.camera_direction(movement_axes,field.camera)
+	var speed:float=movement.gait_speed(actor,sprinting,4.0,7.0)*movement.directional_speed(movement_axes,sprinting)*actor.movement_multiplier()
+	if not movement_axes.is_zero_approx():movement.turn(actor,movement.facing(actor,field.camera),delta)
+	var before:Vector3=actor.global_position
+	field.move_character(actor,direction,speed,delta)
+	# Retain the user's inspection angle/zoom while following the moving preview.
+	camera_control.focus+=actor.global_position-before
+	locomotion_time+=delta
+
 func _process(delta:float)->void:
 	if not is_instance_valid(actor):return
 	if not preview_entry.is_empty():
@@ -225,13 +248,16 @@ func _process(delta:float)->void:
 			preview_exit_pose=preload("res://scripts/spell_cast_motion.gd").capture(actor);preview_exit_elapsed=0.0
 			preview_entry.clear();row_preview_unit=null
 	else:
-		preload("res://scripts/editor_rig_pose.gd").idle(actor,Time.get_ticks_msec()/1000.0)
+		if movement_axes.is_zero_approx():preload("res://scripts/editor_rig_pose.gd").idle(actor,locomotion_time)
+		else:preload("res://scripts/creation_locomotion.gd").pose(actor,movement_axes,locomotion_time,sprinting)
 		if not preview_exit_pose.is_empty():
 			preview_exit_elapsed+=delta
 			preload("res://scripts/spell_cast_motion.gd").blend_from(actor,preview_exit_pose,clampf(preview_exit_elapsed/0.12,0,1))
 			if preview_exit_elapsed>=0.12:preview_exit_pose.clear()
 	camera_control.apply(field.camera)
 func _input(event:InputEvent)->void:
+	if event is InputEventKey and event.keycode in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_SHIFT]:
+		movement_keys[event.keycode]=event.pressed
 	if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:return_to_main_menu();return
 	if event is InputEventMouseButton:
 		var in_panel:=store_panel.get_global_rect().has_point(event.position)

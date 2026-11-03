@@ -694,8 +694,8 @@ func build_ui() -> void:
 	filters.add_theme_constant_override("separation",6)
 	store_content.add_child(filters)
 	store_body_filter=OptionButton.new()
-	for name_ in ["All body parts","Head","Torso","Arms","Legs","Misc"]:store_body_filter.add_item(name_)
-	store_body_filter.tooltip_text="Filter by intended body part"
+	for name_ in preload("res://scripts/animation_store_types.gd").LABELS:store_body_filter.add_item(name_)
+	store_body_filter.tooltip_text="Filter by animation type: arm, leg, head or movement"
 	filters.add_child(store_body_filter)
 	store_air_filter=OptionButton.new()
 	for name_ in ["Air + ground","Airborne","Grounded"]:store_air_filter.add_item(name_)

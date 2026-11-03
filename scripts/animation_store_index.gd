@@ -3,7 +3,7 @@ extends RefCounted
 ## Full source records are stored as individual detail records and opened only for the visible page.
 
 const Community = preload("res://scripts/community_animation_catalog.gd")
-const CACHE_VERSION := 4
+const CACHE_VERSION := 5
 const STATIC_FILTER := "res://data/static_animation_filter.json"
 const BODY_HINTS := {
 	"Head": ["head", "neck", "face", "mouth"],
@@ -128,6 +128,7 @@ static func _compact_record(entry: Dictionary) -> Dictionary:
 		"group": str(entry.get("group", "Motion")), "store_asset_id": id,
 		"mirrored": bool(entry.get("mirrored", false)),
 		"store_creator": creator, "store_top_score": score,
+		"store_animation_type": preload("res://scripts/animation_store_types.gd").kind(entry),
 		"tags": tags, "body_parts": entry.get("body_parts", parts), "air_state": air,
 		"source_name": str(entry.get("source_name", "")), "source_url": str(entry.get("source_url", "")),
 		"license": str(entry.get("license", "Unspecified")),

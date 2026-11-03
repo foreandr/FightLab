@@ -86,7 +86,7 @@ static func _save_store_preferences(host) -> void:
 	if not is_instance_valid(host.store_view_filter):return
 	var config=ConfigFile.new()
 	config.set_value("store","search",host.animation_store_search.text)
-	config.set_value("store","body",host.store_body_filter.selected)
+	config.set_value("store","animation_type",host.store_body_filter.selected)
 	config.set_value("store","air",host.store_air_filter.selected)
 	config.set_value("store","view",host.store_view_filter.selected)
 	config.set_value("store","sort",host.store_sort_filter.selected)
@@ -98,7 +98,7 @@ static func _load_store_preferences(host) -> void:
 	var config=ConfigFile.new()
 	if config.load("user://animation_store_preferences.cfg")!=OK:return
 	host.animation_store_search.text=str(config.get_value("store","search",""))
-	for pair in [[host.store_body_filter,"body"],[host.store_air_filter,"air"],[host.store_view_filter,"view"],[host.store_sort_filter,"sort"]]:
+	for pair in [[host.store_body_filter,"animation_type"],[host.store_air_filter,"air"],[host.store_view_filter,"view"],[host.store_sort_filter,"sort"]]:
 		var filter:OptionButton=pair[0]
 		filter.select(clampi(int(config.get_value("store",pair[1],0)),0,filter.item_count-1))
 	var creator=str(config.get_value("store","creator","All creators"))
@@ -196,7 +196,8 @@ static func _populate_animation_store(host) -> void:
 		if host.store_view_filter.selected==1 and not taken:continue
 		if host.store_view_filter.selected==2 and not blocked:continue
 		if host.store_library.taken.has(id):entry=host.store_library.taken[id].duplicate(true)
-		if host.store_body_filter.selected>0 and host.store_body_filter.get_item_text(host.store_body_filter.selected) not in entry.get("body_parts",[]):continue
+		if not entry.has("store_animation_type"):entry["store_animation_type"]=preload("res://scripts/animation_store_types.gd").kind(entry)
+		if host.store_body_filter.selected>0 and host.store_body_filter.get_item_text(host.store_body_filter.selected)!=str(entry.store_animation_type):continue
 		if host.store_air_filter.selected>0 and str(entry.get("air_state",""))!=host.store_air_filter.get_item_text(host.store_air_filter.selected):continue
 		if host.store_creator_filter.selected>0 and host._store_creator(entry)!=host.store_creator_filter.get_item_text(host.store_creator_filter.selected):continue
 		if not query.is_empty() and not host.StoreLibrary.matches(entry,query):continue
@@ -239,6 +240,7 @@ static func _populate_animation_store(host) -> void:
 		var id=host.StoreLibrary.key(entry)
 		if page_details.has(id) and page_details[id] is Dictionary and not page_details[id].is_empty() and host.StoreLibrary.key(page_details[id])==id:
 			entry=host.StoreLibrary.enrich(page_details[id])
+			entry["store_animation_type"]=str(compact_entry.get("store_animation_type",preload("res://scripts/animation_store_types.gd").kind(entry)))
 			entry["store_creator"]=str(compact_entry.get("store_creator","FightLab"))
 			entry["store_top_score"]=int(compact_entry.get("store_top_score",0))
 			if not entry.has("store_asset_id"):entry["store_asset_id"]=id
@@ -258,11 +260,11 @@ static func _populate_animation_store(host) -> void:
 		title.set("entry",row_entry.duplicate(true))
 		title.set("editor",host)
 		title.set("store_origin",true)
-		title.icon=host.RowIcons.get_icon({"Head":"head","Arm":"arm","Leg":"leg","Movement":"movement"}.get(preload("res://scripts/animation_cast_type.gd").kind(entry),"movement"))
+		title.icon=host.RowIcons.get_icon({"Head":"head","Arm":"arm","Leg":"leg","Movement":"movement"}.get(preload("res://scripts/animation_store_types.gd").kind(entry),"movement"))
 		title.add_theme_constant_override("icon_max_width",24)
 		title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		title.clip_text=true
-		title.tooltip_text=host.animation_info_text(entry)+"\nTags\t"+", ".join(entry.get("tags",[]))+"\nBody\t"+", ".join(entry.get("body_parts",[]))+"\nState\t"+str(entry.get("air_state","Grounded"))
+		title.tooltip_text=host.animation_info_text(entry)+"\nType\t"+preload("res://scripts/animation_store_types.gd").kind(entry)+"\nTags\t"+", ".join(entry.get("tags",[]))+"\nBody\t"+", ".join(entry.get("body_parts",[]))+"\nState\t"+str(entry.get("air_state","Grounded"))
 		if entry.has("source_name"):title.tooltip_text+="\nSource\t"+str(entry.source_name)+"\nLicense\t"+str(entry.get("license","Unspecified"))
 		var play=host.animation_icon_button(row,"play","Play once on selected bot",Callable(host,"_play_store_animation").bind(row_entry))
 		play.name="StorePlay"

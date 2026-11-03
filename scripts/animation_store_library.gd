@@ -161,6 +161,7 @@ func entries_for(group:String,category:String) -> Array[Dictionary]:
 
 static func enrich(entry:Dictionary,animation:Animation=null) -> Dictionary:
 	var data:Dictionary=entry.duplicate(true)
+	var store_type:=preload("res://scripts/animation_store_types.gd").kind(entry)
 	var words:="%s %s %s %s"%[data.get("title",""),data.get("clip",""),data.get("category",""),data.get("step","")]
 	var tags:Array=[]
 	for tag in data.get("tags",[]):
@@ -195,6 +196,7 @@ static func enrich(entry:Dictionary,animation:Animation=null) -> Dictionary:
 	if state.to_lower() not in tags:tags.append(state.to_lower())
 	data["tags"]=tags
 	data["body_parts"]=data.get("body_parts",parts)
+	data["store_animation_type"]=store_type
 	data["animated_body_parts"]=animated_parts
 	data["air_state"]=state
 	data["classification_source"]="Source metadata, title keywords and animated bone tracks; inferred hints"
@@ -214,6 +216,7 @@ static func matches(entry:Dictionary,query:String) -> bool:
 		var haystack:=all_text.to_lower()
 		if term.begins_with("tag:"):haystack=str(entry.get("tags",[])).to_lower()
 		elif term.begins_with("body:"):haystack=str(entry.get("body_parts",[])).to_lower()
+		elif term.begins_with("type:"):haystack=preload("res://scripts/animation_store_types.gd").kind(entry).to_lower()
 		elif term.begins_with("state:") or term.begins_with("air:"):haystack=str(entry.get("air_state","")).to_lower()
 		elif term.begins_with("source:"):haystack=(str(entry.get("clip",""))+" "+str(entry.get("source_name",""))+" "+str(entry.get("source_url",""))+" "+JSON.stringify(metadata)).to_lower()
 		elif term.begins_with("license:"):haystack=str(entry.get("license","")).to_lower()
