@@ -22,6 +22,15 @@
       "reference_video": "https://www.youtube.com/watch?v=m-1S1V1PZHA",
       "status": "candidate_only",
       "asset": null
+    },
+    {
+      "id": "hill_giant",
+      "title": "Hill Giant",
+      "creator": "FaboMusic",
+      "reference_title": "Low Intensity Combat Music | Hill Giant | Tabletop/RPG/D&D Background Music | 1 Hour Loop",
+      "reference_video": "https://www.youtube.com/watch?v=CK27piiXh6M",
+      "status": "candidate_only",
+      "asset": null
     }
   ]
 }
