@@ -9,6 +9,12 @@ func run():
  while current_scene==null or not current_scene.default_unit_ready or is_instance_valid(current_scene.loading_layer):await process_frame
  var e=current_scene;var b=e.spell_builder
  if not check(not b.demo_timing_panel.visible and not b.demo_choice_selected,"RHS is visible before selecting a demo"):return
+ var fixed_rect:Rect2=b.get_global_rect()
+ b.begin_border_resize(Vector2.ONE);b.resize_window_by(Vector2(90,-100));b._resize_to(Vector2(400,400))
+ b._update_resize_grips()
+ if not check(b.get_global_rect().is_equal_approx(fixed_rect) and not b.resizing and b._edges_at(fixed_rect.end)==Vector2.ZERO,"Demo chooser can still resize"):return
+ for grip in b.resize_grips:
+  if not check(not grip.visible,"Demo chooser still shows resize handles"):return
  var grid:GridContainer=b.demo_screen.find_child("DemoAnimationGrid",true,false)
  if not check(grid.get_child_count()==8 and b.demo_screen.find_child("DemoGrab",true,false)==null,"Grab still appears in the demo grid"):return
  for card in grid.get_children():
@@ -33,5 +39,5 @@ func run():
  await process_frame;await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/demo_loading_wheel.png")
  if not check(spinner.value==45 and spinner.get_theme_stylebox("fill") is StyleBoxEmpty,"Loading wheel lost progress diagnostics or still paints a bar"):return
- print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, RHS revealed on choice, explicit Confirm, start hides RHS, shared spinner preserves diagnostics")
+ print("SPELL DEMO CARDS PASS: eight actual pose images, Grab only in Motion and disabled, fixed demo panel, RHS revealed on choice, explicit Confirm, start hides RHS, shared spinner preserves diagnostics")
  quit()

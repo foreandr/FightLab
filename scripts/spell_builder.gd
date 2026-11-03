@@ -1974,12 +1974,14 @@ func _process(delta:float) -> void:
  current_distance.text="Current separation: %.2f m | Water: %.2f m deep"%[editor.actor.global_position.distance_to(editor.target.global_position),editor.field.spell_environment.flood_depth]
 
 func begin_border_resize(edges:Vector2) -> void:
+ if creation_step=="demo":return
  _detach_anchors()
  resizing=true
  resize_edges=edges
  resize_origin=get_global_rect()
 
 func resize_window_by(amount:Vector2) -> void:
+ if creation_step=="demo":return
  _detach_anchors()
  resize_origin=get_global_rect()
  resize_edges=Vector2.ONE
@@ -2002,7 +2004,7 @@ func _update_resize_grips() -> void:
  if get_parent()==null:return
  var rect:=get_global_rect()
  for grip in resize_grips:
-  grip.visible=is_visible_in_tree()
+  grip.visible=is_visible_in_tree() and creation_step!="demo"
   if not grip.visible:continue
   var edges:Vector2=grip.get("edges")
   grip.size=Vector2(16.0 if edges.x!=0 else maxf(16.0,size.x-16.0),16.0 if edges.y!=0 else maxf(16.0,size.y-16.0))
@@ -2010,12 +2012,16 @@ func _update_resize_grips() -> void:
   if get_index()>grip.get_index():get_parent().move_child(grip,get_parent().get_child_count()-1)
 
 func _edges_at(point:Vector2) -> Vector2:
+ if creation_step=="demo":return Vector2.ZERO
  var rect:=get_global_rect()
  if not rect.grow(10.0).has_point(point):return Vector2.ZERO
  var local:=point-rect.position
  return Vector2(-1 if local.x<8 else (1 if local.x>size.x-8 else 0),-1 if local.y<8 else (1 if local.y>size.y-8 else 0))
 
 func _process_resize_cursor() -> void:
+ if creation_step=="demo":
+  resizing=false;resize_edges=Vector2.ZERO;mouse_default_cursor_shape=Control.CURSOR_ARROW
+  return
  if not is_visible_in_tree():return
  var edges:=resize_edges if resizing else _edges_at(get_global_mouse_position())
  if edges.x!=0 and edges.y!=0:mouse_default_cursor_shape=Control.CURSOR_FDIAGSIZE if edges.x==edges.y else Control.CURSOR_BDIAGSIZE
@@ -2031,6 +2037,7 @@ func _detach_anchors() -> void:
  size=size_before
 
 func _resize_to(point:Vector2) -> void:
+ if creation_step=="demo":return
  var minimum:=get_combined_minimum_size().max(Vector2(320,220))
  var viewport_size:=get_viewport_rect().size
  var start:=resize_origin.position
