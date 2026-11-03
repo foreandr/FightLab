@@ -215,6 +215,7 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 	field._update_projectile_hitbox(field.shots.back())
 
 func step_shots(delta: float) -> void:
+	clash_projectiles(delta)
 	for i in range(field.shots.size()-1,-1,-1):
 		var shot: Dictionary = field.shots[i]
 		var from: Vector3 = shot.node.position
@@ -319,6 +320,9 @@ func step_shots(delta: float) -> void:
 							field.vfx.textures[trail_texture]=selected
 					field.vfx.puff(shot.node.position,trail_texture,0,Vector2.ONE*shot.radius*2,-shot.velocity*0.04,0.1+float(look.trail)*0.8,Color(color,0.65),0.25,5)
 				else:field.vfx.flight(shot.node,shot.velocity,shot.caster.team,shot.spec.effect,shot.age)
+
+func clash_projectiles(delta:float)->void:
+	preload("res://scripts/projectile_clashes.gd").resolve(field,delta)
 
 func apply_impact(attacker: CharacterBody3D,victim: CharacterBody3D,spec: Dictionary,point: Vector3,direction: Vector3,hit_area: Area3D=null,incoming_impulse:=Vector3.ZERO)->bool:
 	if victim==attacker or victim.health<=0 or not field.round_active or victim.invulnerability>0:

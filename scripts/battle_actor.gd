@@ -57,7 +57,6 @@ var burn_clock := 0.0
 var burn_source: CharacterBody3D
 var burn_visual:Node3D
 var burn_death:Node3D
-var touch_contact_visual:Node3D
 var status_visual:Node3D
 var last_physical_impact_damage:=0.0
 var chill_time := 0.0
@@ -251,11 +250,6 @@ func _ready() -> void:
 					mesh.set_surface_override_material(surface, material)
 	decision = team * 2
 	spell_cursor = team
-
-func ensure_touch_contact_visual()->Node3D:
-	if not is_instance_valid(touch_contact_visual):
-		touch_contact_visual=preload("res://scripts/touch_contact_visual.gd").new();add_child(touch_contact_visual);touch_contact_visual.setup(self)
-	return touch_contact_visual
 
 func reset_fighter(location: Vector3) -> void:
 	authored_entry_pose.clear()

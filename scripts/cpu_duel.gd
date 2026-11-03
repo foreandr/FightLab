@@ -67,7 +67,7 @@ func rematch(seed_:int=0)->void:
  set_physics_process(true)
  match_seed=seed_ if seed_!=0 else int(Time.get_ticks_usec())
  var random:=RandomNumberGenerator.new();random.seed=match_seed
- round_active=false;clear_battle_effects();events.clear();casts.clear();hits.clear();elapsed=0
+ round_active=false;clear_battle_effects();events.clear();casts.clear();hits.clear();elapsed=0;projectile_clash_count=0
  spell_environment.reset_environment()
  combat().cast_attempts.clear();combat().cast_recoveries.clear();combat().touch_casts.clear()
  brains.clear();match_winner=-2;finished_at=0;countdown=0.1 if training_view else 2.0;intermission_left=2.0

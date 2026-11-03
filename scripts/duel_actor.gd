@@ -63,6 +63,7 @@ var strafe_sign := 1.0
 var arena: Node3D
 var rival: CharacterBody3D
 var health := MAX_HEALTH
+var touch_contact_visual:Node3D
 var brain_enabled := true
 var player_controlled := false
 var story_block_held := false
@@ -416,6 +417,11 @@ func resolve_melee(delta:float) -> void:
 	var forward:=flat_direction(position,rival.position) if is_instance_valid(rival) else global_basis.z
 	melee_connected=preload("res://scripts/melee_contact.gd").resolve(self,{"id":melee_spec[0],"clock":melee_clock,"begin":melee_spec[3],"end":melee_spec[4],"previous":melee_previous,"limb":limb,"connected":melee_connected,"forward":forward,"require_forward":true,"min_speed":1.0,"dynamic_damage":false,"damage":8.0 if melee_spec[0]=="left_jab" else 11.0},delta) or melee_connected
 	melee_previous=limb
+
+func ensure_touch_contact_visual()->Node3D:
+	if not is_instance_valid(touch_contact_visual):
+		touch_contact_visual=preload("res://scripts/touch_contact_visual.gd").new();add_child(touch_contact_visual);touch_contact_visual.setup(self)
+	return touch_contact_visual
 
 func recover_resources(delta: float) -> void:
 	var chasing:=mode=="chase"

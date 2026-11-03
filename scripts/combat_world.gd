@@ -27,6 +27,7 @@ var channels: Array = []
 var pulses: Array = []
 var round_active := false
 var shot_serial := 0
+var projectile_clash_count:=0
 var vfx: Node3D
 var shake := 0.0
 var combat_numbers_visible:=false
@@ -80,6 +81,13 @@ func spawn_projectile(f: CharacterBody3D, spec: Dictionary, origin: Vector3) -> 
 
 func step_shots(delta: float) -> void:
 	combat().step_shots(delta)
+
+func projectile_clash_feedback(point:Vector3,result:Dictionary)->void:
+	projectile_clash_count+=1
+	var event:=result.duplicate();event["event"]="projectile_clash";event["time"]=elapsed;event["point"]=str(point);events.append(event)
+	preload("res://scripts/combat_diagnostics.gd").event(self,"projectile_clash",event)
+	if is_instance_valid(vfx):vfx.physical_contact(point)
+	combat_sound("shield",point,0.55)
 
 func apply_impact(attacker: CharacterBody3D, victim: CharacterBody3D, spec: Dictionary, point: Vector3, direction: Vector3, hit_area: Area3D = null, incoming_impulse := Vector3.ZERO) -> bool:
 	return combat().apply_impact(attacker,victim,spec,point,direction,hit_area,incoming_impulse)

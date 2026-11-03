@@ -144,7 +144,6 @@ func _physics_process(delta: float) -> void:
 			charges[i].scale = Vector3.ONE * (0.65 + minf(1, f.cast_time / maxf(0.1, f.current_spell.release)) * 0.7)
 			if int(elapsed * 60) % 4 == 0:
 				vfx.puff(charges[i].position, "magic_01", i, Vector2.ONE * 0.45, Vector3.ZERO, 0.19, Color(element_color(i), 0.55), 0.0, 5.0)
-	clash_projectiles(delta)
 	step_shots(delta)
 	step_pulses(delta)
 	step_channels(delta)
@@ -184,42 +183,16 @@ func predictive_aim(f: CharacterBody3D, origin: Vector3, speed: float, target_bo
 	return aim
 
 func clash_projectiles(delta: float) -> void:
-	if not round_active:
-		return
-	var consumed := {}
-	for i in shots.size():
-		var a: Dictionary = shots[i]
-		if consumed.has(a.id):
-			continue
-		for j in range(i + 1, shots.size()):
-			var b: Dictionary = shots[j]
-			if a.caster.team == b.caster.team or consumed.has(b.id):
-				continue
-			# Continuous relative sphere sweep prevents fast projectiles passing through.
-			var relative: Vector3 = a.node.position - b.node.position
-			var movement: Vector3 = (a.velocity - b.velocity) * delta
-			var t := clampf(-relative.dot(movement) / maxf(0.0001, movement.length_squared()), 0, 1)
-			if (relative + movement * t).length() > a.radius + b.radius:
-				continue
-			var point: Vector3 = (a.node.position + a.velocity * delta * t + b.node.position + b.velocity * delta * t) * 0.5
-			consumed[a.id] = true
-			consumed[b.id] = true
-			clashes += 1
-			events.append({"time":elapsed, "event":"clash"})
-			impact_burst(point, 0, true)
-			impact_burst(point, 1, true)
-			for steam in 8:
-				var node := sphere(0.075, Color("d7f2f5"))
-				node.material_override = glow(Color("d7f2f5"), 0.22)
-				node.position = point
-				particles.append({"node":node, "velocity":Vector3(rng.randf_range(-0.8, 0.8), 1.1, rng.randf_range(-0.8, 0.8)), "age":0.0, "life":0.5, "scale":Vector3.ONE, "grow":true, "fade":true})
-			status = "FIRE × WATER  •  STEAM CLASH"
-			shake = 0.16
-			break
-	for i in range(shots.size() - 1, -1, -1):
-		if consumed.has(shots[i].id):
-			shots[i].node.queue_free()
-			shots.remove_at(i)
+	combat().clash_projectiles(delta)
+
+func projectile_clash_feedback(point:Vector3,result:Dictionary)->void:
+	super.projectile_clash_feedback(point,result)
+	clashes+=1
+	events.append({"time":elapsed,"event":"clash"})
+	status="PROJECTILE CLASH"
+	shake=maxf(shake,0.08)
+	if [result.first_element,result.second_element].has("Fire") and [result.first_element,result.second_element].has("Water"):
+		for i in 3:vfx.puff(point,"smoke_04",0,Vector2.ONE*0.5,Vector3.UP*0.5,0.4,Color(0.85,0.93,0.96,0.5),0.4)
 
 func impact_burst(point: Vector3, team: int, connected: bool) -> void:
 	vfx.burst(point, team, connected)

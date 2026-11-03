@@ -313,3 +313,32 @@ head hit). Damage and support loss add modest weight, capped at 0.27 s. The
 head/chest clips remain distinct. Ragdoll/getup and explicit status stuns retain
 their own clocks. CPU thinking is ready immediately after the physical reaction.
 tests/hit_recovery_test.gd checks real impacts and immediate counter casts.
+
+Projectile clashes
+------------------
+CombatRuntime.step_shots calls projectile_clashes.gd before advancing flight.
+Opposing teams use continuous relative sphere sweeps, sorted by first contact.
+Same-team projectiles pass. Earlier walls, bodies, shields, water contact and
+expiry take precedence, using the shared impact predictor. Deterministic shot-ID
+ties avoid list-order dependence for simultaneous pairs. Survivors can clash
+again in the same step.
+
+Clash strength is the current launch physical damage (movement contribution
+already included), before victim-specific headshot or shield calculations.
+50 versus 50 consumes both. 60 versus 40 consumes the weaker projectile and leaves
+20 damage. The winner retains its effect identity; potency, stored charge contribution and impact mass are
+scaled by 20/60 in that example. Water amount inherits the cumulative remaining
+power fraction. Speed, radius and effect duration are retained. Reductions copy
+mutable specs so authored/shared source data never changes. No resource refund,
+character AoE or surface fire is produced by the mid-air clash itself.
+
+CombatWorld.projectile_clash_feedback owns neutral contact feedback/events and
+projectile_clash_count. The legacy duel host delegates its former collision code
+to the same runtime, retaining its presentation/report counter adapter. CPU
+rematches reset the clash count. Contact presentation is owned by the shared
+DuelActor base so both classic and extended BattleActors support safe cleanup.
+
+tests/projectile_clash_test.gd verifies equal/unequal damage, reduced burn/force,
+fast crossing, array ordering, successive clashes, friendly/near misses, earlier
+wall/body impacts and actual residual damage/burn. tests/clash_review.gd checks
+the older arena integration.

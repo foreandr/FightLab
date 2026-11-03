@@ -99,7 +99,7 @@ func projectile_step(shot:Dictionary,from:Vector3,to:Vector3,hit:bool) -> void:
  if element=="Fire":
   react_fire(point,radius,potency,float(shot.radius))
  if element=="Water":
-  add_water(4.0/3.0*PI*pow(float(shot.radius),3),point)
+  add_water(4.0/3.0*PI*pow(float(shot.radius),3)*float(shot.spec.get("clash_power_fraction",1.0)),point)
   for p in patches:
    if p.element=="Fire" and p.point.distance_to(point)<radius+p.radius:p.life=0.0
  if element=="Ice":
