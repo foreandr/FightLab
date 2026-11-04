@@ -73,6 +73,10 @@ func build_test_controls()->void:
  builder.stop_preview_controls(true)
  builder.demo_choice_selected=false
  builder.demo_duration=1.5;builder.casting_animation["duration"]=1.5
+ builder.projectile_preview_button.pressed.disconnect(builder.play_projectile_once)
+ builder.projectile_preview_button.button_down.connect(func():builder.held_cast.begin(builder))
+ builder.projectile_preview_button.button_up.connect(func():builder.held_cast.release(builder))
+ builder.projectile_preview_button.tooltip_text="Hold to wind up; release to cast. One second of holding reaches this animation's maximum duration."
  # Reuse the exact authoring controls and their existing signals/calculations.
  var timing:=VBoxContainer.new();timing.name="SandboxCasting"
  var sidebar=builder.spell_sections.Mana.get_parent();sidebar.add_child(timing);sidebar.move_child(timing,0)
@@ -91,7 +95,8 @@ func build_test_controls()->void:
  builder.delivery_choices.Projectile.text=builder.delivery_choices.Projectile.text.trim_suffix(" · Default")
  builder.preview_delivery_type="";builder.delivery_type="";builder.delivery_choice_selected=false
  builder.show_creation_step("delivery")
- confirm.text="Test animation + spell"
+ confirm.hide()
+ builder.projectile_preview_button.get_parent().get_node("PracticeLeftJab").hide()
  builder.sandbox_spell_selected=false
  builder.refresh_demo_choices();builder.refresh_demo_timing();builder.get_meta("cast_timeline").fit_time();refresh_sidebar()
  spell_pages=preload("res://scripts/sandbox_spell_pages.gd").new()
@@ -151,6 +156,7 @@ func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)
  if not copy.has("air_state"):
   var words:=" "+str(entry.get("title",""))+" "+str(entry.get("kind",""))
   copy["air_state"]="Airborne" if ["jump","flip","air","twist","fly","leap","fall","cartwheel"].any(func(h):return words.to_lower().contains(h)) else "Grounded"
+ if preload("res://scripts/animation_jump_motion.gd").requires_air(copy):copy["air_state"]="Airborne"
  copy["_search"]=(str(entry.get("title",""))+" "+str(entry.get("tags",[]))+" "+str(entry.get("store_creator",entry.get("creator_name","")))+" "+str(entry.get("category",""))).to_lower()
  records.append(copy)
 func set_type(kind:String)->void:
@@ -206,8 +212,14 @@ func select_animation(record:Dictionary)->bool:
  entry["animation_type"]=str(record.store_animation_type)
  entry["sandbox_offensive"]=record._section!="Idle" and (str(record.get("group","Motion"))=="Attack" or record.store_animation_type in ["Arm","Leg","Head"])
  entry=preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry)
+ # Ordinary library previews show the recorded pace, not a long take squeezed
+ # into the previous selection's 1.5-second duration. Holding a cast overrides it.
+ host.spell_builder.demo_duration=clampf(float(entry.get("source_duration",entry.get("duration",1.5))),0.1,60.0)
+ var limits:=preload("res://scripts/held_cast_preview.gd").duration_range(entry)
+ entry["source_duration"]=host.spell_builder.demo_duration
+ entry["min_duration"]=limits.x;entry["max_duration"]=limits.y
  if not host.spell_builder.choose_demo_animation(entry,false):selection.text="Could not load "+str(record.title);show_page();return false
- selected_id=str(record._id);selection.text=str(record.title);confirm.disabled=false
+ selected_id=str(record._id);selection.text=str(record.title)+" · Hold: %.2f–%.2f s"%[limits.x,limits.y];confirm.disabled=false
  host.spell_builder.play_demo_preview();show_page();refresh_sidebar()
  return true
 func confirm_selection()->void:

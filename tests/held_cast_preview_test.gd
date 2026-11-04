@@ -1,0 +1,45 @@
+extends SceneTree
+func _initialize():set_meta("ai_learning_enabled",false);call_deferred("run")
+func run():
+ change_scene_to_file("res://scenes/sandbox.tscn");await process_frame;await process_frame
+ var s=current_scene;var b=s.spell_builder;var browser=s.animation_browser
+ while not browser.ready_catalog:await process_frame
+ assert(not browser.confirm.visible and not b.projectile_preview_button.get_parent().get_node("PracticeLeftJab").visible)
+ var jab_key:=InputEventKey.new();jab_key.physical_keycode=KEY_4;jab_key.pressed=true
+ b._input(jab_key);assert(s.actor.mode!="punch","Removed Jab shortcut remains active")
+ s.field.set_physics_process(false);b.set_process(false);b.set_physics_process(false)
+ var entry:Dictionary={}
+ for record in browser.records:
+  if record._origin=="Built-in" and record.clip=="fight/backfist":entry=record;break
+ assert(browser.select_animation(entry))
+ b.stop_preview_controls(true)
+ b.casting_animation.source_duration=1.0;b.casting_animation.min_duration=0.7;b.casting_animation.max_duration=1.6
+ b.choose_delivery_type("Projectile");b.confirm_delivery_type()
+ b.stop_preview_controls(true);b.clear_shots()
+ for i in 30:b.move_caster(0.016,Vector2.ZERO,false)
+ assert(s.actor.is_on_floor())
+ assert(not s.field.combat().can_start_cast(s.actor,{"requires_air":true,"stamina_cost":0}))
+ s.actor.position.y+=2.0;b.move_caster(0.016,Vector2.ZERO,false)
+ assert(s.field.combat().can_start_cast(s.actor,{"requires_air":true,"stamina_cost":0}))
+ for i in 120:b.move_caster(0.016,Vector2.ZERO,false)
+ s.actor.stamina=100;s.actor.mana=100
+ root.grab_focus();await process_frame
+ b.held_cast.begin(b);assert(b.held_cast.active)
+ var shots:int=s.field.shot_serial
+ b.process_demo_preview(0.5)
+ assert(is_equal_approx(b.demo_duration,1.15))
+ assert(s.field.shot_serial==shots and not b.released,"Emitted during hold")
+ b.process_demo_preview(1.0)
+ assert(is_equal_approx(b.demo_duration,1.6),"Exceeded animation maximum")
+ assert(s.field.shot_serial==shots)
+ var cost:float=b.demo_preview_spec().stamina_cost
+ b.held_cast.release(b);b.process_demo_preview(0.001)
+ assert(b.released and s.field.shot_serial==shots+1)
+ assert(is_equal_approx(s.actor.stamina,100.0-cost),"Final duration did not set shared stamina cost")
+ b.process_demo_preview(0.8);assert(not b.playing)
+ b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100
+ b.held_cast.begin(b);b.process_demo_preview(0.4);b.interrupt_preview_cast()
+ assert(s.actor.stamina<100 and s.field.shot_serial==shots+1,"Interrupted charge was free or emitted")
+ while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
+ print("HELD CAST PASS: per-animation min/max, no emission while held, one release, shared costs, canceled stamina, grounded Dive Kick rejection/airborne authorization")
+ quit()

@@ -76,6 +76,8 @@ func run() -> void:
 	editor.field.combat().step_actors(0.0)
 	if not check(is_equal_approx(actor.stamina,97.5) and actor.mana==100,"Gameplay mode exit did not use shared cancellation accounting"):return
 	actor.practice_spell_animation={};actor.practice_projectile_spec={}
+	# Return from the deliberate gameplay hit reaction before testing editor input.
+	actor.mode="review";actor.stun_time=0.0
 	b.set_character_god_mode(actor,true)
 	press_one(b);b.process_demo_preview(0.25);press_one(b)
 	if not check(actor.stamina==100 and actor.mana==100,"Cancellation bypassed God Mode"):return

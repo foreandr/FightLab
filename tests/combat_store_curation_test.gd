@@ -14,9 +14,9 @@ func run():
   assert(not str(entry.get("source_name","")).to_lower().contains("mocapdata"),"Rejected provider remains")
   assert(policy.accepts(entry),"Irrelevant entry remains: "+str(entry.title))
   if entry.source_name=="Motifect Martial Arts":new_clips+=1
- assert(new_clips==38,"New combat clips missing from the shared Store")
+ assert(new_clips==35,"New combat clips missing from the shared Store")
  for entry in store.animation_store_entries:
   assert(entry.has("path") or store.store_library.taken.has(store.StoreLibrary.key(entry)) or policy.accepts(entry))
  assert(store.animation_store_list.get_child_count()<=20,"Store pagination changed")
- print("CURATED STORE PASS: ",store.store_index_records.size()," local combat/movement records, 38 new clips, owned/custom preserved, 20-row pages")
+ print("CURATED STORE PASS: ",store.store_index_records.size()," local combat/movement records, 35 quality-screened new clips, owned/custom preserved, 20-row pages")
  quit()

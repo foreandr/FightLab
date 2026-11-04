@@ -61,6 +61,9 @@ func resource_notice(actor:CharacterBody3D,message:String) -> void:
 	preload("res://scripts/combat_diagnostics.gd").event(field,"cast_resource_failure",{"actor":str(actor.name),"reason":message})
 
 func can_start_cast(actor:CharacterBody3D,spec:Dictionary) -> bool:
+	if bool(spec.get("requires_air",false)) and actor.is_on_floor():
+		resource_notice(actor,"Requires air · Jump first")
+		return false
 	if actor.has_method("receive_touch_parry") and actor.touch_parry_recovery>0.0:return false
 	var required:=maxf(0.0,float(spec.get("stamina_cost",0.0)))
 	if str(spec.get("effect",""))=="burst" and actor.has_method("flash_stamina_requirement"):required=maxf(required,actor.flash_stamina_requirement())
@@ -72,6 +75,15 @@ func can_start_cast(actor:CharacterBody3D,spec:Dictionary) -> bool:
 func advance_cast_attempt(actor:CharacterBody3D,elapsed:float) -> void:
 	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
 	if not attempt.is_empty():attempt.elapsed=maxf(float(attempt.elapsed),maxf(0.0,elapsed))
+
+func retime_cast_attempt(actor:CharacterBody3D,spec:Dictionary,time_to_release:float,elapsed:float)->bool:
+	if not can_start_cast(actor,spec):return false
+	var attempt:Dictionary=cast_attempts.get(actor.get_instance_id(),{})
+	if attempt.is_empty():return false
+	attempt.stamina=maxf(0.0,float(spec.get("stamina_cost",0.0)))
+	attempt.time_to_release=maxf(0.001,time_to_release)
+	attempt.elapsed=maxf(0.0,elapsed)
+	return true
 
 func interrupt_cast_attempt(actor:CharacterBody3D) -> float:
 	var key:=actor.get_instance_id()
@@ -96,6 +108,10 @@ func discard_cast_attempt(actor:CharacterBody3D) -> void:
 	finish_cast(actor)
 
 func authorize_cast(actor:CharacterBody3D,spec:Dictionary,profile:Dictionary={}) -> bool:
+	if (bool(spec.get("requires_air",false)) or preload("res://scripts/animation_jump_motion.gd").requires_air(profile)) and actor.is_on_floor():
+		resource_notice(actor,"Requires air · Jump first")
+		interrupt_cast_attempt(actor)
+		return false
 	if actor.has_method("receive_touch_parry") and actor.touch_parry_recovery>0.0:return false
 	if cast_committed(actor):return false
 	if not field.round_active or actor.health<=0:

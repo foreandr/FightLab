@@ -51,6 +51,7 @@ var demo_only_stage:=true
 var demo_choices:Dictionary={}
 var human_only_targets:=false
 var sandbox_testing:=false
+var held_cast=preload("res://scripts/held_cast_preview.gd").new()
 var sandbox_spell_selected:=false
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
@@ -1680,7 +1681,7 @@ func play_demo_preview() -> void:
  if not demo_choice_selected or cast_committed():return
  interrupt_preview_cast()
  if not is_instance_valid(editor.actor) or casting_animation.is_empty():return
- if not editor.field.combat().can_start_cast(editor.actor,demo_preview_spec()):
+ if (previews_spell_release() or demo_preview_spec().get("requires_air",false)) and not editor.field.combat().can_start_cast(editor.actor,demo_preview_spec()):
   playing=false
   begin_demo_exit()
   return
@@ -1711,6 +1712,7 @@ func play_demo_preview() -> void:
   begin_demo_exit()
 
 func process_demo_preview(delta:float) -> void:
+ held_cast.update(self,delta)
  if editor.actor.mode=="punch":return
  if editor.actor.combat_reaction_active():
   interrupt_preview_cast()
@@ -1741,7 +1743,7 @@ func process_demo_preview(delta:float) -> void:
   return
  var rate:float=editor.actor.cast_speed_multiplier()
  if limiter_enabled:rate=preload("res://scripts/animation_jump_motion.gd").playback_rate(playback_animation(),playback_duration(),rate)
- elapsed+=delta*rate
+ if not held_cast.active:elapsed+=delta*rate*held_cast.tail_rate(self)
  preload("res://scripts/animation_jump_motion.gd").advance(editor.actor,playback_animation(),elapsed,playback_duration())
  if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
  var progress:=clampf(elapsed/maxf(0.001,playback_duration()),0.0,1.0)
@@ -1752,7 +1754,7 @@ func process_demo_preview(delta:float) -> void:
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
  Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
- if previews_spell_release() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
+ if not held_cast.active and previews_spell_release() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
   launch_projectile()
   released=true
  if progress>=1.0:
@@ -1797,6 +1799,7 @@ func begin_demo_exit() -> void:
  demo_enter_pose.clear()
 
 func interrupt_preview_cast() -> void:
+ held_cast.cancel()
  if is_instance_valid(cast_attempt_actor) and is_instance_valid(editor) and is_instance_valid(editor.field):editor.field.combat().interrupt_cast_attempt(cast_attempt_actor)
  cast_attempt_actor=null
 
@@ -2047,6 +2050,7 @@ func demo_preview_spec() -> Dictionary:
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
  if not jump.is_empty():base.jump_motion=jump
  var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
+ spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
  return spec if limiter_enabled else test_overrides.apply(spec)
 
@@ -2343,11 +2347,14 @@ func _input(event:InputEvent) -> void:
  if CombatPointer.dialog_open(get_viewport()):return
  if event is InputEventKey and not editor.camera_text_editing():
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
-  if key in [KEY_1,KEY_KP_1] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   play_projectile_once()
+  if key in [KEY_1,KEY_KP_1] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   if sandbox_testing:
+    if event.pressed:held_cast.begin(self)
+    else:held_cast.release(self)
+   elif event.pressed:play_projectile_once()
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_4,KEY_KP_4] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+  if not sandbox_testing and key in [KEY_4,KEY_KP_4] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    practice_left_jab()
    get_viewport().set_input_as_handled()
    return

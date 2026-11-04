@@ -1,7 +1,7 @@
 extends RefCounted
 const ROOT:="res://assets/animations/community"
 const MANIFEST:=ROOT+"/catalog.json"
-const IMPORT_VERSION:=3
+const IMPORT_VERSION:=4
 
 static func entries() -> Array[Dictionary]:
 	var result:Array[Dictionary]=[]
@@ -22,6 +22,15 @@ static func ensure(entry:Dictionary,actor:Node) -> bool:
 	if FileAccess.file_exists(path):
 		var cached:=load(path) as Animation
 		if cached!=null and int(cached.get_meta("community_import_version",0))==IMPORT_VERSION:return true
+		if cached!=null:
+			var upgraded:=preload("res://scripts/animation_motion_conditioning.gd").prepare(cached,actor.skeleton)
+			if not upgraded.ok:
+				GameDiagnostics.log_event("animation_quality_rejected",context.merged({"reason":upgraded.get("reason","")}));return false
+			var processed:Animation=upgraded.animation
+			processed.set_meta("community_import_version",IMPORT_VERSION)
+			if ResourceSaver.save(processed,path,ResourceSaver.FLAG_COMPRESS)==OK:
+				processed.take_over_path(path)
+				return true
 	var source:=str(entry.get("bvh_source",""))
 	if source.is_empty():
 		GameDiagnostics.log_event("animation_import_failed",context.merged({"stage":"source_path","reason":"No source path"}))
@@ -37,6 +46,10 @@ static func ensure(entry:Dictionary,actor:Node) -> bool:
 	if animation==null:
 		GameDiagnostics.log_event("animation_import_failed",context.merged({"stage":"retarget","mapped_joints":preload("res://scripts/community_bvh.gd").mapping(data).keys()}))
 		return false
+	var conditioned:=preload("res://scripts/animation_motion_conditioning.gd").prepare(animation,actor.skeleton)
+	if not conditioned.ok:
+		GameDiagnostics.log_event("animation_quality_rejected",context.merged({"reason":conditioned.get("reason","")}));return false
+	animation=conditioned.animation
 	animation.set_meta("community_import_version",IMPORT_VERSION)
 	var directory_error:=DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
 	if directory_error!=OK:
@@ -58,5 +71,6 @@ static func ensure(entry:Dictionary,actor:Node) -> bool:
 			GameDiagnostics.log_event("animation_import_failed",context.merged({"stage":"replace_cache","error":error_string(remove_error)}))
 			return false
 	var rename_error:=DirAccess.rename_absolute(temporary_absolute,destination_absolute)
+	if rename_error==OK:animation.take_over_path(path)
 	GameDiagnostics.log_event("animation_import_ready" if rename_error==OK else "animation_import_failed",context.merged({"stage":"rename","error":error_string(rename_error),"tracks":animation.get_track_count(),"duration":animation.length,"elapsed_ms":float(Time.get_ticks_usec()-started)/1000.0}))
 	return rename_error==OK

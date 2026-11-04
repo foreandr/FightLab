@@ -22,7 +22,7 @@ func run():
  assert(not chosen.is_empty())
  builder.demo_duration=2.3
  assert(browser.select_animation(chosen))
- assert(builder.creation_step=="delivery" and builder.casting_animation.clip=="fight/backfist" and is_equal_approx(builder.demo_duration,2.3))
+ assert(builder.creation_step=="delivery" and builder.casting_animation.clip=="fight/backfist" and is_equal_approx(builder.demo_duration,clampf(float(chosen.duration),0.1,60.0)))
  assert(builder.demo_choice_selected and builder.demo_offensive() and not browser.confirm.disabled)
  browser.confirm_selection();assert(builder.creation_step=="delivery" and builder.playing,"Arbitrary animation cannot test")
  builder.show_creation_step("demo")
@@ -41,8 +41,15 @@ func run():
  assert(builder.creation_step=="delivery")
  browser.confirm_selection();assert(builder.creation_step=="delivery" and builder.playing)
  builder.reset_training_dummy();assert(not sandbox.target.practice_wooden_dummy and sandbox.target.model.visible)
+ var combination:Dictionary={}
+ for record in browser.records:
+  if str(record.title).nocasecmp_to("Muay Thai Combination")==0:combination=record;break
+ assert(not combination.is_empty(),"Video regression source disappeared")
+ assert(browser.select_animation(combination))
+ assert(builder.demo_duration>9.9 and builder.demo_duration<10.1,"Ten-second combination compressed into a short demo")
+ assert(builder.playing,"Native library preview was blocked by spell-resource checks")
  browser.set_type("Arm");browser.search.text="punch -jump";browser.apply_filters()
  for record in browser.matches_:assert(str(record._search).contains("punch") and not str(record._search).contains("jump"))
  while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
- print("SANDBOX LIBRARY PASS: ",browser.records.size()," animations; own/builtin/community; all four types, search, paged 9; non-demo Backfist + real community preview/test; duration retained; human-only targets/reset")
+ print("SANDBOX LIBRARY PASS: ",browser.records.size()," animations; own/builtin/community; all four types, search, paged 9; non-demo Backfist + real community preview/test; native preview duration; human-only targets/reset")
  quit()

@@ -1,0 +1,35 @@
+Animation quality screening and held-cast experiment (2026-11-03)
+
+The recording showed two separate problems: Muay Thai Combination has a native
+duration of 9.9666 seconds, but Sandbox compressed it into 1.5 seconds; HDM05
+cross-front/back walking steps were also incorrectly matched as punches.
+
+Library card previews now use source duration. The combat filter excludes those
+cross-step walks (29 removed from the local active manifest; original files kept).
+
+Community import version 4 applies animation_motion_conditioning.gd in source
+time. It repairs isolated rotation spikes, lightly smooths small neighboring
+rotations, preserves rapid strikes and original timing, and runs the existing
+rig/torso-penetration gate. Persistent joint discontinuities and invalid rotations
+are rejected. Cached resources are duplicated before modification. Store/Sandbox
+share the same rejection index. The audit examined 627 imports: 541 accepted,
+86 rejected. This is automatic screening, not a visual guarantee or full-body
+collision solver. Source files stay local and preserved.
+
+Sandbox hold experiment: hold key 1 or the Play button, release to strike.
+Profiles declare min_duration/max_duration; source_duration remains unchanged.
+Until explicitly authored, limits default to 70%-160% of native duration, bounded
+by the shared airborne minimum and 60-second authoring limit. One second of
+holding reaches maximum. Pose anticipation approaches the selected release
+point while held; follow-through runs at least at native speed. Card previews
+and Repeat remain ordinary complete playback for comparing original motion.
+The experiment only adapts Sandbox input. Shared Rules author the resulting
+cost/damage spec; CombatRuntime retimes the existing attempt and accounts for
+canceled stamina and release payment. No separate damage/resource formulas.
+
+Dive Kick declares requires_air; it is classified Airborne without inserting an
+automatic takeoff, and the shared start/release gates reject it on the floor.
+
+Checks: animation_conditioning_test, held_cast_preview_test,
+combat_animation_filter_test, sandbox_animation_library_test,
+sandbox_pairing_test, combat_store_curation_test and spell_cancel_stamina_test.

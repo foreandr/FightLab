@@ -8,9 +8,16 @@ const SOURCES:={
  "fight/hurricane_kicks":{"minimum_duration":1.85,"takeoff":0.12,"landing":0.68}}
 static func with_airborne_takeoff(profile:Dictionary)->Dictionary:
  var result:=profile.duplicate(true)
+ if requires_air(result):
+  result["requires_air"]=true;result["air_state"]="Airborne"
+  return result
  if str(result.get("air_state",""))=="Airborne" and settings(result).is_empty():
   result["jump_motion"]={"minimum_duration":1.0,"takeoff":0.0,"landing":0.9,"maximum_airtime":1.2}
  return result
+static func requires_air(profile:Dictionary)->bool:
+ if profile.get("requires_air",false):return true
+ var name_:=(str(profile.get("title",""))+str(profile.get("clip",""))).to_lower().replace(" ","").replace("_","")
+ return name_.contains("divekick")
 static func settings(profile:Dictionary)->Dictionary:
  var declared:Variant=profile.get("jump_motion",{})
  return declared.duplicate(true) if declared is Dictionary and not declared.is_empty() else SOURCES.get(str(profile.get("clip","")),{}).duplicate(true)
