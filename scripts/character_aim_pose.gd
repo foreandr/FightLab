@@ -9,14 +9,16 @@ static func apply_torso(actor:Node,yaw:float,pitch:float) -> void:
 	# hips/legs only for a genuinely far-off angle.
 	var safe_reference:=Safety.capture(actor,["pelvis","spine_01","spine_02","spine_03"])
 	# Aim is a correction, not permission to fold the torso through the rig.
-	yaw=deg_to_rad(75.0)*tanh(yaw/deg_to_rad(75.0))
+	# Split the requested angle before easing the spine. Easing the total
+	# first capped hip/foot rotation at less than two degrees even at full aim.
+	yaw=clampf(yaw,-deg_to_rad(89.0),deg_to_rad(89.0))
 	pitch=deg_to_rad(35.0)*tanh(pitch/deg_to_rad(35.0))
 	var arm_yaw_deadzone:=deg_to_rad(18.0)
 	var torso_yaw:=signf(yaw)*maxf(0.0,absf(yaw)-arm_yaw_deadzone)
 	var hip_start:=deg_to_rad(40.0)
 	var hip_yaw_magnitude:=clampf(absf(torso_yaw)-hip_start,0.0,deg_to_rad(42.0))
 	var hip_yaw:=signf(torso_yaw)*hip_yaw_magnitude
-	var upper_yaw:=clampf(torso_yaw-hip_yaw,-deg_to_rad(82.0),deg_to_rad(82.0))
+	var upper_yaw:=deg_to_rad(75.0)*tanh((torso_yaw-hip_yaw)/deg_to_rad(75.0))
 	var arm_pitch_deadzone:=deg_to_rad(10.0)
 	var torso_pitch:=signf(pitch)*maxf(0.0,absf(pitch)-arm_pitch_deadzone)
 	rotate_bone(actor,"pelvis",Vector3.UP,hip_yaw)

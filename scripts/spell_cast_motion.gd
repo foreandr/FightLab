@@ -33,6 +33,12 @@ static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={})
 	if profile.has("demo_palm"):_apply_demo_hand(actor,str(profile.demo_palm),progress)
 	preload("res://scripts/animation_jump_motion.gd").normalize_pose(actor,profile)
 	Safety.limit_torso(actor)
+	apply_aim(actor,profile,aim)
+	actor.restore_ice_pose()
+	actor.skeleton.force_update_all_bone_transforms()
+
+## Post-locomotion correction: pelvis/feet must not be erased by a regional mask.
+static func apply_aim(actor:Node,profile:Dictionary,aim:Dictionary) -> void:
 	if not aim.is_empty():
 		if profile.get("preserve_arm_arc",str(profile.get("clip","")).begins_with("boxing/hook_")):
 			# Hook/sweep geometry is authored into the arm. Aim through the torso
@@ -40,7 +46,6 @@ static func pose(actor:Node,profile:Dictionary,progress:float,aim:Dictionary={})
 			var correction:=AimPose.endpoint_angles(actor,str(aim.get("emitter","hand_r")),aim.target)
 			if not correction.is_empty():AimPose.apply_torso(actor,float(correction.yaw)*float(aim.get("weight",1.0)),float(correction.pitch)*float(aim.get("weight",1.0)))
 		else:AimPose.apply(actor,aim.target,str(aim.get("emitter","hand_r")),float(aim.get("weight",1.0)))
-	actor.restore_ice_pose()
 	actor.skeleton.force_update_all_bone_transforms()
 
 static func _apply_demo_hand(actor:Node,orientation:String,progress:float) -> void:

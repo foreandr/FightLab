@@ -6,7 +6,9 @@ var snapshot:Dictionary={}
 var contacts:Dictionary={}
 var physical:Dictionary={}
 func begin(b:Node)->void:
- if active or b.held_cast.active or b.cast_committed() or b.editor.actor.combat_reaction_active():return
+ if b.held_cast.active or b.editor.actor.combat_reaction_active():return
+ if not b.prepare_combo_start():return
+ if active:restore(b)
  b.stop_preview_controls(true)
  snapshot.clear()
  for key in FIELDS:

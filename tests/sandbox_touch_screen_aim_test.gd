@@ -50,6 +50,47 @@ func run():
  b.spell_focus_target=s.target
  assert(b.cast_pose_aim(0.3).target.is_equal_approx(contact.focused_chest(b.spell_focus_target)))
  b.spell_focus_target=null
+ b.stop_preview_controls(true)
+ for candidate in browser.records:
+  if candidate._origin=="Built-in" and str(candidate.title).nocasecmp_to("Melee Hook")==0:
+   assert(browser.select_animation(candidate));break
+ # Wide cursor correction must survive the Arm mask all the way to the feet.
+ var pelvis_turns:Array[Quaternion]=[]
+ var feet_turns:Array[Quaternion]=[]
+ for x in [0.0,10.0]:
+  b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100
+  b.manual_aim_ray_direction=Vector3.ZERO
+  b.manual_aim_point=s.actor.global_position+Vector3.UP*1.25+s.actor.global_basis*Vector3(x,0,0.1 if x>0 else 5.0)
+  b.play_demo_preview();b.demo_enter_pose.clear();b.process_demo_preview(b.playback_duration()*0.3)
+  pelvis_turns.append(s.actor.skeleton.get_bone_pose_rotation(s.actor.bones.pelvis))
+  feet_turns.append(s.actor.skeleton.get_bone_global_pose(s.actor.bones.foot_r).basis.get_rotation_quaternion())
+ assert(pelvis_turns[0].angle_to(pelvis_turns[1])>deg_to_rad(10.0),"Arm mask erased wide-aim pelvis turn")
+ assert(feet_turns[0].angle_to(feet_turns[1])>deg_to_rad(10.0),"Feet did not follow wide-aim pelvis")
+ print("STANCE AIM PASS: pelvis and feet turn ",rad_to_deg(pelvis_turns[0].angle_to(pelvis_turns[1])))
+ b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100
+ root.grab_focus();await process_frame
+ b.held_cast.begin(b);b.held_cast.release(b)
+ b.process_demo_preview(b.playback_duration()*0.3/b.held_cast.tail_rate(b))
+ assert(b.released and b.cast_committed())
+ var paid_stamina:float=s.actor.stamina
+ b.held_practice_shortcut.begin(b)
+ assert(not b.held_practice_shortcut.active,"Early strike incorrectly cancelled")
+ b.process_demo_preview(b.playback_duration()*0.3/b.held_cast.tail_rate(b))
+ b.held_practice_shortcut.begin(b)
+ assert(b.held_practice_shortcut.active and b.held_cast.active,"Cannot link 1 into 2 during recovery")
+ assert(is_equal_approx(s.actor.stamina,paid_stamina),"Link refunded or double-paid old strike")
+ assert(is_equal_approx(b.demo_enter_duration,0.06),"Combo still uses slow entry blend")
+ b.held_practice_shortcut.release(b)
+ b.process_demo_preview(b.playback_duration()*0.6/b.held_cast.tail_rate(b))
+ var one:=InputEventKey.new();one.physical_keycode=KEY_1;one.pressed=true
+ b._input(one)
+ assert(not b.held_practice_shortcut.active and b.held_cast.active,"Cannot link 2 back into 1")
+ b.held_cast.release(b);b.stop_preview_controls(true)
+ var combo=load("res://scripts/touch_combo_rules.gd")
+ assert(not combo.can_link({"animation_type":"Arm"},0.99,false))
+ assert(combo.can_link({"animation_type":"Arm"},0.6,true))
+ assert(not combo.can_link({"animation_type":"Leg"},0.6,true))
+ print("PLAYER COMBO PASS: post-release recovery links 1 -> 2 -> 1; costs retained; early strike protected")
  while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
  for record in b.saved_spells.entries():DirAccess.remove_absolute(b.saved_spells.directory.path_join(record.id+".cfg"))
  DirAccess.remove_absolute(b.saved_spells.directory)

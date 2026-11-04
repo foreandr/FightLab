@@ -1,6 +1,7 @@
 extends RefCounted
 ## Shared Touch linking rules; no controller-specific speed or damage bonuses.
 const LINK_PROGRESS:=0.55
+const LINK_BLEND_SECONDS:=0.06
 const ALTERNATING_SPEED:=1.12
 const LEG_LINK_PROGRESS:=0.90
 static func leg_attack(item:Dictionary)->bool:
@@ -31,3 +32,7 @@ static func speed(previous:Dictionary,next:Dictionary)->float:
  var a:=side(str(previous.get("hand","")))
  var b:=side(str(next.get("hand","")))
  return ALTERNATING_SPEED if not a.is_empty() and not b.is_empty() and a!=b else 1.0
+
+## Shared recovery gate for player and tool adapters. Never cancel a windup.
+static func can_link(profile:Dictionary,progress:float,released:bool)->bool:
+ return released and progress>=link_progress(profile)

@@ -132,6 +132,8 @@ var spell_sections:Dictionary={}
 var collapsed_spell_sections:Dictionary={}
 var demo_timing_panel:PanelContainer
 var demo_enter_pose:Array[Transform3D]=[]
+var demo_enter_duration:=0.18
+var combo_transition_pending:=false
 var demo_exit_pose:Array[Transform3D]=[]
 var demo_exit_elapsed:=0.0
 const DEMO_TRANSITION_SECONDS:=0.18
@@ -1384,7 +1386,7 @@ func practice_right_jab()->void:
  actor.start_right_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
 
 func play_projectile_once() -> void:
- if not demo_choice_selected:return
+ if not demo_choice_selected or not prepare_combo_start():return
  set_preview_repeat(false)
  play_demo_preview()
 
@@ -1709,6 +1711,8 @@ func play_demo_preview() -> void:
   if not editor._ensure_animation_source(casting_animation):return
   demo_source_ready=true
  demo_enter_pose=capture_demo_pose()
+ demo_enter_duration=preload("res://scripts/touch_combo_rules.gd").LINK_BLEND_SECONDS if combo_transition_pending else DEMO_TRANSITION_SECONDS
+ combo_transition_pending=false
  demo_exit_pose.clear()
  editor.actor.set_editor_animation_profile({},"")
  if editor.actor.mode!="takeoff":editor.actor.mode="review"
@@ -1776,13 +1780,23 @@ func process_demo_preview_step(delta:float) -> void:
  preload("res://scripts/animation_jump_motion.gd").advance(editor.actor,playback_animation(),elapsed,playback_duration())
  if is_instance_valid(cast_attempt_actor):editor.field.combat().advance_cast_attempt(cast_attempt_actor,elapsed)
  var progress:=clampf(elapsed/maxf(0.001,playback_duration()),0.0,1.0)
- CastPose.pose(editor.actor,playback_animation(),minf(0.9999,progress),cast_pose_aim(progress))
+ CastPose.pose(editor.actor,playback_animation(),minf(0.9999,progress))
+ var aim_blend:=1.0
  if not demo_enter_pose.is_empty():
-  var fade:=minf(DEMO_TRANSITION_SECONDS,cast_duration()*0.25)
+  var fade:=minf(demo_enter_duration,cast_duration()*0.25)
+  aim_blend=smoothstep(0.0,fade,elapsed)
   blend_demo_pose(demo_enter_pose,smoothstep(0.0,fade,elapsed))
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
  Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
+ # Locomotion owns the base stance; shared aiming turns that final stance,
+ # including the pelvis and feet when the cursor exceeds torso-only reach.
+ var aim:=cast_pose_aim(progress)
+ if not aim.is_empty():
+  aim.weight*=aim_blend*(1.0-cast_recovery_weight())
+  editor.actor.capture_ice_pose()
+  CastPose.apply_aim(editor.actor,playback_animation(),aim)
+  editor.actor.restore_ice_pose()
  if not held_cast.active and previews_spell_release() and not released and progress>=preview_release_fraction():
   launch_projectile()
   released=true
@@ -2114,6 +2128,18 @@ func cast_duration() -> float:
  if casting_animation.get("store_raw",false) and editor.actor.player.has_animation(str(casting_animation.clip)):return editor.actor.player.get_animation(str(casting_animation.clip)).length
  return CastPose.Source.duration(editor.actor,casting_animation.step,casting_animation.clip)
 
+## Finish only the released recovery tail; emitted spells and paid costs survive.
+func prepare_combo_start() -> bool:
+ if held_cast.active:return false
+ if not cast_committed():return true
+ var profile:=playback_animation()
+ var progress:=elapsed/maxf(0.001,playback_duration())
+ if not preload("res://scripts/touch_combo_rules.gd").can_link(profile,progress,released):return false
+ editor.field.combat().finish_cast(editor.actor)
+ interrupt_preview_cast()
+ combo_transition_pending=true
+ return true
+
 func cast_committed() -> bool:
  return is_instance_valid(editor) and is_instance_valid(editor.actor) and is_instance_valid(editor.field) and editor.field.combat().cast_committed(editor.actor)
 
@@ -2404,7 +2430,9 @@ func _input(event:InputEvent) -> void:
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
   if key in [KEY_1,KEY_KP_1] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    if held_practice_shortcut.active:
-    get_viewport().set_input_as_handled();return
+    if event.pressed and prepare_combo_start():held_practice_shortcut.restore(self)
+    else:
+     get_viewport().set_input_as_handled();return
    if sandbox_testing:
     if event.pressed:held_cast.begin(self)
     else:held_cast.release(self)

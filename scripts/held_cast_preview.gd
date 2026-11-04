@@ -16,7 +16,7 @@ static func duration_range(profile:Dictionary)->Vector2:
  return Vector2(minimum,clampf(float(profile.get("max_duration",native*1.6)),minimum,60.0))
 
 func begin(builder:Node)->void:
- if not builder.demo_choice_selected or builder.cast_committed():return
+ if not builder.demo_choice_selected or not builder.prepare_combo_start():return
  builder.set_preview_repeat(false)
  limits=duration_range(builder.casting_animation)
  builder.demo_duration=limits.x
