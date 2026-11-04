@@ -57,7 +57,9 @@ func run():
  assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and is_equal_approx(actor.mode_length,0.65/1.32))
  assert(actor.recovery_target.size()==actor.skeleton.get_bone_count(),"Recovery does not own the full skeleton")
  var position:Vector3=actor.position
- actor.tick(actor.mode_length*0.75)
+ actor.tick(0.12)
+ assert(actor.player.current_animation_position>0.0,"Recovery arm swing is still waiting through the old gather pause")
+ actor.tick(actor.mode_length*0.75-0.12)
  var pose:=preload("res://scripts/spell_cast_motion.gd").capture(actor)
  b.held_practice_shortcut.begin(b,"knee_r");b.play_demo_preview();b.move_caster(0.05,Vector2(0,1),true);b.process_demo_preview(0.02)
  assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and not b.held_cast.active and actor.position.is_equal_approx(position),"A cast/run overwrote the full-body recovery")

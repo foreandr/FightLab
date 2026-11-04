@@ -132,7 +132,7 @@ var head_severance:RefCounted
 var wall_crash_cooldown := 0.0
 var wall_crashes := 0
 const RECOVERY_BLEND := 0.45
-const RECOVERY_GATHER := 0.25
+const RECOVERY_GATHER := 0.05
 var recovery_source := {}
 var recovery_target := {}
 var air_body_passthrough := false
