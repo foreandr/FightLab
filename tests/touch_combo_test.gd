@@ -31,9 +31,7 @@ func run():
  assert(is_equal_approx(actor.cast_speed_multiplier(),1.0),"Same-side arm to knee received alternating bonus")
  actor.tick_cast(0.6)
  assert(world.combat().release(actor,actor.current_spell,actor.bone_point("calf_r"),knee.profile))
- assert(not actor.chain_touch_cast(left.spec,left.profile),"Knee skipped its recovery at punch cadence")
- actor.tick_cast(0.31)
- assert(actor.chain_touch_cast(left.spec,left.profile),"Recovered knee could not link back into a punch")
+ assert(actor.chain_touch_cast(left.spec,left.profile),"Knee cannot link at the same recovery progress as a punch")
  assert(is_equal_approx(actor.cast_speed_multiplier(),1.0),"Leg-to-arm link retained boxing alternation speed")
  # A repeated left-side strike remains legal, at ordinary speed and full cost.
  actor.tick_cast(0.6)
@@ -49,5 +47,5 @@ func run():
  assert(world.combat().release(actor,actor.current_spell,actor.bone_point("hand_l"),fire.profile))
  actor.cast_time=actor.mode_length*0.7
  assert(not actor.chain_touch_cast(left.spec,left.profile),"Touch chain canceled a released projectile")
- print("TOUCH COMBO PASS: fast alternate punches, base-speed leg links with 90% recovery, previous hit-window cleanup, blended pose, each new hit pays once, projectile commitment preserved")
+ print("TOUCH COMBO PASS: fast alternate punches, base-speed leg links with the same recovery gate as arms, previous hit-window cleanup, blended pose, each new hit pays once, projectile commitment preserved")
  quit()
