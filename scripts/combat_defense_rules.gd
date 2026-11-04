@@ -1,6 +1,6 @@
 extends RefCounted
 ## Provisional balance values, shared by live combat and authoring predictions.
-const RAGDOLL_DAMAGE:=30.0
+const RAGDOLL_DAMAGE:=24.0
 const RAGDOLL_IMPULSE_GAIN:=2.5
 const RAGDOLL_MAX_SPEED:=26.0
 static func ragdoll_launch_impulse(impulse:Vector3)->Vector3:

@@ -19,7 +19,7 @@ func run():
   var chest:Area3D
   for pair in victim.targets:
    if str(pair[0].get_meta("zone",""))=="chest":chest=pair[0];break
-  var damage:=12.0 if lethal else 30.0
+  var damage:=12.0 if lethal else 24.0
   assert(world.apply_impact(attacker,victim,{"id":"right_knee_finisher","effect":"touch","delivery_type":"Touch","hand":"calf_r","touch_contacts":["calf_r"],"damage":damage},chest.global_position,Vector3.BACK,chest,Vector3.BACK*80.0))
   assert(is_instance_valid(victim.ragdoll))
   var rag=victim.ragdoll
@@ -34,7 +34,7 @@ func run():
    distance=maxf(distance,Vector2(rag.location().x-start.x,rag.location().z-start.z).length())
    for body in rag.bodies.values():assert(body.linear_velocity.is_finite() and body.global_position.is_finite())
   assert(peak>0.55 and distance>1.5,"Ragdoll failed to travel up/back under real physics: "+str([lethal,peak,distance]))
-  print("STRONG RAGDOLL ","finishing knee" if lethal else "30 physical hit"," rise=",peak," distance=",distance)
+  print("STRONG RAGDOLL ","finishing knee" if lethal else "24 physical hit"," rise=",peak," distance=",distance)
  world.queue_free();await process_frame
  Engine.time_scale=1.0
  print("STRONG RAGDOLL PASS: physical threshold launch, lethal low-damage knee launches up/back, bounded physics, no-impact death and slams preserved")
