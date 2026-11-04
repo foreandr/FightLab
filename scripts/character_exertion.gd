@@ -11,6 +11,7 @@ static func walking_only(actor:Node) -> bool:
 static func can_sprint(actor:Node) -> bool:
 	return actor.practice_god_mode or (actor.stamina>=MIN_SPRINT_STAMINA and not actor.sprint_exhausted)
 static func sprint(actor:Node,delta:float,requested:bool,moving:bool) -> bool:
+	if actor.has_method("jump_charge_active") and actor.jump_charge_active():return false
 	if not requested:actor.sprint_exhausted=false
 	if actor.health<=0 or not requested or not moving:return false
 	if actor.practice_god_mode:

@@ -305,8 +305,9 @@ func pick_level_surface(camera_:Camera3D,pointer:Vector2) -> Variant:
 	return hit.position if not hit.is_empty() else null
 
 func move_character(actor:CharacterBody3D,direction:Vector3,speed:float,delta:float) -> void:
-	actor.velocity.x=direction.x*speed
-	actor.velocity.z=direction.z*speed
+	var horizontal:=preload("res://scripts/character_movement.gd").jump_charge_velocity(actor,direction*speed,delta)
+	actor.velocity.x=horizontal.x
+	actor.velocity.z=horizontal.z
 	actor.velocity.y=-0.1 if actor.is_on_floor() and actor.velocity.y<=0 else actor.velocity.y-actor.GRAVITY*delta
 	actor.move_and_slide()
 	actor.global_position=constrain_to_level(actor.global_position,1.0)

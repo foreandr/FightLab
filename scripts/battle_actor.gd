@@ -1222,6 +1222,7 @@ func start_motion_jump(height_fraction:float=1.0, held_input:bool=false) -> bool
 	motion_jump_variable=held_input
 	motion_jump_held=held_input
 	motion_jump_hold_time=0.0
+	set_meta("jump_charge_velocity",Vector3(velocity.x,0.0,velocity.z))
 	mode="takeoff"
 	mode_time=0.0
 	mode_length=INF if held_input else 0.14
@@ -1235,6 +1236,9 @@ func start_motion_jump(height_fraction:float=1.0, held_input:bool=false) -> bool
 
 func set_motion_jump_held(value:bool)->void:
 	motion_jump_held=value
+
+func jump_charge_active()->bool:
+	return mode=="takeoff" and motion_jump_variable and motion_jump_held
 
 func set_motion_dash_held(value:bool)->void:
 	motion_dash_held=value

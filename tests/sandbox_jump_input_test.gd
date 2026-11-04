@@ -46,10 +46,29 @@ func run():
  assert(early>middle+0.02 and middle>deepest+0.02,"Charge does not progressively deepen crouch")
  assert(a.is_on_floor() and a.mode=="takeoff","Held charge jumped without release")
  var paid:float=a.stamina_spent
+ var held_stamina:float=a.stamina
  for i in 70:step(0.016)
  assert(is_equal_approx(paid,a.stamina_spent) and is_equal_approx(deepest,a.bone_point("pelvis").y),"Charge exceeded stamina/pose cap")
+ assert(is_equal_approx(held_stamina,a.stamina),"Stamina recovered while Space remained held")
+ a.mana=50;a.mana_delay=0;a.recover_idle_resources(0.1)
+ assert(a.mana>50 and is_equal_approx(held_stamina,a.stamina),"Charge recovery gate affected mana or missed stamina")
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/charged_jump_crouch.png")
+ space(false);step(0.016)
+ a.stamina_delay=0
+ var released_stamina:float=a.stamina;a.recover_idle_resources(0.1)
+ assert(a.stamina>released_stamina,"Stamina recovery stayed blocked after release")
+ settle();a.stamina=100
+ b.move_caster(0.016,Vector2(0,1),true)
+ a.stamina=100
+ space(true)
+ var charge_start:Vector3=a.position
+ for i in 60:
+  await physics_frame
+  a.tick(0.016);b.move_caster(0.016,Vector2(0,1),true);b.process_demo_preview(0.016)
+  if i==14:assert(Vector2(a.velocity.x,a.velocity.z).length()<0.5,"Charge did not brake rapidly")
+ assert(a.position.distance_to(charge_start)<0.65 and Vector2(a.velocity.x,a.velocity.z).length()<0.01,"Held movement kept sliding during charge: distance=%s velocity=%s active=%s mode=%s"%[a.position.distance_to(charge_start),a.velocity,a.jump_charge_active(),a.mode])
+ assert(is_equal_approx(a.stamina,80.0),"Held sprint spent extra stamina during jump charge")
  space(false);settle()
  settle();space(true)
  for i in 15:step(0.016)

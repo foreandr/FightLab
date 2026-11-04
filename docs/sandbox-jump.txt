@@ -6,6 +6,13 @@ maximum the pose and payment stop increasing. Release launches with speed
 cuts velocity in the air. Running out of stamina releases the affordable charge. Repeated presses while airborne or in
 takeoff cannot start another jump. Resource checks and cast commitment still apply.
 
+Stamina cannot regenerate while a jump charge is held, even at maximum charge;
+release restores ordinary recovery eligibility. Mana recovery is unchanged.
+CharacterMovement brakes carried horizontal speed exponentially (14/s) during
+the charge and ignores new movement requests until release. Sprint drain is
+disabled during that charge. Both CombatWorld editor movement and live actor
+movement use the same brake, preserving normal behavior outside the charge.
+
 BattleActor's pose-locked path now advances the existing takeoff/air clocks.
 CombatWorld still owns movement/gravity/collision; no editor-specific trajectory.
 CreationLocomotion samples the actor's saved jump poses (or the existing default

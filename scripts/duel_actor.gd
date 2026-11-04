@@ -743,6 +743,7 @@ func tick(delta: float) -> void:
 		desired*=Movement.directional_speed(Vector2(axes.x,-axes.y),_player_sprint_active())
 	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
 	drive_velocity.z = move_toward(drive_velocity.z, desired.z, delta * acceleration)
+	drive_velocity = Movement.jump_charge_velocity(self,drive_velocity,delta)
 	velocity.x = drive_velocity.x + knockback.x
 	velocity.z = drive_velocity.z + knockback.z
 	knockback *= exp(-delta * (4.2 if is_on_floor() else 1.0))
@@ -977,4 +978,6 @@ func recover_idle_resources(delta:float) -> void:
 
 func recover_resource_pools(delta:float,mana_idle:bool=true,stamina_idle:bool=true) -> void:
 	if mana_idle and mana_delay<=0.0:mana=minf(MAX_MANA,mana+delta*RESOURCE_RECOVERY_RATE)
-	if stamina_idle and stamina_delay<=0.0:stamina=minf(MAX_STAMINA,stamina+delta*RESOURCE_RECOVERY_RATE)
+	if stamina_idle and stamina_delay<=0.0 and not jump_charge_active():stamina=minf(MAX_STAMINA,stamina+delta*RESOURCE_RECOVERY_RATE)
+
+func jump_charge_active()->bool:return false
