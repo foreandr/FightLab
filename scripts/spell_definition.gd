@@ -100,6 +100,7 @@ static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->
  if binding.has("hold_seconds"):
   base["cast_charge_time"]=float(binding.hold_seconds)
   base["cast_charge_reference_duration"]=maxf(0.1,float(binding.get("charge_reference_duration",seconds)))
+  if record.delivery_type=="Touch":base["cast_charge_damage_reference_duration"]=1.0
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(animation)
  if not jump.is_empty():base["jump_motion"]=jump
  var spec:Dictionary=preload("res://scripts/combat_spell_rules.gd").author(base,seconds,float(binding.get("release",0.3)),record.delivery_type!="Barrier" and str(animation.get("group","Attack"))=="Attack")

@@ -6,7 +6,7 @@ func run():
  while not browser.ready_catalog:await process_frame
  assert(browser.spell_catalog.is_visible_in_tree() and browser.spell_catalog.type_buttons.size()==5)
  assert(not b.get_meta("cast_timeline").is_visible_in_tree())
- assert(not browser.confirm.visible and b.projectile_preview_button.get_parent().get_node("PracticeRightJab").visible)
+ assert(not browser.confirm.visible and b.projectile_preview_button.get_parent().get_node_or_null("PracticeRightJab")==null)
  var jab_key:=InputEventKey.new();jab_key.physical_keycode=KEY_4;jab_key.pressed=true
  b._input(jab_key);assert(s.actor.mode!="punch","Removed Jab shortcut remains active")
  s.field.set_physics_process(false);b.set_process(false);b.set_physics_process(false)

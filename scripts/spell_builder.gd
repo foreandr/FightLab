@@ -802,10 +802,6 @@ func setup(owner_editor:Node) -> void:
   node.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
   node.custom_minimum_size.x=140
   node.focus_mode=Control.FOCUS_ALL
- var jab_button:Button=editor.button(playback_row,"Right jab [2]",practice_right_jab)
- jab_button.name="PracticeRightJab";jab_button.custom_minimum_size.x=90
- jab_button.focus_mode=Control.FOCUS_ALL
- jab_button.tooltip_text="2 · Right jab · physical contact only · stamina, no mana"
  reset_scene_button=editor.button(playback_row,"Reset scene",reset_practice_scene)
  reset_scene_button.name="ResetSpellPracticeScene"
  reset_scene_button.custom_minimum_size.x=140
@@ -1375,6 +1371,18 @@ func practice_left_jab()->void:
  set_preview_repeat(false)
  actor.set_editor_animation_profile({},"")
  actor.start_left_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
+
+func practice_left_cross()->void:
+ var actor=editor.actor
+ if not is_instance_valid(actor) or actor.combat_reaction_active() or actor.mode=="punch" or cast_committed():return
+ interrupt_preview_cast();playing=false
+ demo_enter_pose.clear();demo_exit_pose.clear();set_preview_repeat(false)
+ actor.set_editor_animation_profile({},"")
+ if not actor.player.has_animation_library("practice_cross"):actor.player.add_animation_library("practice_cross",AnimationLibrary.new())
+ if not actor.player.has_animation("practice_cross/left_cross"):
+  actor.player.get_animation_library("practice_cross").add_animation("left_cross",preload("res://assets/animations/demos/left_cross.res"))
+ actor.begin_strike(Rules.left_cross_strike())
+ if actor.mode=="punch":actor.melee_aim_direction=ThirdPersonCamera.movement_facing(editor.field,actor)
 
 func practice_right_jab()->void:
  var actor=editor.actor
@@ -2082,6 +2090,7 @@ func demo_preview_spec() -> Dictionary:
  if sandbox_testing and (held_cast.active or held_cast.follow_through):
   base["cast_charge_time"]=held_cast.seconds
   base["cast_charge_reference_duration"]=held_cast.limits.x
+  if previews_touch():base["cast_charge_damage_reference_duration"]=1.0
  var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive() and not previews_barrier())
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
@@ -2404,7 +2413,7 @@ func _input(event:InputEvent) -> void:
    get_viewport().set_input_as_handled()
    return
   if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   practice_right_jab()
+   practice_left_cross()
    get_viewport().set_input_as_handled()
    return
   if key==KEY_F1 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:

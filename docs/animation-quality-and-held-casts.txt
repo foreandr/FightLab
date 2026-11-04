@@ -68,3 +68,12 @@ A fading actor-owned label quotes actual physical damage and stamina costs.
 The shared transparent shield now stands 8.5 cm off the mesh, with a faint rim
 and 2.5% face alpha. Charge color is a separate shell contribution, so fading
 charge neither recolors nor cancels the actual Self Barrier defense.
+
+Held Touch physical damage is calibrated to the one-second neutral benchmark:
+a stationary unblocked arm tap starts at 10 physical, independent of how short
+the source clip is; perfect charge scales that baseline to 20 before movement,
+headshots and defenses. Existing charge stamina and mana rules are unchanged.
+Sandbox 2 is an always-equipped physical Left Cross shortcut (10 damage), using
+the calibrated mirrored right-cross asset and shared actor strike/contact path.
+It does not change the current animation/spell pair or add a hotbar button.
+T remains the target-behavior keyboard shortcut; clicking the target still works.

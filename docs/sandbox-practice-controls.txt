@@ -9,9 +9,9 @@ clears a real barrier when it fades. Each threshold fires
 once per hold. Release/cancel fades the overlay; feedback adds no damage bonus.
 This actor-owned presentation component can be reused by other input adapters.
 
-2: physical right jab (button and keyboard). The existing left jab is baked
-through animation_mirror.gd once by vendor/build_right_jab.gd. Its derived source
-metadata is embedded in assets/animations/demos/right_jab.res. Runtime uses the
+2: physical Left Cross (keyboard only; no hotbar button). The existing right
+cross is baked through animation_mirror.gd by vendor/build_left_cross.gd. Its
+derived source metadata is embedded in assets/animations/demos/left_cross.res. Runtime uses the
 same begin_strike path, stamina, aiming, contact hitboxes, parries and reactions.
 The old 4-key jab shortcut is removed from Spell Creation/Sandbox.
 F1: sending/receiving hitboxes. F2: combat numbers. These observer hotkeys also

@@ -45,11 +45,11 @@ func run():
  var hitboxes:bool=builder.preview_hitboxes
  var mana:float=screen.actor.mana
  key(KEY_2)
- assert(screen.actor.mode=="punch" and screen.actor.melee_spec[2]=="hand_r" and screen.actor.melee_spec[0]=="right_jab")
+ assert(screen.actor.mode=="punch" and screen.actor.melee_spec[2]=="hand_l" and screen.actor.melee_spec[0]=="left_cross")
  assert(builder.preview_hitboxes==hitboxes and screen.actor.mana==mana)
  var damage:float=screen.target.damage_taken
  for i in 70:await step()
- assert(screen.target.damage_taken>damage,"Right jab did not physically connect")
+ assert(screen.target.damage_taken>damage,"Left cross did not physically connect")
  await reset_at(0.78);screen.actor.practice_god_mode=true
  var started:int=controller.attacks_started;damage=screen.actor.damage_taken
  controller.set_behavior("Repeat left punch")

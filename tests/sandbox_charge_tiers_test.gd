@@ -38,6 +38,7 @@ func run():
   var actual:Dictionary=s.field.combat().touch_casts[s.actor.get_instance_id()].spec
   assert(is_equal_approx(actual.damage,quote.damage) and is_equal_approx(s.actor.stamina,100.0-quote.stamina_cost))
   values.append(quote)
+ assert(is_equal_approx(values[0].damage,10.0),"Default quick tap is not ten physical damage")
  assert(values[0].damage<values[1].damage and values[1].damage<values[2].damage and values[2].damage<values[3].damage)
  assert(values[0].stamina_cost<values[1].stamina_cost and values[1].stamina_cost<values[2].stamina_cost and values[2].stamina_cost<values[3].stamina_cost)
  assert(values[4].damage>0 and values[4].damage<values[0].damage and values[4].stamina_cost<values[0].stamina_cost)
@@ -55,6 +56,14 @@ func run():
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/self_barrier_clear.png")
  while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
+ b.stop_preview_controls(true);s.actor.self_barrier.clear();s.actor.stamina=100;s.actor.mana=100
+ var selected_before:String=b.casting_animation.title
+ var hotkey:=InputEventKey.new();hotkey.keycode=KEY_2;hotkey.physical_keycode=KEY_2;hotkey.pressed=true
+ b._input(hotkey)
+ assert(s.actor.mode=="punch" and s.actor.attack_kind=="left_cross" and s.actor.melee_spec[2]=="hand_l")
+ assert(is_equal_approx(s.actor.strike_damage,10.0) and is_equal_approx(s.actor.stamina,90.0) and is_equal_approx(s.actor.mana,100.0))
+ assert(b.casting_animation.title==selected_before and not s.target_behavior.menu.visible,"2 changed the selected animation or opened the target picker")
+ for button in b.spell_playback_panel.find_children("*","Button",true,false):assert(not button.text.contains("[2]"),"Left Cross was added to the hotbar")
  for record in b.saved_spells.entries():DirAccess.remove_absolute(b.saved_spells.directory.path_join(record.id+".cfg"))
  DirAccess.remove_absolute(b.saved_spells.directory)
  print("SANDBOX CHARGE PASS: default hook/physical pair, tier colors, real quote/payment/damage, red below tap, transparent spaced shield")

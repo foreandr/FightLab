@@ -17,6 +17,10 @@ func run():
   var priced:Dictionary=rules.author(base,lerpf(0.33,0.75,minf(time,1.0)),0.3,true)
   assert(priced.stamina_cost>previous_stamina,"Lengthening a fast native clip made higher charge cheaper")
   previous_stamina=priced.stamina_cost
+ var calibrated:Dictionary=rules.touch_base(["hand_r"]);calibrated.cast_charge_time=0.0;calibrated.cast_charge_damage_reference_duration=1.0
+ assert(is_equal_approx(rules.author(calibrated,0.33,0.3,true).damage,10.0),"Native clip speed changed the tap benchmark")
+ calibrated.cast_charge_time=1.1
+ assert(is_equal_approx(rules.author(calibrated,0.75,0.3,true).damage,20.0))
  var tap:Dictionary=rules.author(rules.touch_base(["hand_r"]),0.7,0.3,true)
  var tired_base:Dictionary=rules.touch_base(["hand_r"]);tired_base.cast_charge_time=charge.TIRED_AT
  var tired:Dictionary=rules.author(tired_base,1.6,0.3,true)
