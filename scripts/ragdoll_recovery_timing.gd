@@ -7,16 +7,25 @@ const YELLOW_STAMINA:=10.0
 var age:=0.0
 var result:=""
 var running:=false
+var cpu_policy=preload("res://scripts/ai/ragdoll_recovery.gd").new()
+## Returns true for the recovery key so it cannot also charge a jump.
+static func handle_input(actor:Node,event:InputEvent)->bool:
+ if not event is InputEventKey or event.echo or not is_instance_valid(actor):return false
+ var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
+ if key!=KEY_SPACE or not actor.player_controlled or actor.health<=0.0 or not is_instance_valid(actor.ragdoll):return false
+ if event.pressed:actor.try_quick_recovery()
+ return true
 func begin()->void:
- age=0.0;result="";running=true
+ age=0.0;result="";running=true;cpu_policy.clear()
 func clear()->void:
- age=0.0;result="";running=false
+ age=0.0;result="";running=false;cpu_policy.clear()
 func waiting()->bool:return running and result.is_empty()
 func progress()->float:return clampf(age/WINDOW,0.0,1.0)
-func step(delta:float)->void:
+func step(delta:float,actor:Node=null)->void:
  if not waiting():return
  age+=maxf(0.0,delta)
  if age>WINDOW:result="Miss"
+ elif is_instance_valid(actor):cpu_policy.step(actor,self)
 func attempt(actor:Node)->String:
  if not waiting() or actor.health<=0 or not is_instance_valid(actor.ragdoll):return result
  if progress()>=PERFECT_START and progress()<=1.0:result="Perfect"

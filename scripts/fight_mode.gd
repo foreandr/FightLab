@@ -1546,6 +1546,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	var player = fighters[0]
+	if preload("res://scripts/ragdoll_recovery_timing.gd").handle_input(player,event):
+		get_viewport().set_input_as_handled()
+		return
 	if event.keycode==KEY_SPACE:
 		if event.pressed:player.start_motion_jump(1.0,true)
 		else:player.set_motion_jump_held(false)

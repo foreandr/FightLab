@@ -12,11 +12,13 @@ func _process(_delta:float)->void:
  visible=is_instance_valid(owner_) and owner_.player_controlled and owner_.health>0 and is_instance_valid(owner_.ragdoll) and owner_.recovery_timing.running
  if visible:queue_redraw()
 func _input(event:InputEvent)->void:
- if not visible or not event is InputEventKey or not event.pressed or event.echo or event.keycode!=KEY_SPACE:return
+ if not visible or not event is InputEventKey or not event.pressed or event.echo:return
+ var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
+ if key!=KEY_SPACE or preload("res://scripts/combat_pointer.gd").dialog_open(get_viewport()):return
  var owner_=actor()
  if not is_instance_valid(owner_) or not owner_.recovery_timing.waiting():return
- if get_viewport().gui_get_focus_owner() is LineEdit:return
- owner_.try_quick_recovery();get_viewport().set_input_as_handled()
+ if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit:return
+ if preload("res://scripts/ragdoll_recovery_timing.gd").handle_input(owner_,event):get_viewport().set_input_as_handled()
 func _draw()->void:
  var owner_=actor()
  if not is_instance_valid(owner_):return

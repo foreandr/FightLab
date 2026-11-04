@@ -2455,7 +2455,7 @@ func _input(event:InputEvent) -> void:
    get_viewport().set_input_as_handled()
    return
   if sandbox_testing and key==KEY_SPACE and not event.echo:
-   set_jump_held(event.pressed)
+   if not preload("res://scripts/ragdoll_recovery_timing.gd").handle_input(editor.actor,event):set_jump_held(event.pressed)
    get_viewport().set_input_as_handled()
    return
   if key in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_UP,KEY_DOWN,KEY_LEFT,KEY_RIGHT,KEY_SHIFT]:
@@ -2520,6 +2520,7 @@ func workspace_visibility_changed() -> void:
  if is_instance_valid(editor.actor):
   for fighter in editor.field.fighters:
    fighter.editor_pose_locked=is_visible_in_tree() and fighter==editor.actor
+   fighter.player_controlled=is_visible_in_tree() and fighter==editor.actor
    fighter.practice_immortal=fighter.practice_god_mode
    fighter.practice_return_enabled=is_visible_in_tree() and fighter!=editor.actor
   reset_caster_pose()
@@ -2586,6 +2587,7 @@ func prepare_preview_targets() -> void:
   if demo_only_stage and fighter==editor.actor:fighter.global_position=editor.field.surface_placement(editor.field.level_point())
   fighter.velocity=Vector3.ZERO
   fighter.editor_pose_locked=fighter==editor.actor
+  fighter.player_controlled=fighter==editor.actor
   fighter.practice_god_mode=bool(character_god_modes.get(god_mode_key(fighter),dummy_god_mode if fighter==editor.target else false))
   fighter.practice_immortal=fighter.practice_god_mode
   fighter.practice_damageable_dummy=true

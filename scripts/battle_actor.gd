@@ -1608,7 +1608,7 @@ func tick(delta: float) -> void:
 		recover_idle_resources(delta)
 		mode = "ragdoll"
 		var landed: bool = ragdoll.step(delta)
-		if health>0:recovery_timing.step(delta)
+		if health>0:recovery_timing.step(delta,self)
 		ragdoll_peak = maxf(ragdoll_peak, ragdoll.peak_height)
 		if health>0 and (landed or recovery_timing.early_ready(self)):
 			finish_ragdoll()
