@@ -795,6 +795,10 @@ func _apply_hair(gender: String) -> void:
 	var hairstyle := str(profile.get("hair", "Short"))
 	if str(profile.get("wardrobe_hat", "None")) == "Hood" or str(profile.get("wardrobe_hat", "None")).begins_with("Pavlov:"):
 		hairstyle = "None"
+	var downloaded := preload("res://scripts/character_hair_catalog.gd").find_style(hairstyle)
+	if not downloaded.is_empty():
+		preload("res://scripts/character_hair_catalog.gd").attach(skeleton, downloaded, profile.get("hair_color", Color("3c2b25")))
+		return
 	if hairstyle != "None":
 		var piece_name := "Hair_BuzzedFemale" if gender == "Female" else "Hair_Buzzed"
 		match hairstyle:

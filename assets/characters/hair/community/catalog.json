@@ -1,0 +1,317 @@
+[
+  {
+    "id": "sonntag78_blond_with_headband",
+    "name": "Swept headband",
+    "mesh": "res://assets/characters/hair/community/sonntag78_blond_with_headband.obj",
+    "texture": "res://assets/characters/hair/community/sonntag78_blond_with_headband.png",
+    "author": "sonntag78",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "cortu_straight_bangs",
+    "name": "Straight Bangs",
+    "mesh": "res://assets/characters/hair/community/cortu_straight_bangs.obj",
+    "texture": "res://assets/characters/hair/community/cortu_straight_bangs.png",
+    "author": "cortu",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "faydaen_hair_1",
+    "name": "Loose curls",
+    "mesh": "res://assets/characters/hair/community/faydaen_hair_1.obj",
+    "texture": "res://assets/characters/hair/community/faydaen_hair_1.png",
+    "author": "faydaen",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "culturalibre_hair_05",
+    "name": "Layered crop",
+    "mesh": "res://assets/characters/hair/community/culturalibre_hair_05.obj",
+    "texture": "res://assets/characters/hair/community/culturalibre_hair_05.png",
+    "author": "culturalibre",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_inverted_bob",
+    "name": "Inverted Bob",
+    "mesh": "res://assets/characters/hair/community/toigo_inverted_bob.obj",
+    "texture": "res://assets/characters/hair/community/toigo_inverted_bob.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "learning_anime_hair",
+    "name": "Anime spikes",
+    "mesh": "res://assets/characters/hair/community/learning_anime_hair.obj",
+    "texture": "res://assets/characters/hair/community/learning_anime_hair.png",
+    "author": "learning",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "littleright_bobcut_hair",
+    "name": "Bobcut Hair",
+    "mesh": "res://assets/characters/hair/community/littleright_bobcut_hair.obj",
+    "texture": "res://assets/characters/hair/community/littleright_bobcut_hair.png",
+    "author": "littleright",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_blunt_bob_with_bangs",
+    "name": "Blunt Bob With Bangs",
+    "mesh": "res://assets/characters/hair/community/toigo_blunt_bob_with_bangs.obj",
+    "texture": "res://assets/characters/hair/community/toigo_blunt_bob_with_bangs.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "cortu_short_messy_hair",
+    "name": "Short Messy Hair",
+    "mesh": "res://assets/characters/hair/community/cortu_short_messy_hair.obj",
+    "texture": "res://assets/characters/hair/community/cortu_short_messy_hair.png",
+    "author": "cortu",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "elvs_double_mh_braid",
+    "name": "Double Braid",
+    "mesh": "res://assets/characters/hair/community/elvs_double_mh_braid.obj",
+    "texture": "res://assets/characters/hair/community/elvs_double_mh_braid.png",
+    "author": "elvs",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "o4saken_long01",
+    "name": "Long layered",
+    "mesh": "res://assets/characters/hair/community/o4saken_long01.obj",
+    "texture": "res://assets/characters/hair/community/o4saken_long01.png",
+    "author": "o4saken",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_curled_under_bob_with_bangs",
+    "name": "Curled Under Bob With Bangs",
+    "mesh": "res://assets/characters/hair/community/toigo_curled_under_bob_with_bangs.obj",
+    "texture": "res://assets/characters/hair/community/toigo_curled_under_bob_with_bangs.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_blunt_bob",
+    "name": "Blunt Bob",
+    "mesh": "res://assets/characters/hair/community/toigo_blunt_bob.obj",
+    "texture": "res://assets/characters/hair/community/toigo_blunt_bob.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "cortu_shaggy_green_hair",
+    "name": "Shaggy Green Hair",
+    "mesh": "res://assets/characters/hair/community/cortu_shaggy_green_hair.obj",
+    "texture": "res://assets/characters/hair/community/cortu_shaggy_green_hair.png",
+    "author": "cortu",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "elvs_reverse_french_braid_bun",
+    "name": "Reverse French Braid Bun",
+    "mesh": "res://assets/characters/hair/community/elvs_reverse_french_braid_bun.obj",
+    "texture": "res://assets/characters/hair/community/elvs_reverse_french_braid_bun.png",
+    "author": "elvs",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "culturalibre_hair_06",
+    "name": "Textured crop",
+    "mesh": "res://assets/characters/hair/community/culturalibre_hair_06.obj",
+    "texture": "res://assets/characters/hair/community/culturalibre_hair_06.png",
+    "author": "culturalibre",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "culturalibre_hair_01",
+    "name": "Long swept",
+    "mesh": "res://assets/characters/hair/community/culturalibre_hair_01.obj",
+    "texture": "res://assets/characters/hair/community/culturalibre_hair_01.png",
+    "author": "culturalibre",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "cortu_strawberry_cloud_hair",
+    "name": "Strawberry Cloud Hair",
+    "mesh": "res://assets/characters/hair/community/cortu_strawberry_cloud_hair.obj",
+    "texture": "res://assets/characters/hair/community/cortu_strawberry_cloud_hair.png",
+    "author": "cortu",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_inverted_bob_with_bangs",
+    "name": "Inverted Bob With Bangs",
+    "mesh": "res://assets/characters/hair/community/toigo_inverted_bob_with_bangs.obj",
+    "texture": "res://assets/characters/hair/community/toigo_inverted_bob_with_bangs.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "culturalibre_hair_02",
+    "name": "Short swept",
+    "mesh": "res://assets/characters/hair/community/culturalibre_hair_02.obj",
+    "texture": "res://assets/characters/hair/community/culturalibre_hair_02.png",
+    "author": "culturalibre",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "elvs_unkempt_french_braid",
+    "name": "Unkempt French Braid",
+    "mesh": "res://assets/characters/hair/community/elvs_unkempt_french_braid.obj",
+    "texture": "res://assets/characters/hair/community/elvs_unkempt_french_braid.png",
+    "author": "elvs",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "elvs_french_braid_variation",
+    "name": "French Braid Variation",
+    "mesh": "res://assets/characters/hair/community/elvs_french_braid_variation.obj",
+    "texture": "res://assets/characters/hair/community/elvs_french_braid_variation.png",
+    "author": "elvs",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "rehmanpolanski_hair_bun_brown",
+    "name": "Hair Bun Brown",
+    "mesh": "res://assets/characters/hair/community/rehmanpolanski_hair_bun_brown.obj",
+    "texture": "res://assets/characters/hair/community/rehmanpolanski_hair_bun_brown.png",
+    "author": "rehmanpolanski",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "toigo_curled_under_bob",
+    "name": "Curled Under Bob",
+    "mesh": "res://assets/characters/hair/community/toigo_curled_under_bob.obj",
+    "texture": "res://assets/characters/hair/community/toigo_curled_under_bob.png",
+    "author": "toigo",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "sonntag78_junglebook_hair",
+    "name": "Shaggy waves",
+    "mesh": "res://assets/characters/hair/community/sonntag78_junglebook_hair.obj",
+    "texture": "res://assets/characters/hair/community/sonntag78_junglebook_hair.png",
+    "author": "sonntag78",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+  },
+  {
+    "id": "bob02",
+    "name": "Soft bob",
+    "mesh": "res://assets/characters/hair/community/bob02.obj",
+    "texture": "res://assets/characters/hair/community/bob02.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "short01",
+    "name": "Cropped fringe",
+    "mesh": "res://assets/characters/hair/community/short01.obj",
+    "texture": "res://assets/characters/hair/community/short01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "afro01",
+    "name": "Afro",
+    "mesh": "res://assets/characters/hair/community/afro01.obj",
+    "texture": "res://assets/characters/hair/community/afro01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "short03",
+    "name": "Short swept back",
+    "mesh": "res://assets/characters/hair/community/short03.obj",
+    "texture": "res://assets/characters/hair/community/short03.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "bob01",
+    "name": "Classic bob",
+    "mesh": "res://assets/characters/hair/community/bob01.obj",
+    "texture": "res://assets/characters/hair/community/bob01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "ponytail01",
+    "name": "Ponytail",
+    "mesh": "res://assets/characters/hair/community/ponytail01.obj",
+    "texture": "res://assets/characters/hair/community/ponytail01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "short02",
+    "name": "Short textured",
+    "mesh": "res://assets/characters/hair/community/short02.obj",
+    "texture": "res://assets/characters/hair/community/short02.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "braid01",
+    "name": "Long braid",
+    "mesh": "res://assets/characters/hair/community/braid01.obj",
+    "texture": "res://assets/characters/hair/community/braid01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "long01",
+    "name": "Long straight",
+    "mesh": "res://assets/characters/hair/community/long01.obj",
+    "texture": "res://assets/characters/hair/community/long01.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  },
+  {
+    "id": "short04",
+    "name": "Short side swept",
+    "mesh": "res://assets/characters/hair/community/short04.obj",
+    "texture": "res://assets/characters/hair/community/short04.png",
+    "author": "MakeHuman team",
+    "license": "CC0-1.0",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html"
+  }
+]

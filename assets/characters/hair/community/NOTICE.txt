@@ -1,0 +1,7 @@
+35 distinct downloaded hairstyles from MakeHuman Community.
+Sources and individual authors: catalog.json
+License: CC0 1.0 (asset-pack publisher classification).
+https://static.makehumancommunity.org/assets/assetpacks/hair01.html
+https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html
+Geometry fitted to the FightLab head; diffuse textures neutralized for user hair color.
+No color-only duplicates counted as styles.

@@ -1,0 +1,25 @@
+Character appearance pages
+
+Story / Create Character uses a dedicated page for Hair, Chest, Bottoms, Arms,
+Hands, Belt and Footwear. The main 3D preview remains live. Back / Escape returns
+to the overview and restores its scroll position. Tab / Enter activates pickers
+and cards; arrow keys adjust size. Color and per-slot size remain in the existing
+character profile, so the existing save / roster workflow persists them.
+
+New-character skin tint defaults to #925438 on the existing Dark base atlas.
+Only Skin color is exposed. Legacy saved Light/Dark base atlases remain readable.
+UI colors no longer leak into physical skin / belt / trim defaults.
+
+Hair: 40 choices = 4 existing styles + bald + 35 distinct downloaded mesh styles.
+The additional CC0 assets, author credits and source URLs are in
+assets/characters/hair/community/catalog.json and NOTICE.txt. Geometry is fitted
+in base-character standing space, then follows the shared Head bone in every mode.
+
+Picker thumbnails render real character meshes, six visible cards per page,
+using one temporary viewport at a time. Cache is bounded to 128 images; queued
+requests from previous pages are discarded. No full-catalog rendering on entry.
+
+Verified with tests/character_appearance_sections_test.gd: all seven pages,
+selection / size retention, all 35 downloaded meshes on both body rigs, preserved
+existing save workflow. Manually inspected rendered cards for all 40 hair choices.
+Existing female fingerless-glove source warning remains; no glove mesh changes.

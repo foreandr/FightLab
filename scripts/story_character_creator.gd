@@ -32,11 +32,11 @@ var profile := {
 	"name": "Avery",
 	"body": "Masculine",
 	"skin": "Dark",
-	"skin_color": CyberStyle.LINE,
+	"skin_color": Color("925438"),
 	"hair": "Short",
 	"hair_color": Color("151515"),
 	"outfit_color": Color("426c91"),
-	"trim_color": CyberStyle.CYAN,
+	"trim_color": Color("d0b77b"),
 	"height": 1.0,
 	"build": 1.0,
 	"arms_size": 1.0,
@@ -63,7 +63,7 @@ var profile := {
 	"bottoms_color": Color("34383e"),
 	"gloves_color": Color("29313b"),
 	"handwear_color": Color("29313b"),
-	"belt_color": CyberStyle.LINE,
+	"belt_color": Color("8a6135"),
 	"footwear_color": Color("354438"),
 	"hat_color": Color("3b3028"),
 	"mask_color": Color("29313b"),
@@ -84,7 +84,6 @@ var preview: Node3D
 var preview_camera: Camera3D
 var name_input: LineEdit
 var body_choice: OptionButton
-var skin_choice: OptionButton
 var skin_picker: ColorPickerButton
 var hair_choice: OptionButton
 var height_slider: HSlider
@@ -111,6 +110,11 @@ var saved := false
 var applying := false
 var editing_existing := false
 var create_menu_entry:=false
+var appearance_picker: VBoxContainer
+var appearance_slots: Dictionary = {}
+var appearance_buttons: Dictionary = {}
+var appearance_scroll: ScrollContainer
+var overview_scroll := 0
 
 func _ready() -> void:
 	create_menu_entry=bool(get_tree().get_meta("create_character_entry",false))
@@ -156,7 +160,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		get_tree().change_scene_to_file("res://scenes/story_opponents.tscn" if editing_existing else "res://scenes/home.tscn")
+		if appearance_picker.visible:
+			close_appearance_section()
+		else:
+			get_tree().change_scene_to_file("res://scenes/story_opponents.tscn" if editing_existing else "res://scenes/home.tscn")
 		get_viewport().set_input_as_handled()
 
 func _load_profile() -> void:
@@ -231,6 +238,7 @@ func _build_ui() -> void:
 	sidebar_stack.add_theme_constant_override("separation", 10)
 	sidebar_margin.add_child(sidebar_stack)
 	var scroll := ScrollContainer.new()
+	appearance_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# The vertical bar is drawn inside the scroll viewport, so reserve a little
 	# room for it and prevent a narrow sidebar from creating horizontal overflow.
@@ -244,7 +252,13 @@ func _build_ui() -> void:
 	page_content = VBoxContainer.new()
 	page_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	page_content.add_theme_constant_override("separation", 12)
-	content_margin.add_child(page_content)
+	var pages := VBoxContainer.new()
+	content_margin.add_child(pages)
+	pages.add_child(page_content)
+	appearance_picker = preload("res://scripts/character_appearance_picker.gd").new()
+	appearance_picker.creator = self
+	appearance_picker.visible = false
+	pages.add_child(appearance_picker)
 	var footer := VBoxContainer.new()
 	footer.add_theme_constant_override("separation", 7)
 	sidebar_stack.add_child(footer)
@@ -304,15 +318,24 @@ func _build_ui() -> void:
 	name_row.add_child(name_input)
 	body_choice = _option_row("Body", ["Masculine", "Feminine"], str(profile.get("body", "Masculine")))
 	body_choice.item_selected.connect(_on_body_changed)
-	skin_choice = _option_row("Skin", ["Light", "Dark"], str(profile.get("skin", "Light")))
-	skin_choice.item_selected.connect(_on_appearance_changed)
-	skin_picker = _color_row("Skin color", profile.get("skin_color", CyberStyle.LINE))
+	skin_picker = _color_row("Skin color", profile.get("skin_color", Color("925438")))
 	skin_picker.tooltip_text = "Choose any RGB skin tint"
 	skin_picker.color_changed.connect(_on_skin_color_changed)
-	hair_choice = _option_row("Hair", ["Short", "Buns", "Long", "Side part", "None"], str(profile.get("hair", "Short")))
+	hair_choice = OptionButton.new()
+	for style in preload("res://scripts/character_hair_catalog.gd").names(): hair_choice.add_item(style)
+	_select_text(hair_choice, str(profile.get("hair", "Short")))
+	hair_choice.hide()
+	page_content.add_child(hair_choice)
+	var hair_button := _button("Hair  ›", false)
+	hair_button.name = "HairPicker"
+	hair_button.pressed.connect(func(): open_appearance_section("hair"))
+	page_content.add_child(hair_button)
+	appearance_buttons["hair"] = hair_button
 	hair_choice.item_selected.connect(_on_hair_changed)
 	hair_picker = _color_row("Hair color", profile.get("hair_color", Color("3c2b25")))
 	hair_picker.color_changed.connect(_on_hair_color_changed)
+	hair_picker.get_parent().hide()
+	appearance_slots["hair"] = {"title":"Hair", "option":hair_choice, "color":hair_picker, "color_key":"hair_color", "size_key":"", "controls_home":hair_picker.get_parent()}
 	_add_divider()
 	_add_section_label("OUTFIT")
 	wardrobe_rows = VBoxContainer.new()
@@ -329,7 +352,7 @@ func _build_ui() -> void:
 	var handwear_variants: Array[String] = ["None", "Fingerless gloves"]
 	hands_choice = _add_gear_row("Hands", "wardrobe_hands", handwear_variants, "handwear_size", "handwear_color", Color("29313b"))
 	var belt_variants: Array[String] = ["None", "Leather belt"]
-	belt_choice = _add_gear_row("Belt", "wardrobe_belt", belt_variants, "belt_size", "belt_color", CyberStyle.LINE)
+	belt_choice = _add_gear_row("Belt", "wardrobe_belt", belt_variants, "belt_size", "belt_color", Color("8a6135"))
 	boots_choice = _add_gear_row("Footwear", "wardrobe_boots", body_variants, "footwear_size", "footwear_color", Color("354438"))
 	_sync_wardrobe_controls()
 	_add_divider()
@@ -556,6 +579,13 @@ func _add_gear_row(title: String, choice_key: String, options: Array[String], si
 		options_button.tooltip_text = "Position and size options"
 		options_button.pressed.connect(func(): _open_accessory_options(title, accessory_options_key, size_key))
 		row.add_child(options_button)
+	row.hide()
+	var navigate := _button(title + "  ›", false)
+	navigate.name = "Open_" + choice_key
+	navigate.pressed.connect(func(): open_appearance_section(choice_key))
+	wardrobe_rows.add_child(navigate)
+	appearance_buttons[choice_key] = navigate
+	appearance_slots[choice_key] = {"title":title, "option":option, "color":picker, "color_key":color_key, "size_key":size_key, "controls_home":row}
 	return option
 
 func _style_book_option(option: OptionButton) -> void:
@@ -767,12 +797,6 @@ func _on_body_changed(_index: int) -> void:
 		profile["skin"] = "Light"
 	_refresh_preview()
 
-func _on_appearance_changed(_index: int) -> void:
-	if applying:
-		return
-	profile["skin"] = _selected(skin_choice)
-	_refresh_preview()
-
 func _on_skin_color_changed(color: Color) -> void:
 	if applying:
 		return
@@ -867,12 +891,12 @@ func _randomize_character() -> void:
 	# as well as the broad Light/Dark texture choice so the button changes both.
 	var skin_tones: Array[Color] = [
 		Color("f0c7a0"), Color("d9a47d"), Color("bd8059"),
-		CyberStyle.LINE, Color("70402d"), Color("4b2b22"), Color("321d19")
+		Color("925438"), Color("70402d"), Color("4b2b22"), Color("321d19")
 	]
 	var skin_tone_index := rng.randi_range(0, skin_tones.size() - 1)
 	profile["skin"] = "Light" if skin_tone_index < 3 else "Dark"
 	profile["skin_color"] = skin_tones[skin_tone_index]
-	profile["hair"] = ["Short", "Buns", "Long", "Side part", "None"][rng.randi_range(0, 4)]
+	profile["hair"] = preload("res://scripts/character_hair_catalog.gd").names().pick_random()
 	profile["hair_color"] = [Color("30211d"), Color("714328"), Color("b4a27f"), Color("17191e")][rng.randi_range(0, 3)]
 	profile["wardrobe_shirt"] = ["Peasant", "Traveler", "Guard castoff", "Underclothes"][rng.randi_range(0, 3)]
 	profile["wardrobe_pants"] = ["Peasant", "Traveler", "Guard castoff", "Underclothes"][rng.randi_range(0, 3)]
@@ -894,7 +918,6 @@ func _randomize_character() -> void:
 	applying = true
 	name_input.text = str(profile["name"])
 	_select_text(body_choice, str(profile["body"]))
-	_select_text(skin_choice, str(profile["skin"]))
 	_select_text(hair_choice, str(profile["hair"]))
 	_sync_wardrobe_controls()
 	skin_picker.color = profile.get("skin_color", Color.WHITE)
@@ -920,6 +943,7 @@ func _random_character_name(rng: RandomNumberGenerator) -> String:
 			return "%s %s" % [word, surname]
 
 func _select_text(option: OptionButton, value: String) -> void:
+	if option == null: return
 	for index in option.item_count:
 		if option.get_item_text(index) == value:
 			option.select(index)
@@ -1019,3 +1043,23 @@ func _confirm_character() -> void:
 	else:
 		status_label.text = "Could not save this character. Please try again."
 		status_label.add_theme_color_override("font_color", Color("e59a91"))
+
+# Internal API used by keyboard activation and the appearance picker alike.
+func open_appearance_section(slot: String) -> void:
+	if not appearance_slots.has(slot): return
+	overview_scroll = appearance_scroll.scroll_vertical
+	page_content.hide()
+	appearance_scroll.set_deferred("scroll_vertical",0)
+	appearance_picker.open_section(slot, appearance_slots[slot])
+	appearance_picker.show()
+
+func close_appearance_section() -> void:
+	appearance_picker.hide()
+	page_content.show()
+	appearance_scroll.set_deferred("scroll_vertical",overview_scroll)
+	if appearance_buttons.has(appearance_picker.slot): appearance_buttons[appearance_picker.slot].grab_focus()
+
+func choose_appearance(slot: String, value: String) -> void:
+	profile[slot] = value
+	_select_text(appearance_slots[slot].option, value)
+	_refresh_preview()

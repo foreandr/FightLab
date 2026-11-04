@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cj5j536j2c31f"
+path="res://.godot/imported/elvs_reverse_french_braid_bun.obj-f43cd345b9270611bd89827eabc53b90.mesh"
+
+[deps]
+
+files=["res://.godot/imported/elvs_reverse_french_braid_bun.obj-f43cd345b9270611bd89827eabc53b90.mesh"]
+
+source_file="res://assets/characters/hair/community/elvs_reverse_french_braid_bun.obj"
+dest_files=["res://.godot/imported/elvs_reverse_french_braid_bun.obj-f43cd345b9270611bd89827eabc53b90.mesh", "res://.godot/imported/elvs_reverse_french_braid_bun.obj-f43cd345b9270611bd89827eabc53b90.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
