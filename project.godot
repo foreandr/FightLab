@@ -46,6 +46,7 @@ CyberInterface="*res://scripts/cyber_interface.gd"
 
 GameSettings="*res://scripts/game_settings.gd"
 SharedMusic="*res://scripts/background_music.gd"
+SelfPlayTraining="*res://scripts/ai/self_play_training.gd"
 KeyboardAccess="*res://scripts/keyboard_access.gd"
 GameDiagnostics="*res://scripts/game_diagnostics.gd"
 BotRuntime="*res://scripts/bot_runtime.gd"

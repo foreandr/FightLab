@@ -1,0 +1,48 @@
+Self Play dashboard
+
+Open Home > Dev > Self Play. The keyboard-accessible dashboard launches the
+existing scripts/ai/train_self_play.gd in a separate headless Godot process.
+It does not replace combat, animation evaluation, reward calculation, learning,
+model promotion, or persistence. Default: 1,000 matches at requested 8x speed,
+standard poses, evaluation every 100 matches with 10 frozen side-swapped pairs.
+Fast collision-pose mode exposes the trainer's existing optional optimization.
+
+Displayed progress is actual worker telemetry, not a paced/fake loading bar:
+training matches completed/target, current fight simulation time, real matches
+per minute, measured simulation speed, ETA, elapsed wall time, model matches,
+learning updates, recent results, speed history and the tail of the worker log.
+Rates exclude startup and paused time. ETA includes evaluation overhead already
+observed; during final evaluation it says Evaluating instead of pretending done.
+Frozen evaluation games are counted separately and do not inflate training totals.
+
+Pause/Stop take effect between matches (including evaluation matches). A running
+match finishes and saves through the existing learner before stopping. Paused
+workers have a low frame cap and restore the previous cap on resume. Cancelling
+an incomplete evaluation does not promote a model from partial results.
+
+The process runs without a console window. Leaving the page or game does not
+kill it. user://ai/training_session.json links to its PID, options, log and atomic
+status/control files in user://ai/training_jobs/. Reopening attaches to that job;
+Start is disabled while it is active, and the service rejects duplicate starts.
+An unexpected exit is reported with the log available. Profiles retain their
+existing revision checks, so a conflicting writer produces an error instead of
+silently overwriting another model.
+
+Default learner: user://ai/self_play.json. Existing automatic model snapshots and
+reports retain their existing locations. Training data stays local. Setup options
+are saved in user://ai/training_dashboard.cfg. Open log / Models reveal these
+files without requiring manual command-line steps.
+
+Internal interface: /root/SelfPlayTraining.start_job(options), toggle_pause(),
+request_stop(), poll(), state, session. The dashboard scene is scenes/self_play.tscn.
+CLI stays compatible; optional --status=user://... enables dashboard telemetry.
+Live TrainingProgress updates are throttled to four per wall second, with
+immediate phase/result writes. Speed samples
+are bounded to 60 and recent results to eight; the UI reads only the log tail.
+
+Validation: tests/self_play_dashboard_test.gd launches isolated real workers with
+short test matches and private profiles. It covers the actual Dev button route,
+keyboard focus, duplicate prevention, live progress, pause/resume, process reattach,
+safe stop, saving, normal completion, evaluation counts, error reporting and setup
+persistence. It verifies the production learner's hash is unchanged. No test worker
+is left running. Snapshots/logs are retained under user://logs/ for inspection.

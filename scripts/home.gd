@@ -57,7 +57,7 @@ func nav(text_: String,callback: Callable) -> void:
 	node.custom_minimum_size=Vector2(0,44)
 	node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	node.add_theme_font_size_override("font_size",20)
-	var icon_name:String={"Story":"story","Free Fight":"shield","Sandbox":"simulation","Create":"person","Store":"store","Settings":"info","Back":"previous"}.get(text_,"")
+	var icon_name:String={"Story":"story","Free Fight":"shield","Sandbox":"simulation","Self Play":"simulation","Create":"person","Store":"store","Settings":"info","Back":"previous"}.get(text_,"")
 	if not icon_name.is_empty():node.icon=preload("res://scripts/animation_row_icons.gd").get_icon(icon_name)
 	node.alignment=HORIZONTAL_ALIGNMENT_LEFT
 	node.pressed.connect(callback)
@@ -95,6 +95,7 @@ func show_page(next: String) -> void:
 			nav("Back",func():show_page("Home"))
 		"Dev":
 			label("DEV",24,CyberStyle.MUTED)
+			nav("Self Play",func():open_scene("res://scenes/self_play.tscn"))
 			nav("Checkpoints",func():open_scene("res://scenes/story_dev_menu.tscn"))
 			nav("Animation Pavlov",func():open_scene("res://scenes/animation_pavlov.tscn"))
 			nav("Clothing Pavlov",func():open_scene("res://scenes/clothing_pavlov.tscn"))
