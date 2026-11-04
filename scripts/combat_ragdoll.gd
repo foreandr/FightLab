@@ -45,6 +45,23 @@ func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	initial_point=point
 	peak_height = bodies.pelvis.global_position.y
 
+## A brief hips-first impact fold. Mass-balanced offsets keep the existing
+## launch momentum; joints handle the follow-through rather than teleporting bones.
+func impact_fold_velocities()->Dictionary:
+	var result:Dictionary={}
+	var flat:=Vector3(initial_impulse.x,0.0,initial_impulse.z)
+	if flat.length()<0.01 or initial_impulse.y<0.0:return result
+	var direction:=flat.normalized()
+	var strength:=clampf(Vector2(initial_velocity.x,initial_velocity.z).length()*0.45,2.5,4.5)
+	var weights:={"pelvis":1.0,"chest":0.15,"head":-0.8}
+	var mean:=Vector3.ZERO
+	for name_ in bodies:
+		var weight:float=float(weights.get(name_,-0.9 if str(name_).begins_with("calf_") else -0.45))
+		result[name_]=direction*strength*weight
+		mean+=result[name_]*bodies[name_].mass/total_mass
+	for name_ in result:result[name_]-=mean
+	return result
+
 func append_bone_order(skeleton:Skeleton3D,index:int)->void:
 	bone_order.append(index)
 	for child in skeleton.get_bone_children(index):append_bone_order(skeleton,child)
@@ -130,9 +147,10 @@ func step(delta: float) -> bool:
 	if setup_phase==1:
 		var center: Vector3=bodies.pelvis.global_position
 		var spin: Vector3=((initial_point-center).cross(initial_impulse)/28.0).limit_length(1.7)
+		var fold:=impact_fold_velocities()
 		for body in bodies.values():
 			body.freeze=false
-			body.linear_velocity=initial_velocity+spin.cross(body.global_position-center)
+			body.linear_velocity=initial_velocity+spin.cross(body.global_position-center)+fold.get(str(body.name),Vector3.ZERO)
 			body.angular_velocity=spin
 		setup_phase=2
 		if fighter.head_severed:launch_severed_head()

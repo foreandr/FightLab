@@ -25,6 +25,11 @@ func run():
   var rag=victim.ragdoll
   var minimum:=7.5 if lethal else 6.0
   assert(rag.initial_velocity.y>=minimum and Vector2(rag.initial_velocity.x,rag.initial_velocity.z).length()>=minimum)
+  var fold:Dictionary=rag.impact_fold_velocities()
+  var balance:=Vector3.ZERO
+  for part in fold:balance+=fold[part]*rag.bodies[part].mass
+  assert(balance.length()<0.001,"Impact fold changed the overall launch momentum")
+  assert((fold.pelvis-fold.head).dot(Vector3.BACK)>4.0 and (fold.pelvis-fold.calf_l).dot(Vector3.BACK)>4.0,"Head and feet must trail the hips toward the attacker")
   var start:Vector3=rag.location();var peak:=0.0;var distance:=0.0
   rag.step(1.0/60.0);rag.step(1.0/60.0)
   for i in 48:
