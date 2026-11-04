@@ -84,7 +84,7 @@ func _build_ui()->void:
  dialog=AcceptDialog.new();dialog.name="UniversalSettingsDialog";dialog.title="Settings";dialog.ok_button_text="Close";dialog.borderless=true
  dialog.process_mode=Node.PROCESS_MODE_ALWAYS
  var book:=Theme.new();book.default_font=load("res://assets/fonts/game_font.tres");book.default_font_size=18
- for type in ["Label","Button","CheckButton","LineEdit","TabBar"]:
+ for type in ["Label","Button","CheckButton","LineEdit","TabBar","PopupMenu"]:
   for color in ["font_color","font_pressed_color","font_hover_color","font_hover_pressed_color","font_focus_color","font_uneditable_color"]:book.set_color(color,type,Color("382c1c"))
  var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b49c70");paper.set_border_width_all(1);paper.set_corner_radius_all(6)
  for side in ["left","right","top","bottom"]:paper.set("content_margin_"+side,12.0)
@@ -92,6 +92,12 @@ func _build_ui()->void:
  book.set_stylebox("panel","TabContainer",paper)
  var button:=paper.duplicate();button.bg_color=Color("d8c7a4");book.set_stylebox("normal","Button",button)
  var hover:=button.duplicate();hover.bg_color=Color("f2e9d3");book.set_stylebox("hover","Button",hover)
+ book.set_stylebox("panel","PopupMenu",paper);book.set_stylebox("hover","PopupMenu",hover)
+ book.set_color("font_disabled_color","PopupMenu",Color("806d4d"))
+ book.set_color("font_accelerator_color","PopupMenu",Color("806d4d"))
+ book.set_color("font_separator_color","PopupMenu",Color("806d4d"))
+ book.set_color("font_outline_color","PopupMenu",Color(0,0,0,0))
+ book.set_constant("outline_size","PopupMenu",0)
  var pressed:=button.duplicate();pressed.bg_color=Color("c9af7b");book.set_stylebox("pressed","Button",pressed)
  book.set_stylebox("tab_selected","TabBar",pressed);book.set_stylebox("tab_unselected","TabBar",button);book.set_stylebox("tab_hovered","TabBar",hover)
  var field:=paper.duplicate();field.bg_color=Color("f2e9d3")

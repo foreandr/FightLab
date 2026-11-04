@@ -14,6 +14,7 @@ func setup(owner_screen:Control)->void:
  screen=owner_screen;unit=screen.target
  menu=PopupMenu.new();menu.name="SandboxTargetBehavior";menu.theme=screen.theme
  menu.add_theme_stylebox_override("panel",screen.theme.get_stylebox("panel","PanelContainer"))
+ menu.add_theme_font_size_override("font_size",16)
  for index in MODES.size():menu.add_radio_check_item(MODES[index],index)
  menu.id_pressed.connect(func(index:int):set_behavior(MODES[index]))
  screen.add_child(menu)
