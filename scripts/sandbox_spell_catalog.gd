@@ -12,6 +12,7 @@ var type_buttons:Dictionary={}
 var search:LineEdit
 var grid:GridContainer
 var status:Label
+var empty_label:Label
 var selection:Label
 var previous:Button
 var next:Button
@@ -34,7 +35,10 @@ func setup(owner_builder:Node,content:VBoxContainer)->void:
   button.toggle_mode=true;button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;button.add_theme_font_size_override("font_size",12);type_buttons[kind]=button
  status=builder.editor.menu_label(self,"",12)
  var scroll:=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;add_child(scroll)
- grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_theme_constant_override("h_separation",6);grid.add_theme_constant_override("v_separation",6);scroll.add_child(grid)
+ var results:=VBoxContainer.new();results.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(results)
+ empty_label=builder.editor.menu_label(results,"",12);empty_label.name="EmptySavedSpells"
+ empty_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;empty_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_theme_constant_override("h_separation",6);grid.add_theme_constant_override("v_separation",6);results.add_child(grid)
  var paging:=HBoxContainer.new();add_child(paging)
  previous=builder.editor.button(paging,"← Prev",func():turn_page(-1))
  page_label=builder.editor.menu_label(paging,"",12);page_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -58,9 +62,9 @@ func turn_page(direction:int)->void:
 func show_page()->void:
  for child in grid.get_children():grid.remove_child(child);child.queue_free()
  status.text="%d saved · %d matching"%[records.size(),matches_.size()]
- if matches_.is_empty():
-  var empty:Label=builder.editor.menu_label(grid,"No saved "+selected_type.to_lower()+" spells",12)
-  empty.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ empty_label.visible=matches_.is_empty()
+ empty_label.text="No saved "+selected_type.to_lower()+" spells"
+ grid.visible=not matches_.is_empty()
  for index in range(page*PAGE_SIZE,mini(matches_.size(),(page+1)*PAGE_SIZE)):
   var record:Dictionary=matches_[index]
   var fire:bool=record.element=="Fire"
