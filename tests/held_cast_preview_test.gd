@@ -16,6 +16,7 @@ func run():
  assert(browser.select_animation(entry))
  b.stop_preview_controls(true)
  b.casting_animation.source_duration=1.0;b.casting_animation.min_duration=0.7;b.casting_animation.max_duration=1.6
+ b.sandbox_spell_record={} # Isolate the projectile hold test from the startup Touch pairing.
  b.choose_delivery_type("Projectile");b.confirm_delivery_type()
  b.stop_preview_controls(true);b.clear_shots()
  for i in 30:b.move_caster(0.016,Vector2.ZERO,false)

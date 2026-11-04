@@ -2079,6 +2079,9 @@ func demo_preview_spec() -> Dictionary:
   base["animation_type"]=CastType.kind(playback_animation())
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
  if not jump.is_empty():base.jump_motion=jump
+ if sandbox_testing and (held_cast.active or held_cast.follow_through):
+  base["cast_charge_time"]=held_cast.seconds
+  base["cast_charge_reference_duration"]=held_cast.limits.x
  var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive() and not previews_barrier())
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())

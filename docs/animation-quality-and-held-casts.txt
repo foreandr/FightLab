@@ -54,3 +54,17 @@ CPUs already construct these mechanics with combat_spell_rules; these were not
 previously saved assets. vendor/create_practice_spells.gd adds Physical Touch,
 Fire Touch (CPU allocation 15% size / 55% speed / 30% burn), and Self Barrier to
 the local named library without replacing existing creations or adding copies.
+
+Sandbox defaults to the actual Melee Hook animation and named Physical Touch.
+Shared cast_charge_rules supplies the same optional hold policy to reusable
+spell bindings and authored combat specs: white Tap, green Good at 1/3 s,
+blue Better at 2/3 s, gold Perfect from 1.00-1.25 s, then red Overheld. Power
+rises to 2x, falls smoothly after the perfect window and bottoms at 0.15x at
+2.25 s. Physical damage and cast exertion scale; takeoff stamina remains owed.
+Stamina uses the tap's reference duration so stretching a quick clip cannot
+accidentally make the better charge tiers cheaper. Animation duration still
+stays in the card's min/max range, and release continues forward from wind-up.
+A fading actor-owned label quotes actual physical damage and stamina costs.
+The shared transparent shield now stands 8.5 cm off the mesh, with a faint rim
+and 2.5% face alpha. Charge color is a separate shell contribution, so fading
+charge neither recolors nor cancels the actual Self Barrier defense.

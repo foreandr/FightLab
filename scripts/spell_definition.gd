@@ -97,6 +97,9 @@ static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->
  var seconds:=float(animation.get("duration",0.0))
  if not is_finite(seconds) or seconds<=0.0:return {}
  base["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(animation)
+ if binding.has("hold_seconds"):
+  base["cast_charge_time"]=float(binding.hold_seconds)
+  base["cast_charge_reference_duration"]=maxf(0.1,float(binding.get("charge_reference_duration",seconds)))
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(animation)
  if not jump.is_empty():base["jump_motion"]=jump
  var spec:Dictionary=preload("res://scripts/combat_spell_rules.gd").author(base,seconds,float(binding.get("release",0.3)),record.delivery_type!="Barrier" and str(animation.get("group","Attack"))=="Attack")

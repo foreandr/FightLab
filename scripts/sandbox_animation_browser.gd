@@ -135,6 +135,20 @@ func load_catalog()->void:
   if a._origin_rank!=b._origin_rank:return int(a._origin_rank)<int(b._origin_rank)
   return str(a.title).naturalnocasecmp_to(str(b.title))<0)
  ready_catalog=true;apply_filters()
+ load_default_pair()
+func load_default_pair()->void:
+ for entry in records:
+  if str(entry.title).to_lower().replace(" ","").replace("_","")=="meleehook":
+   selected_type=str(entry._section);apply_filters()
+   select_animation(entry)
+   var index:=matches_.find(entry)
+   if index>=0:page=floori(index/float(PAGE_SIZE));show_page()
+   break
+ for record in spell_catalog.records:
+  if record.delivery_type=="Touch" and str(record.name).nocasecmp_to("Physical Touch")==0:
+   spell_catalog.set_type("Touch");spell_catalog.select_spell(str(record.id));break
+ host.spell_builder.stop_preview_controls(true)
+
 func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)->void:
  if not combat_filter.accepts(entry) and not (origin=="Built-in" and Types.is_crouch(entry) and not combat_filter.excluded(entry)):return
  var id:=Library.key(entry)

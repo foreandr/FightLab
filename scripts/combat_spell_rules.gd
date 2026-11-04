@@ -191,4 +191,11 @@ static func author(base:Dictionary,duration:float,fraction:float,offensive:bool)
 		spec["speed_damage_multiplier"]=stats.speed_damage_multiplier
 		spec["physical_damage"]=stats.stationary_damage
 		spec["damage"]=stats.stationary_damage
+	if base.has("cast_charge_time"):
+		var exertion:=-1.0
+		if base.has("cast_charge_reference_duration"):
+			var reference:=resource_split(base,float(base.cast_charge_reference_duration),offensive)
+			exertion=maxf(0.0,float(reference.stamina)-float(reference.jump_stamina))
+			if spec.has("touch_contact_stamina"):spec.touch_contact_stamina=reference.touch_contact_stamina
+		spec=preload("res://scripts/cast_charge_rules.gd").apply(spec,float(base.cast_charge_time),exertion)
 	return spec

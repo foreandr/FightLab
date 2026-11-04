@@ -27,31 +27,35 @@ func begin(builder:Node)->void:
  if not is_instance_valid(feedback):
   feedback=preload("res://scripts/cast_charge_feedback.gd").new();builder.editor.actor.add_child(feedback);feedback.setup(builder.editor.actor)
  feedback.begin(preload("res://scripts/combat_aim.gd").emitter(builder.playback_animation()))
+ feedback.show_quote(builder.demo_preview_spec())
 
 func update(builder:Node,delta:float)->void:
  if not active:return
  if not builder.playing or builder.editor.actor.combat_reaction_active() or not builder.get_viewport().get_window().has_focus() or builder.editor.camera_text_editing() or preload("res://scripts/combat_pointer.gd").dialog_open(builder.get_viewport()):
   builder.interrupt_preview_cast();builder.playing=false;builder.begin_demo_exit();return
- seconds=minf(CHARGE_SECONDS,seconds+delta)
+ seconds=minf(60.0,seconds+maxf(0.0,delta))
  if is_instance_valid(feedback):feedback.progress(seconds/CHARGE_SECONDS)
  # The source declares its duration limits; holding only selects within them.
- builder.demo_duration=lerpf(limits.x,limits.y,seconds/CHARGE_SECONDS)
+ builder.demo_duration=lerpf(limits.x,limits.y,clampf(seconds/CHARGE_SECONDS,0.0,1.0))
  builder.casting_animation.duration=builder.demo_duration
  builder.refresh_demo_timing()
  var fraction:float=HOLD_FRACTION*(1.0-exp(-seconds*4.0))
  builder.elapsed=builder.cast_duration()*fraction
+ var quote:Dictionary=builder.demo_preview_spec()
+ if is_instance_valid(feedback):feedback.show_quote(quote)
  if is_instance_valid(builder.cast_attempt_actor):
-  if not builder.editor.field.combat().retime_cast_attempt(builder.cast_attempt_actor,builder.demo_preview_spec(),builder.cast_duration()*RELEASE_FRACTION,builder.elapsed):
+  if not builder.editor.field.combat().retime_cast_attempt(builder.cast_attempt_actor,quote,builder.cast_duration()*RELEASE_FRACTION,builder.elapsed):
    builder.interrupt_preview_cast();builder.playing=false;builder.begin_demo_exit()
 
 func release(builder:Node)->void:
  if not active:return
- active=false
+ active=false;follow_through=true
  if is_instance_valid(feedback):feedback.finish()
- builder.demo_duration=lerpf(limits.x,limits.y,seconds/CHARGE_SECONDS)
+ builder.demo_duration=lerpf(limits.x,limits.y,clampf(seconds/CHARGE_SECONDS,0.0,1.0))
  builder.casting_animation.duration=builder.demo_duration
  builder.refresh_demo_timing()
  var spec:Dictionary=builder.demo_preview_spec()
+ if is_instance_valid(feedback):feedback.show_quote(spec)
  if builder.previews_spell_release() and not builder.editor.field.combat().can_start_cast(builder.editor.actor,spec):
   builder.interrupt_preview_cast();builder.playing=false;builder.begin_demo_exit();return
  if is_instance_valid(builder.cast_attempt_actor):
