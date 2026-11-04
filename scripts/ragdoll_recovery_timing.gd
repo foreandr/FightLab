@@ -1,7 +1,7 @@
 extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
-const OPPORTUNITY_DELAY:=0.25
+const OPPORTUNITY_DELAY:=0.0
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0

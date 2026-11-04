@@ -21,8 +21,7 @@ func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
  w=current_scene;w.set_physics_process(false);a=w.fighters[0]
  await knockdown()
- assert(not a.recovery_timing.offered())
- assert(a.try_quick_recovery()=="" and a.recovery_timing.waiting(),"Early Space consumed the unseen recovery chance")
+ assert(a.recovery_timing.offered() and a.recovery_timing.progress()==0.0,"Recovery must be offered immediately on knockdown")
  await tick(10)
  assert(a.mode=="ragdoll" and a.stamina>25 and a.mana>25,"Ragdoll stopped resource recovery")
  assert(is_equal_approx(a.stamina,20+34.0*10/60) and is_equal_approx(a.stamina,a.mana),"Ragdoll recovery not exactly once at shared rate")
