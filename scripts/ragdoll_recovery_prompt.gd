@@ -29,14 +29,11 @@ func _input(event:InputEvent)->void:
 func _draw()->void:
  var owner_=actor()
  if not is_instance_valid(owner_):return
- var timing=owner_.recovery_timing;var center:=Vector2(100,36)
- draw_circle(center,35,Color(0.13,0.10,0.07,0.85))
- draw_circle(center,11,Color("ad8333"));draw_circle(center,4.5,Color("fff0a3"))
- draw_arc(center,11,0,TAU,48,Color("e7bf62"),1.5,true)
- var radius:float=32.0*(1.0-timing.progress())
- draw_arc(center,maxf(1,radius),0,TAU,64,Color("302619"),5,true)
- draw_arc(center,maxf(1,radius),0,TAU,64,Color("fff5d6"),2,true)
- var text_:String="SPACE" if owner_.player_controlled else "RECOVERY"
- var text_position:=Vector2(100-font.get_string_size(text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x/2,91)
- draw_string_outline(font,text_position,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,4,Color("302619"))
- draw_string(font,text_position,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("fff0a3"))
+ var timing=owner_.recovery_timing
+ var text_:String=("SPACE · " if owner_.player_controlled else "RECOVERY · ")+"%.0f stamina"%timing.stamina_cost()
+ var width:=font.get_string_size(text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
+ var box:=Rect2(Vector2(100-width/2-10,35),Vector2(width+20,34))
+ draw_style_box(get_theme_stylebox("panel","PanelContainer"),box)
+ var at:=Vector2(100-width/2,58)
+ draw_string_outline(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,3,Color("302619"))
+ draw_string(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("fff0a3"))

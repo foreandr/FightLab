@@ -1,6 +1,6 @@
 extends Node
 ## Sandbox chooses intent; the existing CPU brain, actor and combat runtime fight.
-const MODES:=["Passive","Repeat left punch","Repeat left-punch fireball","Fight me"]
+const MODES:=["Passive","Repeat left punch","Repeat left-punch fireball","Fight me","Perfect knee"]
 const Movement=preload("res://scripts/character_movement.gd")
 var screen:Control
 var unit:CharacterBody3D
@@ -47,6 +47,20 @@ func fireball()->bool:
  spec.aim_direction=(screen.actor.bone_point("spine_03")-origin).normalized()
  return unit.start_authored_cast(spec,{"title":"Left jab","clip":"ual1/Punch_Jab","step":"Punch","store_raw":true,"duration":1.0,"attack_bone":"hand_l","animation_type":"Arm"},screen.actor)
 
+func perfect_knee()->bool:
+ var profile:Dictionary={}
+ for entry in preload("res://scripts/animation_catalog.gd").entries():
+  if entry.title=="Right knee":profile=entry.duplicate(true);break
+ if profile.is_empty():return false
+ profile.source_duration=unit.player.get_animation(profile.clip).length
+ profile.duration=profile.source_duration
+ var definition=preload("res://scripts/spell_definition.gd")
+ var record:Dictionary=definition.make("None","Touch",{"size":0.5,"speed":0.5},{})
+ var hold:float=preload("res://scripts/animation_charge_timing.gd").charge_window(profile)
+ var spec:Dictionary=definition.compile(record,profile,{"hand":"calf_r","touch_contacts":["calf_r"],"hold_seconds":hold,"release":0.3})
+ spec.id="sandbox_perfect_knee";spec.name="Perfect knee"
+ return unit.start_authored_cast(spec,profile,screen.actor)
+
 func step(delta:float)->void:
  if not is_instance_valid(unit) or unit.health<=0:return
  var target=screen.actor
@@ -62,18 +76,19 @@ func step(delta:float)->void:
  if unit.combat_reaction_active():return
  var toward:Vector3=target.global_position-unit.global_position;toward.y=0.0
  Movement.turn(unit,toward.normalized(),delta)
- if unit.mode=="cast":
+ if unit.mode=="cast" and behavior!="Perfect knee":
   var origin:Vector3=screen.field.fighter_hand(unit,"hand_l")
   unit.current_spell.aim_direction=(target.bone_point("spine_03")-origin).normalized()
  clock+=delta
  if unit.mode in ["cast","punch"]:return
- if behavior=="Repeat left punch" and toward.length()>0.88:
+ if behavior in ["Repeat left punch","Perfect knee"] and toward.length()>(0.65 if behavior=="Perfect knee" else 0.88):
   unit.mode="approach";unit.mode_time=0.0;unit.mode_length=0.2
   return
- unit.mode="idle"
- var interval:=1.2 if behavior=="Repeat left punch" else 2.0
+ unit.mode="idle";unit.set_cast_movement(Vector3.ZERO)
+ if behavior=="Perfect knee" and target.combat_reaction_active():return
+ var interval:=2.5 if behavior=="Perfect knee" else (1.2 if behavior=="Repeat left punch" else 2.0)
  if clock<interval:return
- var started:bool=unit.start_left_jab(toward.normalized()) if behavior=="Repeat left punch" else fireball()
+ var started:bool=perfect_knee() if behavior=="Perfect knee" else (unit.start_left_jab(toward.normalized()) if behavior=="Repeat left punch" else fireball())
  if started:clock=0.0;attacks_started+=1
 
 func _physics_process(delta:float)->void:step(delta)

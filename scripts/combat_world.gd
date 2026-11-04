@@ -77,9 +77,8 @@ func ensure_combat_numbers()->Node3D:
 	return combat_numbers
 
 func show_recovery_feedback(actor:Node3D,result:String)->void:
-	if not combat_numbers_visible or result not in ["Good","Perfect"]:return
-	var color:=Color("ffd36a") if result=="Perfect" else Color("70d5a8")
-	ensure_combat_numbers().show_text(actor,result.to_upper()+" RECOVERY",color)
+	if not combat_numbers_visible or result!="Recovered":return
+	ensure_combat_numbers().show_text(actor,"RECOVERY",Color("70d5a8"))
 
 func fighter_hand(f: CharacterBody3D, hand: String) -> Vector3:
 	return (f.bone_point("hand_l") + f.bone_point("hand_r")) * 0.5 if hand == "both" else f.bone_point(hand)

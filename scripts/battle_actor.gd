@@ -1610,7 +1610,7 @@ func tick(delta: float) -> void:
 		var landed: bool = ragdoll.step(delta)
 		if health>0:recovery_timing.step(delta,self)
 		ragdoll_peak = maxf(ragdoll_peak, ragdoll.peak_height)
-		if health>0 and ((landed and not recovery_timing.waiting()) or recovery_timing.early_ready(self)):
+		if health>0 and ((landed and recovery_timing.progress()>=1.0) or recovery_timing.early_ready(self)):
 			finish_ragdoll()
 		return
 	if health <= 0:
@@ -1620,6 +1620,11 @@ func tick(delta: float) -> void:
 		invulnerability=maxf(0,invulnerability-delta)
 		recover_idle_resources(delta)
 		mode_time += delta
+		if recovery_timing.result=="Recovered":
+			velocity.y-=18.0*delta
+			velocity.x=move_toward(velocity.x,0.0,8.0*delta)
+			velocity.z=move_toward(velocity.z,0.0,8.0*delta)
+			move_and_slide()
 		advance_recovery(delta)
 		if mode_time >= mode_length:
 			mode = "idle"
@@ -1974,6 +1979,8 @@ func try_quick_recovery()->String:
 	return recovery_timing.attempt(self)
 
 func finish_ragdoll() -> void:
+	var voluntary:bool=recovery_timing.result=="Recovered"
+	var flight:Vector3=ragdoll.bodies.pelvis.linear_velocity if ragdoll.setup_phase>=2 else ragdoll.initial_velocity
 	var location: Vector3 = ragdoll.location()
 	var world_pose: Array[Transform3D]=[]
 	for i in skeleton.get_bone_count():
@@ -2008,6 +2015,12 @@ func finish_ragdoll() -> void:
 	var pelvis_offset:=bone_point("pelvis")-global_position
 	position.x=location.x-pelvis_offset.x
 	position.z=location.z-pelvis_offset.z
+	if voluntary:
+		position.y=maxf(position.y,location.y-pelvis_offset.y)
+		velocity=flight
+		collision_mask=1|128|256|512
+		collision_layer=128<<team
+		get_child(0).set_deferred("disabled",false)
 	global_position=arena.constrain_to_level(global_position,0.4)
 	mode_length=RECOVERY_GATHER+player.get_animation(clip).length/recovery_speed
 	recovery_timing.running=false

@@ -26,8 +26,8 @@ func run():
  var space:=InputEventKey.new();space.physical_keycode=KEY_SPACE;space.pressed=true
  b._input(space)
  var numbers=s.field.combat_numbers
- assert(numbers.entries.back().kind=="recovery" and numbers.entries.back().label.text=="PERFECT RECOVERY")
- assert(numbers.entries.back().actor.get_ref()==actor and numbers.entries.back().color==Color("ffd36a"))
+ assert(numbers.entries.back().kind=="recovery" and numbers.entries.back().label.text=="RECOVERY")
+ assert(numbers.entries.back().actor.get_ref()==actor and numbers.entries.back().color==Color("70d5a8"))
  var count:int=numbers.entries.size();b._input(space)
  assert(numbers.entries.size()==count,"Repeated Space duplicated the success popup")
  await process_frame;await process_frame
@@ -38,24 +38,24 @@ func run():
  cpu.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.75
  await process_frame;await process_frame
  assert(is_instance_valid(cpu.recovery_prompt) and cpu.recovery_prompt.visible,"CPU has no overhead timing indicator")
- assert(cpu.try_quick_recovery()=="Good")
+ assert(cpu.try_quick_recovery()=="Recovered")
  var entry:Dictionary=numbers.entries.back()
- assert(entry.kind=="recovery" and entry.label.text=="GOOD RECOVERY" and entry.actor.get_ref()==cpu and entry.color==Color("70d5a8"))
+ assert(entry.kind=="recovery" and entry.label.text=="RECOVERY" and entry.actor.get_ref()==cpu and entry.color==Color("70d5a8"))
  var height:float=entry.label.global_position.y
  numbers._process(0.6)
  assert(entry.label.global_position.y>height and entry.label.modulate.a<1.0,"Recovery text does not use floating/fading number presentation")
  s.field.set_combat_numbers(false)
  assert(numbers.entries.is_empty())
  cpu.reset_fighter(cpu.position);cpu.start_ragdoll(Vector3.BACK*200.0,cpu.bone_point("spine_03"));cpu.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.95
- assert(cpu.try_quick_recovery()=="Perfect" and numbers.entries.is_empty(),"Disabled Numbers still displays recovery text")
+ assert(cpu.try_quick_recovery()=="Recovered" and numbers.entries.is_empty(),"Disabled Numbers still displays recovery text")
  s.field.set_combat_numbers(true)
  s.field.show_combat_number(actor,"physical",10.0)
  s.field.show_combat_number(actor,"stamina",5.0)
  s.field.show_combat_number(actor,"physical",20.0,true)
  assert(numbers.entries[-3].label.text=="10.0 physical" and numbers.entries[-2].label.text=="−5.0 stamina" and numbers.entries[-1].label.text=="HEADSHOT 20","Recovery text changed numeric formatting")
- for i in 50:s.field.show_recovery_feedback(cpu,"Perfect")
+ for i in 50:s.field.show_recovery_feedback(cpu,"Recovered")
  assert(numbers.entries.size()==numbers.MAX_LABELS,"Recovery text bypasses the bounded floating-label pool")
  s.field.set_combat_numbers(false)
- print("OVERHEAD RECOVERY PASS: instant opportunity, player/CPU rings follow body, Space route, single perfect/good colored floating feedback, fade and F2 silence")
+ print("OVERHEAD RECOVERY PASS: instant opportunity, player/CPU stamina prompts follow body, Space route, single recovery colored floating feedback, fade and F2 silence")
  while s.animation_browser.thumbnails.busy or not s.animation_browser.thumbnails.jobs.is_empty():await process_frame
  quit()

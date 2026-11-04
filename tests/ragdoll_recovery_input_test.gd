@@ -13,7 +13,7 @@ func run():
  a.recovery_timing.age=a.recovery_timing.OPPORTUNITY_DELAY+1.0
  var key:=InputEventKey.new();key.keycode=KEY_SPACE;key.pressed=true
  Input.parse_input_event(key);await process_frame
- assert(a.recovery_timing.result=="Perfect","Space did not trigger timing event")
+ assert(a.recovery_timing.result=="Recovered","Space did not trigger timing event")
  a.reset_fighter(a.position);await process_frame;assert(not a.recovery_prompt.visible)
- print("RECOVERY UI PASS: prompt draws, actual Space input triggers perfect, reset hides prompt")
+ print("RECOVERY UI PASS: prompt draws, actual Space input triggers recovery, reset hides prompt")
  quit()
