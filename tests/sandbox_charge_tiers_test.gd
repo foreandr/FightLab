@@ -19,7 +19,7 @@ func run():
   b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100;s.actor.health=100
   root.grab_focus();await process_frame
   b.held_cast.begin(b);assert(b.held_cast.active)
-  b.process_demo_preview(hold)
+  b.process_demo_preview(hold*b.held_cast.charge_duration)
   var quote:Dictionary=b.demo_preview_spec()
   assert(b.held_cast.active and quote.has("cast_charge_multiplier"))
   assert(b.held_cast.feedback.quote_label.text.contains("Physical") and b.held_cast.feedback.quote_label.text.contains("Stamina"))
@@ -66,7 +66,7 @@ func run():
   root.grab_focus();await process_frame
   b._input(hotkey)
   assert(b.held_practice_shortcut.active and b.held_cast.active and b.casting_animation.title=="Left Cross")
-  b.process_demo_preview(hold)
+  b.process_demo_preview(hold*b.held_cast.charge_duration)
   var shortcut_quote:Dictionary=b.demo_preview_spec()
   assert(not b.released and shortcut_quote.touch_contacts==["hand_l"])
   shortcut_values.append(shortcut_quote)

@@ -4,6 +4,7 @@ const Regions=preload("res://scripts/combat_hit_regions.gd")
 var field:Node
 var enabled:=false
 var outlines:Dictionary={}
+var contact_outlines:Dictionary={}
 var material:=StandardMaterial3D.new()
 var head_material:StandardMaterial3D
 var flash_material:StandardMaterial3D
@@ -31,6 +32,8 @@ func set_enabled(value:bool) -> void:
 		if is_instance_valid(record.node):record.node.visible=enabled
 		if is_instance_valid(record.fill):record.fill.hide()
 		if is_instance_valid(record.label):record.label.visible=enabled
+	for outline in contact_outlines.values():
+		if is_instance_valid(outline):outline.visible=enabled
 	if enabled:refresh()
 
 func flash_hit(area:Area3D) -> void:
@@ -51,6 +54,7 @@ func _process(delta:float) -> void:
 	refresh()
 
 func refresh() -> void:
+	refresh_contact_volumes()
 	for id in outlines.keys():
 		if not is_instance_valid(outlines[id].node):outlines.erase(id)
 	var active:Dictionary={}
@@ -111,6 +115,29 @@ func refresh() -> void:
 			outlines[id].node.hide()
 			outlines[id].fill.hide()
 			if is_instance_valid(outlines[id].label):outlines[id].label.hide()
+
+## Cyan attacking spheres follow the exact shared swept-contact radius.
+func refresh_contact_volumes()->void:
+	var active:Dictionary={}
+	for fighter in field.fighters:
+		if not fighter.is_visible_in_tree() or fighter.health<=0.0:continue
+		var visual=fighter.touch_contact_visual
+		if not is_instance_valid(visual):continue
+		for bone in visual.contacts:
+			var key:=str(fighter.get_instance_id())+":"+str(bone)
+			active[key]=true
+			var outline:MeshInstance3D=contact_outlines.get(key)
+			if not is_instance_valid(outline):
+				outline=preload("res://scripts/projectile_hitbox_outline.gd").new()
+				fighter.add_child(outline)
+				outline.configure(preload("res://scripts/melee_contact.gd").radius_for(str(bone)))
+				outline.name="TouchHitbox"+str(bone)
+				contact_outlines[key]=outline
+			outline.global_position=fighter.bone_point(str(bone))
+			outline.visible=enabled
+	for key in contact_outlines.keys():
+		if not is_instance_valid(contact_outlines[key]):contact_outlines.erase(key)
+		elif not active.has(key):contact_outlines[key].hide()
 
 func solid_mesh(shape:Shape3D) -> Mesh:
 	if shape is CapsuleShape3D:

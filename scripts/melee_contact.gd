@@ -1,5 +1,19 @@
 extends RefCounted
 ## Shared swept-limb hit resolution. Callers own animation clocks, not hit rules.
+## Shared attacking volumes: knee/foot leniency does not enlarge receiving limbs.
+static func radius_for(bone:String,fallback:float=0.14)->float:
+	if bone.begins_with("calf_") or bone.begins_with("knee_"):return maxf(fallback,0.26)
+	if bone.begins_with("foot_") or bone.begins_with("ball_"):return maxf(fallback,0.28)
+	return fallback
+
+static func strike_radius(strike:Dictionary)->float:
+	var bone:=str(strike.get("bone",strike.get("metadata",{}).get("hand","")))
+	if bone.is_empty():
+		var id:=str(strike.get("id",""))
+		if "knee" in id:bone="calf_r"
+		elif "kick" in id or "sweep" in id or "stomp" in id:bone="foot_r"
+	return radius_for(bone,float(strike.get("radius",0.105)))
+
 static func active(actor:CharacterBody3D,strike:Dictionary,delta:float)->bool:
 	if strike.get("connected",false) or actor.health<=0 or not actor.arena.round_active:return false
 	var clock:=float(strike.clock)
@@ -17,7 +31,7 @@ static func hurt_query(actor:CharacterBody3D,radius:float)->PhysicsShapeQueryPar
 	return query
 
 static func body_before(actor:CharacterBody3D,strike:Dictionary,other:CharacterBody3D,other_bone:String,time:float)->bool:
-	var query:=hurt_query(actor,float(strike.radius))
+	var query:=hurt_query(actor,strike_radius(strike))
 	var movement:Vector3=Vector3(strike.limb)-Vector3(strike.previous)
 	var samples:=maxi(1,ceili(movement.length()/0.04))
 	var side:=other_bone.right(1)
@@ -45,7 +59,7 @@ static func resolve(actor:CharacterBody3D,strike:Dictionary,delta:float) -> bool
 	if movement.length()/dt<float(strike.get("min_speed",0.8)):return false
 	if strike.get("require_forward",false) and movement.dot(forward)<=0.0005:return false
 	if not movement.is_zero_approx():surface_contact(actor,strike,previous,limb,dt)
-	var query:=hurt_query(actor,float(strike.get("radius",0.105)))
+	var query:=hurt_query(actor,strike_radius(strike))
 	var shape:SphereShape3D=query.shape
 	var samples:=maxi(1,ceili(movement.length()/0.04))
 	for sample in range(samples+1):
@@ -89,7 +103,7 @@ static func surface_contact(actor:CharacterBody3D,strike:Dictionary,previous:Vec
 	actor.set_meta("melee_surface_contacts",contacts)
 	if entry.marked:return
 	var motion:=limb-previous
-	var query:=PhysicsRayQueryParameters3D.create(previous,limb+motion.normalized()*float(strike.get("radius",0.105)),1)
+	var query:=PhysicsRayQueryParameters3D.create(previous,limb+motion.normalized()*strike_radius(strike),1)
 	var hit:=actor.get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():return
 	var speed:float=(motion/dt-actor.velocity).length()

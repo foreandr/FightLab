@@ -53,6 +53,7 @@ var human_only_targets:=false
 var sandbox_testing:=false
 var preview_jumping:=false
 var held_cast=preload("res://scripts/held_cast_preview.gd").new()
+var cast_input_buffer=preload("res://scripts/cast_input_buffer.gd").new()
 var sandbox_spell_selected:=false
 var sandbox_spell_record:Dictionary={}
 var held_practice_shortcut=preload("res://scripts/held_practice_shortcut.gd").new()
@@ -1418,6 +1419,7 @@ func set_preview_slow(enabled:bool) -> void:
  GameDiagnostics.log_event("spell_preview_slow_motion",{"enabled":preview_slow,"time_scale":Engine.time_scale})
 
 func stop_preview_controls(force:=false) -> void:
+ cast_input_buffer.cancel(self)
  if preview_repeating:set_preview_repeat(false)
  if force and is_instance_valid(editor.actor):editor.field.combat().finish_cast(editor.actor)
  if cast_committed():return
@@ -1736,8 +1738,10 @@ func play_demo_preview() -> void:
   begin_demo_exit()
 
 func process_demo_preview(delta:float) -> void:
+ cast_input_buffer.advance(self,delta)
  process_demo_preview_step(delta)
  held_practice_shortcut.after_step(self)
+ cast_input_buffer.flush(self)
 
 func process_demo_preview_step(delta:float) -> void:
  held_cast.update(self,delta)
@@ -1842,6 +1846,7 @@ func begin_demo_exit() -> void:
  demo_enter_pose.clear()
 
 func interrupt_preview_cast() -> void:
+ cast_input_buffer.cancel(self)
  held_cast.cancel()
  if is_instance_valid(cast_attempt_actor) and is_instance_valid(editor) and is_instance_valid(editor.field):editor.field.combat().interrupt_cast_attempt(cast_attempt_actor)
  cast_attempt_actor=null
@@ -2429,20 +2434,16 @@ func _input(event:InputEvent) -> void:
  if event is InputEventKey and not editor.camera_text_editing():
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
   if key in [KEY_1,KEY_KP_1] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   if held_practice_shortcut.active:
-    if event.pressed and prepare_combo_start():held_practice_shortcut.restore(self)
-    else:
-     get_viewport().set_input_as_handled();return
    if sandbox_testing:
-    if event.pressed:held_cast.begin(self)
-    else:held_cast.release(self)
+    if event.pressed:cast_input_buffer.press(self,"selected")
+    else:cast_input_buffer.release(self,"selected")
    elif event.pressed:play_projectile_once()
    get_viewport().set_input_as_handled()
    return
   if key in [KEY_2,KEY_KP_2,KEY_3,KEY_KP_3,KEY_4,KEY_KP_4] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    var action:String="knee_r" if key in [KEY_3,KEY_KP_3] else ("knee_l" if key in [KEY_4,KEY_KP_4] else "cross")
-   if event.pressed:held_practice_shortcut.begin(self,action)
-   else:held_practice_shortcut.release(self,action)
+   if event.pressed:cast_input_buffer.press(self,action)
+   else:cast_input_buffer.release(self,action)
    get_viewport().set_input_as_handled()
    return
   if key==KEY_F1 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:

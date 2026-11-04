@@ -2,7 +2,8 @@ extends RefCounted
 ## Experimental input adapter. Shared Rules/CombatRuntime still own all costs.
 var active:=false
 var preparing:=false
-var seconds:=0.0
+var seconds:=0.0 # Normalized: 1.0 reaches this animation's perfect-charge window.
+var charge_duration:=1.0
 var follow_through:=false
 var feedback:Node
 var limits:=Vector2(0.7,1.6)
@@ -11,14 +12,27 @@ const HOLD_FRACTION:=0.035
 const RELEASE_FRACTION:=0.10
 
 static func duration_range(profile:Dictionary)->Vector2:
- var native:=clampf(float(profile.get("source_duration",profile.get("duration",profile.get("source_length",1.0)))),0.1,60.0)
- var minimum:=clampf(maxf(preload("res://scripts/animation_jump_motion.gd").minimum(profile),float(profile.get("min_duration",native*0.7))),0.1,60.0)
- return Vector2(minimum,clampf(float(profile.get("max_duration",native*1.6)),minimum,60.0))
+ return preload("res://scripts/animation_charge_timing.gd").duration_range(profile)
+static func charge_window(profile:Dictionary)->float:
+ return preload("res://scripts/animation_charge_timing.gd").charge_window(profile)
+
+func ensure_feedback(builder:Node,emitter:String)->void:
+ feedback=builder.editor.actor.get_node_or_null("CastChargeFeedback")
+ if not is_instance_valid(feedback):
+  feedback=preload("res://scripts/cast_charge_feedback.gd").new();builder.editor.actor.add_child(feedback);feedback.setup(builder.editor.actor)
+ feedback.begin(emitter)
+
+func seed_hold(builder:Node,held_seconds:float)->void:
+ if not active:return
+ seconds=maxf(0.0,held_seconds)/charge_duration
+ if is_instance_valid(feedback):feedback.tier=int(preload("res://scripts/cast_charge_rules.gd").sample(seconds).tier)
+ update(builder,0.0)
 
 func begin(builder:Node)->void:
  if not builder.demo_choice_selected or not builder.prepare_combo_start():return
  builder.set_preview_repeat(false)
  limits=duration_range(builder.casting_animation)
+ charge_duration=charge_window(builder.casting_animation)
  builder.demo_duration=limits.x
  builder.casting_animation.duration=limits.x
  seconds=0.0;preparing=true
@@ -26,17 +40,14 @@ func begin(builder:Node)->void:
  preparing=false
  if not builder.playing:return
  active=true;seconds=0.0;follow_through=false
- feedback=builder.editor.actor.get_node_or_null("CastChargeFeedback")
- if not is_instance_valid(feedback):
-  feedback=preload("res://scripts/cast_charge_feedback.gd").new();builder.editor.actor.add_child(feedback);feedback.setup(builder.editor.actor)
- feedback.begin(preload("res://scripts/combat_aim.gd").emitter(builder.playback_animation()))
+ ensure_feedback(builder,preload("res://scripts/combat_aim.gd").emitter(builder.playback_animation()))
  feedback.show_quote(builder.demo_preview_spec())
 
 func update(builder:Node,delta:float)->void:
  if not active:return
  if not builder.playing or builder.editor.actor.combat_reaction_active() or not builder.get_viewport().get_window().has_focus() or builder.editor.camera_text_editing() or preload("res://scripts/combat_pointer.gd").dialog_open(builder.get_viewport()):
   builder.interrupt_preview_cast();builder.playing=false;builder.begin_demo_exit();return
- seconds=minf(60.0,seconds+maxf(0.0,delta))
+ seconds=minf(60.0,seconds+maxf(0.0,delta)/charge_duration)
  if is_instance_valid(feedback):feedback.progress(seconds/CHARGE_SECONDS)
  # The source declares its duration limits; holding only selects within them.
  builder.demo_duration=lerpf(limits.x,limits.y,clampf(seconds/CHARGE_SECONDS,0.0,1.0))

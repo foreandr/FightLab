@@ -534,7 +534,7 @@ func step_touch_casts(delta:float)->void:
 		if contact.connected:continue
 		for bone in contact.previous.keys():
 			var limb:Vector3=actor.bone_point(bone)
-			var strike:Dictionary={"id":str(contact.spec.get("id","physical_touch")),"clock":0.5,"begin":0.0,"end":1.0,"previous":contact.previous[bone],"limb":limb,"forward":actor.global_basis.z,"min_speed":0.0,"dynamic_damage":false,"pre_scaled":true,"radius":0.14,"damage":damage_for(contact.spec),"metadata":contact.spec}
+			var strike:Dictionary={"id":str(contact.spec.get("id","physical_touch")),"clock":0.5,"begin":0.0,"end":1.0,"previous":contact.previous[bone],"limb":limb,"forward":actor.global_basis.z,"min_speed":0.0,"dynamic_damage":false,"pre_scaled":true,"bone":str(bone),"radius":preload("res://scripts/melee_contact.gd").radius_for(str(bone)),"damage":damage_for(contact.spec),"metadata":contact.spec}
 			contact.previous[bone]=limb
 			if preload("res://scripts/melee_contact.gd").resolve(actor,strike,delta):
 				contact.connected=true;break

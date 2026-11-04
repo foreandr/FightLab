@@ -18,16 +18,16 @@ static func collect(runtime:RefCounted,delta:float)->Array[Dictionary]:
   var a=contact.actor.get_ref()
   if not is_instance_valid(a) or a.mode!=contact.mode or contact.connected:continue
   for bone in contact.previous:
-   strikes.append({"actor":a,"source":contact,"kind":"touch","bone":str(bone),"id":str(contact.spec.get("id","touch")),"clock":0.5,"begin":0.0,"end":1.0,"previous":contact.previous[bone],"limb":a.bone_point(bone),"radius":0.14,"min_speed":0.0,"forward":a.global_basis.z})
+   strikes.append({"actor":a,"source":contact,"kind":"touch","bone":str(bone),"id":str(contact.spec.get("id","touch")),"clock":0.5,"begin":0.0,"end":1.0,"previous":contact.previous[bone],"limb":a.bone_point(bone),"radius":Contact.radius_for(str(bone)),"min_speed":0.0,"forward":a.global_basis.z})
  for a in runtime.field.fighters:
   if a.mode=="punch" and a.get("melee_spec") is Array and not a.melee_spec.is_empty() and not a.melee_connected:
    var spec:Array=a.melee_spec;var bone:=str(spec[2])
-   strikes.append({"actor":a,"source":{},"kind":"native","bone":bone,"id":str(spec[0]),"clock":a.melee_clock,"begin":spec[3],"end":spec[4],"previous":a.melee_previous,"limb":a.bone_point(bone),"radius":0.22 if bone.begins_with("ball_") or bone.begins_with("foot_") or bone.begins_with("calf_") else 0.105,"forward":a.global_basis.z})
+   strikes.append({"actor":a,"source":{},"kind":"native","bone":bone,"id":str(spec[0]),"clock":a.melee_clock,"begin":spec[3],"end":spec[4],"previous":a.melee_previous,"limb":a.bone_point(bone),"radius":Contact.radius_for(bone,0.105),"forward":a.global_basis.z})
   if a.get("story_strikes") is Dictionary:
    for channel in a.story_strikes:
     var strike:Dictionary=a.story_strikes[channel];var spec:Array=strike.spec
     if strike.connected:continue
-    strikes.append({"actor":a,"source":strike,"kind":"story","bone":str(spec[2]),"id":str(spec[0]),"clock":float(strike.clock)+delta*float(strike.rate),"begin":spec[3],"end":spec[4],"previous":strike.previous,"limb":a.bone_point(str(spec[2])),"radius":0.22 if str(channel).begins_with("leg_") else 0.105,"require_forward":true,"forward":strike.get("aim_direction",a.global_basis.z)})
+    strikes.append({"actor":a,"source":strike,"kind":"story","bone":str(spec[2]),"id":str(spec[0]),"clock":float(strike.clock)+delta*float(strike.rate),"begin":spec[3],"end":spec[4],"previous":strike.previous,"limb":a.bone_point(str(spec[2])),"radius":Contact.radius_for(str(spec[2]),0.105),"require_forward":true,"forward":strike.get("aim_direction",a.global_basis.z)})
  return strikes.filter(func(s):return Contact.active(s.actor,s,delta))
 static func consumed(s:Dictionary)->bool:
  return bool(s.actor.melee_connected) if s.kind=="native" else bool(s.source.get("connected",false))

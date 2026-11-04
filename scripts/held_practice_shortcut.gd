@@ -23,6 +23,18 @@ func begin(b:Node,action:String="cross")->void:
   if physical.is_empty():
    physical=load("res://scripts/spell_definition.gd").make("None","Touch",{"size":0.5,"speed":0.5},{})
    physical.merge({"id":"builtin_physical_touch","name":"Physical Touch"})
+ var profile:=profile_for(b,action)
+ if profile.is_empty():restore(b);return
+ profile["sandbox_animation"]=true;profile["sandbox_offensive"]=true
+ active=true;active_action=action
+ b.casting_animation=profile
+ b.demo_duration=float(profile.duration);b.demo_choice_selected=true;b.demo_source_ready=true
+ b.sandbox_spell_record=physical.duplicate(true);b.creation_step="touch";b.delivery_type="Touch";b.preview_delivery_type="Touch";b.delivery_choice_selected=true
+ b.element="None";b.preview_effect="None";b.limiter_enabled=true
+ b.touch_authoring.selected.assign([str(profile.attack_bone)]);b.touch_authoring.confirmed=true;b.touch_authoring.effect_confirmed=true;b.touch_authoring.preview_effect="None"
+ b.held_cast.begin(b)
+ if not b.held_cast.active:restore(b)
+func profile_for(b:Node,action:String)->Dictionary:
  var actor=b.editor.actor
  var profile:Dictionary={}
  if action=="cross":
@@ -34,19 +46,12 @@ func begin(b:Node,action:String="cross")->void:
   var title:="Right knee" if action=="knee_r" else "Left knee"
   for entry in preload("res://scripts/animation_catalog.gd").entries():
    if entry.title==title:profile=entry.duplicate(true);break
-  if profile.is_empty() or not b.editor._ensure_animation_source(profile):return
+  if profile.is_empty() or not b.editor._ensure_animation_source(profile):return {}
   profile["animation_type"]="Leg"
   profile["source_duration"]=preload("res://scripts/animation_source_pose.gd").duration(actor,profile.step,profile.clip)
   profile["duration"]=profile.source_duration
- profile["sandbox_animation"]=true;profile["sandbox_offensive"]=true
- active=true;active_action=action
- b.casting_animation=profile
- b.demo_duration=float(profile.duration);b.demo_choice_selected=true;b.demo_source_ready=true
- b.sandbox_spell_record=physical.duplicate(true);b.creation_step="touch";b.delivery_type="Touch";b.preview_delivery_type="Touch";b.delivery_choice_selected=true
- b.element="None";b.preview_effect="None";b.limiter_enabled=true
- b.touch_authoring.selected.assign([str(profile.attack_bone)]);b.touch_authoring.confirmed=true;b.touch_authoring.effect_confirmed=true;b.touch_authoring.preview_effect="None"
- b.held_cast.begin(b)
- if not b.held_cast.active:restore(b)
+ return profile
+
 func release(b:Node,action:String="cross")->void:
  if active and active_action==action:b.held_cast.release(b)
 func after_step(b:Node)->void:
