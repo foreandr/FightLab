@@ -2,7 +2,7 @@ extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
 const OPPORTUNITY_DELAY:=0.0
-const MAX_STAMINA_COST:=30.0
+const MAX_STAMINA_COST:=20.0
 const GETUP_SPEED:=1.32
 const RECOVERY_GETUP_SECONDS:=0.65/GETUP_SPEED
 const NORMAL_GETUP_SECONDS:=1.71/GETUP_SPEED
