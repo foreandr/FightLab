@@ -1522,6 +1522,14 @@ func tick(delta: float) -> void:
 	# Editor previews yield to shared hit, restraint, recovery and death behavior.
 	# Pose ownership never pauses combat status clocks or damage-over-time.
 	if editor_pose_locked and not combat_reaction_active() and mode!="punch":
+		# A pose editor owns the bones, not the shared jump's takeoff clock.
+		if jump_kind=="motion_jump":
+			if mode=="takeoff":
+				mode_time+=delta
+				if mode_time>=mode_length:launch()
+			elif not is_on_floor():
+				air_clock+=delta
+				custom_jump_elapsed+=delta
 		invulnerability=maxf(0.0,invulnerability-delta)
 		return
 	if practice_immortal and (not practice_damageable_dummy or practice_god_mode) and not drowned and air_remaining>0:health=MAX_HEALTH

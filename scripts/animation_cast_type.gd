@@ -68,7 +68,7 @@ static func description(type_:String) -> String:
   HEAD:return "Head only · movement stays available."
   ARMS:return "Running legs + upper-body cast."
   LEGS:return "Leg region · Touch: momentum slows, small steps allowed · +20% physical damage."
-  WHOLE_BODY:return "Entire body · momentum slows, small steps allowed."
+  WHOLE_BODY:return "Entire body · Touch slows momentum, small steps allowed. Other cast types keep movement available."
  return "Choose an animation type before saving."
 
 ## Regions describe contributions, independent of the destination timeline track.

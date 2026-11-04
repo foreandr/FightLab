@@ -1,0 +1,21 @@
+Space in Sandbox uses BattleActor.start_motion_jump(1.0, true), release uses
+set_motion_jump_held(false). Tap costs 4 stamina; full hold costs 12, with height
+set by the existing variable-jump rules. Repeated presses while airborne or in
+takeoff cannot start another jump. Resource checks and cast commitment still apply.
+
+BattleActor's pose-locked path now advances the existing takeoff/air clocks.
+CombatWorld still owns movement/gravity/collision; no editor-specific trajectory.
+CreationLocomotion samples the actor's saved jump poses (or the existing default
+takeoff/air animations). Arm/head casts can keep their upper body while the jump
+supplies legs. Full-body Touch ownership remains intact. Entry/landing use the
+existing preview pose blend.
+
+Matrix classified as Movement describes its whole-body source, not a blanket
+movement lock. AnimationCastType.applies currently enables type restrictions only
+for Touch spells; Projectile/Barrier and unpaired Sandbox previews allow movement.
+That rule is unchanged. Jump/Grab would be action filters, separate from body
+regions; no new Grab mechanics or categories were introduced by this change.
+
+Validation: tests/sandbox_jump_input_test.gd exercises real Space input, tap/hold
+height and stamina, grounded/airborne states, casting during a jump, regional pose
+preservation, duplicate/insufficient-stamina rejection and unchanged Touch rules.

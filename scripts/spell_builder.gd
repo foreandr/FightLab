@@ -51,6 +51,7 @@ var demo_only_stage:=true
 var demo_choices:Dictionary={}
 var human_only_targets:=false
 var sandbox_testing:=false
+var preview_jumping:=false
 var held_cast=preload("res://scripts/held_cast_preview.gd").new()
 var sandbox_spell_selected:=false
 var demo_type_labels:Dictionary={}
@@ -1691,7 +1692,7 @@ func play_demo_preview() -> void:
  demo_enter_pose=capture_demo_pose()
  demo_exit_pose.clear()
  editor.actor.set_editor_animation_profile({},"")
- editor.actor.mode="review"
+ if editor.actor.mode!="takeoff":editor.actor.mode="review"
  editor.actor.player.pause()
  blend_demo_pose(demo_enter_pose,0.0)
  elapsed=0
@@ -1728,7 +1729,12 @@ func process_demo_preview(delta:float) -> void:
   begin_demo_exit()
  if not playing:
   editor.actor.recover_idle_resources(delta)
-  if caster_moving:
+  var jumping:=Locomotion.jump_pose(editor.actor)
+  if preview_jumping and not jumping:
+   demo_exit_pose=capture_demo_pose();demo_exit_elapsed=0.0
+  preview_jumping=jumping
+  if jumping:pass
+  elif caster_moving:
    Locomotion.pose(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting)
   else:RigPose.idle(editor.actor,idle_elapsed)
   if not demo_exit_pose.is_empty():
@@ -2366,6 +2372,10 @@ func _input(event:InputEvent) -> void:
    set_combat_numbers(not editor.field.combat_numbers_visible)
    get_viewport().set_input_as_handled()
    return
+  if sandbox_testing and key==KEY_SPACE and not event.echo:
+   set_jump_held(event.pressed)
+   get_viewport().set_input_as_handled()
+   return
   if key in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_SHIFT]:
    movement_keys[key]=event.pressed
    get_viewport().set_input_as_handled()
@@ -2559,6 +2569,7 @@ func prepare_preview_targets() -> void:
 func _physics_process(delta:float) -> void:
  if not is_visible_in_tree() or not demo_only_stage or not is_instance_valid(editor.actor):return
  if not get_window().has_focus() or editor.camera_text_editing():
+  if sandbox_testing:editor.actor.set_motion_jump_held(false)
   movement_keys.clear()
   if not editor.actor.combat_reaction_active():editor.field.move_character(editor.actor,Vector3.ZERO,0.0,delta)
   caster_moving=false
@@ -2566,6 +2577,19 @@ func _physics_process(delta:float) -> void:
   caster_sprinting=false
   return
  move_caster(delta,Locomotion.axes(movement_keys),movement_keys.get(KEY_SHIFT,false))
+
+func set_jump_held(held:bool)->bool:
+ if not is_instance_valid(editor.actor):return false
+ var actor=editor.actor
+ if not held:
+  actor.set_motion_jump_held(false)
+  return true
+ var before:Array[Transform3D]=[]
+ if not playing:before=capture_demo_pose()
+ var started:bool=actor.start_motion_jump(1.0,true)
+ if started and not playing:
+  demo_exit_pose.assign(before);demo_exit_elapsed=0.0
+ return started
 
 func move_caster(delta:float,axes:Vector2,sprinting:bool) -> void:
  ensure_third_person_camera()

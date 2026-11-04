@@ -66,6 +66,7 @@ static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,spr
 	# must not replace the aerial kick/flip while gravity carries the actor.
 	if not actor.is_on_floor() and not preload("res://scripts/animation_jump_motion.gd").settings(profile).is_empty():return
 	var type_=preload("res://scripts/animation_cast_type.gd")
+	if not type_.owns_legs(profile) and jump_pose(actor,true):return
 	if not type_.applies(profile):
 		# Non-Touch casts keep their full pose while still; moving uses the gait.
 		moving_legs(actor,input,time,sprinting)
@@ -82,6 +83,26 @@ static func cast_legs(actor:Node,profile:Dictionary,input:Vector2,time:float,spr
 		if type_.controls_bone(rig,index,kind):rig.set_bone_pose(index,cast[index])
 	actor.clip=cast_clip
 	rig.force_update_all_bone_transforms()
+
+## Manual jump uses the same saved jump frames and actor clocks as gameplay.
+## Regional casts can retain their upper body while jump supplies the legs.
+static func jump_pose(actor:Node,legs_only:bool=false)->bool:
+	if actor.jump_kind!="motion_jump" or (actor.is_on_floor() and actor.mode!="takeoff"):return false
+	var baseline:Array[Transform3D]=[]
+	if legs_only:baseline=CastPose.capture(actor)
+	var cast_clip:String=actor.clip
+	var taking_off:bool=actor.mode=="takeoff"
+	var time:float=actor.mode_time if taking_off else 0.14+actor.custom_jump_elapsed
+	preload("res://scripts/editor_rig_pose.gd").sample(actor,"duel/takeoff" if taking_off else "duel/air",actor.mode_time if taking_off else actor.air_clock)
+	if actor.custom_jump_frames.size()>=2:
+		if actor.custom_jump_native:actor.apply_custom_jump_pose(time/maxf(0.001,actor.custom_jump_source_duration),actor.custom_jump_frames,true)
+		else:actor.apply_custom_jump_pose(actor.custom_jump_elapsed/0.95)
+	if legs_only:
+		for index in actor.skeleton.get_bone_count():
+			if not is_locomotion_bone(actor.skeleton,index):actor.skeleton.set_bone_pose(index,baseline[index])
+	actor.clip=cast_clip
+	actor.skeleton.force_update_all_bone_transforms()
+	return true
 
 ## Blend the cast recovery into the gait being requested now, not a frozen pose.
 static func recover_from_cast(actor:Node,input:Vector2,time:float,sprinting:bool,weight:float) -> void:
