@@ -11,11 +11,7 @@ func run():
  assert(actor.player_controlled and not cpu.player_controlled,"Sandbox does not declare human/CPU ownership")
  actor.start_ragdoll(Vector3.BACK*200.0,actor.bone_point("spine_03"))
  await process_frame;await process_frame
- assert(not actor.recovery_timing.offered(),"Recovery ignored 0.1-second delay")
- actor.recovery_timing.age=0.099
- assert(not actor.recovery_timing.offered() and actor.try_quick_recovery()=="","Recovery opened too soon")
- actor.recovery_timing.age=0.1
- assert(actor.recovery_timing.offered(),"Recovery did not open after 0.1 seconds")
+ assert(actor.recovery_timing.offered(),"Recovery must be available immediately")
  actor.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.92
  await process_frame
  assert(is_instance_valid(actor.recovery_prompt) and actor.recovery_prompt.visible,"Sandbox recovery prompt is missing")

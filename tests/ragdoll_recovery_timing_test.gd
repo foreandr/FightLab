@@ -14,9 +14,7 @@ func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
  w=current_scene;w.set_physics_process(false);a=w.fighters[0]
  await knockdown()
- assert(not a.recovery_timing.offered() and a.recovery_timing.progress()==0.0)
- assert(a.try_quick_recovery()=="" and a.stamina==19.0,"Early input bypassed recovery delay")
- a.recovery_timing.age=Timing.OPPORTUNITY_DELAY
+ assert(a.recovery_timing.offered() and a.recovery_timing.progress()==0.0)
  assert(a.try_quick_recovery()=="" and a.recovery_timing.waiting(),"Unaffordable recovery used the chance")
  await tick(10)
  assert(a.mode=="ragdoll" and is_equal_approx(a.stamina,19+34.0*10/60) and is_equal_approx(a.stamina,a.mana),"Ragdoll regeneration changed")
@@ -37,5 +35,5 @@ func run():
  await knockdown();a.health=0
  assert(a.try_quick_recovery()=="");await tick(120);assert(a.mode=="ragdoll")
  a.reset_fighter(Vector3.ZERO);assert(not a.recovery_timing.running)
- print("RECOVERY TIMING PASS: 0.1s-gated voluntary recovery, continuous cost 20 to 0, retry when affordable, no duplicate payment, unchanged regeneration and dead exclusions")
+ print("RECOVERY TIMING PASS: immediate voluntary recovery, continuous cost 20 to 0, retry when affordable, no duplicate payment, unchanged regeneration and dead exclusions")
  quit()

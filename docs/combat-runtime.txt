@@ -500,9 +500,9 @@ contact_presentation_test, physical_contact_vfx_test; existing contact knockback
 hit recovery, perfect-parry counter, block tiers, lethal headshot and match-clock
 regressions; two complete CPU fights with finite position/resource checks.
 
-Voluntary ragdoll recovery (shared across modes): Space can begin get-up 0.1 seconds after
+Voluntary ragdoll recovery (shared across modes): Space can begin get-up as soon as
 ragdoll starts, including airborne. There are no Good/Perfect/Miss grades.
-Cost = 20 * (1 - clamp((ragdoll age - 0.1 seconds) / 1.1 seconds, 0, 1)) stamina. Insufficient
+Cost = 20 * (1 - clamp(ragdoll age / 1.1 seconds, 0, 1)) stamina. Insufficient
 stamina leaves the action available to retry; a successful recovery pays once.
 The overhead prompt shows the live cost. Waiting still allows natural get-up.
 Voluntary get-up preserves flight and gravity rather than snapping to the floor.
