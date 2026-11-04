@@ -1960,7 +1960,7 @@ func start_ragdoll(impulse: Vector3, point: Vector3) -> void:
 	ragdoll.build(self, impulse, point)
 	if health>0:
 		recovery_timing.begin()
-		if player_controlled:ensure_recovery_prompt()
+		ensure_recovery_prompt()
 	ragdoll_count += 1
 	arena.events.append({"time":arena.elapsed,"event":"ragdoll","team":team,"impulse":impulse.length(),"health":health,"physical_damage":last_physical_impact_damage})
 	arena.audio.impact("heavy", point, 1)

@@ -1,7 +1,7 @@
 extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
-const OPPORTUNITY_DELAY:=0.65
+const OPPORTUNITY_DELAY:=0.45
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0
@@ -33,6 +33,7 @@ func attempt(actor:Node)->String:
  if progress()>=PERFECT_START and progress()<=1.0:result="Perfect"
  elif progress()>=YELLOW_START and actor.spend_stamina(YELLOW_STAMINA):result="Good"
  else:result="Miss"
+ if result in ["Perfect","Good"]:actor.arena.show_recovery_feedback(actor,result)
  actor.arena.events.append({"event":"recovery_timing","time":actor.arena.elapsed,"team":actor.team,"result":result,"progress":progress(),"stamina":YELLOW_STAMINA if result=="Good" else 0.0})
  return result
 func early_ready(actor:Node)->bool:

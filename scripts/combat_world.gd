@@ -67,11 +67,19 @@ func clear_combat_numbers() -> void:
 
 func show_combat_number(actor:Node3D,kind:String,amount:float,headshot:bool=false) -> void:
 	if not combat_numbers_visible or amount<=0.0001:return
+	ensure_combat_numbers().show_amount(actor,kind,amount,headshot)
+
+func ensure_combat_numbers()->Node3D:
 	if not is_instance_valid(combat_numbers):
 		combat_numbers=preload("res://scripts/combat_floating_numbers.gd").new()
 		combat_numbers.name="CombatNumbers"
 		add_child(combat_numbers)
-	combat_numbers.show_amount(actor,kind,amount,headshot)
+	return combat_numbers
+
+func show_recovery_feedback(actor:Node3D,result:String)->void:
+	if not combat_numbers_visible or result not in ["Good","Perfect"]:return
+	var color:=Color("ffd36a") if result=="Perfect" else Color("70d5a8")
+	ensure_combat_numbers().show_text(actor,result.to_upper()+" RECOVERY",color)
 
 func fighter_hand(f: CharacterBody3D, hand: String) -> Vector3:
 	return (f.bone_point("hand_l") + f.bone_point("hand_r")) * 0.5 if hand == "both" else f.bone_point(hand)
