@@ -1812,7 +1812,7 @@ func cast_pose_aim(progress:float) -> Dictionary:
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)
  elif manual_aim_valid:
   var origin:=preview_emitter_position({"hand":CombatAim.emitter(playback_animation())})
-  target=CombatAim.safe_cursor_target(origin,manual_aim_point,manual_aim_ray_direction)
+  target=manual_aim_point if previews_touch() else CombatAim.safe_cursor_target(origin,manual_aim_point,manual_aim_ray_direction)
  else:return {}
  var weight:=smoothstep(0.0,0.12,progress)*(1.0-smoothstep(0.75,1.0,progress))
  return {"target":target,"emitter":CombatAim.emitter(playback_animation()),"weight":weight}
@@ -2392,7 +2392,9 @@ func aim_at_screen(pointer:Vector2) -> void:
  var spec:=demo_preview_spec()
  var motion:Dictionary=Projectile.resolved_motion(spec)
  manual_aim_ray_direction=editor.field.camera.project_ray_normal(pointer)
- manual_aim_point=CombatAim.ray_point(editor.field.camera,editor.actor,pointer,editor.field.fighters,float(motion.radius),preview_emitter_position(spec))
+ # Contact strikes use the same near-field cursor plane as Story melee.
+ # A far wall/projectile destination flattens or reverses close-range steering.
+ manual_aim_point=CombatAim.calibration_point(editor.field.camera,editor.actor,pointer) if previews_touch() else CombatAim.ray_point(editor.field.camera,editor.actor,pointer,editor.field.fighters,float(motion.radius),preview_emitter_position(spec))
  manual_aim_valid=true
 
 func _input(event:InputEvent) -> void:
