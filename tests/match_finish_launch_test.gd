@@ -13,6 +13,7 @@ func run():
  var chest:Area3D=a.nearest_hurtbox(a.bone_point("spine_03"))
  assert(w.apply_impact(b,a,{"id":"launch_test","effect":"orb","projectile_element":"None","damage":45},chest.global_position,Vector3.BACK,chest,flat))
  assert(is_instance_valid(a.ragdoll) and a.ragdoll.initial_impulse.is_equal_approx(tilted),"Actual heavy hit bypassed upward launch")
+ assert(a.ragdoll.initial_velocity.y>=6.0 and Vector2(a.ragdoll.initial_velocity.x,a.ragdoll.initial_velocity.z).length()>=6.0,"Heavy hit lacks a strong coherent launch")
  w.finish_round(1);assert(is_equal_approx(Engine.time_scale,0.2) and w.finish_slowmo_left==1.1)
  w.step_finish_slowmo(0.5);assert(is_equal_approx(Engine.time_scale,0.2))
  w.paused=true;w.step_finish_slowmo(0.2);assert(is_equal_approx(w.finish_slowmo_left,0.6))

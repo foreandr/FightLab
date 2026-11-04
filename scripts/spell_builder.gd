@@ -666,7 +666,7 @@ func setup(owner_editor:Node) -> void:
  demo_ragdoll_label.add_theme_font_size_override("normal_font_size",13)
  timing_column.add_child(demo_ragdoll_label)
  demo_ragdoll_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
- demo_ragdoll_label.tooltip_text="40 physical damage ragdolls an unblocked target. Headshots double physical damage. Lethal hits ragdoll regardless."
+ demo_ragdoll_label.tooltip_text="%.0f physical damage ragdolls an unblocked target. Headshots double physical damage. Lethal hits ragdoll regardless."%preload("res://scripts/combat_defense_rules.gd").RAGDOLL_DAMAGE
  demo_amplifier_label=editor.menu_label(timing_column,"",19)
  demo_amplifier_label.add_theme_color_override("font_color",Color("8154a5"))
  demo_amplifier_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART

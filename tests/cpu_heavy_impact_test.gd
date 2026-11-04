@@ -9,7 +9,7 @@ func run():
  var heavy:Array[Dictionary]=[]
  for item in brain.loadout:
   if str(item.spec.id).begins_with("cpu_impact_"):heavy.append(item)
- assert(heavy.size()==5 and Defense.RAGDOLL_DAMAGE==40)
+ assert(heavy.size()==5 and Defense.RAGDOLL_DAMAGE==30)
  for item in heavy:
   assert(Defense.ragdolls(float(item.spec.damage)),"Heavy choice is below body knockdown threshold: "+str(item.title))
   assert(float(item.spec.stamina_cost)>=27 and item.duration>=3.0)

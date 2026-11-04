@@ -13,7 +13,7 @@ func run() -> void:
 	world.setup_combat_services()
 	var actor=world.spawn_combatant(0,Vector3.ZERO)
 	var victim=world.spawn_combatant(1,Vector3(0,0,3))
-	for sample in [[10.0,1000.0,false,false,false],[39.9,20.0,false,false,false],[40.0,20.0,true,false,false],[20.0,20.0,true,true,false],[20.0,20.0,false,false,false],[1.0,20.0,true,false,true]]:
+	for sample in [[10.0,1000.0,false,false,false],[29.9,20.0,false,false,false],[30.0,20.0,true,false,false],[15.0,20.0,true,true,false],[14.9,20.0,false,true,false],[20.0,20.0,false,false,false],[1.0,20.0,true,false,true]]:
 		victim.reset_fighter(Vector3(0,0,3))
 		world.round_active=true
 		victim.guard_energy=0
@@ -32,7 +32,7 @@ func run() -> void:
 	actor.armor_hp=0;actor.armor_time=0
 	world.combat().dispatch(actor,{"id":"legacy_armor","effect":"armor"},actor.global_position)
 	if not check(actor.armor_hp==0 and actor.armor_time==0,"Legacy armor grants combat protection"):return
-	if not check(Rules.prediction(19.9)=="Ragdoll: No" and Rules.prediction(20)=="Ragdoll: Yes (head only)" and Rules.prediction(40)=="Ragdoll: Yes","Authoring prediction disagrees with live head/body thresholds"):return
+	if not check(Rules.prediction(14.9)=="Ragdoll: No" and Rules.prediction(15)=="Ragdoll: Yes (head only)" and Rules.prediction(30)=="Ragdoll: Yes","Authoring prediction disagrees with live head/body thresholds"):return
 	if not check(preload("res://scripts/combat_hit_regions.gd").label("head")=="" and preload("res://scripts/combat_hit_regions.gd").label("chest")=="","Floating hitbox labels remain"):return
-	print("PHYSICAL RAGDOLL PASSED: 40 damage threshold, headshots, weak high-force/launch hits stay animated, strong low-force hits ragdoll, death ragdolls, cosmetic armor ignored, legacy armor disabled and predictions match")
+	print("PHYSICAL RAGDOLL PASSED: 30 damage threshold, headshots, weak high-force/launch hits stay animated, strong low-force hits ragdoll, death ragdolls, cosmetic armor ignored, legacy armor disabled and predictions match")
 	quit()

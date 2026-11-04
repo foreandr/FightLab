@@ -40,7 +40,7 @@ func build(owner_: CharacterBody3D, impulse: Vector3, point: Vector3) -> void:
 	var terminal: bool=fighter.health<=0
 	var horizontal := Vector3(initial.x,0,initial.z).limit_length(7.0 if terminal else 4.5)
 	initial=horizontal+Vector3.UP*clampf(initial.y,-8.0 if terminal else -3.0,11.0 if terminal else 5.0)
-	initial_velocity=initial
+	initial_velocity=preload("res://scripts/combat_defense_rules.gd").ragdoll_launch_velocity(initial,impulse,total_mass,terminal)
 	initial_impulse=impulse
 	initial_point=point
 	peak_height = bodies.pelvis.global_position.y
@@ -185,8 +185,9 @@ func location() -> Vector3:
 
 func add_impulse(impulse: Vector3,point: Vector3) -> void:
 	settled_time=0
+	impulse=preload("res://scripts/combat_defense_rules.gd").ragdoll_launch_impulse(impulse)*preload("res://scripts/combat_defense_rules.gd").RAGDOLL_IMPULSE_GAIN
 	if setup_phase<2:
-		initial_velocity=(initial_velocity+impulse/total_mass).limit_length(10.0)
+		initial_velocity=(initial_velocity+impulse/total_mass).limit_length(preload("res://scripts/combat_defense_rules.gd").RAGDOLL_MAX_SPEED)
 		initial_impulse+=impulse
 		initial_point=point
 		return
@@ -194,7 +195,7 @@ func add_impulse(impulse: Vector3,point: Vector3) -> void:
 	var average:=Vector3.ZERO
 	for body in bodies.values():
 		average+=body.linear_velocity*body.mass/total_mass
-	var change: Vector3=(average+impulse/total_mass).limit_length(10.0)-average
+	var change: Vector3=(average+impulse/total_mass).limit_length(preload("res://scripts/combat_defense_rules.gd").RAGDOLL_MAX_SPEED)-average
 	var spin: Vector3=((point-center).cross(impulse)/28.0).limit_length(0.75)
 	for body in bodies.values():
 		body.apply_central_impulse((change+spin.cross(body.global_position-center))*body.mass)
