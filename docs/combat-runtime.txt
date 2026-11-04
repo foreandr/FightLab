@@ -374,9 +374,12 @@ movement to any mode/controller. Fractions clamp to 0..1. Default scripted calls
 retain full travel. CPU jumps choose smaller heights near an opponent and a
 wider height range at distance; dash approach chooses only the distance needed
 to reach punching space, and lateral evasion varies its burst length.
-Fixed choices cost 4..12 stamina. Held jumps begin at 4, add up to 8 across
-0.25 airborne seconds, and cut remaining upward velocity to 5.4m/s on release.
-Full launch stays 10.8m/s with ordinary gravity and landing. Held dashes begin
+Jump choices cost 4..20 stamina. Held jumps charge on the floor over 0.85s,
+progressively crouching using jump_charge_pose.gd, and remain at max until release.
+Release launches at 5.4..15.6m/s with ordinary gravity and landing; max height is
+approximately 5.4m. Exhaustion releases the already-paid charge. Scripted/CPU
+fractional jumps share the new height/cost range and retain their short takeoff.
+Held dashes begin
 at 4, last 0.08..0.30s at 12m/s, and add up to 8 stamina for extended travel.
 No extra stamina means the extension ends. Story Space starts/releases a held
 jump; releasing W ends a double-tap forward dash. Authored choreography and

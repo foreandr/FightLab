@@ -92,14 +92,19 @@ static func jump_pose(actor:Node,legs_only:bool=false)->bool:
 	if legs_only:baseline=CastPose.capture(actor)
 	var cast_clip:String=actor.clip
 	var taking_off:bool=actor.mode=="takeoff"
+	var model_rotation:Vector3=actor.model.rotation
+	var twist_age:float=actor.twist_age
 	var time:float=actor.mode_time if taking_off else 0.14+actor.custom_jump_elapsed
 	preload("res://scripts/editor_rig_pose.gd").sample(actor,"duel/takeoff" if taking_off else "duel/air",actor.mode_time if taking_off else actor.air_clock)
 	if actor.custom_jump_frames.size()>=2:
 		if actor.custom_jump_native:actor.apply_custom_jump_pose(time/maxf(0.001,actor.custom_jump_source_duration),actor.custom_jump_frames,true)
 		else:actor.apply_custom_jump_pose(actor.custom_jump_elapsed/0.95)
+	preload("res://scripts/jump_charge_pose.gd").apply(actor)
 	if legs_only:
 		for index in actor.skeleton.get_bone_count():
 			if not is_locomotion_bone(actor.skeleton,index):actor.skeleton.set_bone_pose(index,baseline[index])
+		actor.model.rotation=model_rotation
+		actor.twist_age=twist_age
 	actor.clip=cast_clip
 	actor.skeleton.force_update_all_bone_transforms()
 	return true

@@ -84,7 +84,11 @@ var motion_jump_variable:=false
 var motion_jump_hold_time:=0.0
 var motion_dash_held:=false
 var motion_dash_variable:=false
-const JUMP_HOLD_SECONDS:=0.25
+const JUMP_HOLD_SECONDS:=0.85
+const JUMP_MIN_SPEED:=5.4
+const JUMP_MAX_SPEED:=15.6
+const JUMP_MIN_STAMINA:=4.0
+const JUMP_MAX_STAMINA:=20.0
 const DASH_MIN_SECONDS:=0.08
 const DASH_MAX_SECONDS:=0.30
 var air_trick := ""
@@ -912,6 +916,8 @@ func advance_free_animation(delta:float) -> void:
 			if authored_return_elapsed>=0.14:authored_entry_pose.clear()
 		else:authored_entry_pose.clear()
 
+	preload("res://scripts/jump_charge_pose.gd").apply(self)
+
 func editor_uppercut_charge_duration() -> float:
 	return 0.85
 
@@ -1206,19 +1212,19 @@ func start_motion_jump(height_fraction:float=1.0, held_input:bool=false) -> bool
 		swim_up()
 		return not ice_trapped and freeze_time<=0 and stun_time<=0 and not drowned
 	var fraction:=clampf(height_fraction,0.0,1.0)
-	var cost:=4.0 if held_input else lerpf(4.0,12.0,fraction)
+	var cost:=JUMP_MIN_STAMINA if held_input else lerpf(JUMP_MIN_STAMINA,JUMP_MAX_STAMINA,fraction)
 	if not is_on_floor() or stamina<cost or health<=0 or combat_reaction_active() or mode=="takeoff":
 		return false
 	var carry:=motion_direction*minf(6,combo_speed) if combo_time>0 else drive_velocity.limit_length(6)
 	# Keep legacy authored jumps unchanged; this entry owns variable player/CPU hops.
 	if not spend_stamina(cost):return false
-	motion_jump_fraction=fraction
+	motion_jump_fraction=0.0 if held_input else fraction
 	motion_jump_variable=held_input
 	motion_jump_held=held_input
 	motion_jump_hold_time=0.0
 	mode="takeoff"
 	mode_time=0.0
-	mode_length=0.14
+	mode_length=INF if held_input else 0.14
 	jump_kind="motion_jump"
 	air_dash_used=false
 	clip=""
@@ -1235,20 +1241,29 @@ func set_motion_dash_held(value:bool)->void:
 
 func tick_variable_jump(delta:float)->void:
 	if not motion_jump_variable:return
-	if health<=0 or combat_reaction_active() or (is_on_floor() and mode!="takeoff"):
+	if health<=0 or combat_reaction_active() or mode!="takeoff":
 		motion_jump_variable=false
+		motion_jump_held=false
 		return
-	if mode=="takeoff":return
-	if not motion_jump_held or motion_jump_hold_time>=JUMP_HOLD_SECONDS:
-		if not motion_jump_held and velocity.y>5.4:velocity.y=5.4
+	if not is_on_floor():
 		motion_jump_variable=false
+		motion_jump_held=false
+		mode="air";mode_time=0.0;mode_length=0.1;air_clock=0.0
+		play("duel/air")
 		return
-	var step:=minf(delta,JUMP_HOLD_SECONDS-motion_jump_hold_time)
-	if not spend_stamina(8.0*step/JUMP_HOLD_SECONDS,false):
-		velocity.y=minf(velocity.y,5.4)
+	if not motion_jump_held:
 		motion_jump_variable=false
+		mode_length=mode_time
+		return
+	var step:=minf(maxf(0.0,delta),JUMP_HOLD_SECONDS-motion_jump_hold_time)
+	if step<=0.0:return
+	if not spend_stamina((JUMP_MAX_STAMINA-JUMP_MIN_STAMINA)*step/JUMP_HOLD_SECONDS,false):
+		motion_jump_held=false
+		motion_jump_variable=false
+		mode_length=mode_time
 		return
 	motion_jump_hold_time+=step
+	motion_jump_fraction=clampf(motion_jump_hold_time/JUMP_HOLD_SECONDS,0.0,1.0)
 
 func start_editor_motion(kind: String) -> bool:
 	if arena.combat().cast_committed(self):return false
@@ -1307,7 +1322,9 @@ func launch() -> void:
 	if jump_kind!="motion_jump":
 		super.launch()
 		return
-	velocity.y=(10.8 if motion_jump_held else 5.4) if motion_jump_variable else sqrt(lerpf(5.4*5.4,10.8*10.8,motion_jump_fraction))
+	velocity.y=sqrt(lerpf(JUMP_MIN_SPEED*JUMP_MIN_SPEED,JUMP_MAX_SPEED*JUMP_MAX_SPEED,motion_jump_fraction))
+	motion_jump_variable=false
+	motion_jump_held=false
 	air_clock=0
 	custom_jump_elapsed=0.0
 	mode="air"

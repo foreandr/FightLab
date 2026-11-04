@@ -20,7 +20,7 @@ func hop(hold:float)->Vector2:
  space(true);assert(a.mode=="takeoff")
  # Key repeats cannot spend again or restart takeoff.
  var cost:float=a.stamina_spent;space(true);assert(a.stamina_spent==cost)
- for i in 150:
+ for i in 240:
   if float(i)*0.016>=hold:space(false)
   step(0.016);peak=maxf(peak,a.position.y-ground)
   if not a.is_on_floor():air=true
@@ -33,11 +33,28 @@ func run():
  while not s.animation_browser.ready_catalog:await process_frame
  s.field.set_physics_process(false);b.set_process(false);b.set_physics_process(false)
  a.practice_god_mode=false
- var short:=hop(0.0);var full:=hop(0.5)
+ var short:=hop(0.0);var full:=hop(1.0)
  assert(full.x>short.x and full.y>short.y)
- assert(is_equal_approx(short.y,4.0) and is_equal_approx(full.y,12.0))
+ assert(is_equal_approx(short.y,4.0) and is_equal_approx(full.y,20.0))
+ settle();a.stamina=100;space(true)
+ for i in 15:step(0.016)
+ var early:float=a.bone_point("pelvis").y
+ for i in 20:step(0.016)
+ var middle:float=a.bone_point("pelvis").y
+ for i in 25:step(0.016)
+ var deepest:float=a.bone_point("pelvis").y
+ assert(early>middle+0.02 and middle>deepest+0.02,"Charge does not progressively deepen crouch")
+ assert(a.is_on_floor() and a.mode=="takeoff","Held charge jumped without release")
+ var paid:float=a.stamina_spent
+ for i in 70:step(0.016)
+ assert(is_equal_approx(paid,a.stamina_spent) and is_equal_approx(deepest,a.bone_point("pelvis").y),"Charge exceeded stamina/pose cap")
+ await RenderingServer.frame_post_draw
+ root.get_texture().get_image().save_png("res://work/charged_jump_crouch.png")
+ space(false);settle()
  settle();space(true)
  for i in 15:step(0.016)
+ space(false)
+ for i in 2:step(0.016)
  assert(not a.is_on_floor())
  var entry:Dictionary={"title":"Backfist","clip":"fight/backfist","step":"Imported Motion","store_raw":true,"duration":1.0,"source_duration":1.0,"animation_type":"Arm","sandbox_animation":true}
  b.demo_duration=1.0;assert(b.choose_demo_animation(entry,false));b.play_demo_preview();b.process_demo_preview(0.1)
@@ -52,8 +69,15 @@ func run():
  b.play_demo_preview();b.process_demo_preview(0.1);space(true)
  assert(b.playing and a.mode=="takeoff","Jump canceled a running preview")
  for i in 15:step(0.016)
+ space(false)
+ for i in 2:step(0.016)
  assert(b.playing and not a.is_on_floor(),"Preview prevented shared jump takeoff")
  space(false);settle();a.stamina=3;space(true);assert(a.mode!="takeoff")
+ a.stamina=4;space(true);step(0.016)
+ assert(a.mode=="air" and not a.motion_jump_variable,"Exhausted charge stuck in takeoff")
+ space(false);settle();a.stamina=100;space(true)
+ a.position.y+=2.0;b.move_caster(0.016,Vector2.ZERO,false);step(0.016)
+ assert(a.mode=="air" and not a.motion_jump_variable,"Losing ground contact left an infinite takeoff")
  while s.animation_browser.thumbnails.busy or not s.animation_browser.thumbnails.jobs.is_empty():await process_frame
- print("SANDBOX JUMP PASS: Space tap/hold height and 4/12 stamina, duplicate/low-stamina rejection, landing, cast in air, upper body preserved, Touch-only movement ownership unchanged")
+ print("SANDBOX JUMP PASS: Space tap/hold height and 4/20 stamina, duplicate/low-stamina rejection, landing, cast in air, upper body preserved, Touch-only movement ownership unchanged")
  quit()

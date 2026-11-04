@@ -13,13 +13,11 @@ func settle():
  assert(a.is_on_floor())
 func hop(hold:float)->Vector2:
  await settle()
- var spent:float=a.stamina_spent;var peak:=0.0;var airborne_time:=0.0;var airborne:=false
+ var spent:float=a.stamina_spent;var peak:=0.0;var airborne:=false
  assert(a.start_motion_jump(1.0,true))
  assert(not a.start_motion_jump(1.0,true),"Repeated takeoff charged twice")
- for i in 150:
-  if a.mode!="takeoff":
-   if airborne_time>=hold:a.set_motion_jump_held(false)
-   airborne_time+=1.0/60.0
+ for i in 240:
+  if float(i)/60.0>=hold:a.set_motion_jump_held(false)
   await physics_frame
   w.tick_combat(1.0/60.0)
   peak=maxf(peak,a.position.y-w.ground_height(a.position))
@@ -42,12 +40,12 @@ func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
  w=current_scene;w.set_physics_process(false);a=w.fighters[0]
  var hops:Array[Vector2]=[];var dashes:Array[Vector2]=[]
- for duration in [0.0,0.12,0.3]:
-  hops.append(await hop(duration));dashes.append(await dash(duration))
+ for duration in [0.0,0.4,0.9]:
+  hops.append(await hop(duration));dashes.append(await dash(duration/3.0))
  for i in [1,2]:
   assert(hops[i].x>hops[i-1].x and hops[i].y>hops[i-1].y,"Jump hold did not increase height AND stamina")
   assert(dashes[i].x>dashes[i-1].x and dashes[i].y>dashes[i-1].y,"Dash hold did not increase distance AND stamina")
- assert(is_equal_approx(hops[0].y,4.0) and is_equal_approx(hops[2].y,12.0))
+ assert(is_equal_approx(hops[0].y,4.0) and is_equal_approx(hops[2].y,20.0))
  assert(is_equal_approx(dashes[0].y,4.0) and is_equal_approx(dashes[2].y,12.0))
  await settle();a.stamina=3
  assert(not a.start_motion_jump(0.0) and not a.start_motion_dash(0,0.0))

@@ -1,6 +1,9 @@
 Space in Sandbox uses BattleActor.start_motion_jump(1.0, true), release uses
-set_motion_jump_held(false). Tap costs 4 stamina; full hold costs 12, with height
-set by the existing variable-jump rules. Repeated presses while airborne or in
+set_motion_jump_held(false). Tap costs 4 stamina; full charge costs 20. Holding Space charges on the floor
+over 0.85 seconds, progressively blending standing into ual1/Crouch_Idle. At
+maximum the pose and payment stop increasing. Release launches with speed
+5.4..15.6 m/s based on charge (about 0.6..5.4m measured height). Release no longer
+cuts velocity in the air. Running out of stamina releases the affordable charge. Repeated presses while airborne or in
 takeoff cannot start another jump. Resource checks and cast commitment still apply.
 
 BattleActor's pose-locked path now advances the existing takeoff/air clocks.
@@ -18,6 +21,7 @@ authored body-region types. Air collects airborne moves; Grabs collects grabs,
 clinches and grappling. Airborne grabs appear in both. The Ground/Air radio row
 is removed. No new Grab combat mechanics were introduced.
 
-Validation: tests/sandbox_jump_input_test.gd exercises real Space input, tap/hold
+Validation: tests/sandbox_jump_input_test.gd exercises real Space input, progressive
+crouch depth, stationary/max charge, capped payment and pose, release, tap/hold
 height and stamina, grounded/airborne states, casting during a jump, regional pose
 preservation, duplicate/insufficient-stamina rejection and unchanged Touch rules.
