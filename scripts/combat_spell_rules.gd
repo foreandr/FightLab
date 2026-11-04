@@ -43,9 +43,6 @@ static func barrier_base_mana(kind:String)->float:
 static func left_jab_strike()->Array:
 	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
 
-static func left_cross_strike()->Array:
-	return ["left_cross","practice_cross/left_cross","hand_l",0.16,0.57,10.0,10.0,1.0]
-
 static func right_jab_strike()->Array:
 	return ["right_jab","practice/right_jab","hand_r",0.12,0.48,8.0,8.0,1.0]
 

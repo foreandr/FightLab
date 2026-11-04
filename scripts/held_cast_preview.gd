@@ -1,6 +1,7 @@
 extends RefCounted
 ## Experimental input adapter. Shared Rules/CombatRuntime still own all costs.
 var active:=false
+var preparing:=false
 var seconds:=0.0
 var follow_through:=false
 var feedback:Node
@@ -20,7 +21,9 @@ func begin(builder:Node)->void:
  limits=duration_range(builder.casting_animation)
  builder.demo_duration=limits.x
  builder.casting_animation.duration=limits.x
+ seconds=0.0;preparing=true
  builder.play_demo_preview()
+ preparing=false
  if not builder.playing:return
  active=true;seconds=0.0;follow_through=false
  feedback=builder.editor.actor.get_node_or_null("CastChargeFeedback")

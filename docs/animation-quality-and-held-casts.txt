@@ -60,9 +60,10 @@ Shared cast_charge_rules supplies the same optional hold policy to reusable
 spell bindings and authored combat specs: white Tap, green Good at 1/3 s,
 blue Better at 2/3 s, gold Perfect from 1.00-1.25 s, then red Overheld. Power
 rises to 2x, falls smoothly after the perfect window and bottoms at 0.15x at
-2.25 s. Physical damage and cast exertion scale; takeoff stamina remains owed.
-Stamina uses the tap's reference duration so stretching a quick clip cannot
-accidentally make the better charge tiers cheaper. Animation duration still
+2.25 s. Physical damage scales; stamina has a separate modest timing surcharge, and
+takeoff stamina remains owed.
+Stamina uses the animation range's midpoint reference duration so stretching a quick clip cannot
+accidentally change the baseline cost. Animation duration still
 stays in the card's min/max range, and release continues forward from wind-up.
 A fading actor-owned label quotes actual physical damage and stamina costs.
 The shared transparent shield now stands 8.5 cm off the mesh, with a faint rim
@@ -72,8 +73,18 @@ charge neither recolors nor cancels the actual Self Barrier defense.
 Held Touch physical damage is calibrated to the one-second neutral benchmark:
 a stationary unblocked arm tap starts at 10 physical, independent of how short
 the source clip is; perfect charge scales that baseline to 20 before movement,
-headshots and defenses. Existing charge stamina and mana rules are unchanged.
+headshots and defenses. Damage calibration does not change mana rules.
 Sandbox 2 is an always-equipped physical Left Cross shortcut (10 damage), using
-the calibrated mirrored right-cross asset and shared actor strike/contact path.
+the calibrated mirrored right-cross asset and shared held-cast/contact path.
 It does not change the current animation/spell pair or add a hotbar button.
 T remains the target-behavior keyboard shortcut; clicking the target still works.
+
+The 2 binding now uses held_practice_shortcut over the same held_cast_preview,
+cast_charge_rules and CombatRuntime path as 1. It snapshots/restores the selected
+animation and spell, and supports tap, charge, perfect, overheld and interruption.
+No separate strike/cost system or hotbar button is used for 2.
+Stamina reference: midpoint of the source's min/max duration, independent of the
+chosen hold duration. Partial charge adds up to 15%; perfect timing removes that
+surcharge (1x baseline). Red overhold tapers to 0.75x baseline. Damage still uses
+its separate 1x-2x-0.15x curve. Jump takeoff costs remain owed. Mana is not multiplied
+by a charge tier: existing delivery, effect-share transfer and timing pricing apply.

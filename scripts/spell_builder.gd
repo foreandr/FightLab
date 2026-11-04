@@ -55,6 +55,7 @@ var preview_jumping:=false
 var held_cast=preload("res://scripts/held_cast_preview.gd").new()
 var sandbox_spell_selected:=false
 var sandbox_spell_record:Dictionary={}
+var held_practice_shortcut=preload("res://scripts/held_practice_shortcut.gd").new()
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -1262,6 +1263,7 @@ func load_named_spell(id:String)->bool:
 
 func apply_spell_record(record:Dictionary,open_editor:=true)->bool:
  if cast_committed() or not preload("res://scripts/spell_definition.gd").error(record).is_empty():return false
+ if held_practice_shortcut.active:held_practice_shortcut.cancel(self)
  stop_preview_controls(true)
  if not limiter_enabled:set_limiter_enabled(true)
  element=record.element;preview_effect=element
@@ -1371,18 +1373,6 @@ func practice_left_jab()->void:
  set_preview_repeat(false)
  actor.set_editor_animation_profile({},"")
  actor.start_left_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
-
-func practice_left_cross()->void:
- var actor=editor.actor
- if not is_instance_valid(actor) or actor.combat_reaction_active() or actor.mode=="punch" or cast_committed():return
- interrupt_preview_cast();playing=false
- demo_enter_pose.clear();demo_exit_pose.clear();set_preview_repeat(false)
- actor.set_editor_animation_profile({},"")
- if not actor.player.has_animation_library("practice_cross"):actor.player.add_animation_library("practice_cross",AnimationLibrary.new())
- if not actor.player.has_animation("practice_cross/left_cross"):
-  actor.player.get_animation_library("practice_cross").add_animation("left_cross",preload("res://assets/animations/demos/left_cross.res"))
- actor.begin_strike(Rules.left_cross_strike())
- if actor.mode=="punch":actor.melee_aim_direction=ThirdPersonCamera.movement_facing(editor.field,actor)
 
 func practice_right_jab()->void:
  var actor=editor.actor
@@ -1742,6 +1732,10 @@ func play_demo_preview() -> void:
   begin_demo_exit()
 
 func process_demo_preview(delta:float) -> void:
+ process_demo_preview_step(delta)
+ held_practice_shortcut.after_step(self)
+
+func process_demo_preview_step(delta:float) -> void:
  held_cast.update(self,delta)
  if editor.actor.mode=="punch":return
  if editor.actor.combat_reaction_active():
@@ -1840,6 +1834,7 @@ func interrupt_preview_cast() -> void:
 
 func choose_demo_animation(entry:Dictionary,save:=true) -> bool:
  if cast_committed():return false
+ if held_practice_shortcut.active:held_practice_shortcut.cancel(self)
  if str(entry.get("clip","")).is_empty():return false
  var before:=capture_demo_pose()
  if is_instance_valid(editor.actor) and not editor._ensure_animation_source(entry):return false
@@ -2082,20 +2077,20 @@ func projectile_effect_spec(effect:String) -> Dictionary:
 
 func demo_preview_spec() -> Dictionary:
  var base:Dictionary=touch_authoring.base_spec() if previews_touch() else (Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()))
- if sandbox_testing and not sandbox_spell_record.is_empty():
+ if (sandbox_testing or held_practice_shortcut.active) and not sandbox_spell_record.is_empty():
   base=preload("res://scripts/spell_definition.gd").base_spec(sandbox_spell_record,{"hand":CombatAim.emitter(playback_animation())})
   base["animation_type"]=CastType.kind(playback_animation())
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
  if not jump.is_empty():base.jump_motion=jump
- if sandbox_testing and (held_cast.active or held_cast.follow_through):
+ if (sandbox_testing or held_practice_shortcut.active) and (held_cast.active or held_cast.follow_through or held_cast.preparing):
   base["cast_charge_time"]=held_cast.seconds
-  base["cast_charge_reference_duration"]=held_cast.limits.x
+  base["cast_charge_reference_duration"]=(held_cast.limits.x+held_cast.limits.y)*0.5
   if previews_touch():base["cast_charge_damage_reference_duration"]=1.0
  var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive() and not previews_barrier())
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
  if not limiter_enabled:spec=test_overrides.apply(spec)
- if sandbox_testing:
+ if sandbox_testing or held_practice_shortcut.active:
   spec.release=preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
   if not sandbox_spell_record.is_empty():
    spec.name=sandbox_spell_record.name
@@ -2106,10 +2101,10 @@ func demo_preview_spec() -> Dictionary:
 
 func authoring_release_fraction()->float:
  # Held input replaces the editable timing bonus with the neutral baseline.
- return (MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5 if sandbox_testing else release_fraction
+ return (MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5 if sandbox_testing or held_practice_shortcut.active else release_fraction
 
 func preview_release_fraction()->float:
- if sandbox_testing:return preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
+ if sandbox_testing or held_practice_shortcut.active:return preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
  return release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0
 
 func cast_duration() -> float:
@@ -2406,14 +2401,17 @@ func _input(event:InputEvent) -> void:
  if event is InputEventKey and not editor.camera_text_editing():
   var key:int=event.physical_keycode if event.physical_keycode!=0 else event.keycode
   if key in [KEY_1,KEY_KP_1] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   if held_practice_shortcut.active:
+    get_viewport().set_input_as_handled();return
    if sandbox_testing:
     if event.pressed:held_cast.begin(self)
     else:held_cast.release(self)
    elif event.pressed:play_projectile_once()
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   practice_left_cross()
+  if key in [KEY_2,KEY_KP_2] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   if event.pressed:held_practice_shortcut.begin(self)
+   else:held_practice_shortcut.release(self)
    get_viewport().set_input_as_handled()
    return
   if key==KEY_F1 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:

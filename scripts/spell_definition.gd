@@ -99,7 +99,8 @@ static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->
  base["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(animation)
  if binding.has("hold_seconds"):
   base["cast_charge_time"]=float(binding.hold_seconds)
-  base["cast_charge_reference_duration"]=maxf(0.1,float(binding.get("charge_reference_duration",seconds)))
+  var limits:=preload("res://scripts/held_cast_preview.gd").duration_range(animation)
+  base["cast_charge_reference_duration"]=maxf(0.1,float(binding.get("charge_reference_duration",(limits.x+limits.y)*0.5)))
   if record.delivery_type=="Touch":base["cast_charge_damage_reference_duration"]=1.0
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(animation)
  if not jump.is_empty():base["jump_motion"]=jump

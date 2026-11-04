@@ -3,8 +3,8 @@ var screen
 var builder
 var controller
 func _initialize():set_meta("ai_learning_enabled",false);call_deferred("run")
-func key(code:int):
- var event:=InputEventKey.new();event.physical_keycode=code;event.keycode=code;event.pressed=true
+func key(code:int,pressed:=true):
+ var event:=InputEventKey.new();event.physical_keycode=code;event.keycode=code;event.pressed=pressed
  builder._input(event)
 func step():
  await physics_frame
@@ -45,9 +45,10 @@ func run():
  var hitboxes:bool=builder.preview_hitboxes
  var mana:float=screen.actor.mana
  key(KEY_2)
- assert(screen.actor.mode=="punch" and screen.actor.melee_spec[2]=="hand_l" and screen.actor.melee_spec[0]=="left_cross")
+ assert(builder.held_practice_shortcut.active and builder.held_cast.active and builder.casting_animation.attack_bone=="hand_l")
  assert(builder.preview_hitboxes==hitboxes and screen.actor.mana==mana)
  var damage:float=screen.target.damage_taken
+ key(KEY_2,false)
  for i in 70:await step()
  assert(screen.target.damage_taken>damage,"Left cross did not physically connect")
  await reset_at(0.78);screen.actor.practice_god_mode=true

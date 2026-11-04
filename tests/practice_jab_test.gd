@@ -37,11 +37,14 @@ func run():
  var mana:float=actor.mana;var stamina:float=actor.stamina
  var key:=InputEventKey.new();key.keycode=KEY_2;key.physical_keycode=KEY_2;key.pressed=true
  b._input(key)
- assert(actor.mode=="punch" and actor.attack_kind=="left_cross" and actor.melee_spec[2]=="hand_l")
- assert(actor.mana==mana and actor.stamina<stamina,"Jab should cost stamina only")
+ assert(b.held_practice_shortcut.active and b.casting_animation.attack_bone=="hand_l")
+ key.pressed=false;b._input(key)
+ limit=Time.get_ticks_msec()+2000
+ while not b.released and Time.get_ticks_msec()<limit:await process_frame
+ assert(actor.mana<mana and actor.stamina<stamina,"Held Left Cross did not use shared Touch costs")
  limit=Time.get_ticks_msec()+2000
  while target.damage_taken==old_damage and Time.get_ticks_msec()<limit:await process_frame
- assert(target.damage_taken>old_damage,"Player's 2-key jab did not hit on contact")
+ assert(target.damage_taken>old_damage,"Player's 2-key Left Cross did not hit on contact")
  assert(e.field.shot_serial==serial and target.burn_time==0.0)
  while actor.mode=="punch":await physics_frame
  var dealt:float=target.damage_taken
