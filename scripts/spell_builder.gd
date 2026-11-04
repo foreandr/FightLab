@@ -54,6 +54,7 @@ var sandbox_testing:=false
 var preview_jumping:=false
 var held_cast=preload("res://scripts/held_cast_preview.gd").new()
 var sandbox_spell_selected:=false
+var sandbox_spell_record:Dictionary={}
 var demo_type_labels:Dictionary={}
 var demo_animation_types:Dictionary={}
 var demo_movement_control:VBoxContainer
@@ -2068,7 +2069,13 @@ func demo_preview_spec() -> Dictionary:
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
  if not limiter_enabled:spec=test_overrides.apply(spec)
- if sandbox_testing:spec.release=preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
+ if sandbox_testing:
+  spec.release=preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
+  if not sandbox_spell_record.is_empty():
+   spec.name=sandbox_spell_record.name
+   spec["spell_definition_id"]=sandbox_spell_record.id
+   spec["spell_metadata"]=sandbox_spell_record.get("metadata",{}).duplicate(true)
+   spec["provenance"]=sandbox_spell_record.provenance.duplicate(true)
  return spec
 
 func authoring_release_fraction()->float:

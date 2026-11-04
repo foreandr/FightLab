@@ -4,9 +4,8 @@ func run():
  change_scene_to_file("res://scenes/sandbox.tscn");await process_frame;await process_frame
  var s=current_scene;var b=s.spell_builder;var browser=s.animation_browser
  while not browser.ready_catalog:await process_frame
- assert(browser.spell_pages.page=="wizard" and b.delivery_screen.is_visible_in_tree())
- assert(not b.get_meta("cast_timeline").is_visible_in_tree() and not b.delivery_back_button.visible)
- browser.spell_pages.go_back();assert(browser.spell_pages.page=="wizard")
+ assert(browser.spell_catalog.is_visible_in_tree() and browser.spell_catalog.type_buttons.size()==5)
+ assert(not b.get_meta("cast_timeline").is_visible_in_tree())
  assert(not browser.confirm.visible and b.projectile_preview_button.get_parent().get_node("PracticeRightJab").visible)
  var jab_key:=InputEventKey.new();jab_key.physical_keycode=KEY_4;jab_key.pressed=true
  b._input(jab_key);assert(s.actor.mode!="punch","Removed Jab shortcut remains active")

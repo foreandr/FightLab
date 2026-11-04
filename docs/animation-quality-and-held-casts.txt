@@ -40,3 +40,9 @@ sandbox_pairing_test, combat_store_curation_test and spell_cancel_stamina_test.
 Sandbox cards show Min/Max seconds from the same duration_range helper as held
 input. The compact index retains duration limits, so captions do not open full
 records or load animation assets. Airborne minimums apply before displaying.
+
+Sandbox RHS browses saved_spell_library definitions by Projectile, Beam,
+Targeted, Touch and Barrier. It lists actual saved names, not built-in presets
+or unsaved workspaces. Empty types stay empty. Choosing a card applies its
+allocation/appearance through the shared builder, retaining name, ID and
+creator/date/provenance on the cast. The authoring wizard remains in Create.
