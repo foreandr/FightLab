@@ -30,13 +30,13 @@ func run():
  var stamina:float=a.stamina
  assert(a.try_quick_recovery()=="Perfect" and a.stamina==stamina)
  assert(a.try_quick_recovery()=="Perfect" and a.stamina==stamina,"Repeat attempt charged or changed result")
- var fast:float=await getup();assert(is_equal_approx(fast,0.65))
+ var fast:float=await getup();assert(is_equal_approx(fast,0.65/1.20))
  a.stamina=20;a.mana=20;a.stamina_delay=0;a.mana_delay=0
  await tick(3);assert(a.stamina>20 and is_equal_approx(a.stamina,a.mana),"Getting up stopped regeneration")
  await knockdown();a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.75
  stamina=a.stamina
  assert(a.try_quick_recovery()=="Good" and is_equal_approx(stamina-a.stamina,10))
- var medium:float=await getup();assert(is_equal_approx(medium,1.10) and medium>fast)
+ var medium:float=await getup();assert(is_equal_approx(medium,1.10/1.20) and medium>fast)
  await knockdown();a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.2
  stamina=a.stamina;assert(a.try_quick_recovery()=="Miss" and a.stamina==stamina)
  var slow:float=await getup();assert(slow>medium)
@@ -45,5 +45,5 @@ func run():
  a.reset_fighter(Vector3.ZERO);assert(not a.recovery_timing.running)
  await knockdown();a.health=0
  assert(a.try_quick_recovery()=="");await tick(120);assert(a.mode=="ragdoll","Dead fighter got up")
- print("RAGDOLL TIMING PASS: living ragdoll/get-up regen once at 34/s; perfect free 0.65s; yellow costs10 and 1.10s; miss normal ",slow,"s; no retries, insufficient stamina, reset and dead exclusions")
+ print("RAGDOLL TIMING PASS: living ragdoll/get-up regen once at 34/s; perfect free 0.54s; yellow costs10 and 0.92s; miss normal ",slow,"s; no retries, insufficient stamina, reset and dead exclusions")
  quit()

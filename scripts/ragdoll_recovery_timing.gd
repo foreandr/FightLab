@@ -1,13 +1,14 @@
 extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
-const OPPORTUNITY_DELAY:=0.45
+const OPPORTUNITY_DELAY:=0.35
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0
-const PERFECT_GETUP_SECONDS:=0.65
-const GOOD_GETUP_SECONDS:=1.10
-const NORMAL_GETUP_SECONDS:=1.71
+const GETUP_SPEED:=1.20
+const PERFECT_GETUP_SECONDS:=0.65/GETUP_SPEED
+const GOOD_GETUP_SECONDS:=1.10/GETUP_SPEED
+const NORMAL_GETUP_SECONDS:=1.71/GETUP_SPEED
 var age:=0.0
 var result:=""
 var running:=false
