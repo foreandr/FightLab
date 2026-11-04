@@ -42,6 +42,8 @@ settings/gdscript/always_track_call_stacks=true
 
 [autoload]
 
+WardrobeLibrary="*res://scripts/character_wardrobe_library.gd"
+
 CyberInterface="*res://scripts/cyber_interface.gd"
 
 GameSettings="*res://scripts/game_settings.gd"

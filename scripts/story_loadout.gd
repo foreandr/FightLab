@@ -890,12 +890,13 @@ func _build_preview_panel(columns: HBoxContainer) -> void:
 	viewport.add_child(rim_light)
 	preview = PreviewCharacter.new()
 	viewport.add_child(preview)
+	preview.appearance_rebuilt.connect(func(): barrier_preview_materials=BodyBarrierOverlay.apply(preview.skeleton))
 	call_deferred("_populate_preview")
 
 func _populate_preview() -> void:
 	await get_tree().process_frame
 	var preview_started := Time.get_ticks_usec()
-	preview.set_profile(_preview_profile_with_equipped_gear())
+	preview.set_profile_animated(_preview_profile_with_equipped_gear())
 	barrier_preview_materials=BodyBarrierOverlay.apply(preview.skeleton)
 	await get_tree().process_frame
 	preview_loading = false
@@ -2132,12 +2133,12 @@ func _refresh_equipped_preview() -> void:
 
 func _refresh_equipped_preview_deferred(generation:int) -> void:
 	preview_loading = true
-	if is_instance_valid(preview_loading_overlay):preview_loading_overlay.show()
+	# Gear digitizes in-place; keep the preview unobscured during the swap.
 	if preview_status!=null:preview_status.text="Loading character…"
 	await get_tree().process_frame
 	if generation!=preview_refresh_generation or not is_instance_valid(preview):return
 	var refresh_started:=Time.get_ticks_usec()
-	preview.set_profile(_preview_profile_with_equipped_gear())
+	preview.set_profile_animated(_preview_profile_with_equipped_gear())
 	barrier_preview_materials=BodyBarrierOverlay.apply(preview.skeleton)
 	await get_tree().process_frame
 	if generation!=preview_refresh_generation:return

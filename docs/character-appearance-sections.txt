@@ -23,3 +23,39 @@ Verified with tests/character_appearance_sections_test.gd: all seven pages,
 selection / size retention, all 35 downloaded meshes on both body rigs, preserved
 existing save workflow. Manually inspected rendered cards for all 40 hair choices.
 Existing female fingerless-glove source warning remains; no glove mesh changes.
+
+Downloaded wardrobe integration
+
+WardrobeLibrary loads only catalog metadata in a background thread. It exposes
+all local, non-unwanted downloaded assets, including pending-review items, by
+runtime fitting slot. Missing source files are omitted. On the current machine:
+23,456 downloaded entries in their matching clothing/accessory slots, plus starter sets.
+No bulk geometry loads or bulk Godot imports are performed. Only six visible
+thumbnail candidates are built; name/creator/source search and paging are shared
+with hair. Color and size are above the cards for easy access.
+
+Headwear, Face, Back, Necklaces, Earrings, Shoulders and Bracelets now have pages.
+Saved accessories no longer reset to None on opening character editing.
+Downloaded fitted shirts/outfits/trousers carry their original fit-size baseline
+for live resizing, matching rebuilt/saved sizes. Original material resources are
+copied before tinting; unsupported imported custom attributes are not copied
+into the newly skinned StandardMaterial mesh.
+
+Local library files remain local as before; source manifests/provenance and the
+existing download tooling remain authoritative. Exposing an asset does not mark
+it accepted for CPU clothing generation. The unwanted pile remains untouched.
+
+Gear digitization
+
+Creator and loadout/edit preview both call StoryCharacter.set_profile_animated.
+One shared preview-only controller pixel-dissolves changed clothing for 0.22 s,
+swaps the profile, then reconstructs it over 0.34 s with cyan grid highlights.
+Skin, arena, combat and collision are unaffected. Source materials are restored
+at completion. Repeated choices cancel safely in favor of the latest selection;
+size changes made during the transition propagate to the pending profile.
+Initial spawns and thumbnail renders use the immediate set_profile API.
+
+Tests: character_downloaded_wardrobe_test.gd and character_gear_transition_test.gd.
+The second uses an actual loadout UI fixture without touching the player's save.
+The existing GLES null-material cleanup warning can occur when that loadout
+preview is destroyed; no new shader compilation or fitted surface-array errors.

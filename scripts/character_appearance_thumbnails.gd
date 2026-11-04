@@ -23,8 +23,8 @@ func _process(_delta: float) -> void:
 	var camera := Camera3D.new(); viewport.add_child(camera)
 	var center := Vector3(0,1,0); var distance := 3.2
 	match str(job.slot):
-		"hair": center.y = 1.65; distance = 1.0
-		"wardrobe_shirt", "wardrobe_arms": center.y = 1.15; distance = 2.0
+		"hair", "wardrobe_hat", "wardrobe_mask", "wardrobe_earrings": center.y = 1.65; distance = 1.0
+		"wardrobe_shirt", "wardrobe_arms", "wardrobe_necklace", "wardrobe_shoulders", "wardrobe_bracelet": center.y = 1.15; distance = 2.0
 		"wardrobe_pants": center.y = 0.6; distance = 2.2
 		"wardrobe_hands": center.y = 0.95; distance = 2.1
 		"wardrobe_belt": center.y = 0.88; distance = 1.7

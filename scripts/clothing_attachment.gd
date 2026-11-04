@@ -219,6 +219,9 @@ static func _attach_shirt(skeleton: Skeleton3D, source: Node3D, box: AABB, item:
 			arrays[Mesh.ARRAY_WEIGHTS] = weights
 			# Recompute tangents from the transformed normals/UVs if needed.
 			arrays[Mesh.ARRAY_TANGENT] = null
+			# Imported custom attributes need their original format bits; this fitted
+			# StandardMaterial mesh uses only position/normal/UV/color and new weights.
+			for custom in [Mesh.ARRAY_CUSTOM0,Mesh.ARRAY_CUSTOM1,Mesh.ARRAY_CUSTOM2,Mesh.ARRAY_CUSTOM3]: arrays[custom]=null
 			result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
 			var material := mesh.get_active_material(surface)
 			if material == null: material = StandardMaterial3D.new()
@@ -226,6 +229,8 @@ static func _attach_shirt(skeleton: Skeleton3D, source: Node3D, box: AABB, item:
 	var fitted := MeshInstance3D.new()
 	fitted.name = "PavlovShirt_"+str(item.id)
 	fitted.mesh = result
+	fitted.set_meta("wardrobe_base_mesh",result)
+	fitted.set_meta("wardrobe_fitted_size",size)
 	fitted.skin = skeleton.create_skin_from_rest_transforms()
 	if draped:
 		var binding := Skin.new()

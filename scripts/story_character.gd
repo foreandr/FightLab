@@ -5,6 +5,23 @@ const BASE := "res://assets/combat/"
 const CHARACTER_BASE := "res://assets/characters/base/"
 const EXTERNAL_WARDROBE := "res://assets/characters/wardrobe/external/"
 
+signal appearance_rebuilt
+var gear_transitions_enabled := true
+var gear_transition: RefCounted
+func set_profile_animated(next_profile: Dictionary) -> void:
+	var changed: Array[String] = []
+	for key in next_profile:
+		if (str(key).begins_with("wardrobe_") or key == "hair") and next_profile[key] != profile.get(key): changed.append(str(key))
+	if next_profile.get("story_unequipped_parts",{}) != profile.get("story_unequipped_parts",{}):
+		for key in next_profile:
+			if str(key).begins_with("wardrobe_"): changed.append(str(key))
+	if model == null or not gear_transitions_enabled or changed.is_empty():
+		if gear_transition!=null: gear_transition.cancel()
+		set_profile(next_profile)
+		return
+	if gear_transition==null: gear_transition=preload("res://scripts/character_gear_transition.gd").new()
+	gear_transition.swap(self,next_profile,changed)
+
 var profile: Dictionary = {}
 var model: Node3D
 var skeleton: Skeleton3D
@@ -59,10 +76,12 @@ func set_wardrobe_size(wardrobe_key: String, amount: float, side := "") -> bool:
 		"wardrobe_pants": "bottoms_size", "wardrobe_boots": "footwear_size",
 		"wardrobe_hands": "handwear_size", "wardrobe_belt": "belt_size",
 		"wardrobe_hat": "hat_size", "wardrobe_mask": "mask_size", "wardrobe_back": "back_size",
+		"wardrobe_necklace":"necklace_size", "wardrobe_earrings":"earrings_size", "wardrobe_shoulders":"shoulders_size", "wardrobe_bracelet":"bracelet_size",
 	}
 	var size_key := str(size_keys.get(wardrobe_key, ""))
 	if not size_key.is_empty():
 		profile[size_key] = amount
+		if gear_transition!=null and gear_transition.active: gear_transition.pending[size_key]=amount
 	var changed := false
 	for node in find_children("*", "Node3D", true, false):
 		if str(node.get_meta("wardrobe_loadout_key", "")) != wardrobe_key:
@@ -74,7 +93,9 @@ func set_wardrobe_size(wardrobe_key: String, amount: float, side := "") -> bool:
 				continue
 			var base_mesh := mesh_instance.get_meta("wardrobe_base_mesh") as Mesh
 			if base_mesh != null:
-				var resized_mesh := _scale_wardrobe_cloth(base_mesh, 1.015 * amount)
+				var baseline := float(mesh_instance.get_meta("wardrobe_fitted_size",0.0))
+				var ratio := amount / baseline if baseline > 0.0 else 1.015 * amount
+				var resized_mesh := _scale_wardrobe_cloth(base_mesh, ratio)
 				if not mesh_side.is_empty():
 					resized_mesh = _wardrobe_side_mesh(resized_mesh, mesh_side)
 				for hidden_side in mesh_instance.get_meta("wardrobe_hidden_arm_sides", []):
@@ -132,6 +153,7 @@ func set_profile(next_profile: Dictionary) -> void:
 			animator.play(preload("res://scripts/default_idle.gd").resolve(self,animator,profile.get("idle_animation")))
 	if is_inside_tree(): _finish_pavlov_wardrobe()
 	else: ready.connect(_finish_pavlov_wardrobe,CONNECT_ONE_SHOT)
+	appearance_rebuilt.emit()
 
 func _finish_pavlov_wardrobe() -> void:
 	# Downloaded draped garments bind against the standing preview pose.
@@ -843,4 +865,18 @@ func _apply_pavlov_wardrobe() -> void:
 			var before := skeleton.get_child_count()
 			attachment.attach(skeleton,item,slot,float(profile.get(sizes[slot],1.0)))
 			if skeleton.get_child_count() == before: failures.append(str(item.id))
+			var color_keys := {"wardrobe_shirt":"shirt_color","wardrobe_pants":"bottoms_color","wardrobe_boots":"footwear_color","wardrobe_hands":"handwear_color","wardrobe_arms":"gloves_color"}
+			var color_key := str(color_keys.get(slot,str(slot).trim_prefix("wardrobe_")+"_color"))
+			for child in skeleton.get_children().slice(before):
+				var meshes: Array = child.find_children("*","MeshInstance3D",true,false)
+				if child is MeshInstance3D: meshes.append(child)
+				for mesh: MeshInstance3D in meshes:
+					if mesh.mesh == null: continue
+					for surface in mesh.mesh.get_surface_count():
+						var original := mesh.get_active_material(surface)
+						if original is StandardMaterial3D:
+							var material := original.duplicate() as StandardMaterial3D
+							material.albedo_color *= profile.get(color_key,Color.WHITE)
+							mesh.set_surface_override_material(surface,material)
+
 	set_meta("wardrobe_fit_failures",failures)

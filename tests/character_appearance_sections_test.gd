@@ -8,6 +8,7 @@ func run():
  change_scene_to_file("res://scenes/story_character_creator.tscn")
  await settle()
  var c = current_scene
+ c.preview.gear_transitions_enabled = false
  assert(c.profile.skin_color == Color("925438"))
  assert(c.hair_choice.item_count == 40)
  var names := {}
@@ -46,5 +47,5 @@ func run():
  while c.appearance_picker.thumbnails.busy or not c.appearance_picker.thumbnails.jobs.is_empty(): await process_frame
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/appearance_sections_test.png")
- print("APPEARANCE SECTIONS PASS: seven pickers, persistent sizes/selections, 40 hair choices, 35 downloaded meshes on both bodies, no save mutation")
+ print("APPEARANCE SECTIONS PASS: fourteen pickers, persistent sizes/selections, 40 hair choices, 35 downloaded meshes on both bodies, no save mutation")
  quit()

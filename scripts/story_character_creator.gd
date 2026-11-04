@@ -175,10 +175,6 @@ func _load_profile() -> void:
 		for key in stored:
 			profile[key] = stored[key]
 	profile["wardrobe_style"] = "Mix & match"
-	# Accessories are reserved for earned gear and stay off the tutorial starter.
-	profile["wardrobe_hat"] = "None"
-	profile["wardrobe_mask"] = "None"
-	profile["wardrobe_back"] = "None"
 	profile["height"] = clampf(float(profile.get("height", 1.0)), 0.9, 1.1)
 	profile["build"] = clampf(float(profile.get("build", 1.0)), 0.947, 1.06)
 	for slot in ["mask", "back"]:
@@ -354,6 +350,18 @@ func _build_ui() -> void:
 	var belt_variants: Array[String] = ["None", "Leather belt"]
 	belt_choice = _add_gear_row("Belt", "wardrobe_belt", belt_variants, "belt_size", "belt_color", Color("8a6135"))
 	boots_choice = _add_gear_row("Footwear", "wardrobe_boots", body_variants, "footwear_size", "footwear_color", Color("354438"))
+	# The same downloaded wardrobe slots used by runtime character assembly.
+	for spec in [
+		["Headwear","hat","hat_size","hat_color",["None","Hood"]],
+		["Face","mask","mask_size","mask_color",["None","Rogue mask"]],
+		["Back","back","back_size","back_color",["None","Cape","Backpack"]],
+		["Necklaces","necklace","necklace_size","necklace_color",["None"]],
+		["Earrings","earrings","earrings_size","earrings_color",["None"]],
+		["Shoulders","shoulders","shoulders_size","shoulders_color",["None"]],
+		["Bracelets","bracelet","bracelet_size","bracelet_color",["None"]]
+	]:
+		var choices: Array[String] = []; choices.assign(spec[4])
+		_add_gear_row(spec[0],"wardrobe_"+spec[1],choices,spec[2],spec[3],Color.WHITE)
 	_sync_wardrobe_controls()
 	_add_divider()
 	_add_section_label("BODY SHAPE")
@@ -765,13 +773,14 @@ func _button(text: String, primary: bool) -> Button:
 	return button
 
 func _selected(option: OptionButton) -> String:
-	return option.get_item_text(option.selected)
+	var value: Variant = option.get_item_metadata(option.selected)
+	return str(value) if value is String else option.get_item_text(option.selected)
 
 func _refresh_preview(rebuild := true) -> void:
 	if preview == null:
 		return
 	if rebuild:
-		preview.set_profile(profile)
+		preview.set_profile_animated(profile)
 	else:
 		preview.scale = Vector3.ONE * float(profile.get("height", 1.0))
 		preview.rotation.y = float(profile.get("rotation", 0.0))
@@ -945,9 +954,14 @@ func _random_character_name(rng: RandomNumberGenerator) -> String:
 func _select_text(option: OptionButton, value: String) -> void:
 	if option == null: return
 	for index in option.item_count:
-		if option.get_item_text(index) == value:
+		if option.get_item_text(index) == value or option.get_item_metadata(index) == value:
 			option.select(index)
 			return
+	if value.begins_with("Pavlov:"):
+		var item := preload("res://scripts/clothing_pool.gd").item_for_value(value)
+		option.add_item(str(item.get("name",value)))
+		option.set_item_metadata(option.item_count-1,value)
+		option.select(option.item_count-1)
 
 func _on_preview_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -1048,6 +1062,8 @@ func _confirm_character() -> void:
 func open_appearance_section(slot: String) -> void:
 	if not appearance_slots.has(slot): return
 	overview_scroll = appearance_scroll.scroll_vertical
+	if slot != "hair": WardrobeLibrary.request()
+	refresh_appearance_items(slot)
 	page_content.hide()
 	appearance_scroll.set_deferred("scroll_vertical",0)
 	appearance_picker.open_section(slot, appearance_slots[slot])
@@ -1060,6 +1076,30 @@ func close_appearance_section() -> void:
 	if appearance_buttons.has(appearance_picker.slot): appearance_buttons[appearance_picker.slot].grab_focus()
 
 func choose_appearance(slot: String, value: String) -> void:
-	profile[slot] = value
+	profile = appearance_candidate(slot,value)
 	_select_text(appearance_slots[slot].option, value)
 	_refresh_preview()
+
+func refresh_appearance_items(slot: String) -> void:
+	var definition: Dictionary = appearance_slots[slot]
+	if not definition.has("base_items"):
+		var entries: Array = []
+		for i in definition.option.item_count:
+			var raw: Variant = definition.option.get_item_metadata(i)
+			var value := str(raw) if raw is String else str(definition.option.get_item_text(i))
+			if not value.begins_with("Pavlov:"): entries.append({"name":definition.option.get_item_text(i),"value":value})
+		if slot in ["wardrobe_shirt","wardrobe_pants","wardrobe_arms","wardrobe_boots"]:
+			for style in ["Peasant","Traveler"]: entries.append({"name":style+" · Field style","value":style+":Field"})
+		definition["base_items"] = entries
+	definition["items"] = definition.base_items.duplicate()
+	if slot != "hair" and WardrobeLibrary.loaded: definition.items.append_array(WardrobeLibrary.for_slot(slot))
+
+func appearance_candidate(slot: String, value: String) -> Dictionary:
+	var candidate := profile.duplicate(true)
+	candidate[slot] = value
+	if slot == "wardrobe_shirt" and value.begins_with("Pavlov:"):
+		var item := preload("res://scripts/clothing_pool.gd").item_for_value(value)
+		if str(item.get("kind","")) == "outfit":
+			candidate["wardrobe_pants"] = "Underclothes"
+			candidate["wardrobe_arms"] = "Bare"
+	return candidate
