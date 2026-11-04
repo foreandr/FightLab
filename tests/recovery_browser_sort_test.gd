@@ -11,7 +11,7 @@ func run():
  b.stop_preview_controls(true)
  assert(browser.type_buttons.has("Recovery") and browser.sort_choice.item_count==3)
  browser.set_type("Recovery")
- assert(browser.matches_.size()>=2,"Recovery category omitted the new default or existing get-ups")
+ assert(browser.matches_.size()==1,"Recovery category must contain only Arms Lariat")
  var chosen:Dictionary={}
  for entry in browser.matches_:
   assert(entry._recovery)

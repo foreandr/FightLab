@@ -162,6 +162,7 @@ func load_default_pair()->void:
  host.spell_builder.stop_preview_controls(true)
 
 func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)->void:
+ if Types.is_recovery(entry) and str(entry.get("clip",""))!=preload("res://scripts/recovery_animation.gd").CLIP:return
  if not combat_filter.accepts(entry) and not (origin=="Built-in" and (Types.is_crouch(entry) or Types.is_recovery(entry)) and not combat_filter.excluded(entry)):return
  var id:=Library.key(entry)
  if used.has(id):return

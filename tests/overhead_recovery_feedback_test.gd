@@ -56,6 +56,6 @@ func run():
  for i in 50:s.field.show_recovery_feedback(cpu,"Recovered")
  assert(numbers.entries.size()==numbers.MAX_LABELS,"Recovery text bypasses the bounded floating-label pool")
  s.field.set_combat_numbers(false)
- print("OVERHEAD RECOVERY PASS: instant opportunity, player/CPU stamina prompts follow body, Space route, single recovery colored floating feedback, fade and F2 silence")
+ print("OVERHEAD RECOVERY PASS: 0.1s opportunity delay, player/CPU stamina prompts follow body, Space route, single recovery colored floating feedback, fade and F2 silence")
  while s.animation_browser.thumbnails.busy or not s.animation_browser.thumbnails.jobs.is_empty():await process_frame
  quit()

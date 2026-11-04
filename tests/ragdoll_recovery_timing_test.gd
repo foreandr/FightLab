@@ -14,12 +14,14 @@ func run():
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
  w=current_scene;w.set_physics_process(false);a=w.fighters[0]
  await knockdown()
- assert(a.recovery_timing.offered() and a.recovery_timing.progress()==0.0)
+ assert(not a.recovery_timing.offered() and a.recovery_timing.progress()==0.0)
+ assert(a.try_quick_recovery()=="" and a.stamina==19.0,"Early input bypassed recovery delay")
+ a.recovery_timing.age=Timing.OPPORTUNITY_DELAY
  assert(a.try_quick_recovery()=="" and a.recovery_timing.waiting(),"Unaffordable recovery used the chance")
  await tick(10)
  assert(a.mode=="ragdoll" and is_equal_approx(a.stamina,19+34.0*10/60) and is_equal_approx(a.stamina,a.mana),"Ragdoll regeneration changed")
  for fraction in [0.0,0.5,1.0,2.0]:
-  await knockdown();a.stamina=100;a.recovery_timing.age=Timing.WINDOW*fraction
+  await knockdown();a.stamina=100;a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*fraction
   var cost:float=a.recovery_timing.stamina_cost()
   assert(is_equal_approx(cost,20.0*(1.0-clampf(fraction,0,1))))
   assert(a.try_quick_recovery()=="Recovered" and is_equal_approx(a.stamina,100-cost))
@@ -35,5 +37,5 @@ func run():
  await knockdown();a.health=0
  assert(a.try_quick_recovery()=="");await tick(120);assert(a.mode=="ragdoll")
  a.reset_fighter(Vector3.ZERO);assert(not a.recovery_timing.running)
- print("RECOVERY TIMING PASS: immediate voluntary recovery, continuous cost 20 to 0, retry when affordable, no duplicate payment, unchanged regeneration and dead exclusions")
+ print("RECOVERY TIMING PASS: 0.1s-gated voluntary recovery, continuous cost 20 to 0, retry when affordable, no duplicate payment, unchanged regeneration and dead exclusions")
  quit()
