@@ -1,11 +1,11 @@
 extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
-const OPPORTUNITY_DELAY:=0.35
+const OPPORTUNITY_DELAY:=0.25
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0
-const GETUP_SPEED:=1.20
+const GETUP_SPEED:=1.32
 const PERFECT_GETUP_SECONDS:=0.65/GETUP_SPEED
 const GOOD_GETUP_SECONDS:=1.10/GETUP_SPEED
 const NORMAL_GETUP_SECONDS:=1.71/GETUP_SPEED

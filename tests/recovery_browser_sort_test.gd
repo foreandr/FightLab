@@ -18,7 +18,7 @@ func run():
   if entry.clip==Recovery.CLIP:chosen=entry
  assert(not chosen.is_empty() and browser.select_animation(chosen))
  b.stop_preview_controls(true)
- assert(is_equal_approx(b.playback_animation().source_duration,Recovery.ANIMATION.length/1.20))
+ assert(is_equal_approx(b.playback_animation().source_duration,Recovery.ANIMATION.length/1.32))
  assert(Recovery.ANIMATION.length>0.9 and Recovery.ANIMATION.length<1.1 and Recovery.ANIMATION.get_meta("playback_speed")==2.0)
  var credited:=false
  for node in Recovery.ANIMATION.get_meta("provenance").nodes.values():
@@ -54,21 +54,21 @@ func run():
  actor.start_ragdoll(Vector3.BACK*100,actor.bone_point("spine_03"));actor.recovery_timing.age=actor.recovery_timing.OPPORTUNITY_DELAY+actor.recovery_timing.WINDOW*0.95
  assert(actor.try_quick_recovery()=="Perfect")
  actor.finish_ragdoll()
- assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and is_equal_approx(actor.mode_length,0.65/1.20))
+ assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and is_equal_approx(actor.mode_length,0.65/1.32))
  assert(actor.recovery_target.size()==actor.skeleton.get_bone_count(),"Recovery does not own the full skeleton")
  var position:Vector3=actor.position
- actor.tick(0.5)
+ actor.tick(actor.mode_length*0.75)
  var pose:=preload("res://scripts/spell_cast_motion.gd").capture(actor)
  b.held_practice_shortcut.begin(b,"knee_r");b.play_demo_preview();b.move_caster(0.05,Vector2(0,1),true);b.process_demo_preview(0.02)
  assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and not b.held_cast.active and actor.position.is_equal_approx(position),"A cast/run overwrote the full-body recovery")
  for i in pose.size():assert(pose[i].is_equal_approx(actor.skeleton.get_bone_pose(i)),"Editor pose overwrote recovery joint")
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/lariat_recovery_pose.png")
- actor.tick(0.16);assert(actor.mode=="idle")
+ actor.tick(actor.mode_length*0.3);assert(actor.mode=="idle")
  var cpu=s.target
  for result in ["Good","Miss"]:
   cpu.reset_fighter(Vector3(0,0,3));cpu.start_ragdoll(Vector3.BACK*100,cpu.bone_point("spine_03"));cpu.recovery_timing.result=result
   cpu.finish_ragdoll()
-  assert(cpu.clip==Recovery.CLIP and is_equal_approx(cpu.mode_length,1.10/1.20 if result=="Good" else Recovery.NORMAL_SECONDS))
- print("RECOVERY ANIMATION PASS: exact Arms Lariat derived at 2x with credit, shared player/CPU default, all joints override cast/run, 20% faster perfect/good/normal recovery")
+  assert(cpu.clip==Recovery.CLIP and is_equal_approx(cpu.mode_length,1.10/1.32 if result=="Good" else Recovery.NORMAL_SECONDS))
+ print("RECOVERY ANIMATION PASS: exact Arms Lariat derived at 2x with credit, shared player/CPU default, all joints override cast/run, 32% faster perfect/good/normal recovery")
  quit()
