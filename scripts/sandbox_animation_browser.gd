@@ -17,6 +17,11 @@ var search:LineEdit
 var type_buttons:Dictionary={}
 var selected_type:="Movement"
 var selected_id:=""
+var sort_mode:=0
+var sort_descending:=false
+var sort_choice:OptionButton
+var sort_direction:Button
+var preferences_path:="user://sandbox_animation_browser.cfg"
 var grid:GridContainer
 var status:Label
 var selection:Label
@@ -42,9 +47,16 @@ func setup(editor:Control)->void:
  search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",Color("806d4d"));add_child(search)
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
- var tabs:=GridContainer.new();tabs.columns=4;add_child(tabs)
- for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"],["Air","Air"],["Grabs","Grabs"],["Crouch","Crouch"]]:
+ var tabs:=GridContainer.new();tabs.columns=3;add_child(tabs)
+ for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"],["Air","Air"],["Grabs","Grabs"],["Crouch","Crouch"],["Recovery","Recovery"]]:
   var kind:String=pair[0];var tab:Button=host.button(tabs,pair[1],func():set_type(kind));tab.toggle_mode=true;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;type_buttons[kind]=tab
+ load_preferences()
+ var sort_row:=HBoxContainer.new();sort_row.add_theme_constant_override("separation",6);add_child(sort_row)
+ sort_choice=OptionButton.new();sort_choice.name="AnimationSort";sort_choice.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ for title in ["Alphabetical","Min time","Max time"]:sort_choice.add_item(title)
+ sort_choice.select(sort_mode);sort_choice.item_selected.connect(set_sort);sort_row.add_child(sort_choice)
+ sort_direction=host.button(sort_row,"↓" if sort_descending else "↑",toggle_sort_direction)
+ sort_direction.name="AnimationSortDirection";sort_direction.tooltip_text="Reverse sort direction"
  status=host.menu_label(self,"Opening animation index…",12)
  var scroll:=ScrollContainer.new();scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;add_child(scroll)
  grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_theme_constant_override("h_separation",6);grid.add_theme_constant_override("v_separation",6);scroll.add_child(grid)
@@ -64,9 +76,9 @@ func build_test_controls()->void:
  builder.demo_choice_selected=false
  builder.demo_duration=1.5;builder.casting_animation["duration"]=1.5
  builder.projectile_preview_button.pressed.disconnect(builder.play_projectile_once)
- builder.projectile_preview_button.button_down.connect(func():builder.held_cast.begin(builder))
- builder.projectile_preview_button.button_up.connect(func():builder.held_cast.release(builder))
- builder.projectile_preview_button.tooltip_text="Hold to wind up; release to cast. One second of holding reaches this animation's maximum duration."
+ builder.projectile_preview_button.button_down.connect(func():builder.cast_input_buffer.press(builder,"selected"))
+ builder.projectile_preview_button.button_up.connect(func():builder.cast_input_buffer.release(builder,"selected"))
+ builder.projectile_preview_button.tooltip_text="Hold to wind up; release to cast. Charge timing follows the animation's duration range."
  # Reuse the exact authoring controls and their existing signals/calculations.
  var timing:=VBoxContainer.new();timing.name="SandboxCasting"
  var sidebar=builder.spell_sections.Mana.get_parent();sidebar.add_child(timing);sidebar.move_child(timing,0)
@@ -150,7 +162,7 @@ func load_default_pair()->void:
  host.spell_builder.stop_preview_controls(true)
 
 func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)->void:
- if not combat_filter.accepts(entry) and not (origin=="Built-in" and Types.is_crouch(entry) and not combat_filter.excluded(entry)):return
+ if not combat_filter.accepts(entry) and not (origin=="Built-in" and (Types.is_crouch(entry) or Types.is_recovery(entry)) and not combat_filter.excluded(entry)):return
  var id:=Library.key(entry)
  if used.has(id):return
  used[id]=true;clips[str(entry.get("clip",""))]=true
@@ -158,8 +170,11 @@ func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)
  copy["store_animation_type"]=str(entry.store_animation_type) if entry.has("store_animation_type") else Types.kind(entry)
  copy["_grab"]=Types.is_grab(copy)
  copy["_crouch"]=Types.is_crouch(copy)
+ copy["_recovery"]=Types.is_recovery(copy)
  copy["air_state"]="Airborne" if Types.is_airborne(copy) else "Grounded"
- copy["_section"]="Air" if copy.air_state=="Airborne" else ("Crouch" if copy._crouch else ("Grabs" if copy._grab else ("Idle" if Types.is_idle(copy) else copy.store_animation_type)))
+ copy["_section"]="Recovery" if copy._recovery else ("Air" if copy.air_state=="Airborne" else ("Crouch" if copy._crouch else ("Grabs" if copy._grab else ("Idle" if Types.is_idle(copy) else copy.store_animation_type))))
+ var limits:=preload("res://scripts/animation_charge_timing.gd").duration_range(preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(copy))
+ copy["_duration_min"]=limits.x;copy["_duration_max"]=limits.y
  copy["_search"]=(str(entry.get("title",""))+" "+str(entry.get("tags",[]))+" "+str(entry.get("store_creator",entry.get("creator_name","")))+" "+str(entry.get("category",""))).to_lower()
  records.append(copy)
 func set_type(kind:String)->void:
@@ -185,8 +200,33 @@ func apply_filters()->void:
      elif not str(entry._search).contains(term):found=false;break
     if not found:continue
   matches_.append(entry)
+ matches_.sort_custom(compare_entries)
  for kind in type_buttons:type_buttons[kind].set_pressed_no_signal(kind==selected_type)
  show_page()
+func load_preferences()->void:
+ var cfg:=ConfigFile.new()
+ if cfg.load(preferences_path)!=OK:return
+ sort_mode=clampi(int(cfg.get_value("browser","sort",0)),0,2)
+ sort_descending=bool(cfg.get_value("browser","descending",false))
+func save_preferences()->void:
+ var cfg:=ConfigFile.new();cfg.set_value("browser","sort",sort_mode);cfg.set_value("browser","descending",sort_descending);cfg.save(preferences_path)
+func set_sort(mode:int)->void:
+ sort_mode=clampi(mode,0,2)
+ if is_instance_valid(sort_choice):sort_choice.select(sort_mode)
+ if is_instance_valid(sort_direction):sort_direction.text="↓" if sort_descending else "↑"
+ save_preferences();apply_filters()
+func toggle_sort_direction()->void:
+ sort_descending=not sort_descending
+ sort_direction.text="↓" if sort_descending else "↑"
+ save_preferences();apply_filters()
+func compare_entries(a:Dictionary,b:Dictionary)->bool:
+ var order:=0
+ if sort_mode>0:
+  var key:="_duration_min" if sort_mode==1 else "_duration_max"
+  if float(a[key])!=float(b[key]):order=-1 if float(a[key])<float(b[key]) else 1
+ if order==0:order=str(a.title).naturalnocasecmp_to(str(b.title))
+ if order==0:order=str(a._id).casecmp_to(str(b._id))
+ return order>0 if sort_descending else order<0
 func turn_page(direction:int)->void:
  page=clampi(page+direction,0,maxi(0,ceili(matches_.size()/float(PAGE_SIZE))-1));show_page()
 func show_page()->void:
@@ -195,7 +235,7 @@ func show_page()->void:
  status.text="%d animations · %d matching"%[records.size(),matches_.size()]
  for index in range(page*PAGE_SIZE,mini(matches_.size(),(page+1)*PAGE_SIZE)):
   var entry:Dictionary=matches_[index]
-  var limits:=preload("res://scripts/held_cast_preview.gd").duration_range(preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry))
+  var limits:=Vector2(float(entry._duration_min),float(entry._duration_max))
   var card:Button=preload("res://scripts/asset_preview_card.gd").create("Animation"+str(index),str(entry.title),null,str(entry.title)+"\n"+entry.store_animation_type+" · "+entry._origin+"\n"+str(entry.get("store_creator","")),"Min %.2f s · Max %.2f s"%[limits.x,limits.y])
   card.custom_minimum_size.y=104
   card.find_child("PreviewImage",true,false).custom_minimum_size.y=52

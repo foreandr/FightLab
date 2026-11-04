@@ -1,0 +1,46 @@
+{
+  "duration": 1.02084147930145,
+  "license": "Creator grants use for any individual/studio, any project, no credit required",
+  "original_filename": "ArmsLariat.bvh",
+  "provenance": {
+    "head": "revision:50ff2b0abad74574b2143caf5335dcf6",
+    "nodes": {
+      "revision:50ff2b0abad74574b2143caf5335dcf6": {
+        "asset_type": "animation",
+        "author": "foreandr",
+        "citations": [],
+        "created_utc": "2026-11-04T16:46:29",
+        "id": "revision:50ff2b0abad74574b2143caf5335dcf6",
+        "operation": "2x playback; stationary root for full-body ragdoll recovery",
+        "parents": [
+          "source:eae6d32aa4c9fad0eada1905182e5b2308ffb46b4c7f9e844048eace8fa25a77"
+        ],
+        "title": "Arms Lariat Recovery"
+      },
+      "source:eae6d32aa4c9fad0eada1905182e5b2308ffb46b4c7f9e844048eace8fa25a77": {
+        "asset_type": "animation",
+        "author": "Haley Tuffles",
+        "citations": [
+          {
+            "author": "Haley Tuffles",
+            "license": "Creator grants use for any individual/studio, any project, no credit required",
+            "original_filename": "ArmsLariat.bvh",
+            "sha256": "eae6d32aa4c9fad0eada1905182e5b2308ffb46b4c7f9e844048eace8fa25a77",
+            "url": "https://haleytuffles.com/motioncapture"
+          }
+        ],
+        "id": "source:eae6d32aa4c9fad0eada1905182e5b2308ffb46b4c7f9e844048eace8fa25a77",
+        "operation": "downloaded original; BVH retargeted on demand",
+        "parents": [],
+        "title": "Arms Lariat"
+      }
+    },
+    "schema": 1
+  },
+  "source_creator": "Haley Tuffles",
+  "source_sha256": "eae6d32aa4c9fad0eada1905182e5b2308ffb46b4c7f9e844048eace8fa25a77",
+  "source_title": "Arms Lariat",
+  "source_url": "https://haleytuffles.com/motioncapture",
+  "speed": 2.0,
+  "title": "Arms Lariat Recovery"
+}

@@ -5,6 +5,9 @@ const OPPORTUNITY_DELAY:=0.45
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0
+const PERFECT_GETUP_SECONDS:=0.65
+const GOOD_GETUP_SECONDS:=1.10
+const NORMAL_GETUP_SECONDS:=1.71
 var age:=0.0
 var result:=""
 var running:=false
@@ -44,4 +47,4 @@ func early_ready(actor:Node)->bool:
  var support:float=actor.arena.spell_environment.support_height(rag.location())
  return minf(pelvis.global_position.y,chest.global_position.y)<support+0.8 and maxf(pelvis.linear_velocity.length(),chest.linear_velocity.length())<6.0
 func getup_seconds()->float:
- return 0.65 if result=="Perfect" else (1.10 if result=="Good" else 0.0)
+ return PERFECT_GETUP_SECONDS if result=="Perfect" else (GOOD_GETUP_SECONDS if result=="Good" else 0.0)

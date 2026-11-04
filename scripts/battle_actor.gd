@@ -1992,10 +1992,15 @@ func finish_ragdoll() -> void:
 	model.position = Vector3.ZERO
 	mode = "getup"
 	mode_time = 0
-	clip="ual2/LayToIdle"
+	clip=preload("res://scripts/recovery_animation.gd").ensure(self)
 	var getup_seconds:float=recovery_timing.getup_seconds()
-	var recovery_speed:float=player.get_animation(clip).length/maxf(0.1,getup_seconds-RECOVERY_GATHER) if getup_seconds>0.0 else 1.05
+	if getup_seconds<=0.0:getup_seconds=preload("res://scripts/recovery_animation.gd").NORMAL_SECONDS
+	var recovery_speed:float=player.get_animation(clip).length/maxf(0.1,getup_seconds-RECOVERY_GATHER)
+	# Recovery owns every joint, including joints absent from the source tracks.
+	skeleton.reset_bone_poses()
+	model.rotation=Vector3.ZERO
 	player.play(clip,0,recovery_speed)
+	player.seek(0.0,true);player.advance(0.0)
 	var target_direction:=bone_point("Head")-bone_point("pelvis")
 	target_direction.y=0
 	if lying_direction.length()>0.15 and target_direction.length()>0.15:

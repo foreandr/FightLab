@@ -1,6 +1,6 @@
 extends RefCounted
 const GROUPS := {
-	"Motion":["Idle","Run","Sprint","Jump","Land","Dash","Crouch","Grab","Acrobatics","Downloaded"],
+	"Motion":["Idle","Run","Sprint","Jump","Land","Dash","Crouch","Grab","Acrobatics","Recovery","Downloaded"],
 	"Attack":["Punch","Kick","Block","Dodges","Downloaded"]
 }
 static func entries() -> Array[Dictionary]:
@@ -48,6 +48,7 @@ static func entries() -> Array[Dictionary]:
 		attack("Slash","Left body slash","Body Slash","editor_attacks/body_slash","hand_l",true),
 		attack("Punch","Default Spell Cast","Palm Cast","editor_attacks/default_spell_cast","hand_r")
 	]
+	result.append(preload("res://scripts/recovery_animation.gd").profile())
 	return result
 static func item(group: String,category: String,title: String,step: String,clip: String,kind: String="ground") -> Dictionary:
 	if group=="Attack":category=category_for(category)

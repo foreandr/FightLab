@@ -29,6 +29,14 @@ static func is_crouch(entry:Dictionary)->bool:
 		if word.begins_with("crouch"):return true
 	return false
 
+static func is_recovery(entry:Dictionary)->bool:
+	if entry.get("recovery_animation",false) or str(entry.get("category","")).nocasecmp_to("Recovery")==0:return true
+	var words:=action_words(entry)
+	if _has(words,["recover","recovery","getup"]):return true
+	var compact:="".join(words)
+	if _has(words,["chair","stepstool","seat","sofa","couch"]):return false
+	return compact.contains("laytoidle") or compact.contains("getup") or compact.contains("groundtostand") or (compact.contains("standup") and _has(words,["combat","boxing","wrestling","fighting","prone","ground","floor","knockdown","ragdoll"]))
+
 static func is_idle(entry:Dictionary)->bool:
 	# A browsing section, not a new combat pose-ownership type.
 	var title:=str(entry.get("title",""))
