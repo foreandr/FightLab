@@ -46,3 +46,11 @@ Targeted, Touch and Barrier. It lists actual saved names, not built-in presets
 or unsaved workspaces. Empty types stay empty. Choosing a card applies its
 allocation/appearance through the shared builder, retaining name, ID and
 creator/date/provenance on the cast. The authoring wizard remains in Create.
+
+Named definitions support Projectile, Touch and Self Shield. Touch contact limbs
+come from the animation binding rather than being locked into the saved spell.
+Self Shield saves intrinsic strength/duration (10 physical / 1 second default).
+CPUs already construct these mechanics with combat_spell_rules; these were not
+previously saved assets. vendor/create_practice_spells.gd adds Physical Touch,
+Fire Touch (CPU allocation 15% size / 55% speed / 30% burn), and Self Barrier to
+the local named library without replacing existing creations or adding copies.

@@ -68,13 +68,13 @@ func show_page()->void:
  for index in range(page*PAGE_SIZE,mini(matches_.size(),(page+1)*PAGE_SIZE)):
   var record:Dictionary=matches_[index]
   var fire:bool=record.element=="Fire"
-  var card:Button=preload("res://scripts/asset_preview_card.gd").create("SavedSpell_"+str(record.id),str(record.name),null,str(record.name)+" · "+str(record.delivery_type),"Fire" if fire else "Physical")
+  var card:Button=preload("res://scripts/asset_preview_card.gd").create("SavedSpell_"+str(record.id),str(record.name),null,str(record.name)+" · "+str(record.delivery_type),"Self shield" if record.delivery_type=="Barrier" else ("Fire" if fire else "Physical"))
   card.custom_minimum_size=Vector2(0,108)
   card.find_child("PreviewImage",true,false).custom_minimum_size.y=64
   if fire:
    var viewport:SubViewport=builder.fire_style_gallery._preview(str(record.appearance.fire_style_id))
    card.add_child(viewport);card.find_child("PreviewImage",true,false).texture=viewport.get_texture()
-  else:card.find_child("PreviewImage",true,false).texture=preload("res://scripts/animation_row_icons.gd").get_icon("cast")
+  else:card.find_child("PreviewImage",true,false).texture=preload("res://scripts/animation_row_icons.gd").get_icon("shield_self" if record.delivery_type=="Barrier" else ("arm" if record.delivery_type=="Touch" else "cast"))
   grid.add_child(card);card.set_pressed_no_signal(str(record.id)==selected_id)
   card.pressed.connect(func():select_spell(str(record.id)))
  var pages:=maxi(1,ceili(matches_.size()/float(PAGE_SIZE)))
@@ -87,7 +87,7 @@ func select_spell(id:String)->bool:
  if record.is_empty() or not builder.apply_spell_record(record,false):return false
  builder.sandbox_spell_record=record.duplicate(true)
  builder.delivery_choice_selected=true
- builder.show_creation_step("projectile")
+ builder.show_creation_step({"Touch":"touch","Barrier":"shield"}.get(str(record.delivery_type),"projectile"))
  selected_id=id;selection.text=str(record.name)
  builder.refresh_playback_controls();show_page()
  return true

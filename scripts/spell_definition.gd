@@ -2,18 +2,29 @@ extends RefCounted
 ## A spell is an element asset + allocation, independent of any demonstration cast.
 const Assets=preload("res://scripts/spell_asset_library.gd")
 const Provenance=preload("res://scripts/asset_provenance.gd")
-const KEYS:=["schema","id","name","delivery_type","element","allocation","appearance","provenance","metadata"]
+const KEYS:=["schema","id","name","delivery_type","element","allocation","appearance","provenance","metadata","barrier"]
 static func make(element:String,delivery:String,mix:Dictionary,look:Dictionary,parent:Dictionary={})->Dictionary:
  var appearance:Dictionary={}
  if element=="Fire":
   var library:=Assets.for_element(element)
   appearance={"fire_style_id":library.Styles.active_id(look),"sound_id":library.sound(str(look.get("sound_id","")))}
- return {"schema":1,"delivery_type":delivery,"element":element,"allocation":preload("res://scripts/projectile_allocation.gd").normalize(mix,element!="None"),"appearance":appearance,"provenance":parent.duplicate(true)}
+ var record:Dictionary={"schema":1,"delivery_type":delivery,"element":element,"allocation":preload("res://scripts/projectile_allocation.gd").normalize(mix,element!="None"),"appearance":appearance,"provenance":parent.duplicate(true)}
+ if delivery=="Barrier":record["barrier"]={"kind":"Shield","attachment":"Self","strength":10.0,"duration":1.0}
+ return record
 static func error(record:Dictionary)->String:
  for key in record:
   if key not in KEYS:return "Unsupported saved field: "+str(key)
  if int(record.get("schema",0))!=1:return "Unsupported spell version"
- if str(record.get("delivery_type",""))!="Projectile":return "Only Projectile spells are available yet"
+ if str(record.get("delivery_type","")) not in ["Projectile","Touch","Barrier"]:return "Choose an available spell type"
+ if record.delivery_type=="Barrier":
+  var shield:Variant=record.get("barrier",{})
+  if not shield is Dictionary or shield.get("kind","")!="Shield" or shield.get("attachment","")!="Self" or record.get("element","")!="None":return "Only Self Shield barriers are available"
+  for key in shield:
+   if key not in ["kind","attachment","strength","duration"]:return "Unsupported shield field"
+  for key in ["strength","duration"]:
+   var value:Variant=shield.get(key)
+   if not (value is float or value is int) or not is_finite(float(value)) or float(value)<=0.0 or float(value)>(100.0 if key=="strength" else 30.0):return "Invalid shield "+key
+ elif record.has("barrier"):return "Barrier settings require a Barrier spell"
  if str(record.get("element","")) not in ["None","Fire"]:return "Choose an available effect"
  if not record.get("allocation") is Dictionary or not record.get("appearance") is Dictionary or not record.get("provenance") is Dictionary:return "Invalid spell data"
  if record.has("metadata"):
@@ -57,20 +68,37 @@ static func credit(record:Dictionary,name:String)->Dictionary:
    var id:="source:spell_asset:"+str(asset.id)
    parents.append({"schema":1,"head":id,"nodes":{id:{"id":id,"asset_type":"spell asset","operation":"original source","title":asset.title,"author":asset.get("author","foreandr"),"parents":[],"citations":[{"author":asset.get("author","foreandr"),"url":asset.get("source",""),"license":asset.get("license","FightLab original"),"asset_id":asset.id}]}}})
  return Provenance.derive(parents,"spell",name,Provenance.creator_name(),"saved spell definition")
-static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->Dictionary:
+static func base_spec(record:Dictionary,binding:Dictionary={})->Dictionary:
  if not error(record).is_empty():return {}
- var seconds:=float(animation.get("duration",0.0))
- if not is_finite(seconds) or seconds<=0.0:return {}
  var rules=preload("res://scripts/combat_spell_rules.gd")
- var base:Dictionary=rules.allocate(rules.projectile_base(record.element),record.allocation,record.element,1.0)
+ var base:Dictionary
+ if record.delivery_type=="Touch":
+  var contacts:Array=binding.get("contacts",[str(binding.get("hand","hand_r"))])
+  if contacts.is_empty():return {}
+  for contact in contacts:
+   if contact not in rules.TOUCH_CONTACT_BONES:return {}
+  base=rules.touch_base(contacts,record.element)
+  if record.element=="Fire":base=rules.allocate(base,record.allocation,record.element,1.0)
+ elif record.delivery_type=="Barrier":base=rules.self_barrier_base(float(record.barrier.strength),float(record.barrier.duration))
+ else:base=rules.allocate(rules.projectile_base(record.element),record.allocation,record.element,1.0)
  base["delivery_type"]=record.delivery_type
- base["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(animation)
  base["appearance"]=Assets.for_element("Fire").selection(record.appearance.fire_style_id,record.appearance.sound_id) if record.element=="Fire" else {}
  base["sound_id"]=Assets.sound_for({"element":record.element,"appearance":base.appearance})
  base["name"]=record.get("name","Spell")
  base["spell_definition_id"]=record.get("id","")
- base["provenance"]=record.provenance
+ base["provenance"]=record.provenance.duplicate(true)
  base["spell_metadata"]=record.get("metadata",metadata_for(record)).duplicate(true)
- var spec:Dictionary=rules.author(base,seconds,float(binding.get("release",0.3)),str(animation.get("group","Attack"))=="Attack")
- spec["hand"]=str(binding.get("hand",animation.get("attack_bone","hand_r")))
+ return base
+static func compile(record:Dictionary,animation:Dictionary,binding:Dictionary)->Dictionary:
+ var resolved:=binding.duplicate(true)
+ resolved["hand"]=str(binding.get("hand",preload("res://scripts/combat_aim.gd").emitter(animation)))
+ var base:=base_spec(record,resolved)
+ if base.is_empty():return {}
+ var seconds:=float(animation.get("duration",0.0))
+ if not is_finite(seconds) or seconds<=0.0:return {}
+ base["animation_type"]=preload("res://scripts/animation_cast_type.gd").kind(animation)
+ var jump:=preload("res://scripts/animation_jump_motion.gd").settings(animation)
+ if not jump.is_empty():base["jump_motion"]=jump
+ var spec:Dictionary=preload("res://scripts/combat_spell_rules.gd").author(base,seconds,float(binding.get("release",0.3)),record.delivery_type!="Barrier" and str(animation.get("group","Attack"))=="Attack")
+ spec["hand"]=resolved.hand
  return spec

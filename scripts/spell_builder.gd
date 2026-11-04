@@ -1224,7 +1224,10 @@ func build_spell_save_panel()->void:
  spell_save_screen.hide()
 
 func current_spell_definition()->Dictionary:
- return preload("res://scripts/spell_definition.gd").make(element,spell_delivery_type(),allocation_for(element),appearances.get(element,{}),active_spell_provenance)
+ var effect:String=touch_authoring.preview_effect if previews_touch() else ("None" if previews_barrier() else element)
+ var record:=preload("res://scripts/spell_definition.gd").make(effect,spell_delivery_type(),allocation_for(effect),appearances.get(effect,{}),active_spell_provenance)
+ if record.delivery_type=="Barrier":record.barrier={"kind":"Shield","attachment":"Self","strength":barrier_authoring.strength,"duration":barrier_authoring.lifetime}
+ return record
 
 func open_spell_save()->void:
  spell_save_open=true
@@ -1262,7 +1265,7 @@ func load_named_spell(id:String)->bool:
  return apply_spell_record(record)
 
 func apply_spell_record(record:Dictionary,open_editor:=true)->bool:
- if cast_committed() or record.is_empty():return false
+ if cast_committed() or not preload("res://scripts/spell_definition.gd").error(record).is_empty():return false
  stop_preview_controls(true)
  if not limiter_enabled:set_limiter_enabled(true)
  element=record.element;preview_effect=element
@@ -1279,11 +1282,19 @@ func apply_spell_record(record:Dictionary,open_editor:=true)->bool:
  fire_sound_preview_id=str(record.appearance.get("sound_id",""))
  refresh_fire_sound()
  active_spell_provenance=record.provenance.duplicate(true)
+ if delivery_type=="Touch":
+  touch_authoring.selected.assign([CombatAim.emitter(playback_animation())])
+  touch_authoring.preview_effect=element;touch_authoring.confirmed=true;touch_authoring.effect_confirmed=true
+ elif delivery_type=="Barrier":
+  barrier_kind="Shield";barrier_authoring.attachment="Self";barrier_authoring.attachment_confirmed=true;barrier_authoring.size_confirmed=true
+  barrier_authoring.strength=float(record.barrier.strength);barrier_authoring.lifetime=float(record.barrier.duration)
+  barrier_authoring.strength_slider.set_value_no_signal(barrier_authoring.strength);barrier_authoring.lifetime_slider.set_value_no_signal(barrier_authoring.lifetime)
  if open_editor:
-  show_creation_step("projectile")
-  open_spell_save()
-  spell_save_screen.name_input.text=record.name
-  spell_save_screen.status.text="Loaded: "+str(record.name)
+  show_creation_step({"Touch":"touch","Barrier":"shield"}.get(delivery_type,"projectile"))
+  if delivery_type=="Projectile":
+   open_spell_save()
+   spell_save_screen.name_input.text=record.name
+   spell_save_screen.status.text="Loaded: "+str(record.name)
  refresh_demo_timing()
  refresh_projectile_allocation()
  return true
@@ -2063,9 +2074,12 @@ func projectile_effect_spec(effect:String) -> Dictionary:
 
 func demo_preview_spec() -> Dictionary:
  var base:Dictionary=touch_authoring.base_spec() if previews_touch() else (Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()))
+ if sandbox_testing and not sandbox_spell_record.is_empty():
+  base=preload("res://scripts/spell_definition.gd").base_spec(sandbox_spell_record,{"hand":CombatAim.emitter(playback_animation())})
+  base["animation_type"]=CastType.kind(playback_animation())
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
  if not jump.is_empty():base.jump_motion=jump
- var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive())
+ var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive() and not previews_barrier())
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
  if not limiter_enabled:spec=test_overrides.apply(spec)
