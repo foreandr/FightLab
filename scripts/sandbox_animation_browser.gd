@@ -90,7 +90,7 @@ func build_test_controls()->void:
  builder.sandbox_spell_selected=false
  builder.refresh_demo_choices();builder.refresh_demo_timing();builder.get_meta("cast_timeline").fit_time();refresh_sidebar()
  spell_pages=preload("res://scripts/sandbox_spell_pages.gd").new()
- spell_pages.setup(builder,sidebar,timing)
+ spell_pages.setup(builder,sidebar)
 func refresh_sidebar()->void:
  var builder=host.spell_builder
  builder.spell_sections.Mana.show()
