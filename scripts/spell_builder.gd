@@ -2439,9 +2439,10 @@ func _input(event:InputEvent) -> void:
    elif event.pressed:play_projectile_once()
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_2,KEY_KP_2] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   if event.pressed:held_practice_shortcut.begin(self)
-   else:held_practice_shortcut.release(self)
+  if key in [KEY_2,KEY_KP_2,KEY_3,KEY_KP_3,KEY_4,KEY_KP_4] and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   var action:String="knee_r" if key in [KEY_3,KEY_KP_3] else ("knee_l" if key in [KEY_4,KEY_KP_4] else "cross")
+   if event.pressed:held_practice_shortcut.begin(self,action)
+   else:held_practice_shortcut.release(self,action)
    get_viewport().set_input_as_handled()
    return
   if key==KEY_F1 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:

@@ -1,7 +1,7 @@
 extends RefCounted
 ## Shared Touch linking rules; no controller-specific speed or damage bonuses.
-const LINK_PROGRESS:=0.55
-const LINK_BLEND_SECONDS:=0.06
+const LINK_PROGRESS:=0.50
+const LINK_BLEND_SECONDS:=0.05
 const ALTERNATING_SPEED:=1.12
 const LEG_LINK_PROGRESS:=0.90
 static func leg_attack(item:Dictionary)->bool:
@@ -15,7 +15,7 @@ static func leg_attack(item:Dictionary)->bool:
 static func needs_recovery(profile:Dictionary)->bool:
  return leg_attack(profile) or not preload("res://scripts/animation_jump_motion.gd").settings(profile).is_empty()
 static func link_progress(profile:Dictionary)->float:
- var source_default:=0.68 if str(profile.get("clip","")).begins_with("boxing/hook_") else LINK_PROGRESS
+ var source_default:=0.63 if str(profile.get("clip","")).begins_with("boxing/hook_") else LINK_PROGRESS
  var minimum:=LEG_LINK_PROGRESS if needs_recovery(profile) else LINK_PROGRESS
  return clampf(float(profile.get("combo_link_progress",maxf(source_default,minimum))),minimum,0.95)
 static func link_end(profile:Dictionary)->float:return 0.985 if needs_recovery(profile) else 0.90

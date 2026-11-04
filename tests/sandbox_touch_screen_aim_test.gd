@@ -79,7 +79,7 @@ func run():
  b.held_practice_shortcut.begin(b)
  assert(b.held_practice_shortcut.active and b.held_cast.active,"Cannot link 1 into 2 during recovery")
  assert(is_equal_approx(s.actor.stamina,paid_stamina),"Link refunded or double-paid old strike")
- assert(is_equal_approx(b.demo_enter_duration,0.06),"Combo still uses slow entry blend")
+ assert(is_equal_approx(b.demo_enter_duration,0.05),"Combo still uses slow entry blend")
  b.held_practice_shortcut.release(b)
  b.process_demo_preview(b.playback_duration()*0.6/b.held_cast.tail_rate(b))
  var one:=InputEventKey.new();one.physical_keycode=KEY_1;one.pressed=true
@@ -88,9 +88,35 @@ func run():
  b.held_cast.release(b);b.stop_preview_controls(true)
  var combo=load("res://scripts/touch_combo_rules.gd")
  assert(not combo.can_link({"animation_type":"Arm"},0.99,false))
- assert(combo.can_link({"animation_type":"Arm"},0.6,true))
+ assert(combo.can_link({"animation_type":"Arm"},0.5,true))
+ assert(not combo.can_link({"animation_type":"Leg"},0.89,true))
+ assert(combo.can_link({"animation_type":"Leg"},0.9,true))
  assert(not combo.can_link({"animation_type":"Leg"},0.6,true))
  print("PLAYER COMBO PASS: post-release recovery links 1 -> 2 -> 1; costs retained; early strike protected")
+ for key in [KEY_3,KEY_4]:
+  b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100
+  root.grab_focus();await process_frame
+  var down:=InputEventKey.new();down.physical_keycode=key;down.pressed=true
+  b._input(down)
+  var bone:String="calf_r" if key==KEY_3 else "calf_l"
+  assert(b.held_cast.active and b.playback_animation().animation_type=="Leg")
+  assert(b.playback_animation().attack_bone==bone and b.touch_authoring.selected==[bone])
+  b.process_demo_preview(0.4)
+  var wrong_up:=InputEventKey.new();wrong_up.physical_keycode=KEY_4 if key==KEY_3 else KEY_3
+  b._input(wrong_up)
+  assert(b.held_cast.active,"Other knee key-up released the active knee")
+  var up:=InputEventKey.new();up.physical_keycode=key
+  b._input(up)
+  assert(not b.held_cast.active and b.held_cast.follow_through)
+  b.process_demo_preview(b.playback_duration()*0.6/b.held_cast.tail_rate(b))
+  assert(b.released)
+  b.held_practice_shortcut.begin(b)
+  assert(b.held_practice_shortcut.active_action==("knee_r" if key==KEY_3 else "knee_l"),"Knee lost its recovery delay")
+  b.process_demo_preview(b.playback_duration()*0.31/b.held_cast.tail_rate(b))
+  b.held_practice_shortcut.begin(b)
+  assert(b.held_cast.active and b.playback_animation().attack_bone=="hand_l","Recovered knee cannot link to punch")
+  b.held_practice_shortcut.cancel(b)
+ print("KNEE KEYS PASS: 3 right / 4 left, held casting, correct contacts, independent key-up, 90% leg recovery")
  while browser.thumbnails.busy or not browser.thumbnails.jobs.is_empty():await process_frame
  for record in b.saved_spells.entries():DirAccess.remove_absolute(b.saved_spells.directory.path_join(record.id+".cfg"))
  DirAccess.remove_absolute(b.saved_spells.directory)
