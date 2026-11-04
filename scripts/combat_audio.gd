@@ -8,7 +8,7 @@ var played := {}
 var muted := false
 
 func _ready() -> void:
-	for kind in ["punch", "kick", "heavy", "shield", "shatter", "ice", "dash", "land"]:
+	for kind in ["punch", "kick", "heavy", "shield", "shatter", "ice", "dash", "land","charge_1","charge_2","charge_3"]:
 		streams[kind] = synthesize(kind)
 	for i in 12:
 		var voice := AudioStreamPlayer3D.new()
@@ -46,6 +46,10 @@ func synthesize(kind: String) -> AudioStreamWAV:
 			value = low * sin(PI * t / length_) * exp(-t * 10) * 0.65
 		if kind in ["heavy", "land", "kick"]:
 			value += sin(TAU * 57 * t) * exp(-t * 19) * 0.25
+		if kind.begins_with("charge_"):
+			var tier:=clampi(int(kind.trim_prefix("charge_")),1,3)
+			var frequency:float=[600.0,840.0,1200.0][tier-1]
+			value=(sin(TAU*frequency*t)+0.25*sin(TAU*frequency*2.003*t))*exp(-t*18.0)*0.55
 		value *= minf(1, t * 2000) * minf(1, (length_ - t) * 200)
 		data.encode_s16(i * 2, int(clampf(value, -0.92, 0.92) * 22000))
 	var stream := AudioStreamWAV.new()

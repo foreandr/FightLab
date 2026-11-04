@@ -42,8 +42,8 @@ func setup(editor:Control)->void:
  search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",Color("806d4d"));add_child(search)
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
- var tabs:=HBoxContainer.new();add_child(tabs)
- for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"],["Air","Air"],["Grabs","Grabs"]]:
+ var tabs:=GridContainer.new();tabs.columns=4;add_child(tabs)
+ for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"],["Air","Air"],["Grabs","Grabs"],["Crouch","Crouch"]]:
   var kind:String=pair[0];var tab:Button=host.button(tabs,pair[1],func():set_type(kind));tab.toggle_mode=true;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;type_buttons[kind]=tab
  status=host.menu_label(self,"Opening animation index…",12)
  var scroll:=ScrollContainer.new();scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;add_child(scroll)
@@ -86,7 +86,7 @@ func build_test_controls()->void:
  builder.preview_delivery_type="";builder.delivery_type="";builder.delivery_choice_selected=false
  builder.show_creation_step("delivery")
  confirm.hide()
- builder.projectile_preview_button.get_parent().get_node("PracticeLeftJab").hide()
+
  builder.sandbox_spell_selected=false
  builder.refresh_demo_choices();builder.refresh_demo_timing();builder.get_meta("cast_timeline").fit_time();refresh_sidebar()
  spell_pages=preload("res://scripts/sandbox_spell_pages.gd").new()
@@ -136,15 +136,16 @@ func load_catalog()->void:
   return str(a.title).naturalnocasecmp_to(str(b.title))<0)
  ready_catalog=true;apply_filters()
 func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)->void:
- if not combat_filter.accepts(entry):return
+ if not combat_filter.accepts(entry) and not (origin=="Built-in" and Types.is_crouch(entry) and not combat_filter.excluded(entry)):return
  var id:=Library.key(entry)
  if used.has(id):return
  used[id]=true;clips[str(entry.get("clip",""))]=true
  var copy:=entry.duplicate();copy["_origin"]=origin;copy["_id"]=id;copy["_origin_rank"]=["Your library","Built-in","Community"].find(origin)
  copy["store_animation_type"]=str(entry.store_animation_type) if entry.has("store_animation_type") else Types.kind(entry)
  copy["_grab"]=Types.is_grab(copy)
+ copy["_crouch"]=Types.is_crouch(copy)
  copy["air_state"]="Airborne" if Types.is_airborne(copy) else "Grounded"
- copy["_section"]="Air" if copy.air_state=="Airborne" else ("Grabs" if copy._grab else ("Idle" if Types.is_idle(copy) else copy.store_animation_type))
+ copy["_section"]="Air" if copy.air_state=="Airborne" else ("Crouch" if copy._crouch else ("Grabs" if copy._grab else ("Idle" if Types.is_idle(copy) else copy.store_animation_type)))
  copy["_search"]=(str(entry.get("title",""))+" "+str(entry.get("tags",[]))+" "+str(entry.get("store_creator",entry.get("creator_name","")))+" "+str(entry.get("category",""))).to_lower()
  records.append(copy)
 func set_type(kind:String)->void:
@@ -154,7 +155,9 @@ func apply_filters()->void:
  page=0;matches_.clear()
  var query:=search.text.strip_edges().to_lower()
  for entry in records:
-  if selected_type=="Grabs":
+  if selected_type=="Crouch":
+   if not entry._crouch:continue
+  elif selected_type=="Grabs":
    if not entry._grab:continue
   elif entry._section!=selected_type:continue
   if not query.is_empty():

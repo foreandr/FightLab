@@ -43,6 +43,9 @@ static func barrier_base_mana(kind:String)->float:
 static func left_jab_strike()->Array:
 	return ["left_jab","ual1/Punch_Jab","hand_l",0.12,0.48,8.0,8.0,1.0]
 
+static func right_jab_strike()->Array:
+	return ["right_jab","practice/right_jab","hand_r",0.12,0.48,8.0,8.0,1.0]
+
 static func touch_base(contacts:Array,element:String="None")->Dictionary:
 	var fire:=element=="Fire"
 	return {"id":"physical_touch","name":"Physical Touch","effect":"touch","delivery_type":"Touch","hand":str(contacts[0]) if not contacts.is_empty() else "hand_l","mana":PROJECTILE_BASE_MANA+(FIRE_MANA_SURCHARGE if fire else 0.0),"damage":0.0,"projectile_element":"Fire" if fire else "None","potency":1.0 if fire else 0.0,"burn_duration":Burn.DURATION,"touch_contacts":contacts.duplicate()}

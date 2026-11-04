@@ -1067,6 +1067,17 @@ func start_left_jab(aim:=Vector3.ZERO)->bool:
 	melee_aim_direction=(aim*Vector3(1,0,1)).normalized()
 	return true
 
+func start_right_jab(aim:=Vector3.ZERO)->bool:
+	if combat_reaction_active() or mode=="punch" or arena.combat().cast_committed(self):return false
+	if not player.has_animation_library("practice"):
+		var library:=AnimationLibrary.new()
+		library.add_animation("right_jab",preload("res://assets/animations/demos/right_jab.res"))
+		player.add_animation_library("practice",library)
+	begin_strike(preload("res://scripts/combat_spell_rules.gd").right_jab_strike())
+	if mode!="punch":return false
+	melee_aim_direction=(aim*Vector3(1,0,1)).normalized()
+	return true
+
 func start_punch() -> void:
 	if arena.combat().cast_committed(self):return
 	melee_charge=0
@@ -1223,6 +1234,7 @@ func start_motion_jump(height_fraction:float=1.0, held_input:bool=false) -> bool
 	motion_jump_held=held_input
 	motion_jump_hold_time=0.0
 	set_meta("jump_charge_velocity",Vector3(velocity.x,0.0,velocity.z))
+	set_meta("jump_charge_lean",Vector2.ZERO)
 	mode="takeoff"
 	mode_time=0.0
 	mode_length=INF if held_input else 0.14

@@ -743,7 +743,11 @@ func tick(delta: float) -> void:
 		desired*=Movement.directional_speed(Vector2(axes.x,-axes.y),_player_sprint_active())
 	drive_velocity.x = move_toward(drive_velocity.x, desired.x, delta * acceleration)
 	drive_velocity.z = move_toward(drive_velocity.z, desired.z, delta * acceleration)
-	drive_velocity = Movement.jump_charge_velocity(self,drive_velocity,delta)
+	var charge_request:=drive_velocity
+	if jump_charge_active() and player_controlled:
+		var charge_axes:=_player_move_axes()
+		charge_request=preload("res://scripts/third_person_camera.gd").movement_direction(arena,self,Vector2(charge_axes.x,-charge_axes.y))
+	drive_velocity = Movement.jump_charge_velocity(self,charge_request,delta)
 	velocity.x = drive_velocity.x + knockback.x
 	velocity.z = drive_velocity.z + knockback.z
 	knockback *= exp(-delta * (4.2 if is_on_floor() else 1.0))

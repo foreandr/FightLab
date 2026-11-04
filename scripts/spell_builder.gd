@@ -785,26 +785,26 @@ func setup(owner_editor:Node) -> void:
  projectile_slow_button.toggle_mode=true
  projectile_slow_button.toggled.connect(set_preview_slow)
  projectile_slow_button.tooltip_text="Preview at quarter speed"
- projectile_hitbox_button=editor.button(playback_row,"Hitboxes [2]",func():pass)
+ projectile_hitbox_button=editor.button(playback_row,"Hitboxes [F1]",func():pass)
  projectile_hitbox_button.name="SpellHitboxes"
  projectile_hitbox_button.toggle_mode=true
  projectile_hitbox_button.set_pressed_no_signal(preview_hitboxes)
  projectile_hitbox_button.toggled.connect(set_preview_hitboxes)
- projectile_hitbox_button.tooltip_text="2 · Cyan projectile, orange head (2× physical damage), pink body (1×). The struck receiving hitbox flashes yellow. Burn and other effects are unchanged."
- combat_numbers_button=editor.button(playback_row,"Numbers [3]",func():pass)
+ projectile_hitbox_button.tooltip_text="F1 · Cyan projectile, orange head (2× physical damage), pink body (1×). The struck receiving hitbox flashes yellow. Burn and other effects are unchanged."
+ combat_numbers_button=editor.button(playback_row,"Numbers [F2]",func():pass)
  combat_numbers_button.name="CombatNumbersToggle"
  combat_numbers_button.toggle_mode=true
  combat_numbers_button.set_pressed_no_signal(editor.field.combat_numbers_visible)
  combat_numbers_button.toggled.connect(set_combat_numbers)
- combat_numbers_button.tooltip_text="3 · Experimental floating costs and physical damage. Green stamina, blue magicka, red physical damage."
+ combat_numbers_button.tooltip_text="F2 · Experimental floating costs and physical damage. Green stamina, blue magicka, red physical damage."
  for node in [projectile_preview_button,projectile_repeat_button,projectile_slow_button,projectile_hitbox_button,combat_numbers_button]:
   node.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
   node.custom_minimum_size.x=140
   node.focus_mode=Control.FOCUS_ALL
- var jab_button:Button=editor.button(playback_row,"Jab [4]",practice_left_jab)
- jab_button.name="PracticeLeftJab";jab_button.custom_minimum_size.x=90
+ var jab_button:Button=editor.button(playback_row,"Right jab [2]",practice_right_jab)
+ jab_button.name="PracticeRightJab";jab_button.custom_minimum_size.x=90
  jab_button.focus_mode=Control.FOCUS_ALL
- jab_button.tooltip_text="4 · Left jab · physical contact only · stamina, no mana"
+ jab_button.tooltip_text="2 · Right jab · physical contact only · stamina, no mana"
  reset_scene_button=editor.button(playback_row,"Reset scene",reset_practice_scene)
  reset_scene_button.name="ResetSpellPracticeScene"
  reset_scene_button.custom_minimum_size.x=140
@@ -1003,7 +1003,7 @@ func toggle_barrier_tester(kind:String)->void:
 func refresh_barrier_choices()->void:
  if is_instance_valid(barrier_authoring):barrier_authoring.refresh()
  if is_instance_valid(touch_authoring):touch_authoring.refresh()
- if is_instance_valid(barrier_test_controls):barrier_test_controls.visible=creation_step=="shield"
+ if is_instance_valid(barrier_test_controls):barrier_test_controls.visible=creation_step=="shield" and not sandbox_testing
  for kind in barrier_pause_buttons:
   var tester=barrier_tester if kind=="Projectiles" else barrier_puncher
   barrier_pause_buttons[kind].text=("Resume " if is_instance_valid(tester) and tester.paused else "Pause ")+kind
@@ -1364,6 +1364,15 @@ func practice_left_jab()->void:
  actor.set_editor_animation_profile({},"")
  actor.start_left_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
 
+func practice_right_jab()->void:
+ var actor=editor.actor
+ if not is_instance_valid(actor) or actor.combat_reaction_active() or actor.mode=="punch" or cast_committed():return
+ interrupt_preview_cast();playing=false
+ demo_enter_pose.clear();demo_exit_pose.clear()
+ set_preview_repeat(false)
+ actor.set_editor_animation_profile({},"")
+ actor.start_right_jab(ThirdPersonCamera.movement_facing(editor.field,actor))
+
 func play_projectile_once() -> void:
  if not demo_choice_selected:return
  set_preview_repeat(false)
@@ -1408,7 +1417,7 @@ func stop_preview_controls(force:=false) -> void:
 func refresh_delivery_choices() -> void:
  if sandbox_testing:sandbox_spell_selected=previews_spell_release()
  refresh_animation_type_visibility()
- if is_instance_valid(editor) and is_instance_valid(editor.actor) and demo_choice_selected and spell_delivery_type()=="Barrier" and creation_step in ["delivery","barrier","shield"]:
+ if not sandbox_testing and is_instance_valid(editor) and is_instance_valid(editor.actor) and demo_choice_selected and spell_delivery_type()=="Barrier" and creation_step in ["delivery","barrier","shield"]:
   if not is_instance_valid(barrier_tester):
    barrier_tester=preload("res://scripts/barrier_practice_caster.gd").new();add_child(barrier_tester);barrier_tester.configure(self)
   if not is_instance_valid(barrier_puncher):
@@ -2360,15 +2369,15 @@ func _input(event:InputEvent) -> void:
    elif event.pressed:play_projectile_once()
    get_viewport().set_input_as_handled()
    return
-  if not sandbox_testing and key in [KEY_4,KEY_KP_4] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
-   practice_left_jab()
+  if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+   practice_right_jab()
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_2,KEY_KP_2] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+  if key==KEY_F1 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    set_preview_hitboxes(not preview_hitboxes)
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_3,KEY_KP_3] and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+  if key==KEY_F2 and event.pressed and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
    set_combat_numbers(not editor.field.combat_numbers_visible)
    get_viewport().set_input_as_handled()
    return
@@ -2376,7 +2385,7 @@ func _input(event:InputEvent) -> void:
    set_jump_held(event.pressed)
    get_viewport().set_input_as_handled()
    return
-  if key in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_SHIFT]:
+  if key in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_UP,KEY_DOWN,KEY_LEFT,KEY_RIGHT,KEY_SHIFT]:
    movement_keys[key]=event.pressed
    get_viewport().set_input_as_handled()
    return

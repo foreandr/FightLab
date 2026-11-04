@@ -8,8 +8,9 @@ takeoff cannot start another jump. Resource checks and cast commitment still app
 
 Stamina cannot regenerate while a jump charge is held, even at maximum charge;
 release restores ordinary recovery eligibility. Mana recovery is unchanged.
-CharacterMovement brakes carried horizontal speed exponentially (14/s) during
-the charge and ignores new movement requests until release. Sprint drain is
+CharacterMovement brakes carried horizontal speed exponentially (5/s) during
+the charge and ignores new movement requests until release; input instead eases a small
+6-degree fore/aft or 5-degree sideways torso lean. Sprint drain is
 disabled during that charge. Both CombatWorld editor movement and live actor
 movement use the same brake, preserving normal behavior outside the charge.
 

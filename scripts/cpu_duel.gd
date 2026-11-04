@@ -204,8 +204,8 @@ func build_ui()->void:
  button(buttons,"Main menu",go_home)
  pause_button=button(buttons,"Pause",toggle_pause);pause_button.tooltip_text="Space"
  button(buttons,"Rematch",func():rematch());button(buttons,"Slow mo",toggle_slow)
- hitboxes_button=button(buttons,"Hitboxes [2]",func():set_combat_hitboxes(not projectile_hitboxes_visible));hitboxes_button.toggle_mode=true;hitboxes_button.set_pressed_no_signal(projectile_hitboxes_visible)
- numbers_button=button(buttons,"Numbers [3]",func():set_combat_numbers(not combat_numbers_visible));numbers_button.toggle_mode=true;numbers_button.set_pressed_no_signal(combat_numbers_visible)
+ hitboxes_button=button(buttons,"Hitboxes [F1]",func():set_combat_hitboxes(not projectile_hitboxes_visible));hitboxes_button.toggle_mode=true;hitboxes_button.set_pressed_no_signal(projectile_hitboxes_visible)
+ numbers_button=button(buttons,"Numbers [F2]",func():set_combat_numbers(not combat_numbers_visible));numbers_button.toggle_mode=true;numbers_button.set_pressed_no_signal(combat_numbers_visible)
  spell_names_button=button(buttons,"Spells [4]",toggle_spell_names);spell_names_button.toggle_mode=true
  spell_names_button.tooltip_text="Show casts, cancelled feints and hesitations above each fighter"
  button(buttons,"Match report",show_report)
@@ -332,8 +332,8 @@ func _unhandled_input(event:InputEvent)->void:
    KEY_T:toggle_self_play()
    KEY_M:show_models()
    KEY_ESCAPE:go_home()
-   KEY_2:set_combat_hitboxes(not projectile_hitboxes_visible)
-   KEY_3:set_combat_numbers(not combat_numbers_visible)
+   KEY_F1:set_combat_hitboxes(not projectile_hitboxes_visible)
+   KEY_F2:set_combat_numbers(not combat_numbers_visible)
    KEY_4:toggle_spell_names()
    KEY_F:camera_focus_target=null if camera_focus_target==selected else selected
  if event is InputEventMouseButton:

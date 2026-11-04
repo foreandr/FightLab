@@ -21,6 +21,14 @@ static func is_airborne(entry:Dictionary)->bool:
 static func is_grab(entry:Dictionary)->bool:
 	return _has(action_words(entry),["grab","grabs","grabbing","grapple","grappling","clinch","clinching","wrestle","wrestling","takedown","takedowns","armbar","choke","chokes","choking","headlock","suplex"])
 
+static func is_crouch(entry:Dictionary)->bool:
+	# These existing low attacks are authored from a crouched stance, despite
+	# their shorter display names (verified against the source pelvis poses).
+	if str(entry.get("clip","")) in ["fight/slide_kick","fight/sweep"]:return true
+	for word in action_words(entry):
+		if word.begins_with("crouch"):return true
+	return false
+
 static func is_idle(entry:Dictionary)->bool:
 	# A browsing section, not a new combat pose-ownership type.
 	var title:=str(entry.get("title",""))

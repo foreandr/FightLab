@@ -66,8 +66,15 @@ func run():
  for i in 60:
   await physics_frame
   a.tick(0.016);b.move_caster(0.016,Vector2(0,1),true);b.process_demo_preview(0.016)
-  if i==14:assert(Vector2(a.velocity.x,a.velocity.z).length()<0.5,"Charge did not brake rapidly")
- assert(a.position.distance_to(charge_start)<0.65 and Vector2(a.velocity.x,a.velocity.z).length()<0.01,"Held movement kept sliding during charge: distance=%s velocity=%s active=%s mode=%s"%[a.position.distance_to(charge_start),a.velocity,a.jump_charge_active(),a.mode])
+  if i==14:assert(Vector2(a.velocity.x,a.velocity.z).length()>1.0 and Vector2(a.velocity.x,a.velocity.z).length()<3.5,"Charge braking is too abrupt or too weak")
+ assert(a.position.distance_to(charge_start)>0.75 and a.position.distance_to(charge_start)<1.65 and Vector2(a.velocity.x,a.velocity.z).length()<0.12,"Held charge lost carry or kept sliding")
+ assert((a.get_meta("jump_charge_lean") as Vector2).length()>0.8,"Held direction did not ease into lean")
+ a.set_meta("jump_charge_lean",Vector2.ZERO);load("res://scripts/jump_charge_pose.gd").apply(a)
+ var chest:Vector3=a.bone_point("spine_03");var foot:Vector3=a.bone_point("foot_l")
+ a.set_meta("jump_charge_lean",Vector2(0,1));load("res://scripts/jump_charge_pose.gd").apply(a)
+ assert((a.bone_point("spine_03")-chest).dot(a.global_basis.z)>0.01,"Forward input did not lean forward")
+ assert(a.bone_point("foot_l").distance_to(foot)<0.001,"Lean moved planted feet")
+ assert(Locomotion.axes({KEY_UP:true,KEY_RIGHT:true}).is_equal_approx(Vector2(1,1).normalized()))
  assert(is_equal_approx(a.stamina,80.0),"Held sprint spent extra stamina during jump charge")
  space(false);settle()
  settle();space(true)

@@ -3,12 +3,14 @@ extends "res://scripts/spell_creation_screen.gd"
 var god_button:Button
 var sandbox_god_modes:Dictionary={}
 var animation_browser:VBoxContainer
+var target_behavior:Node
 func _build_world()->void:
  super._build_world()
  var extra=field.fighters.pop_back()
  field.remove_child(extra);extra.queue_free()
 func _build_ui()->void:
  super._build_ui()
+ spell_builder.sandbox_testing=true
  spell_builder.human_only_targets=true
  spell_builder.draft_path="user://sandbox_spell_draft.cfg"
  spell_builder.preview_preferences_path="user://sandbox_spell_preview.cfg"
@@ -31,6 +33,7 @@ func _ready()->void:
  god_button.name="SandboxGodMode";god_button.toggle_mode=true
  god_button.tooltip_text="G · Infinite health, stamina and mana for the selected character"
  sync_god_button()
+ target_behavior=preload("res://scripts/sandbox_target_behavior.gd").new();add_child(target_behavior);target_behavior.setup(self)
 func sync_god_button()->void:
  if not is_instance_valid(god_button):return
  var selected:=is_instance_valid(focused_unit)
@@ -50,6 +53,11 @@ func _process(delta:float)->void:
    spell_builder.set_character_god_mode(unit,bool(sandbox_god_modes[unit.get_instance_id()]))
  sync_god_button()
 func _input(event:InputEvent)->void:
+ if preload("res://scripts/combat_pointer.gd").dialog_open(get_viewport()):return
+ if workspace_ready and not camera_text_editing() and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_T:
+  select_editor_unit(target);target_behavior.open_at(arena_area.get_global_rect().get_center());get_viewport().set_input_as_handled();return
  if workspace_ready and not camera_text_editing() and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_G:
   toggle_selected_god_mode();get_viewport().set_input_as_handled();return
  super._input(event)
+ if workspace_ready and event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed and arena_area.get_global_rect().has_point(event.position) and focused_unit==target:
+  target_behavior.open_at(event.position)

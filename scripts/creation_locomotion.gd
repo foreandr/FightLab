@@ -4,7 +4,7 @@ const Movement=preload("res://scripts/character_movement.gd")
 const CastPose=preload("res://scripts/spell_cast_motion.gd")
 
 static func axes(held:Dictionary) -> Vector2:
-	return Vector2(float(held.get(KEY_D,false))-float(held.get(KEY_A,false)),float(held.get(KEY_W,false))-float(held.get(KEY_S,false))).limit_length(1.0)
+	return Vector2(float(held.get(KEY_D,false) or held.get(KEY_RIGHT,false))-float(held.get(KEY_A,false) or held.get(KEY_LEFT,false)),float(held.get(KEY_W,false) or held.get(KEY_UP,false))-float(held.get(KEY_S,false) or held.get(KEY_DOWN,false))).limit_length(1.0)
 
 static func direction(input:Vector2,forward:Vector3) -> Vector3:
 	return Movement.direction_from_forward(input,forward)

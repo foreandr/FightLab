@@ -35,13 +35,13 @@ func run():
  for i in 3:await physics_frame
  old_damage=target.damage_taken
  var mana:float=actor.mana;var stamina:float=actor.stamina
- var key:=InputEventKey.new();key.keycode=KEY_4;key.physical_keycode=KEY_4;key.pressed=true
+ var key:=InputEventKey.new();key.keycode=KEY_2;key.physical_keycode=KEY_2;key.pressed=true
  b._input(key)
- assert(actor.mode=="punch" and actor.attack_kind=="left_jab" and actor.melee_spec[2]=="hand_l")
+ assert(actor.mode=="punch" and actor.attack_kind=="right_jab" and actor.melee_spec[2]=="hand_r")
  assert(actor.mana==mana and actor.stamina<stamina,"Jab should cost stamina only")
  limit=Time.get_ticks_msec()+2000
  while target.damage_taken==old_damage and Time.get_ticks_msec()<limit:await process_frame
- assert(target.damage_taken>old_damage,"Player's 4-key jab did not hit on contact")
+ assert(target.damage_taken>old_damage,"Player's 2-key jab did not hit on contact")
  assert(e.field.shot_serial==serial and target.burn_time==0.0)
  while actor.mode=="punch":await physics_frame
  var dealt:float=target.damage_taken
@@ -49,5 +49,5 @@ func run():
  b.practice_left_jab()
  while actor.mode=="punch":await physics_frame
  assert(target.damage_taken==dealt,"Jab dealt damage without physical contact")
- print("PRACTICE JAB PASS: cheap Shield/Absorb/Reflect base costs; CPU jab real touch damage; 4-key left-hand strike, stamina only, no projectile/effect, misses at distance")
+ print("PRACTICE JAB PASS: cheap Shield/Absorb/Reflect base costs; CPU jab real touch damage; 2-key right-hand strike, stamina only, no projectile/effect, misses at distance")
  quit()

@@ -2,10 +2,14 @@ extends RefCounted
 ## Shared world-space movement and facing; modes supply input and animation poses.
 const TURN_SPEED:=14.0
 const DASH_SPEED_MULTIPLIER:=0.85
-const JUMP_CHARGE_BRAKING:=14.0
+const JUMP_CHARGE_BRAKING:=5.0
 
 static func jump_charge_velocity(actor:Node,requested:Vector3,delta:float)->Vector3:
 	if not actor.has_method("jump_charge_active") or not actor.jump_charge_active():return requested
+	var local:Vector3=actor.global_basis.orthonormalized().inverse()*requested.limit_length(1.0)
+	var lean:Vector2=actor.get_meta("jump_charge_lean",Vector2.ZERO)
+	lean=lean.lerp(Vector2(local.x,local.z),1.0-exp(-8.0*maxf(0.0,delta)))
+	actor.set_meta("jump_charge_lean",lean)
 	var carry:Vector3=actor.get_meta("jump_charge_velocity",Vector3.ZERO)
 	carry*=exp(-JUMP_CHARGE_BRAKING*maxf(0.0,delta))
 	if carry.length()<0.05:carry=Vector3.ZERO

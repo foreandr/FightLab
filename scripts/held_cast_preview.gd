@@ -3,6 +3,7 @@ extends RefCounted
 var active:=false
 var seconds:=0.0
 var follow_through:=false
+var feedback:Node
 var limits:=Vector2(0.7,1.6)
 const CHARGE_SECONDS:=1.0
 
@@ -20,12 +21,17 @@ func begin(builder:Node)->void:
  builder.play_demo_preview()
  if not builder.playing:return
  active=true;seconds=0.0;follow_through=false
+ feedback=builder.editor.actor.get_node_or_null("CastChargeFeedback")
+ if not is_instance_valid(feedback):
+  feedback=preload("res://scripts/cast_charge_feedback.gd").new();builder.editor.actor.add_child(feedback);feedback.setup(builder.editor.actor)
+ feedback.begin(preload("res://scripts/combat_aim.gd").emitter(builder.playback_animation()))
 
 func update(builder:Node,delta:float)->void:
  if not active:return
  if not builder.playing or builder.editor.actor.combat_reaction_active() or not builder.get_viewport().get_window().has_focus() or builder.editor.camera_text_editing() or preload("res://scripts/combat_pointer.gd").dialog_open(builder.get_viewport()):
   builder.interrupt_preview_cast();builder.playing=false;builder.begin_demo_exit();return
  seconds=minf(CHARGE_SECONDS,seconds+delta)
+ if is_instance_valid(feedback):feedback.progress(seconds/CHARGE_SECONDS)
  # The source declares its duration limits; holding only selects within them.
  builder.demo_duration=lerpf(limits.x,limits.y,seconds/CHARGE_SECONDS)
  builder.casting_animation.duration=builder.demo_duration
@@ -39,6 +45,7 @@ func update(builder:Node,delta:float)->void:
 func release(builder:Node)->void:
  if not active:return
  active=false
+ if is_instance_valid(feedback):feedback.finish()
  builder.demo_duration=lerpf(limits.x,limits.y,seconds/CHARGE_SECONDS)
  builder.casting_animation.duration=builder.demo_duration
  builder.refresh_demo_timing()
@@ -58,3 +65,4 @@ func tail_rate(builder:Node)->float:
 
 func cancel()->void:
  active=false;follow_through=false
+ if is_instance_valid(feedback):feedback.finish()
