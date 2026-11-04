@@ -3,7 +3,7 @@ extends RefCounted
 ## Full source records are stored as individual detail records and opened only for the visible page.
 
 const Community = preload("res://scripts/community_animation_catalog.gd")
-const CACHE_VERSION := 6
+const CACHE_VERSION := 8
 const STATIC_FILTER := "res://data/static_animation_filter.json"
 const BODY_HINTS := {
 	"Head": ["head", "neck", "face", "mouth"],
@@ -23,8 +23,8 @@ static func load_cache(index_path: String) -> Dictionary:
 	var file := FileAccess.open(index_path, FileAccess.READ)
 	if file == null: return {}
 	var data: Variant = bytes_to_var(file.get_buffer(file.get_length()))
-	# v5 has the same record/detail layout; v6 only adds classification hints.
-	if not data is Dictionary or int(data.get("version", 0)) not in [5,CACHE_VERSION]: return {}
+	# v8 retains the duration limits needed by cards without opening detail records.
+	if not data is Dictionary or int(data.get("version", 0)) != CACHE_VERSION: return {}
 	if data.get("source_stamp",{}) != _source_stamp(): return {}
 	data["details_path"] = details_path(index_path)
 	if not FileAccess.file_exists(data.details_path): return {}
@@ -126,6 +126,9 @@ static func _compact_record(entry: Dictionary) -> Dictionary:
 	if id.is_empty():
 		var key_clip := "ual2/" + str(entry.get("source_animation", "")) if entry.has("source_animation") else clip
 		id = (key_clip + "|" + step + "|" + str(entry.get("mirrored", false)) + "|" + str(entry.get("path", ""))).sha256_text()
+	var timing_profile:=entry.duplicate(false)
+	timing_profile["air_state"]=air
+	var limits:=preload("res://scripts/held_cast_preview.gd").duration_range(preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(timing_profile))
 	return {
 		"title": title, "clip": clip, "category": category, "step": step,
 		"group": str(entry.get("group", "Motion")), "store_asset_id": id,
@@ -136,6 +139,11 @@ static func _compact_record(entry: Dictionary) -> Dictionary:
 		"source_name": str(entry.get("source_name", "")), "source_url": str(entry.get("source_url", "")),
 		"license": str(entry.get("license", "Unspecified")),
 		"commercial_use": bool(entry.get("commercial_use", false)),
+		"source_duration": float(entry.get("source_duration",entry.get("duration",entry.get("source_length",1.0)))),
+		"min_duration": limits.x,
+		"max_duration": limits.y,
+		"jump_motion": entry.get("jump_motion",{}),
+		"requires_air": bool(entry.get("requires_air",false)),
 		"duration": float(entry.get("duration", entry.get("source_length", 1.0))),
 		"source_length": float(entry.get("source_length", entry.get("duration", 1.0)))
 	}

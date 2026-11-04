@@ -20,8 +20,11 @@ Sandbox hold experiment: hold key 1 or the Play button, release to strike.
 Profiles declare min_duration/max_duration; source_duration remains unchanged.
 Until explicitly authored, limits default to 70%-160% of native duration, bounded
 by the shared airborne minimum and 60-second authoring limit. One second of
-holding reaches maximum. Pose anticipation approaches the selected release
-point while held; follow-through runs at least at native speed. Card previews
+holding reaches maximum. Held anticipation stays within the first 3.5% of the
+pose, and key-up continues forward without skipping to a later release pose.
+Sandbox emission is fixed at 10%; its editable cast grip is hidden. Authoring
+uses the neutral timing reference, so a hidden old draft cannot change pricing.
+Follow-through runs at least at native speed. Card previews
 and Repeat remain ordinary complete playback for comparing original motion.
 The experiment only adapts Sandbox input. Shared Rules author the resulting
 cost/damage spec; CombatRuntime retimes the existing attempt and accounts for
@@ -33,3 +36,7 @@ automatic takeoff, and the shared start/release gates reject it on the floor.
 Checks: animation_conditioning_test, held_cast_preview_test,
 combat_animation_filter_test, sandbox_animation_library_test,
 sandbox_pairing_test, combat_store_curation_test and spell_cancel_stamina_test.
+
+Sandbox cards show Min/Max seconds from the same duration_range helper as held
+input. The compact index retains duration limits, so captions do not open full
+records or load animation assets. Airborne minimums apply before displaying.

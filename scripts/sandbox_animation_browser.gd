@@ -181,8 +181,9 @@ func show_page()->void:
  status.text="%d animations · %d matching"%[records.size(),matches_.size()]
  for index in range(page*PAGE_SIZE,mini(matches_.size(),(page+1)*PAGE_SIZE)):
   var entry:Dictionary=matches_[index]
-  var card:Button=preload("res://scripts/asset_preview_card.gd").create("Animation"+str(index),str(entry.title),null,str(entry.title)+"\n"+entry.store_animation_type+" · "+entry._origin+"\n"+str(entry.get("store_creator","")))
-  card.custom_minimum_size.y=86
+  var limits:=preload("res://scripts/held_cast_preview.gd").duration_range(preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry))
+  var card:Button=preload("res://scripts/asset_preview_card.gd").create("Animation"+str(index),str(entry.title),null,str(entry.title)+"\n"+entry.store_animation_type+" · "+entry._origin+"\n"+str(entry.get("store_creator","")),"Min %.2f s · Max %.2f s"%[limits.x,limits.y])
+  card.custom_minimum_size.y=104
   card.find_child("PreviewImage",true,false).custom_minimum_size.y=52
   grid.add_child(card);card.set_pressed_no_signal(entry._id==selected_id)
   visible_entries.append(entry);cards.append(card)

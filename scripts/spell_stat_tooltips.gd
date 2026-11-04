@@ -52,7 +52,7 @@ static func refresh(b:Node) -> void:
 	var texts:Dictionary={}
 	if b.limiter_enabled:
 		var effect:String=b.preview_effect if b.creation_step=="projectile" else b.element
-		texts=breakdown(b.projectile_effect_spec(effect),b.demo_duration,b.release_fraction,b.demo_offensive(),b.demo_projectile_stats())
+		texts=breakdown(b.projectile_effect_spec(effect),b.demo_duration,b.authoring_release_fraction(),b.demo_offensive(),b.demo_projectile_stats())
 	else:
 		for key in controls:texts[key]="Limiter off: independent testing value.\nNo duration, allocation, movement or spell-amp scaling is applied."
 		var spec:Dictionary=b.test_overrides.apply(b.projectile_effect_spec(b.preview_effect))
@@ -61,12 +61,12 @@ static func refresh(b:Node) -> void:
 		texts.burn="Limiter off: %.1f tick damage ÷ %.1f s\n× (4 × %.3f%% ÷ 100) = %.1f burn damage/s"%[Burn.TICK_DAMAGE,Burn.TICK_INTERVAL,float(b.test_overrides.values.effect),Burn.dps(float(spec.potency))]
 	if b.previews_touch():
 		var spec:Dictionary=b.demo_preview_spec()
-		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
+		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.authoring_release_fraction())
 		var base:float=float(b.touch_authoring.base_spec().mana)
 		texts.mana="Base mana = %.1f\nTouch cost = 0.5×\nActivation wait = %.2f seconds\nTiming cost = %.3f×\n\nMana cost = %.1f × 0.5 × %.3f = %.1f"%[base,timing.release_seconds,timing.multiplier,base,timing.multiplier,Rules.mana_cost(spec)]
 	if b.previews_barrier():
 		var spec:Dictionary=b.demo_preview_spec()
-		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.release_fraction)
+		var timing:Dictionary=Rules.cast_timing_stats(b.demo_duration,b.authoring_release_fraction())
 		var reference:float=preload("res://scripts/animation_mana_scaling.gd").multiplier(Rules.BARRIER_NEUTRAL_WAIT)
 		texts.mana="Default block mana = 10\nActivation wait = %.2f seconds\nTiming factor = %.3f ÷ %.3f\n\nMana cost = 10 × %.3f = %.1f\nPerfect timing refund = 5\nDirectional perfect refund = 10 (per-cast cap)"%[timing.release_seconds,timing.multiplier,reference,timing.multiplier/reference,Rules.mana_cost(spec)]
 	for key in controls:

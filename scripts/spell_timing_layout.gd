@@ -97,8 +97,8 @@ static func refresh_details(b:Node) -> void:
 		b.demo_duration_label.visible=not b.limiter_enabled
 		b.get_meta("cast_timeline").visible=b.limiter_enabled
 		b.demo_duration_slider.get_parent().visible=not b.limiter_enabled
-		b.release_slider.get_parent().visible=not b.limiter_enabled
-		b.get_meta("release_heading").visible=not b.limiter_enabled
+		b.release_slider.get_parent().visible=not b.limiter_enabled and not b.sandbox_testing
+		b.get_meta("release_heading").visible=not b.limiter_enabled and not b.sandbox_testing
 		b.duration_endpoints.hide()
 		b.get_meta("cast_timeline").refresh()
 	for label in [b.demo_mana_base_label,b.demo_stamina_note,b.demo_damage_breakdown,b.demo_amp_breakdown]:

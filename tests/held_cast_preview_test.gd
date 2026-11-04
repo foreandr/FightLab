@@ -24,6 +24,12 @@ func run():
  for i in 120:b.move_caster(0.016,Vector2.ZERO,false)
  s.actor.stamina=100;s.actor.mana=100
  root.grab_focus();await process_frame
+ var timeline=b.get_meta("cast_timeline")
+ assert(not timeline.release_handle.visible,"Held casts still expose a late release grip")
+ var before:float=b.release_fraction
+ timeline.set_at_position("release",timeline.time_x(0.55))
+ assert(is_equal_approx(b.release_fraction,before),"Hidden release grip still edits timing")
+ b.release_fraction=0.55 # A saved late cast setting must not extend the held punch.
  b.held_cast.begin(b);assert(b.held_cast.active)
  var shots:int=s.field.shot_serial
  b.process_demo_preview(0.5)
@@ -44,13 +50,19 @@ func run():
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://work/charge_body_shell.png")
  var cost:float=b.demo_preview_spec().stamina_cost
- b.held_cast.release(b);b.process_demo_preview(0.001)
+ assert(b.elapsed/b.cast_duration()<0.035,"Holding advanced past anticipation")
+ var held_time:float=b.elapsed
+ b.held_cast.release(b)
+ assert(is_equal_approx(b.elapsed,held_time),"Key-up skipped the strike wind-up")
+ b.process_demo_preview(0.001)
+ assert(not b.released,"Key-up teleported directly to emission")
+ for i in 15:b.process_demo_preview(0.01)
  assert(not b.held_cast.feedback.holding)
  b.held_cast.feedback._process(0.2)
  assert(is_zero_approx(b.held_cast.feedback.fade),"Charge glow did not fade on release")
  assert(b.released and s.field.shot_serial==shots+1)
  assert(is_equal_approx(s.actor.stamina,100.0-cost),"Final duration did not set shared stamina cost")
- b.process_demo_preview(0.8);assert(not b.playing)
+ b.process_demo_preview(1.1);assert(not b.playing)
  b.stop_preview_controls(true);s.actor.stamina=100;s.actor.mana=100
  b.held_cast.begin(b);b.process_demo_preview(0.4);b.interrupt_preview_cast()
  assert(s.actor.stamina<100 and s.field.shot_serial==shots+1,"Interrupted charge was free or emitted")

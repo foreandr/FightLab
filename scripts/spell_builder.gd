@@ -1577,7 +1577,7 @@ func demo_mana_stats() -> Dictionary:
  return Rules.cast_timing_stats(demo_duration,release_fraction)
 
 func release_timing_stats() -> Dictionary:
- return Rules.release_timing(demo_duration,release_fraction)
+ return Rules.release_timing(demo_duration,authoring_release_fraction())
 
 func set_release_fraction(value:float) -> void:
  if not limiter_enabled:
@@ -1609,7 +1609,7 @@ func demo_projectile_stats() -> Dictionary:
   movement=editor.actor.velocity
   var origin:Vector3=editor.field.fighter_hand(editor.actor,CombatAim.emitter(playback_animation()))+editor.actor.global_basis.z*0.12
   aim=preview_aim_direction(origin)
- return Rules.authored_stats(base,demo_duration,release_fraction,demo_offensive(),movement,aim)
+ return Rules.authored_stats(base,demo_duration,authoring_release_fraction(),demo_offensive(),movement,aim)
 
 func refresh_demo_timing() -> void:
  refresh_animation_type_visibility()
@@ -1769,7 +1769,7 @@ func process_demo_preview(delta:float) -> void:
   if elapsed>=fade:demo_enter_pose.clear()
  Locomotion.cast_legs(editor.actor,playback_animation(),caster_move_axes if caster_moving else Vector2.ZERO,idle_elapsed,caster_sprinting)
  Locomotion.recover_from_cast(editor.actor,caster_move_axes,idle_elapsed,caster_sprinting,cast_recovery_weight())
- if not held_cast.active and previews_spell_release() and not released and progress>=(release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0):
+ if not held_cast.active and previews_spell_release() and not released and progress>=preview_release_fraction():
   launch_projectile()
   released=true
  if progress>=1.0:
@@ -1785,7 +1785,7 @@ func process_demo_preview(delta:float) -> void:
 
 func cast_recovery_weight() -> float:
  if not playing or (previews_spell_release() and not released):return 0.0
- var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else (release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0)
+ var release:=float(committed_spec.get("release",release_fraction)) if cast_committed() else preview_release_fraction()
  return CastType.recovery_weight(playback_animation(),elapsed,playback_duration(),release if previews_spell_release() else 0.0)
 
 func capture_demo_pose() -> Array[Transform3D]:
@@ -2064,10 +2064,20 @@ func demo_preview_spec() -> Dictionary:
  var base:Dictionary=touch_authoring.base_spec() if previews_touch() else (Rules.self_barrier_base(barrier_authoring.strength,barrier_authoring.lifetime) if previews_barrier() else (projectile_effect_spec(preview_effect) if previews_projectile() else projectile_spec()))
  var jump:=preload("res://scripts/animation_jump_motion.gd").settings(playback_animation())
  if not jump.is_empty():base.jump_motion=jump
- var spec:=Rules.author(base,demo_duration,release_fraction,demo_offensive())
+ var spec:=Rules.author(base,demo_duration,authoring_release_fraction(),demo_offensive())
  spec["requires_air"]=preload("res://scripts/animation_jump_motion.gd").requires_air(playback_animation())
  spec.hand=CombatAim.emitter(playback_animation())
- return spec if limiter_enabled else test_overrides.apply(spec)
+ if not limiter_enabled:spec=test_overrides.apply(spec)
+ if sandbox_testing:spec.release=preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
+ return spec
+
+func authoring_release_fraction()->float:
+ # Held input replaces the editable timing bonus with the neutral baseline.
+ return (MIN_RELEASE_FRACTION+MAX_RELEASE_FRACTION)*0.5 if sandbox_testing else release_fraction
+
+func preview_release_fraction()->float:
+ if sandbox_testing:return preload("res://scripts/held_cast_preview.gd").RELEASE_FRACTION
+ return release_fraction if limiter_enabled else float(test_overrides.values.release)/100.0
 
 func cast_duration() -> float:
  if not limiter_enabled:return float(test_overrides.values.duration)

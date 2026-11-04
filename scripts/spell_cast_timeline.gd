@@ -84,6 +84,8 @@ func refresh() -> void:
 	var end:=time_x(duration_value())
 	duration_handle.position=Vector2(end-8,lane_y())
 	duration_handle.size=Vector2(16,28)
+	tooltip_text="Drag the right edge to stretch the animation. Wheel zooms time. Arrow keys adjust the focused edge." if builder.sandbox_testing else "Drag the right edge to stretch the animation. Drag Release to move the cast. Wheel zooms time."
+	release_handle.visible=not builder.sandbox_testing
 	var release_x:=time_x(duration_value()*release_value())
 	release_handle.position=Vector2(release_x-6,lane_y())
 	release_handle.size=Vector2(12,28)
@@ -114,32 +116,35 @@ func _draw() -> void:
 	# Read the same clock that poses the character, including slow motion and restarts.
 	draw_circle(playback_position(),4.0,Color("d13b2f"),true,-1.0,true)
 	draw_rect(Rect2(8,lane,maxf(1,end-8),28),Color("f1e8d3"))
-	# Only the early-to-apex window accepts a release; recovery is blocked out.
-	var first_release:=time_x(duration_value()*float(builder.MIN_RELEASE_FRACTION))
-	var last_release:=time_x(duration_value()*float(builder.MAX_RELEASE_FRACTION))
-	draw_rect(Rect2(8,lane,maxf(0,first_release-8),28),Color("c6bead"))
-	draw_rect(Rect2(last_release,lane,maxf(0,end-last_release),28),Color("c6bead"))
-	for stripe in range(int(last_release)+4,int(end)-3,7):
-		draw_line(Vector2(stripe,lane+4),Vector2(stripe,lane+24),Color("aaa08c"),1)
-	draw_line(Vector2(last_release,lane+1),Vector2(last_release,lane+27),ink,1)
 	draw_rect(Rect2(8,lane,maxf(1,end-8),28),ink,false,2)
 	for offset in [4,7]:draw_line(Vector2(end-offset,lane+5),Vector2(end-offset,lane+23),ink)
-	var marker:=time_x(duration_value()*release_value())
-	var label_x:float=first_release+6 if marker-first_release>last_release-marker else marker+10
-	var available:float=marker-label_x-6 if label_x<marker else last_release-label_x-6
-	if available>=font.get_string_size("Cast",HORIZONTAL_ALIGNMENT_LEFT,-1,12).x:
-		draw_string(font,Vector2(label_x,lane+19),"Cast",HORIZONTAL_ALIGNMENT_LEFT,available,12,ink)
-	# Release is a small grip inside the animation, not a separate playhead row.
-	draw_rect(Rect2(marker-3,lane+3,6,22),Color("b5a27f"))
-	draw_rect(Rect2(marker-3,lane+3,6,22),ink,false,1)
+	if not builder.sandbox_testing:
+		# Only the early-to-apex window accepts a release; recovery is blocked out.
+		var first_release:=time_x(duration_value()*float(builder.MIN_RELEASE_FRACTION))
+		var last_release:=time_x(duration_value()*float(builder.MAX_RELEASE_FRACTION))
+		draw_rect(Rect2(8,lane,maxf(0,first_release-8),28),Color("c6bead"))
+		draw_rect(Rect2(last_release,lane,maxf(0,end-last_release),28),Color("c6bead"))
+		for stripe in range(int(last_release)+4,int(end)-3,7):
+			draw_line(Vector2(stripe,lane+4),Vector2(stripe,lane+24),Color("aaa08c"),1)
+		draw_line(Vector2(last_release,lane+1),Vector2(last_release,lane+27),ink,1)
+		var marker:=time_x(duration_value()*release_value())
+		var label_x:float=first_release+6 if marker-first_release>last_release-marker else marker+10
+		var available:float=marker-label_x-6 if label_x<marker else last_release-label_x-6
+		if available>=font.get_string_size("Cast",HORIZONTAL_ALIGNMENT_LEFT,-1,12).x:
+			draw_string(font,Vector2(label_x,lane+19),"Cast",HORIZONTAL_ALIGNMENT_LEFT,available,12,ink)
+		# Release is a small grip inside the animation, not a separate playhead row.
+		draw_rect(Rect2(marker-3,lane+3,6,22),Color("b5a27f"))
+		draw_rect(Rect2(marker-3,lane+3,6,22),ink,false,1)
 
 func set_at_position(kind:String,x:float) -> void:
+	if kind=="release" and builder.sandbox_testing:return
 	var time:=maxf(0.0,(x-8.0)/track_width()*view_span)
 	if kind=="duration":builder.demo_duration_slider.value=snappedf(time,0.1)
 	else:builder.release_slider.value=100.0*time/maxf(0.001,duration_value())
 	refresh()
 
 func handle_input(event:InputEvent,kind:String,button:Button) -> void:
+	if kind=="release" and builder.sandbox_testing:return
 	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			dragging=kind
