@@ -54,7 +54,7 @@ func run():
  actor.start_ragdoll(Vector3.BACK*100,actor.bone_point("spine_03"));actor.recovery_timing.age=actor.recovery_timing.OPPORTUNITY_DELAY+actor.recovery_timing.WINDOW*0.95
  assert(actor.try_quick_recovery()=="Recovered")
  actor.finish_ragdoll()
- assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and is_equal_approx(actor.mode_length,0.65/1.32))
+ assert(actor.mode=="getup" and actor.clip==Recovery.CLIP and is_equal_approx(actor.mode_length,Recovery.Timing.RECOVERY_GETUP_SECONDS))
  assert(actor.recovery_target.size()==actor.skeleton.get_bone_count(),"Recovery does not own the full skeleton")
  var position:Vector3=actor.position
  actor.tick(0.12)
@@ -71,6 +71,6 @@ func run():
  for result in ["Recovered","Miss"]:
   cpu.reset_fighter(Vector3(0,0,3));cpu.start_ragdoll(Vector3.BACK*100,cpu.bone_point("spine_03"));cpu.recovery_timing.result=result
   cpu.finish_ragdoll()
-  assert(cpu.clip==Recovery.CLIP and is_equal_approx(cpu.mode_length,0.65/1.32 if result=="Recovered" else Recovery.NORMAL_SECONDS))
- print("RECOVERY ANIMATION PASS: exact Arms Lariat derived at 2x with credit, shared player/CPU default, all joints override cast/run, 32% faster voluntary/normal recovery")
+  assert(cpu.clip==Recovery.CLIP and is_equal_approx(cpu.mode_length,Recovery.Timing.RECOVERY_GETUP_SECONDS if result=="Recovered" else Recovery.NORMAL_SECONDS))
+ print("RECOVERY ANIMATION PASS: exact Arms Lariat derived at 2x with credit, shared player/CPU default, all joints override cast/run, shared tuned voluntary/normal recovery")
  quit()
