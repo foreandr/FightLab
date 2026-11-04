@@ -302,10 +302,10 @@ static func _populate_animation_store(host) -> void:
 		if downloaded:
 			download.disabled=true
 			host._style_store_action(download,Color("6b9876"))
-		else:host._style_store_action(download,Color("a87935"))
+		else:host._style_store_action(download,preload("res://scripts/ui_design.gd").SELECTED)
 		var reject=host.animation_icon_button(row,"undo" if blocked else "block","Unblock this animation" if blocked else "Block this animation from the Store",Callable(host,"_toggle_store_block").bind(row_entry,blocked))
 		reject.name="StoreBlock"
-		host._style_store_action(reject,Color("b8443e") if not blocked else Color("9c743d"))
+		host._style_store_action(reject,Color("b8443e") if not blocked else preload("res://scripts/ui_design.gd").RAISED)
 	host.animation_store_count.text="Animations · %d / %d"%[count,host.store_index_records.size()+host.animation_store_entries.size()]
 	var timing:Dictionary={"cache_hit":cache_hit,"scan_ms":(scan_usec-started_usec)/1000.0,"sort_ms":(sorted_usec-scan_usec)/1000.0,"details_ms":(details_usec-sorted_usec)/1000.0,"rows_ms":(Time.get_ticks_usec()-details_usec)/1000.0,"total_ms":(Time.get_ticks_usec()-started_usec)/1000.0}
 	host.set_meta("store_page_timing",timing)

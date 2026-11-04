@@ -1,4 +1,5 @@
 extends VBoxContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Metadata index with real screenshots generated only for the visible page.
 const Index=preload("res://scripts/animation_store_index.gd")
 const Library=preload("res://scripts/animation_store_library.gd")
@@ -44,7 +45,7 @@ func setup(editor:Control)->void:
     for side in [SIDE_TOP,SIDE_BOTTOM]:style.set_content_margin(side,3)
     theme.set_stylebox(state,type_,style)
  host.menu_label(self,"Choose an animation",16)
- search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",Color("806d4d"));add_child(search)
+ search=LineEdit.new();search.placeholder_text="Search names, tags or author:…";search.add_theme_color_override("font_placeholder_color",CyberStyle.MUTED);add_child(search)
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
  var tabs:=GridContainer.new();tabs.columns=3;add_child(tabs)

@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 var editor
 
 func _process(_delta:float) -> void:
@@ -16,7 +17,7 @@ func _process(_delta:float) -> void:
 func _draw() -> void:
 	if get_rect().has_point(get_local_mouse_position()):
 		draw_rect(Rect2(Vector2.ZERO,size),Color(0.91,0.72,0.30,0.15))
-		draw_rect(Rect2(Vector2.ONE,size-Vector2.ONE*2),Color("b08a4b"),false,2)
+		draw_rect(Rect2(Vector2.ONE,size-Vector2.ONE*2),CyberStyle.CYAN,false,2)
 
 func _can_drop_data(_point:Vector2,data:Variant) -> bool:
 	return data is Dictionary and bool(data.get("store_origin",false)) and editor.selected_group in ["Motion","Attack"]

@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Choose a saved character and resume their stored story location.
 
 const CHARACTER_PATH := "user://story_character.cfg"
@@ -15,7 +16,7 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var background := ColorRect.new()
-	background.color = Color("302116")
+	background.color = CyberStyle.VOID
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
@@ -26,8 +27,8 @@ func _build_ui() -> void:
 	add_child(outer)
 	var cover := PanelContainer.new()
 	var cover_style := StyleBoxFlat.new()
-	cover_style.bg_color = Color("d8c7a4")
-	cover_style.border_color = Color("765b38")
+	cover_style.bg_color = CyberStyle.RAISED
+	cover_style.border_color = CyberStyle.LINE
 	cover_style.set_border_width_all(3)
 	cover_style.set_corner_radius_all(10)
 	cover.add_theme_stylebox_override("panel", cover_style)
@@ -44,16 +45,16 @@ func _build_ui() -> void:
 	var eyebrow := Label.new()
 	eyebrow.text = "BOOK 1  ·  INTRODUCTION"
 	eyebrow.add_theme_font_size_override("font_size", 24)
-	eyebrow.add_theme_color_override("font_color", Color("614421"))
+	eyebrow.add_theme_color_override("font_color", CyberStyle.MUTED)
 	eyebrow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(eyebrow)
 	var book_author := Label.new()
 	book_author.text = "FIGHTLAB CHRONICLES"
-	book_author.add_theme_color_override("font_color", Color("75664f"))
+	book_author.add_theme_color_override("font_color", CyberStyle.MUTED)
 	header.add_child(book_author)
 	var rule := ColorRect.new()
 	rule.custom_minimum_size.y = 2
-	rule.color = Color("b5a27f")
+	rule.color = CyberStyle.LINE
 	book.add_child(rule)
 	var spread := HBoxContainer.new()
 	spread.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -74,7 +75,7 @@ func _build_ui() -> void:
 	var chapter := Label.new()
 	chapter.text = "Choose a character to open their book"
 	chapter.add_theme_font_size_override("font_size", 27)
-	chapter.add_theme_color_override("font_color", Color("382c1c"))
+	chapter.add_theme_color_override("font_color", CyberStyle.TEXT)
 	column.add_child(chapter)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -85,7 +86,7 @@ func _build_ui() -> void:
 	list.add_theme_constant_override("separation", 10)
 	scroll.add_child(list)
 	var spine := ColorRect.new()
-	spine.color = Color("98794d")
+	spine.color = CyberStyle.CYAN
 	spine.custom_minimum_size.x = 12
 	spine.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	spread.add_child(spine)
@@ -106,16 +107,16 @@ func _build_ui() -> void:
 	ornament.text = "✦"
 	ornament.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ornament.add_theme_font_size_override("font_size", 44)
-	ornament.add_theme_color_override("font_color", Color("b08a4b"))
+	ornament.add_theme_color_override("font_color", CyberStyle.CYAN)
 	right_text.add_child(ornament)
 	var invitation := Label.new()
 	invitation.text = "A new life\nbegins here"
 	invitation.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	invitation.add_theme_font_size_override("font_size", 36)
-	invitation.add_theme_color_override("font_color", Color("382c1c"))
+	invitation.add_theme_color_override("font_color", CyberStyle.TEXT)
 	right_text.add_child(invitation)
 	var right_rule := ColorRect.new()
-	right_rule.color = Color("b5a27f")
+	right_rule.color = CyberStyle.LINE
 	right_rule.custom_minimum_size.y = 2
 	right_text.add_child(right_rule)
 	var hint := Label.new()
@@ -123,11 +124,11 @@ func _build_ui() -> void:
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_font_size_override("font_size", 18)
-	hint.add_theme_color_override("font_color", Color("655740"))
+	hint.add_theme_color_override("font_color", CyberStyle.MUTED)
 	right_text.add_child(hint)
 	var footer_rule := ColorRect.new()
 	footer_rule.custom_minimum_size.y = 2
-	footer_rule.color = Color("b5a27f")
+	footer_rule.color = CyberStyle.LINE
 	book.add_child(footer_rule)
 	delete_dialog = ConfirmationDialog.new()
 	delete_dialog.title = "Delete character"
@@ -155,22 +156,22 @@ func _build_ui() -> void:
 
 func _page_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("e8ddc4")
-	style.border_color = Color("b5a27f")
+	style.bg_color = CyberStyle.PANEL
+	style.border_color = CyberStyle.LINE
 	style.set_border_width_all(1)
 	return style
 
 func _style_book_button(button: Button, primary: bool) -> void:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("c9a65e") if primary else Color("ded1b5")
-	style.border_color = Color("9a7440")
+	style.bg_color = CyberStyle.CYAN if primary else CyberStyle.PANEL
+	style.border_color = CyberStyle.CYAN
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(5)
 	button.add_theme_stylebox_override("normal", style)
 	var hover := style.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("dfbd74") if primary else Color("f0e3c8")
+	hover.bg_color = CyberStyle.CYAN if primary else CyberStyle.PANEL
 	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_color_override("font_color", Color("382c1c"))
+	button.add_theme_color_override("font_color", CyberStyle.TEXT)
 
 func _populate_characters() -> void:
 	for child in list.get_children():
@@ -188,13 +189,13 @@ func _populate_characters() -> void:
 		card.text = "NAME: %s\n%s" % [str(profile.get("name", "Unnamed character")), _character_progress_summary(profile)]
 		card.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		card.add_theme_font_size_override("font_size", 16)
-		card.add_theme_color_override("font_color", Color("382c1c"))
-		card.add_theme_color_override("font_hover_color", Color("382c1c"))
-		card.add_theme_color_override("font_pressed_color", Color("382c1c"))
-		card.add_theme_color_override("font_focus_color", Color("382c1c"))
+		card.add_theme_color_override("font_color", CyberStyle.TEXT)
+		card.add_theme_color_override("font_hover_color", CyberStyle.TEXT)
+		card.add_theme_color_override("font_pressed_color", CyberStyle.TEXT)
+		card.add_theme_color_override("font_focus_color", CyberStyle.TEXT)
 		var card_style := StyleBoxFlat.new()
-		card_style.bg_color = Color("ded1b5")
-		card_style.border_color = Color("b5a27f")
+		card_style.bg_color = CyberStyle.PANEL
+		card_style.border_color = CyberStyle.LINE
 		card_style.set_border_width_all(1)
 		card_style.set_corner_radius_all(5)
 		card_style.content_margin_left = 18
@@ -203,7 +204,7 @@ func _populate_characters() -> void:
 		card_style.content_margin_bottom = 8
 		card.add_theme_stylebox_override("normal", card_style)
 		var card_hover := card_style.duplicate() as StyleBoxFlat
-		card_hover.bg_color = Color("f0e3c8")
+		card_hover.bg_color = CyberStyle.PANEL
 		card.add_theme_stylebox_override("hover", card_hover)
 		card.pressed.connect(_load_character.bind(profile))
 		row.add_child(card)
@@ -219,7 +220,7 @@ func _populate_characters() -> void:
 		var empty := Label.new()
 		empty.text = "No saved characters yet. Create one to begin."
 		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		empty.add_theme_color_override("font_color", Color("75664f"))
+		empty.add_theme_color_override("font_color", CyberStyle.MUTED)
 		list.add_child(empty)
 
 func _character_progress_summary(profile: Dictionary) -> String:

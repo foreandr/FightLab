@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Keep the creator visible as a lightweight transition while arena resources load.
 
 const FIGHT_SCENE := "res://scenes/fight.tscn"
@@ -223,7 +224,7 @@ func _build_screen() -> void:
 	title.text = "ENTERING THE ARENA"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 25)
-	title.add_theme_color_override("font_color", Color("e9c982"))
+	title.add_theme_color_override("font_color", CyberStyle.CYAN)
 	center.add_child(title)
 	progress_label = Label.new()
 	progress_label.text = "Queueing arena assets…"

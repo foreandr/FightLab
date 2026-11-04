@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## First playable Story step: build and save the player's character.
 
 const SAVE_PATH := "user://story_character.cfg"
@@ -31,11 +32,11 @@ var profile := {
 	"name": "Avery",
 	"body": "Masculine",
 	"skin": "Dark",
-	"skin_color": Color("925438"),
+	"skin_color": CyberStyle.LINE,
 	"hair": "Short",
 	"hair_color": Color("151515"),
 	"outfit_color": Color("426c91"),
-	"trim_color": Color("d0b77b"),
+	"trim_color": CyberStyle.CYAN,
 	"height": 1.0,
 	"build": 1.0,
 	"arms_size": 1.0,
@@ -62,7 +63,7 @@ var profile := {
 	"bottoms_color": Color("34383e"),
 	"gloves_color": Color("29313b"),
 	"handwear_color": Color("29313b"),
-	"belt_color": Color("8a6135"),
+	"belt_color": CyberStyle.LINE,
 	"footwear_color": Color("354438"),
 	"hat_color": Color("3b3028"),
 	"mask_color": Color("29313b"),
@@ -192,18 +193,18 @@ func _load_profile() -> void:
 
 func _build_ui() -> void:
 	var book_theme := Theme.new()
-	book_theme.set_color("font_color", "Label", Color("382c1c"))
-	book_theme.set_color("font_color", "Button", Color("382c1c"))
-	book_theme.set_color("font_color", "OptionButton", Color("382c1c"))
-	book_theme.set_color("font_color", "LineEdit", Color("382c1c"))
+	book_theme.set_color("font_color", "Label", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "Button", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "OptionButton", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "LineEdit", CyberStyle.TEXT)
 	theme = book_theme
 	var bg := ColorRect.new()
-	bg.color = Color("302116")
+	bg.color = CyberStyle.VOID
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 	var backdrop := ColorRect.new()
-	backdrop.color = Color("e8ddc4")
+	backdrop.color = CyberStyle.PANEL
 	backdrop.anchor_left = 0.0
 	backdrop.anchor_right = 1.0
 	backdrop.anchor_bottom = 1.0
@@ -250,7 +251,7 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "CHARACTER" if create_menu_entry else "YOUR STORY"
 	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", Color("8b642d"))
+	title.add_theme_color_override("font_color", CyberStyle.CYAN)
 	var title_row:=HBoxContainer.new()
 	page_content.add_child(title_row)
 	title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -261,13 +262,13 @@ func _build_ui() -> void:
 	var heading := Label.new()
 	heading.text = "Create your fighter"
 	heading.add_theme_font_size_override("font_size", 29)
-	heading.add_theme_color_override("font_color", Color("382c1c"))
+	heading.add_theme_color_override("font_color", CyberStyle.TEXT)
 	page_content.add_child(heading)
 	var description := Label.new()
 	description.text = "Choose how you look." if create_menu_entry else "Choose how you look. You can change this any time before we begin the story."
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.add_theme_font_size_override("font_size", 14)
-	description.add_theme_color_override("font_color", Color("655740"))
+	description.add_theme_color_override("font_color", CyberStyle.MUTED)
 	page_content.add_child(description)
 	var random_button := _button("Randomize character", false)
 	random_button.custom_minimum_size.y = 44
@@ -284,7 +285,7 @@ func _build_ui() -> void:
 	name_label.custom_minimum_size.x = 76
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 16)
-	name_label.add_theme_color_override("font_color", Color("382c1c"))
+	name_label.add_theme_color_override("font_color", CyberStyle.TEXT)
 	name_row.add_child(name_label)
 	name_input = LineEdit.new()
 	name_input.placeholder_text = "Choose a name"
@@ -293,8 +294,8 @@ func _build_ui() -> void:
 	name_input.custom_minimum_size.y = 42
 	name_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_field_style := StyleBoxFlat.new()
-	name_field_style.bg_color = Color("f0e8d5")
-	name_field_style.border_color = Color("b5a27f")
+	name_field_style.bg_color = CyberStyle.RAISED
+	name_field_style.border_color = CyberStyle.LINE
 	name_field_style.set_border_width_all(1)
 	name_field_style.set_corner_radius_all(4)
 	name_input.add_theme_stylebox_override("normal", name_field_style)
@@ -305,7 +306,7 @@ func _build_ui() -> void:
 	body_choice.item_selected.connect(_on_body_changed)
 	skin_choice = _option_row("Skin", ["Light", "Dark"], str(profile.get("skin", "Light")))
 	skin_choice.item_selected.connect(_on_appearance_changed)
-	skin_picker = _color_row("Skin color", profile.get("skin_color", Color("925438")))
+	skin_picker = _color_row("Skin color", profile.get("skin_color", CyberStyle.LINE))
 	skin_picker.tooltip_text = "Choose any RGB skin tint"
 	skin_picker.color_changed.connect(_on_skin_color_changed)
 	hair_choice = _option_row("Hair", ["Short", "Buns", "Long", "Side part", "None"], str(profile.get("hair", "Short")))
@@ -328,7 +329,7 @@ func _build_ui() -> void:
 	var handwear_variants: Array[String] = ["None", "Fingerless gloves"]
 	hands_choice = _add_gear_row("Hands", "wardrobe_hands", handwear_variants, "handwear_size", "handwear_color", Color("29313b"))
 	var belt_variants: Array[String] = ["None", "Leather belt"]
-	belt_choice = _add_gear_row("Belt", "wardrobe_belt", belt_variants, "belt_size", "belt_color", Color("8a6135"))
+	belt_choice = _add_gear_row("Belt", "wardrobe_belt", belt_variants, "belt_size", "belt_color", CyberStyle.LINE)
 	boots_choice = _add_gear_row("Footwear", "wardrobe_boots", body_variants, "footwear_size", "footwear_color", Color("354438"))
 	_sync_wardrobe_controls()
 	_add_divider()
@@ -350,7 +351,7 @@ func _build_ui() -> void:
 	status_label.text = "Drag the preview to turn your character."
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_label.add_theme_font_size_override("font_size", 12)
-	status_label.add_theme_color_override("font_color", Color("655740"))
+	status_label.add_theme_color_override("font_color", CyberStyle.MUTED)
 	footer.add_child(status_label)
 	var confirm := _button("Confirm character", true)
 	confirm.custom_minimum_size.y = 50
@@ -369,12 +370,12 @@ func _build_ui() -> void:
 	var preview_title := Label.new()
 	preview_title.text = "CHARACTER PREVIEW"
 	preview_title.add_theme_font_size_override("font_size", 13)
-	preview_title.add_theme_color_override("font_color", Color("614421"))
+	preview_title.add_theme_color_override("font_color", CyberStyle.MUTED)
 	preview_header.add_child(preview_title)
 	var preview_hint := Label.new()
 	preview_hint.text = "  DRAG TO ROTATE  ·  WHEEL TO ZOOM"
 	preview_hint.add_theme_font_size_override("font_size", 11)
-	preview_hint.add_theme_color_override("font_color", Color("75664f"))
+	preview_hint.add_theme_color_override("font_color", CyberStyle.MUTED)
 	preview_header.add_child(preview_hint)
 	var view_container := SubViewportContainer.new()
 	view_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -391,7 +392,7 @@ func _build_ui() -> void:
 	var world := WorldEnvironment.new()
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color("e8ddc4")
+	environment.background_color = CyberStyle.PANEL
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("a9bed1")
 	environment.ambient_light_energy = 0.62
@@ -439,8 +440,8 @@ func _build_ui() -> void:
 func _panel() -> PanelContainer:
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("e8ddc4")
-	style.border_color = Color("b5a27f")
+	style.bg_color = CyberStyle.PANEL
+	style.border_color = CyberStyle.LINE
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(12)
 	panel.add_theme_stylebox_override("panel", style)
@@ -450,12 +451,12 @@ func _add_section_label(text: String) -> void:
 	var label := Label.new()
 	label.text = text
 	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color("8b642d"))
+	label.add_theme_color_override("font_color", CyberStyle.CYAN)
 	page_content.add_child(label)
 
 func _add_divider() -> void:
 	var line := HSeparator.new()
-	line.add_theme_color_override("separator", Color("b5a27f"))
+	line.add_theme_color_override("separator", CyberStyle.LINE)
 	page_content.add_child(line)
 
 func _option_row(title: String, options: Array[String], selected: String, parent: Control = null) -> OptionButton:
@@ -484,7 +485,7 @@ func _add_labeled_control(title: String, control: Control, parent: Control = nul
 	label.custom_minimum_size.x = 92
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color("655740"))
+	label.add_theme_color_override("font_color", CyberStyle.MUTED)
 	row.add_child(label)
 	control.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(control)
@@ -511,7 +512,7 @@ func _add_gear_row(title: String, choice_key: String, options: Array[String], si
 	label.custom_minimum_size.x = 66
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 13)
-	label.add_theme_color_override("font_color", Color("655740"))
+	label.add_theme_color_override("font_color", CyberStyle.MUTED)
 	row.add_child(label)
 	var option := OptionButton.new()
 	_style_book_option(option)
@@ -559,8 +560,8 @@ func _add_gear_row(title: String, choice_key: String, options: Array[String], si
 
 func _style_book_option(option: OptionButton) -> void:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("f0e8d5")
-	style.border_color = Color("b5a27f")
+	style.bg_color = CyberStyle.RAISED
+	style.border_color = CyberStyle.LINE
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(4)
 	option.add_theme_stylebox_override("normal", style)
@@ -617,7 +618,7 @@ func _open_accessory_options(title: String, slot: String, size_key: String) -> v
 	cross_y.custom_minimum_size = Vector2(1, 1)
 	pad.add_child(cross_y)
 	var marker := ColorRect.new()
-	marker.color = Color("d8b975")
+	marker.color = CyberStyle.CYAN
 	marker.custom_minimum_size = Vector2(16, 16)
 	marker.size = Vector2(16, 16)
 	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -719,18 +720,18 @@ func _button(text: String, primary: bool) -> Button:
 	button.custom_minimum_size.y = 40
 	button.add_theme_font_size_override("font_size", 15)
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color("c9a65e") if primary else Color("ded1b5")
-	normal.border_color = Color("9a7440")
+	normal.bg_color = CyberStyle.CYAN if primary else CyberStyle.PANEL
+	normal.border_color = CyberStyle.CYAN
 	normal.set_border_width_all(1)
 	normal.set_corner_radius_all(7)
 	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("dfbd74") if primary else Color("f0e3c8")
+	hover.bg_color = CyberStyle.CYAN if primary else CyberStyle.PANEL
 	var pressed := normal.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color("a98444") if primary else Color("cfb98c")
+	pressed.bg_color = Color("a98444") if primary else CyberStyle.LINE
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", pressed)
-	button.add_theme_color_override("font_color", Color("382c1c"))
+	button.add_theme_color_override("font_color", CyberStyle.TEXT)
 	return button
 
 func _selected(option: OptionButton) -> String:
@@ -754,7 +755,7 @@ func _on_name_changed(value: String) -> void:
 		status_label.add_theme_color_override("font_color", Color("a33d32"))
 	else:
 		status_label.text = "Drag the preview to turn your character."
-		status_label.add_theme_color_override("font_color", Color("655740"))
+		status_label.add_theme_color_override("font_color", CyberStyle.MUTED)
 
 func _name_contains_profanity(value: String) -> bool:
 	return name_profanity_filter.search(value) != null
@@ -866,7 +867,7 @@ func _randomize_character() -> void:
 	# as well as the broad Light/Dark texture choice so the button changes both.
 	var skin_tones: Array[Color] = [
 		Color("f0c7a0"), Color("d9a47d"), Color("bd8059"),
-		Color("925438"), Color("70402d"), Color("4b2b22"), Color("321d19")
+		CyberStyle.LINE, Color("70402d"), Color("4b2b22"), Color("321d19")
 	]
 	var skin_tone_index := rng.randi_range(0, skin_tones.size() - 1)
 	profile["skin"] = "Light" if skin_tone_index < 3 else "Dark"

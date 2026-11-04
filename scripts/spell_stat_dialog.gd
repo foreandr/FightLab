@@ -1,4 +1,5 @@
 extends Window
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## A movable, nonmodal inspector. Sliders remain usable while its numbers update.
 var heading:Label
 var explanation:RichTextLabel
@@ -16,8 +17,8 @@ func _ready() -> void:
 	set_meta("nonmodal_calculation",true)
 	close_requested.connect(hide)
 	var paper:=StyleBoxFlat.new()
-	paper.bg_color=Color("f1e8d3")
-	paper.border_color=Color("aa7b32")
+	paper.bg_color=CyberStyle.RAISED
+	paper.border_color=CyberStyle.CYAN
 	paper.set_border_width_all(2)
 	paper.set_corner_radius_all(6)
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:paper.set_content_margin(side,12)
@@ -40,7 +41,7 @@ func _ready() -> void:
 	heading.clip_text=true
 	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	heading.add_theme_font_size_override("font_size",21)
-	heading.add_theme_color_override("font_color",Color("382c1c"))
+	heading.add_theme_color_override("font_color",CyberStyle.TEXT)
 	header.add_child(heading)
 	close_button=Button.new()
 	close_button.text="Close"
@@ -57,7 +58,7 @@ func _ready() -> void:
 	explanation.add_theme_font_size_override("normal_font_size",BODY_SIZE)
 	explanation.add_theme_font_size_override("bold_font_size",BODY_SIZE)
 	explanation.add_theme_constant_override("line_separation",LINE_GAP)
-	explanation.add_theme_color_override("default_color",Color("382c1c"))
+	explanation.add_theme_color_override("default_color",CyberStyle.TEXT)
 	column.add_child(explanation)
 
 func show_calculation(_title:String,calculation:String) -> void:

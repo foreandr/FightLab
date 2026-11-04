@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Book 1: chapter ledger, sequential unlocks, and rival record.
 
 const CHARACTER_PATH := "user://story_character.cfg"
@@ -55,7 +56,7 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color("302116")
+	bg.color = CyberStyle.VOID
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var margin := MarginContainer.new()
@@ -64,7 +65,7 @@ func _build_ui() -> void:
 		margin.add_theme_constant_override("margin_" + side, 30)
 	add_child(margin)
 	var page := PanelContainer.new()
-	page.add_theme_stylebox_override("panel", _panel_style(Color("e8ddc4"), Color("7e6846"), 8))
+	page.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, Color("7e6846"), 8))
 	margin.add_child(page)
 	var page_margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -78,15 +79,15 @@ func _build_ui() -> void:
 	book_title_label = Label.new()
 	book_title_label.text = "BOOK 1  ·  CHAPTER 1"
 	book_title_label.add_theme_font_size_override("font_size", 22)
-	book_title_label.add_theme_color_override("font_color", Color("614421"))
+	book_title_label.add_theme_color_override("font_color", CyberStyle.MUTED)
 	book_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(book_title_label)
 	var author := Label.new()
 	author.text = str(profile.get("name", "Your character"))
-	author.add_theme_color_override("font_color", Color("75664f"))
+	author.add_theme_color_override("font_color", CyberStyle.MUTED)
 	heading.add_child(author)
 	var rule := ColorRect.new()
-	rule.color = Color("b5a27f")
+	rule.color = CyberStyle.LINE
 	rule.custom_minimum_size.y = 1
 	book.add_child(rule)
 	var spread := HBoxContainer.new()
@@ -97,7 +98,7 @@ func _build_ui() -> void:
 	left_page.custom_minimum_size.x = 370
 	left_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left_page.size_flags_stretch_ratio = 0.85
-	left_page.add_theme_stylebox_override("panel", _panel_style(Color("e8ddc4"), Color("b5a27f"), 0))
+	left_page.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 0))
 	spread.add_child(left_page)
 	var left_margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -109,7 +110,7 @@ func _build_ui() -> void:
 	var contents_title := Label.new()
 	contents_title.text = "CONTENTS"
 	contents_title.add_theme_font_size_override("font_size", 18)
-	contents_title.add_theme_color_override("font_color", Color("614421"))
+	contents_title.add_theme_color_override("font_color", CyberStyle.MUTED)
 	contents.add_child(contents_title)
 	var entry_scroll := ScrollContainer.new()
 	entry_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -121,14 +122,14 @@ func _build_ui() -> void:
 	entry_scroll.add_child(contents_entries)
 	_populate_hierarchy_entries()
 	var spine := ColorRect.new()
-	spine.color = Color("b5a27f")
+	spine.color = CyberStyle.LINE
 	spine.custom_minimum_size.x = 3
 	spine.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	spread.add_child(spine)
 	var right_page := PanelContainer.new()
 	right_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_page.size_flags_stretch_ratio = 1.15
-	right_page.add_theme_stylebox_override("panel", _panel_style(Color("e8ddc4"), Color("b5a27f"), 0))
+	right_page.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 0))
 	spread.add_child(right_page)
 	var right_margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -144,7 +145,7 @@ func _build_ui() -> void:
 	book_detail.add_theme_constant_override("separation", 12)
 	detail_scroll.add_child(book_detail)
 	var bottom_rule := ColorRect.new()
-	bottom_rule.color = Color("b5a27f")
+	bottom_rule.color = CyberStyle.LINE
 	bottom_rule.custom_minimum_size.y = 1
 	book.add_child(bottom_rule)
 	var actions := HBoxContainer.new()
@@ -230,19 +231,19 @@ func _populate_hierarchy_entries() -> void:
 		intro_toggle.custom_minimum_size.y = 48
 		intro_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		intro_toggle.add_theme_font_size_override("font_size", 18)
-		intro_toggle.add_theme_color_override("font_color", Color("614421"))
-		intro_toggle.add_theme_color_override("font_hover_color", Color("614421"))
-		intro_toggle.add_theme_color_override("font_pressed_color", Color("614421"))
-		intro_toggle.add_theme_color_override("font_focus_color", Color("614421"))
-		intro_toggle.add_theme_stylebox_override("normal", _panel_style(Color("ded1b5"), Color("b5a27f"), 4))
-		intro_toggle.add_theme_stylebox_override("hover", _panel_style(Color("f0e3c8"), Color("9a7440"), 4))
-		intro_toggle.add_theme_stylebox_override("pressed", _panel_style(Color("cfb98c"), Color("9a7440"), 4))
-		intro_toggle.add_theme_stylebox_override("focus", _panel_style(Color("ded1b5"), Color("b5a27f"), 4))
+		intro_toggle.add_theme_color_override("font_color", CyberStyle.MUTED)
+		intro_toggle.add_theme_color_override("font_hover_color", CyberStyle.MUTED)
+		intro_toggle.add_theme_color_override("font_pressed_color", CyberStyle.MUTED)
+		intro_toggle.add_theme_color_override("font_focus_color", CyberStyle.MUTED)
+		intro_toggle.add_theme_stylebox_override("normal", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 4))
+		intro_toggle.add_theme_stylebox_override("hover", _panel_style(CyberStyle.PANEL, CyberStyle.CYAN, 4))
+		intro_toggle.add_theme_stylebox_override("pressed", _panel_style(CyberStyle.LINE, CyberStyle.CYAN, 4))
+		intro_toggle.add_theme_stylebox_override("focus", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 4))
 		intro_toggle.pressed.connect(func():
 			introduction_expanded = not introduction_expanded
 			intro_entries.visible = introduction_expanded
 			intro_toggle.text = "▼  INTRODUCTION" if introduction_expanded else "▶  INTRODUCTION"
-			intro_toggle.add_theme_stylebox_override("normal", _panel_style(Color("d8c7a4") if introduction_expanded else Color("ded1b5"), Color("9a7440") if introduction_expanded else Color("b5a27f"), 4))
+			intro_toggle.add_theme_stylebox_override("normal", _panel_style(CyberStyle.RAISED if introduction_expanded else CyberStyle.PANEL, CyberStyle.CYAN if introduction_expanded else CyberStyle.LINE, 4))
 		)
 		contents_entries.add_child(intro_toggle)
 		intro_entries = VBoxContainer.new()
@@ -253,7 +254,7 @@ func _populate_hierarchy_entries() -> void:
 		_add_tutorial_entry(intro_entries, 1)
 		_add_tutorial_entry(intro_entries, 2)
 		var divider := ColorRect.new()
-		divider.color = Color("b5a27f")
+		divider.color = CyberStyle.LINE
 		divider.custom_minimum_size.y = 1
 		contents_entries.add_child(divider)
 		for fight_number in range(1, CHAPTER_COUNT + 1):
@@ -267,9 +268,9 @@ func _make_hierarchy_entry(text_value:String, unlocked:bool, selected:bool) -> B
 	button.text = "      " + text_value
 	button.disabled = not unlocked
 	button.add_theme_font_size_override("font_size", 18)
-	button.add_theme_color_override("font_color", Color("50391f") if unlocked else Color("8d877a"))
-	button.add_theme_stylebox_override("normal", _panel_style(Color("cfb98c") if selected else Color("ded1b5") if unlocked else Color("d2c7ae"), Color("9a7440") if selected else Color("b5a27f"), 4))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("f0e3c8"), Color("9a7440"), 4))
+	button.add_theme_color_override("font_color", CyberStyle.TEXT if unlocked else Color("8d877a"))
+	button.add_theme_stylebox_override("normal", _panel_style(CyberStyle.LINE if selected else CyberStyle.PANEL if unlocked else CyberStyle.RAISED, CyberStyle.CYAN if selected else CyberStyle.LINE, 4))
+	button.add_theme_stylebox_override("hover", _panel_style(CyberStyle.PANEL, CyberStyle.CYAN, 4))
 	return button
 
 func _open_book(book_number:int) -> void:
@@ -316,12 +317,12 @@ func _add_tutorial_entry(parent: VBoxContainer, lesson: int) -> void:
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.text = "      %s  TUTORIAL %d" % ["✓" if done else ("▶" if unlocked else "🔒"), lesson]
 	button.disabled = not unlocked
-	button.add_theme_color_override("font_color", Color("52725b") if done else Color("50391f") if unlocked else Color("8d877a"))
-	button.add_theme_color_override("font_hover_color", Color("50391f"))
-	button.add_theme_color_override("font_pressed_color", Color("50391f"))
-	button.add_theme_color_override("font_focus_color", Color("50391f"))
-	button.add_theme_stylebox_override("normal", _panel_style(Color("d8c7a4") if selected_tutorial == lesson else Color("ded1b5") if unlocked else Color("d2c7ae"), Color("9a7440") if selected_tutorial == lesson else Color("b5a27f"), 4))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("f0e3c8"), Color("9a7440"), 4))
+	button.add_theme_color_override("font_color", Color("52725b") if done else CyberStyle.TEXT if unlocked else Color("8d877a"))
+	button.add_theme_color_override("font_hover_color", CyberStyle.TEXT)
+	button.add_theme_color_override("font_pressed_color", CyberStyle.TEXT)
+	button.add_theme_color_override("font_focus_color", CyberStyle.TEXT)
+	button.add_theme_stylebox_override("normal", _panel_style(CyberStyle.RAISED if selected_tutorial == lesson else CyberStyle.PANEL if unlocked else CyberStyle.RAISED, CyberStyle.CYAN if selected_tutorial == lesson else CyberStyle.LINE, 4))
+	button.add_theme_stylebox_override("hover", _panel_style(CyberStyle.PANEL, CyberStyle.CYAN, 4))
 	button.pressed.connect(func(): selected_tutorial = lesson; selected_chapter = 1; _refresh_detail())
 	parent.add_child(button)
 
@@ -330,7 +331,7 @@ func _add_chapter_entry(parent: VBoxContainer, chapter: int) -> void:
 	var unlocked := chapter <= available_stage and (chapter != 1 or _tutorial_done(2))
 	var cleared := int(summary.wins) > 0
 	var marker := "✓" if cleared else ("▶" if unlocked else "🔒")
-	var text_color := Color("52725b") if cleared else (Color("50391f") if unlocked else Color("8d877a"))
+	var text_color := Color("52725b") if cleared else (CyberStyle.TEXT if unlocked else Color("8d877a"))
 	var button := Button.new()
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.custom_minimum_size.y = 44
@@ -339,8 +340,8 @@ func _add_chapter_entry(parent: VBoxContainer, chapter: int) -> void:
 	button.disabled = not unlocked
 	button.add_theme_color_override("font_color", text_color)
 	var selected := selected_tutorial == 0 and selected_chapter == chapter
-	button.add_theme_stylebox_override("normal", _panel_style(Color("cfb98c") if selected else (Color("ded1b5") if unlocked else Color("d2c7ae")), Color("9a7440") if selected else Color("b5a27f"), 4))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("f0e3c8"), Color("9a7440"), 4))
+	button.add_theme_stylebox_override("normal", _panel_style(CyberStyle.LINE if selected else (CyberStyle.PANEL if unlocked else CyberStyle.RAISED), CyberStyle.CYAN if selected else CyberStyle.LINE, 4))
+	button.add_theme_stylebox_override("hover", _panel_style(CyberStyle.PANEL, CyberStyle.CYAN, 4))
 	button.add_theme_color_override("font_hover_color", text_color)
 	button.add_theme_color_override("font_pressed_color", text_color)
 	button.add_theme_color_override("font_focus_color", text_color)
@@ -355,12 +356,12 @@ func _refresh_detail() -> void:
 		var shelf := Label.new()
 		shelf.text = "BOOKS" if view_level == "books" else "BOOK 1"
 		shelf.add_theme_font_size_override("font_size", 32)
-		shelf.add_theme_color_override("font_color", Color("382c1c"))
+		shelf.add_theme_color_override("font_color", CyberStyle.TEXT)
 		book_detail.add_child(shelf)
 		var note := Label.new()
 		note.text = "Select a book" if view_level == "books" else "Select a chapter"
 		note.add_theme_font_size_override("font_size", 18)
-		note.add_theme_color_override("font_color", Color("655740"))
+		note.add_theme_color_override("font_color", CyberStyle.MUTED)
 		book_detail.add_child(note)
 		var spacer := Control.new()
 		spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -370,7 +371,7 @@ func _refresh_detail() -> void:
 		var title := Label.new()
 		title.text = "TUTORIAL %d" % selected_tutorial
 		title.add_theme_font_size_override("font_size", 30)
-		title.add_theme_color_override("font_color", Color("382c1c"))
+		title.add_theme_color_override("font_color", CyberStyle.TEXT)
 		book_detail.add_child(title)
 		var done := Label.new()
 		done.text = "✓" if _tutorial_done(selected_tutorial) else ""
@@ -388,18 +389,18 @@ func _refresh_detail() -> void:
 	var title := Label.new()
 	title.text = "FIGHT %d" % chapter
 	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", Color("8b642d"))
+	title.add_theme_color_override("font_color", CyberStyle.CYAN)
 	book_detail.add_child(title)
 	var rival_name := Label.new()
 	rival_name.text = StoryRivals.name_for_stage(chapter)
 	rival_name.add_theme_font_size_override("font_size", 26)
-	rival_name.add_theme_color_override("font_color", Color("382c1c"))
+	rival_name.add_theme_color_override("font_color", CyberStyle.TEXT)
 	book_detail.add_child(rival_name)
 	_add_rival_preview(chapter)
 	var loot_title := Label.new()
 	loot_title.text = "LOOT"
 	loot_title.add_theme_font_size_override("font_size", 20)
-	loot_title.add_theme_color_override("font_color", Color("8b642d"))
+	loot_title.add_theme_color_override("font_color", CyberStyle.CYAN)
 	book_detail.add_child(loot_title)
 	if int(summary.wins) > 0:
 		_add_reward_section("GEAR", summary.gear)
@@ -600,7 +601,7 @@ func _add_reward_section(heading_text: String, rewards: Array) -> void:
 	var heading := Label.new()
 	heading.text = heading_text
 	heading.add_theme_font_size_override("font_size", 17)
-	heading.add_theme_color_override("font_color", Color("8b642d"))
+	heading.add_theme_color_override("font_color", CyberStyle.CYAN)
 	book_detail.add_child(heading)
 	if rewards.is_empty():
 		return
@@ -613,7 +614,7 @@ func _add_reward_section(heading_text: String, rewards: Array) -> void:
 		var reward_name := str(reward)
 		var tile := PanelContainer.new()
 		tile.custom_minimum_size = Vector2(112, 138)
-		tile.add_theme_stylebox_override("panel", _panel_style(Color("ded1b5"), Color("b5a27f"), 5))
+		tile.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 5))
 		tile.tooltip_text = reward_name
 		var contents := VBoxContainer.new()
 		contents.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -642,7 +643,7 @@ func _add_reward_section(heading_text: String, rewards: Array) -> void:
 func _add_rival_preview(chapter: int) -> void:
 	var frame := PanelContainer.new()
 	frame.custom_minimum_size = Vector2(0, 150)
-	var frame_style := _panel_style(Color("d8c7a4"), Color("b5a27f"), 5)
+	var frame_style := _panel_style(CyberStyle.RAISED, CyberStyle.LINE, 5)
 	frame.add_theme_stylebox_override("panel", frame_style)
 	book_detail.add_child(frame)
 	var view := SubViewportContainer.new()
@@ -658,7 +659,7 @@ func _add_rival_preview(chapter: int) -> void:
 	var environment_node := WorldEnvironment.new()
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color("d8c7a4")
+	environment.background_color = CyberStyle.RAISED
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("ffe6bb")
 	environment.ambient_light_energy = 0.8

@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Click character parts to manage their one enchantment slot and input.
 
 const CHARACTER_PATH := "user://story_character.cfg"
@@ -616,7 +617,7 @@ func _appearance_from_loot(item:Dictionary) -> Dictionary:
 		"Footwear", "Left boot", "Right boot":return {"wardrobe_boots":variant,"footwear_color":Color("354438")}
 		"Head":return {"wardrobe_hat":"Hood","hat_color":Color("3b3028")}
 		"Face":return {"wardrobe_mask":"Rogue mask","mask_color":Color("29313b")}
-		"Belt":return {"wardrobe_belt":"Leather belt","belt_color":Color("8a6135")}
+		"Belt":return {"wardrobe_belt":"Leather belt","belt_color":CyberStyle.LINE}
 	return {}
 
 func _part_id_for_slot(slot:String) -> String:
@@ -678,12 +679,12 @@ func _migrate_gear_abilities() -> void:
 
 func _build_ui() -> void:
 	var book_theme := Theme.new()
-	book_theme.set_color("font_color", "Label", Color("382c1c"))
-	book_theme.set_color("font_color", "Button", Color("382c1c"))
-	book_theme.set_color("font_color", "OptionButton", Color("382c1c"))
+	book_theme.set_color("font_color", "Label", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "Button", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "OptionButton", CyberStyle.TEXT)
 	theme = book_theme
 	var background := ColorRect.new()
-	background.color = Color("302116")
+	background.color = CyberStyle.VOID
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 	var margin := MarginContainer.new()
@@ -693,8 +694,8 @@ func _build_ui() -> void:
 	add_child(margin)
 	var cover := PanelContainer.new()
 	var cover_style := StyleBoxFlat.new()
-	cover_style.bg_color = Color("d8c7a4")
-	cover_style.border_color = Color("765b38")
+	cover_style.bg_color = CyberStyle.RAISED
+	cover_style.border_color = CyberStyle.LINE
 	cover_style.set_border_width_all(3)
 	cover_style.set_corner_radius_all(8)
 	cover.add_theme_stylebox_override("panel", cover_style)
@@ -711,8 +712,8 @@ func _build_ui() -> void:
 	left_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	left_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var page_style := StyleBoxFlat.new()
-	page_style.bg_color = Color("e8ddc4")
-	page_style.border_color = Color("b5a27f")
+	page_style.bg_color = CyberStyle.PANEL
+	page_style.border_color = CyberStyle.LINE
 	page_style.set_border_width_all(1)
 	left_panel.add_theme_stylebox_override("panel", page_style)
 	columns.add_child(left_panel)
@@ -742,7 +743,7 @@ func _build_ui() -> void:
 	inventory_scroll.add_child(inventory_column)
 	var gear_heading:=Label.new()
 	gear_heading.text="GEAR"
-	gear_heading.add_theme_color_override("font_color",Color("e9c982"))
+	gear_heading.add_theme_color_override("font_color",CyberStyle.CYAN)
 	inventory_column.add_child(gear_heading)
 	gear_grid=GridContainer.new()
 	gear_grid.columns=4
@@ -767,7 +768,7 @@ func _build_ui() -> void:
 	animation_status.text="Drag onto gear · click to preview."
 	animation_status.add_theme_font_size_override("font_size",11)
 	animation_status.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	animation_status.add_theme_color_override("font_color",Color("655740"))
+	animation_status.add_theme_color_override("font_color",CyberStyle.MUTED)
 	inventory_column.add_child(animation_status)
 	var divider := HSeparator.new()
 	inventory_column.add_child(divider)
@@ -785,7 +786,7 @@ func _build_ui() -> void:
 	crystal_status.text="Drag onto an animation."
 	crystal_status.add_theme_font_size_override("font_size",11)
 	crystal_status.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	crystal_status.add_theme_color_override("font_color",Color("655740"))
+	crystal_status.add_theme_color_override("font_color",CyberStyle.MUTED)
 	inventory_column.add_child(crystal_status)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 8)
@@ -797,7 +798,7 @@ func _build_ui() -> void:
 	back.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/story_opponents.tscn"))
 	buttons.add_child(back)
 	var spine := ColorRect.new()
-	spine.color = Color("98794d")
+	spine.color = CyberStyle.CYAN
 	spine.custom_minimum_size.x = 8
 	spine.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	columns.add_child(spine)
@@ -814,11 +815,11 @@ func _build_preview_panel(columns: HBoxContainer) -> void:
 	columns.add_child(preview_column)
 	var heading := Label.new()
 	heading.text = "CLICK A BODY PART  ·  DRAG TO ROTATE  ·  WHEEL TO ZOOM"
-	heading.add_theme_color_override("font_color", Color("614421"))
+	heading.add_theme_color_override("font_color", CyberStyle.MUTED)
 	preview_column.add_child(heading)
 	preview_status = Label.new()
 	preview_status.text = "Preparing character preview…"
-	preview_status.add_theme_color_override("font_color", Color("655740"))
+	preview_status.add_theme_color_override("font_color", CyberStyle.MUTED)
 	preview_column.add_child(preview_status)
 	preview_container = SubViewportContainer.new()
 	preview_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -849,7 +850,7 @@ func _build_preview_panel(columns: HBoxContainer) -> void:
 	loading_spinner.text = "◌"
 	loading_spinner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	loading_spinner.add_theme_font_size_override("font_size", 54)
-	loading_spinner.add_theme_color_override("font_color", Color("e9c982"))
+	loading_spinner.add_theme_color_override("font_color", CyberStyle.CYAN)
 	loading_content.add_child(loading_spinner)
 	var loading_text := Label.new()
 	loading_text.text = "Loading character…"
@@ -960,7 +961,7 @@ func _make_none_gear_card() -> Button:
 	card.text="×"
 	card.tooltip_text="Empty this equipment slot"
 	card.add_theme_font_size_override("font_size",30)
-	card.add_theme_color_override("font_color",Color("655740"))
+	card.add_theme_color_override("font_color",CyberStyle.MUTED)
 	var style:=StyleBoxFlat.new()
 	style.bg_color=Color("17202b")
 	style.set_border_width_all(1)
@@ -1101,7 +1102,7 @@ func _show_gear_detail(item:Dictionary) -> void:
 		size_label.text = "SIZE  %d%%" % roundi(initial_size * 100.0)
 		size_label.custom_minimum_size.x = 76
 		size_label.add_theme_font_size_override("font_size", 11)
-		size_label.add_theme_color_override("font_color", Color("655740"))
+		size_label.add_theme_color_override("font_color", CyberStyle.MUTED)
 		size_row.add_child(size_label)
 		var size_slider := HSlider.new()
 		size_slider.min_value = 0.85
@@ -1474,7 +1475,7 @@ func _open_hotkey_picker(gear_id:String,slot_index:int) -> void:
 	content.add_child(description)
 	var current:=Label.new()
 	current.text="Current · "+_input_name(str(pair.get("input","")))
-	current.add_theme_color_override("font_color",Color("e9c982"))
+	current.add_theme_color_override("font_color",CyberStyle.CYAN)
 	content.add_child(current)
 	var record:=Button.new()
 	record.text="RECORD"
@@ -1520,7 +1521,7 @@ func _open_hotkey_picker(gear_id:String,slot_index:int) -> void:
 	prompt.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 	prompt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	prompt.add_theme_font_size_override("font_size",20)
-	prompt.add_theme_color_override("font_color",Color("e9c982"))
+	prompt.add_theme_color_override("font_color",CyberStyle.CYAN)
 	prompt.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	overlay.add_child(prompt)
 	overlay.gui_input.connect(_capture_hotkey_event.bind(gear_id,slot_index,dialog,capture_state,prompt))
@@ -1950,7 +1951,7 @@ func _build_part_hotspots() -> void:
 		button.add_theme_stylebox_override("normal",style)
 		var hover:=style.duplicate() as StyleBoxFlat
 		hover.bg_color=Color(0.17,0.26,0.36,0.95)
-		hover.border_color=Color("f0cf62")
+		hover.border_color=CyberStyle.CYAN
 		button.add_theme_stylebox_override("hover",hover)
 		button.add_theme_color_override("font_color",Color("c9d7e2"))
 		button.add_theme_color_override("font_hover_color",Color("ffe08a"))
@@ -2028,11 +2029,11 @@ func _update_part_hotspots() -> void:
 				label_panel.position = Vector2(label_x, point.y - label_size.y * 0.5) - root_origin
 		var style:=button.get_theme_stylebox("normal") as StyleBoxFlat
 		if style!=null:
-			style.border_color=Color("f0cf62") if id==selected_part else Color("9fb8ca")
+			style.border_color=CyberStyle.CYAN if id==selected_part else Color("9fb8ca")
 		if is_instance_valid(label_panel):
 			var label_style := label_panel.get_theme_stylebox("panel") as StyleBoxFlat
 			if label_style != null:
-				label_style.border_color = Color("f0cf62") if id == selected_part else Color("9fb8ca")
+				label_style.border_color = CyberStyle.CYAN if id == selected_part else Color("9fb8ca")
 
 func _select_metadata(choice: OptionButton, value: String) -> void:
 	for index in choice.item_count:

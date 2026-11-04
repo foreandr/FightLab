@@ -1,0 +1,39 @@
+FightLab interface design — 2026-11-04
+
+Presentation scope only. Arena geometry, materials, lighting, physics, combat
+math, animation timing, targeting, movement and AI are unchanged by this update.
+
+Owner: scripts/ui_design.gd supplies the shared dark/cyan palette, angular flat
+panels, hover/selection/focus/disabled states, fields, tabs and sliders. Rajdhani
+SemiBold/Bold replaces the Roman-style Cinzel interface face. Licenses are in
+assets/fonts/Rajdhani-OFL.txt; old font assets remain for historical references.
+CyberInterface adapts legacy local Control/Window themes and dynamic overrides,
+so new popups and future modes inherit the same presentation. Node-added and
+theme-changed events schedule one deferred update; there is no scene-wide scan
+per frame. It does not alter actor state or any material on the live arena.
+Code-drawn timelines and galleries use the same palette explicitly.
+
+Button, popup-menu, tab and interactive-panel activation use a short synthesized
+electronic click. Sliders click on grab, not continuously while dragging. Four
+shared voices use the Master bus, respecting the existing master mute/volume.
+
+The music pool remains shared between menus and fights, with existing looping,
+no-repeat selection and crossfades. Active tracks are now the two CC0 synthwave
+loops listed in assets/audio/music/catalog.json and CREDITS.txt. Earlier fantasy
+music is archived in the catalog and retained on disk, excluded from playback.
+
+Animation thumbnail v3 is a separate local cache with a dark UI preview backdrop;
+source clips, user animations and the live level are not changed. Spell demo card
+images were rerendered using the same poses and new dark preview backdrop.
+
+Validation: tests/cyber_ui_theme_test.gd checks real menus, settings, Store, Story,
+spell-authoring pages, animation editor and Sandbox, plus dynamic theme overrides,
+click routing and the synth-only pool. tests/main_menu_music_test.gd checks shared
+looping, master-bus routing, no-repeat selection and scene continuity.
+
+Validation note: the older neutral_spell_damage_test expects a 1-second default
+and fails against the current 1.5-second authoring defaults. Replaying the saved
+pre-update SpellBuilder source reproduces the same failure. Before/after numeric
+snapshots match exactly for damage, mana, stamina, radius, velocity and burn.
+The legacy scene teardown also logs GLES material/RID cleanup warnings in both
+runs; no combat/arena behavior was changed to address those in this UI update.

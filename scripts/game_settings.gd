@@ -1,4 +1,5 @@
 extends CanvasLayer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## One persistent settings service and one reusable dialog for every mode.
 signal changed
 const DEFAULT_MIN_DISTANCE:=2.97
@@ -83,29 +84,7 @@ func _build_ui()->void:
  root.add_child(cog);cog.hide();cog.pressed.connect(toggle)
  dialog=AcceptDialog.new();dialog.name="UniversalSettingsDialog";dialog.title="Settings";dialog.ok_button_text="Close";dialog.borderless=true
  dialog.process_mode=Node.PROCESS_MODE_ALWAYS
- var book:=Theme.new();book.default_font=load("res://assets/fonts/game_font.tres");book.default_font_size=18
- for type in ["Label","Button","CheckButton","LineEdit","TabBar","PopupMenu"]:
-  for color in ["font_color","font_pressed_color","font_hover_color","font_hover_pressed_color","font_focus_color","font_uneditable_color"]:book.set_color(color,type,Color("382c1c"))
- var paper:=StyleBoxFlat.new();paper.bg_color=Color("e8ddc4");paper.border_color=Color("b49c70");paper.set_border_width_all(1);paper.set_corner_radius_all(6)
- for side in ["left","right","top","bottom"]:paper.set("content_margin_"+side,12.0)
- book.set_stylebox("panel","AcceptDialog",paper)
- book.set_stylebox("panel","TabContainer",paper)
- var button:=paper.duplicate();button.bg_color=Color("d8c7a4");book.set_stylebox("normal","Button",button)
- var hover:=button.duplicate();hover.bg_color=Color("f2e9d3");book.set_stylebox("hover","Button",hover)
- book.set_stylebox("panel","PopupMenu",paper);book.set_stylebox("hover","PopupMenu",hover)
- book.set_color("font_disabled_color","PopupMenu",Color("806d4d"))
- book.set_color("font_accelerator_color","PopupMenu",Color("806d4d"))
- book.set_color("font_separator_color","PopupMenu",Color("806d4d"))
- book.set_color("font_outline_color","PopupMenu",Color(0,0,0,0))
- book.set_constant("outline_size","PopupMenu",0)
- var pressed:=button.duplicate();pressed.bg_color=Color("c9af7b");book.set_stylebox("pressed","Button",pressed)
- book.set_stylebox("tab_selected","TabBar",pressed);book.set_stylebox("tab_unselected","TabBar",button);book.set_stylebox("tab_hovered","TabBar",hover)
- var field:=paper.duplicate();field.bg_color=Color("f2e9d3")
- book.set_stylebox("normal","LineEdit",field);book.set_stylebox("read_only","LineEdit",field)
- var focus:=field.duplicate();focus.border_color=Color("98703d");book.set_stylebox("focus","LineEdit",focus)
- var track:=StyleBoxFlat.new();track.bg_color=Color("c9b48c");track.content_margin_top=4;track.content_margin_bottom=4;track.set_corner_radius_all(4)
- book.set_stylebox("slider","HSlider",track)
- var fill:=track.duplicate();fill.bg_color=Color("b38a47");book.set_stylebox("grabber_area","HSlider",fill);book.set_stylebox("grabber_area_highlight","HSlider",fill)
+ var book:=CyberStyle.theme().duplicate(true)
  cog.theme=book
  dialog.theme=book;add_child(dialog)
  var box:=VBoxContainer.new();box.custom_minimum_size.x=390;box.add_theme_constant_override("separation",6);dialog.add_child(box)

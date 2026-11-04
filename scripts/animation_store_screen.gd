@@ -1,12 +1,13 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Standalone Store: one reusable level, one preview actor, and the shared catalog.
 const StoreIndex=preload("res://scripts/animation_store_index.gd")
 const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
 const Library=preload("res://scripts/animation_catalog.gd")
 const RowIcons=preload("res://scripts/animation_row_icons.gd")
-const BOOK_PAPER=Color("e8ddc4")
-const BOOK_BORDER=Color("b5a27f")
-const BOOK_INK=Color("382c1c")
+const BOOK_PAPER=CyberStyle.PANEL
+const BOOK_BORDER=CyberStyle.LINE
+const BOOK_INK=CyberStyle.TEXT
 var field:Node3D
 var actor:CharacterBody3D
 var focused_unit:CharacterBody3D
@@ -177,7 +178,7 @@ func _book_theme()->Theme:
 	var book:Theme=preload("res://scripts/game_settings_access.gd").service().dialog.theme.duplicate(true)
 	book.default_font_size=14
 	book.set_stylebox("panel","PanelContainer",_book_box(BOOK_PAPER,BOOK_BORDER))
-	book.set_color("font_placeholder_color","LineEdit",Color("84765f"))
+	book.set_color("font_placeholder_color","LineEdit",CyberStyle.DISABLED)
 	return book
 func _book_box(fill:Color,border:Color)->StyleBoxFlat:
 	var box:=StyleBoxFlat.new();box.bg_color=fill;box.border_color=border;box.set_border_width_all(1);box.set_corner_radius_all(4)

@@ -94,3 +94,11 @@ https://opengameart.org/content/fantasy-orchestral-theme
 Swordfight — Kistol
 https://opengameart.org/content/swordfight
 
+
+ACTIVE CYBERPUNK / SYNTH POOL (2026-11-04)
+Space Adventure — MintoDog — CC0-1.0
+https://opengameart.org/content/space-adventure
+Synthwave House Loop — Fupi — CC0-1.0
+https://opengameart.org/content/synthwave-house-loop
+Both loops are supplied as loopable Ogg assets. Prior fantasy/orchestral tracks
+are retained on disk with their original credits, but excluded from playback.

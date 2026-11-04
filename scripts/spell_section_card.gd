@@ -1,4 +1,5 @@
 extends PanelContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Shared collapsible authoring section. Hidden content keeps its values and
 ## signals; changing numbers never forces the section back open.
 signal collapsed_changed(value:bool)
@@ -12,8 +13,8 @@ func setup(title_:String,book_theme:Theme) -> void:
  name="Section"+title.replace(" ","")
  theme=book_theme
  var style:=StyleBoxFlat.new()
- style.bg_color=Color("f1e8d3")
- style.border_color=Color("c9b58f")
+ style.bg_color=CyberStyle.RAISED
+ style.border_color=CyberStyle.LINE
  style.set_border_width_all(1)
  style.set_corner_radius_all(5)
  for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,6)
@@ -31,7 +32,7 @@ func setup(title_:String,book_theme:Theme) -> void:
  header.custom_minimum_size.y=28
  header.focus_mode=Control.FOCUS_ALL
  header.add_theme_font_size_override("font_size",14)
- header.add_theme_color_override("font_color",Color("775b34"))
+ header.add_theme_color_override("font_color",CyberStyle.CYAN)
  column.add_child(header)
  content=VBoxContainer.new()
  content.name="Content"

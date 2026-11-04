@@ -1,4 +1,5 @@
 extends VBoxContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Only the visible page owns thumbnail worlds. UPDATE_ONCE renders the actual
 ## shared spell visual, then keeps a static image without per-frame rendering.
 signal style_chosen(id:String)
@@ -75,7 +76,7 @@ func _preview(id:String) -> SubViewport:
  viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
  var environment:=WorldEnvironment.new();environment.environment=Environment.new()
  environment.environment.background_mode=Environment.BG_COLOR
- environment.environment.background_color=Color("382b21")
+ environment.environment.background_color=CyberStyle.VOID
  viewport.add_child(environment)
  var camera:=Camera3D.new();camera.projection=Camera3D.PROJECTION_ORTHOGONAL
  camera.size=0.78;camera.position=Vector3(0.9,0.55,2)

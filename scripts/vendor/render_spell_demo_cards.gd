@@ -9,7 +9,7 @@ func run():
  var actor=e.actor
  actor.set_process(false);actor.set_physics_process(false)
  var vp:=SubViewport.new();vp.size=Vector2i(320,220);vp.own_world_3d=true;vp.render_target_update_mode=SubViewport.UPDATE_ALWAYS;root.add_child(vp)
- var env:=WorldEnvironment.new();env.environment=Environment.new();env.environment.background_mode=Environment.BG_COLOR;env.environment.background_color=Color("392c22");env.environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.environment.ambient_light_color=Color.WHITE;env.environment.ambient_light_energy=0.65;vp.add_child(env)
+ var env:=WorldEnvironment.new();env.environment=Environment.new();env.environment.background_mode=Environment.BG_COLOR;env.environment.background_color=preload("res://scripts/ui_design.gd").VOID;env.environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.environment.ambient_light_color=Color.WHITE;env.environment.ambient_light_energy=0.65;vp.add_child(env)
  var light:=DirectionalLight3D.new();light.rotation_degrees=Vector3(-40,-35,0);light.light_energy=1.5;vp.add_child(light)
  var camera:=Camera3D.new();camera.projection=Camera3D.PROJECTION_ORTHOGONAL;vp.add_child(camera);camera.current=true
  actor.reparent(vp);actor.show();actor.model.show();actor.position=Vector3.ZERO;actor.rotation=Vector3.ZERO

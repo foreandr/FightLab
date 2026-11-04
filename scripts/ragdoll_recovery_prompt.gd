@@ -1,7 +1,8 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Actor-owned presentation/input; timing and costs live in the shared state.
 var actor_ref:WeakRef
-var font:Font=preload("res://assets/fonts/Cinzel.ttf")
+var font:Font=CyberStyle.FONT
 func setup(actor:Node)->void:
  actor_ref=weakref(actor);mouse_filter=Control.MOUSE_FILTER_IGNORE
  set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
@@ -35,5 +36,5 @@ func _draw()->void:
  var box:=Rect2(Vector2(100-width/2-10,35),Vector2(width+20,34))
  draw_style_box(get_theme_stylebox("panel","PanelContainer"),box)
  var at:=Vector2(100-width/2,58)
- draw_string_outline(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,3,Color("302619"))
- draw_string(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("fff0a3"))
+ draw_string_outline(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,3,CyberStyle.VOID)
+ draw_string(font,at,text_,HORIZONTAL_ALIGNMENT_LEFT,-1,14,CyberStyle.CYAN)

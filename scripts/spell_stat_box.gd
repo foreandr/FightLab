@@ -1,4 +1,5 @@
 extends PanelContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## One full-width hover target per result, including the padding around its text.
 var stat:Control
 var hovered:=false
@@ -19,13 +20,13 @@ func setup(label:Control,book_theme:Theme=null,workspace:Control=null) -> void:
 	focus_mode=Control.FOCUS_ALL
 	resting=StyleBoxFlat.new()
 	resting.bg_color=Color("eee3cb")
-	resting.border_color=Color("c9b58f")
+	resting.border_color=CyberStyle.LINE
 	resting.set_border_width_all(1)
 	resting.set_corner_radius_all(4)
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:resting.set_content_margin(side,6)
 	highlighted=resting.duplicate()
-	highlighted.bg_color=Color("f9edcc")
-	highlighted.border_color=Color("aa7b32")
+	highlighted.bg_color=CyberStyle.HOVER
+	highlighted.border_color=CyberStyle.CYAN
 	label.reparent(self)
 	label.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	label.set_meta("stat_hover_box",self)

@@ -1,10 +1,11 @@
 extends RefCounted
+const CyberStyle=preload("res://scripts/ui_design.gd")
 
 static func build(text:String) -> Control:
 	var card:=PanelContainer.new()
 	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("f0e8d5")
-	style.border_color=Color("98794d")
+	style.bg_color=CyberStyle.RAISED
+	style.border_color=CyberStyle.CYAN
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(4)
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,6)
@@ -32,6 +33,6 @@ static func _label(text:String) -> Label:
 	var label:=Label.new()
 	label.text=text
 	label.add_theme_font_size_override("font_size",14)
-	label.add_theme_color_override("font_color",Color("382c1c"))
+	label.add_theme_color_override("font_color",CyberStyle.TEXT)
 	label.add_theme_color_override("font_shadow_color",Color.TRANSPARENT)
 	return label

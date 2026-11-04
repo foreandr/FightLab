@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Standalone spell authoring host. It owns no timeline or custom pose editor.
 const Focus=preload("res://scripts/focus_visuals.gd")
 const Library=preload("res://scripts/animation_catalog.gd")
@@ -53,7 +54,7 @@ func _build_world()->void:
 func _book_theme()->Theme:
  var book:Theme=preload("res://scripts/game_settings_access.gd").service().dialog.theme.duplicate(true)
  book.default_font_size=14
- var box:=StyleBoxFlat.new();box.bg_color=Color("e8ddc4");box.border_color=Color("b5a27f");box.set_border_width_all(1)
+ var box:=StyleBoxFlat.new();box.bg_color=CyberStyle.PANEL;box.border_color=CyberStyle.LINE;box.set_border_width_all(1)
  for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:box.set_content_margin(side,6)
  book.set_stylebox("panel","PanelContainer",box)
  return book

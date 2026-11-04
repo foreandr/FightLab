@@ -1,4 +1,5 @@
 extends VBoxContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Same cards and spacing as flame styles; pictures show each sound's actual waveform.
 signal sound_chosen(id:String)
 const Sounds=preload("res://assets/spells/fire/sounds.gd")
@@ -64,7 +65,7 @@ func select_sound(id:String)->void:
 static func thumbnail(id:String)->Texture2D:
  if thumbnails.has(id):return thumbnails[id]
  var stream:=Sounds.synthesize(id)
- var image:=Image.create(144,144,false,Image.FORMAT_RGBA8);image.fill(Color("382b21"))
+ var image:=Image.create(144,144,false,Image.FORMAT_RGBA8);image.fill(CyberStyle.VOID)
  var bins:=52
  var peaks:PackedFloat32Array=[]
  var maximum:=1.0
@@ -76,10 +77,10 @@ static func thumbnail(id:String)->Texture2D:
  for bin in bins:
   var half:=maxi(1,int(peaks[bin]/maximum*35.0))
   for x in range(20+bin*2,22+bin*2):
-   for y in range(72-half,73+half):image.set_pixel(x,y,Color("ffb347") if absi(y-72)>half/2 else Color("ffe889"))
+   for y in range(72-half,73+half):image.set_pixel(x,y,Color("ffb347") if absi(y-72)>half/2 else CyberStyle.CYAN)
  # Small playback mark above the waveform.
  for x in range(64,81):
   var half:=int((81-x)*0.55)
-  for y in range(26-half,27+half):image.set_pixel(x,y,Color("ffe889"))
+  for y in range(26-half,27+half):image.set_pixel(x,y,CyberStyle.CYAN)
  thumbnails[id]=ImageTexture.create_from_image(image)
  return thumbnails[id]

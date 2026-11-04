@@ -1,4 +1,5 @@
 extends Button
+const CyberStyle=preload("res://scripts/ui_design.gd")
 
 var editor
 var clip_id := -1
@@ -19,12 +20,12 @@ func _ready() -> void:
 	# draggable block sitting on the track line (rather than text on the line).
 	flat=false
 	focus_mode=Control.FOCUS_ALL
-	add_theme_stylebox_override("normal",_clip_style(Color("f0e8d5"),Color("382c1c")))
-	add_theme_stylebox_override("hover",_clip_style(Color("e8d9b8"),Color("98703d")))
-	add_theme_stylebox_override("pressed",_clip_style(Color("d8c7a4"),Color("7b572b")))
-	add_theme_stylebox_override("focus",_clip_style(Color(1,1,1,0),Color("98703d")))
-	add_theme_color_override("font_color",Color("382c1c"))
-	add_theme_color_override("font_hover_color",Color("382c1c"))
+	add_theme_stylebox_override("normal",_clip_style(CyberStyle.RAISED,CyberStyle.TEXT))
+	add_theme_stylebox_override("hover",_clip_style(Color("e8d9b8"),CyberStyle.CYAN))
+	add_theme_stylebox_override("pressed",_clip_style(CyberStyle.RAISED,Color("7b572b")))
+	add_theme_stylebox_override("focus",_clip_style(Color(1,1,1,0),CyberStyle.CYAN))
+	add_theme_color_override("font_color",CyberStyle.TEXT)
+	add_theme_color_override("font_hover_color",CyberStyle.TEXT)
 	add_theme_font_size_override("font_size",12)
 	alignment=HORIZONTAL_ALIGNMENT_LEFT
 	clip_text=true
@@ -76,13 +77,13 @@ func _gui_input(event:InputEvent) -> void:
 			editor.select_timeline_clip(clip_id)
 			editor.begin_timeline_clip_drag(clip_id,str(get_parent().get("track_id")))
 		_dragging=true
-		modulate=Color("e3b84f")
+		modulate=CyberStyle.CYAN
 		_drag_offset=event.position
 		accept_event()
 
 func _draw() -> void:
 	for x in [5.0,size.x-5.0]:
-		draw_line(Vector2(x,9.0),Vector2(x,size.y-9.0),Color("98703d"),1.0)
+		draw_line(Vector2(x,9.0),Vector2(x,size.y-9.0),CyberStyle.CYAN,1.0)
 
 func _input(event:InputEvent) -> void:
 	if not _edge.is_empty():
@@ -94,7 +95,7 @@ func _input(event:InputEvent) -> void:
 				position.x=_edge_start_position.x+pixels
 				size.x=maxf(8.0,_edge_start_width-pixels)
 			else:size.x=maxf(8.0,_edge_start_width+pixels)
-			modulate=Color("e3b84f")
+			modulate=CyberStyle.CYAN
 			get_viewport().set_input_as_handled()
 		elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and not event.pressed:
 			var edge:=_edge

@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 
 var editor
 var _scrubbing := false
@@ -13,8 +14,8 @@ func _draw() -> void:
 	var pixels:float = editor.TIMELINE_PIXELS_PER_SECOND if editor != null else 100.0
 	var zoom:float=editor.panel_zoom_levels.get("Timeline",1.0) if editor!=null else 1.0
 	var center_y := 21.0*zoom
-	var line_color := Color("382c1c")
-	var tick_color := Color("7e6b4d", 0.82)
+	var line_color := CyberStyle.TEXT
+	var tick_color := Color(CyberStyle.MUTED,0.82)
 	draw_line(Vector2(0, center_y), Vector2(size.x, center_y), line_color, 2.0)
 	var last_quarter := floori(size.x / (pixels * 0.25))
 	for quarter in range(last_quarter + 1):
@@ -23,17 +24,17 @@ func _draw() -> void:
 		var tick_height := 8.0 if is_second else 3.0
 		draw_line(Vector2(x, center_y - tick_height), Vector2(x, center_y + tick_height), tick_color, 1.0)
 		if is_second:
-			var font := ThemeDB.fallback_font
+			var font := CyberStyle.FONT
 			if font != null:
-				draw_string(font, Vector2(x + 4.0, 11.0*zoom), "%d s" % int(quarter / 4), HORIZONTAL_ALIGNMENT_LEFT, -1.0, maxi(8,roundi(11.0*zoom)), Color("382c1c"))
+				draw_string(font, Vector2(x + 4.0, 11.0*zoom), "%d s" % int(quarter / 4), HORIZONTAL_ALIGNMENT_LEFT, -1.0, maxi(8,roundi(11.0*zoom)), CyberStyle.TEXT)
 	var last_tick_x := float(last_quarter) * pixels * 0.25
 	if size.x - last_tick_x > 0.5:
 		draw_line(Vector2(size.x, center_y - 3.0), Vector2(size.x, center_y + 3.0), tick_color, 1.0)
 	if editor != null:
 		var playhead_x := clampf(float(editor.timeline_playhead) * pixels, 0.0, size.x)
 		draw_line(Vector2(playhead_x, 1.0), Vector2(playhead_x, size.y - 1.0), Color("b64234"), 2.0)
-		draw_circle(Vector2(playhead_x, center_y), 7.0, Color("d8b24a"))
-		draw_arc(Vector2(playhead_x, center_y), 7.0, 0.0, TAU, 20, Color("382c1c"), 1.5, true)
+		draw_circle(Vector2(playhead_x, center_y), 7.0, CyberStyle.CYAN)
+		draw_arc(Vector2(playhead_x, center_y), 7.0, 0.0, TAU, 20, CyberStyle.TEXT, 1.5, true)
 
 func _gui_input(event:InputEvent) -> void:
 	if event is InputEventKey and event.pressed and editor!=null:

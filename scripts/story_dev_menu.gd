@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Story checkpoint shortcuts for fast, repeatable development runs.
 
 const CHARACTER_PATH := "user://story_character.cfg"
@@ -27,7 +28,7 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var background := ColorRect.new()
-	background.color = Color("302116")
+	background.color = CyberStyle.VOID
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 	var margin := MarginContainer.new()
@@ -36,7 +37,7 @@ func _build_ui() -> void:
 		margin.add_theme_constant_override("margin_" + side, 30)
 	add_child(margin)
 	var page := PanelContainer.new()
-	page.add_theme_stylebox_override("panel", _panel_style(Color("e8ddc4"), Color("7e6846"), 8))
+	page.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, Color("7e6846"), 8))
 	margin.add_child(page)
 	var page_margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -51,7 +52,7 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "DEV  ·  STORY CHECKPOINTS"
 	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color("614421"))
+	title.add_theme_color_override("font_color", CyberStyle.MUTED)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	var home_button := Button.new()
@@ -60,14 +61,14 @@ func _build_ui() -> void:
 	home_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/home.tscn"))
 	header.add_child(home_button)
 	var rule := ColorRect.new()
-	rule.color = Color("b5a27f")
+	rule.color = CyberStyle.LINE
 	rule.custom_minimum_size.y = 1
 	layout.add_child(rule)
 
 	var notice := Label.new()
 	notice.text = "Each shortcut creates a numbered checkpoint fighter in your character list."
 	notice.add_theme_font_size_override("font_size", 17)
-	notice.add_theme_color_override("font_color", Color("75664f"))
+	notice.add_theme_color_override("font_color", CyberStyle.MUTED)
 	layout.add_child(notice)
 
 	var spread := HBoxContainer.new()
@@ -88,14 +89,14 @@ func _build_ui() -> void:
 	_add_future_group(groups)
 
 	var divider := ColorRect.new()
-	divider.color = Color("b5a27f")
+	divider.color = CyberStyle.LINE
 	divider.custom_minimum_size.x = 2
 	divider.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	spread.add_child(divider)
 	var detail := PanelContainer.new()
 	detail.custom_minimum_size.x = 410
 	detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	detail.add_theme_stylebox_override("panel", _panel_style(Color("ded1b5"), Color("b5a27f"), 5))
+	detail.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 5))
 	spread.add_child(detail)
 	var detail_margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -107,7 +108,7 @@ func _build_ui() -> void:
 	checkpoint_title = Label.new()
 	checkpoint_title.text = "Choose a checkpoint"
 	checkpoint_title.add_theme_font_size_override("font_size", 25)
-	checkpoint_title.add_theme_color_override("font_color", Color("382c1c"))
+	checkpoint_title.add_theme_color_override("font_color", CyberStyle.TEXT)
 	detail_content.add_child(checkpoint_title)
 	checkpoint_description = Label.new()
 	checkpoint_description.text = "Three checkpoints are ready. Future fights are grouped below."
@@ -126,7 +127,7 @@ func _build_ui() -> void:
 func _add_group(parent: VBoxContainer, heading: String, first_id: String, second_id := "", third_id := "", fourth_id := "", fifth_id := "") -> void:
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _panel_style(Color("ded1b5"), Color("b5a27f"), 5))
+	panel.add_theme_stylebox_override("panel", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 5))
 	parent.add_child(panel)
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -138,7 +139,7 @@ func _add_group(parent: VBoxContainer, heading: String, first_id: String, second
 	var title := Label.new()
 	title.text = heading
 	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", Color("8b642d"))
+	title.add_theme_color_override("font_color", CyberStyle.CYAN)
 	content.add_child(title)
 	for checkpoint_id in [first_id, second_id, third_id, fourth_id, fifth_id]:
 		if checkpoint_id.is_empty():
@@ -150,7 +151,7 @@ func _add_group(parent: VBoxContainer, heading: String, first_id: String, second
 func _add_future_group(parent: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _panel_style(Color("d2c7ae"), Color("c2b69a"), 5))
+	panel.add_theme_stylebox_override("panel", _panel_style(CyberStyle.RAISED, Color("c2b69a"), 5))
 	parent.add_child(panel)
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -162,11 +163,11 @@ func _add_future_group(parent: VBoxContainer) -> void:
 	var label := Label.new()
 	label.text = "MORE BOOKS AND CHAPTERS"
 	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", Color("8b642d"))
+	label.add_theme_color_override("font_color", CyberStyle.CYAN)
 	content.add_child(label)
 	var later := Label.new()
 	later.text = "Reserved for future checkpoint groups."
-	later.add_theme_color_override("font_color", Color("75664f"))
+	later.add_theme_color_override("font_color", CyberStyle.MUTED)
 	content.add_child(later)
 
 func _add_checkpoint_button(parent: VBoxContainer, checkpoint: Dictionary) -> void:
@@ -176,16 +177,16 @@ func _add_checkpoint_button(parent: VBoxContainer, checkpoint: Dictionary) -> vo
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.disabled = not bool(checkpoint.get("ready", false))
 	button.add_theme_font_size_override("font_size", 18)
-	button.add_theme_color_override("font_color", Color("382c1c"))
-	button.add_theme_color_override("font_hover_color", Color("382c1c"))
-	button.add_theme_color_override("font_pressed_color", Color("382c1c"))
-	button.add_theme_color_override("font_focus_color", Color("382c1c"))
+	button.add_theme_color_override("font_color", CyberStyle.TEXT)
+	button.add_theme_color_override("font_hover_color", CyberStyle.TEXT)
+	button.add_theme_color_override("font_pressed_color", CyberStyle.TEXT)
+	button.add_theme_color_override("font_focus_color", CyberStyle.TEXT)
 	button.add_theme_color_override("font_disabled_color", Color("8d877a"))
-	button.add_theme_stylebox_override("normal", _panel_style(Color("f0e3c8"), Color("b5a27f"), 4))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("f7ecd7"), Color("9a7440"), 4))
-	button.add_theme_stylebox_override("pressed", _panel_style(Color("cfb98c"), Color("9a7440"), 4))
-	button.add_theme_stylebox_override("focus", _panel_style(Color("f0e3c8"), Color("9a7440"), 4))
-	button.add_theme_stylebox_override("disabled", _panel_style(Color("d2c7ae"), Color("c2b69a"), 4))
+	button.add_theme_stylebox_override("normal", _panel_style(CyberStyle.PANEL, CyberStyle.LINE, 4))
+	button.add_theme_stylebox_override("hover", _panel_style(Color("f7ecd7"), CyberStyle.CYAN, 4))
+	button.add_theme_stylebox_override("pressed", _panel_style(CyberStyle.LINE, CyberStyle.CYAN, 4))
+	button.add_theme_stylebox_override("focus", _panel_style(CyberStyle.PANEL, CyberStyle.CYAN, 4))
+	button.add_theme_stylebox_override("disabled", _panel_style(CyberStyle.RAISED, Color("c2b69a"), 4))
 	button.pressed.connect(func(): _show_checkpoint(checkpoint))
 	if bool(checkpoint.get("ready", false)):
 		button.pressed.connect(func(): _start_checkpoint(str(checkpoint.id)))
@@ -199,7 +200,7 @@ func _show_checkpoint(checkpoint: Dictionary) -> void:
 	else:
 		checkpoint_description.text = "Creates a new fighter with earlier rewards and starts Fight %d." % int(checkpoint.get("fight", 1))
 	status_label.text = "READY" if bool(checkpoint.get("ready", false)) else "NOT READY"
-	status_label.add_theme_color_override("font_color", Color("52725b") if bool(checkpoint.get("ready", false)) else Color("8b642d"))
+	status_label.add_theme_color_override("font_color", Color("52725b") if bool(checkpoint.get("ready", false)) else CyberStyle.CYAN)
 
 func _start_checkpoint(checkpoint_id: String) -> void:
 	var checkpoint := _checkpoint_for_id(checkpoint_id)

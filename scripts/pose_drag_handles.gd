@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## The rings are projected from real bones and never intercept camera input.
 var editor:Node
 
@@ -15,7 +16,7 @@ func _draw() -> void:
 		if not editor.field.camera.is_position_behind(point):draw_circle(editor.field.camera.unproject_position(point),10,Color(1,0.8,0.2,0.5))
 	for handle in editor.direct_pose_handle_points():
 		var active:bool=handle.bone==editor.custom_drag_handle or handle.bone==editor.custom_drag_hover
-		var color:=Color("ffda85") if active else Color("80f4d0")
+		var color:=CyberStyle.CYAN if active else Color("80f4d0")
 		draw_circle(handle.screen,8.0 if active else 6.0,Color(0.04,0.09,0.12,0.85))
 		draw_arc(handle.screen,8.0 if active else 6.0,0,TAU,24,color,2.0,true)
 		draw_circle(handle.screen,2.0,color)
@@ -26,4 +27,4 @@ func _draw() -> void:
 	if not editor.custom_drag_handle.is_empty():
 		var camera:Camera3D=editor.field.camera
 		var target:Vector2=camera.unproject_position(editor.custom_drag_target)
-		draw_circle(target,4.0,Color("ffda85"))
+		draw_circle(target,4.0,CyberStyle.CYAN)

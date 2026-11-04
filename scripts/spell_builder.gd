@@ -1,4 +1,5 @@
 extends PanelContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Projectile and summon workspaces share casting, size and potency controls.
 const TYPES=["Projectiles","Buffs","Barriers","Debuffs","Summons","Teleports","Arena Settings"]
 const Projectile=preload("res://scripts/basic_projectile.gd")
@@ -266,8 +267,8 @@ func setup(owner_editor:Node) -> void:
  # Keep the old self/barrier draft untouched; this is a separate projectile draft.
  if not draft_path.is_empty() and draft_path=="user://spell_draft.cfg":draft_path="user://projectile_spell_draft.cfg"
  var style=StyleBoxFlat.new()
- style.bg_color=Color("e8ddc4")
- style.border_color=Color("b5a27f")
+ style.bg_color=CyberStyle.PANEL
+ style.border_color=CyberStyle.LINE
  style.set_border_width_all(1)
  style.set_corner_radius_all(0)
  for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,12)
@@ -390,7 +391,7 @@ func setup(owner_editor:Node) -> void:
  mana_label.add_theme_color_override("font_color",Color("486d85"))
  editor.button(controls,"Spell credits",func():editor.inspect_asset_metadata({"title":element+" spell","provenance":spell_provenance,"spec":projectile_spec()}))
  radius_warning=editor.menu_label(controls,"TESTING ONLY · oversized spell",14)
- radius_warning.add_theme_color_override("font_color",Color("98703d"))
+ radius_warning.add_theme_color_override("font_color",CyberStyle.CYAN)
  appearance_controls=VBoxContainer.new()
  appearance_controls.add_theme_constant_override("separation",8)
  controls.add_child(appearance_controls)
@@ -662,7 +663,7 @@ func setup(owner_editor:Node) -> void:
  demo_ragdoll_label.bbcode_enabled=true
  demo_ragdoll_label.fit_content=true
  demo_ragdoll_label.scroll_active=false
- demo_ragdoll_label.add_theme_color_override("default_color",Color("382c1c"))
+ demo_ragdoll_label.add_theme_color_override("default_color",CyberStyle.TEXT)
  demo_ragdoll_label.add_theme_font_size_override("normal_font_size",13)
  timing_column.add_child(demo_ragdoll_label)
  demo_ragdoll_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -1016,7 +1017,7 @@ func refresh_barrier_choices()->void:
   var option:Button=barrier_choices[kind]
   option.visible=creation_step=="barrier"
   option.set_pressed_no_signal(kind==barrier_kind)
-  option.add_theme_color_override("font_color",Color("98703d") if kind==barrier_kind else Color("382c1c"))
+  option.add_theme_color_override("font_color",CyberStyle.CYAN if kind==barrier_kind else CyberStyle.TEXT)
 
 func open_projectile_workspace(advance:=true) -> void:
  active_spell_provenance={}
@@ -1092,7 +1093,7 @@ func refresh_effect_choices() -> void:
  refresh_fire_shape()
  projectile_name_label.text="Elementless projectile" if preview_effect=="None" else preview_effect+" projectile"
  for effect in effect_choices:
-  effect_choices[effect].add_theme_color_override("font_color",Color("98703d") if effect==preview_effect else Color("382c1c"))
+  effect_choices[effect].add_theme_color_override("font_color",CyberStyle.CYAN if effect==preview_effect else CyberStyle.TEXT)
  effect_confirm_button.text="Confirmed" if projectile_effect_confirmed and element==preview_effect else "Confirm"
  effect_confirm_button.disabled=projectile_effect_confirmed and element==preview_effect
  refresh_projectile_allocation()
@@ -1442,7 +1443,7 @@ func refresh_delivery_choices() -> void:
   if spell_sections.has(title):spell_sections[title].visible=spell_delivery_type() not in ["Barrier","Touch"]
  if is_instance_valid(delivery_confirm_button):delivery_confirm_button.disabled=preview_delivery_type not in ["Projectile","Barrier","Touch"] or not demo_choice_selected
  for type in delivery_choices:
-  delivery_choices[type].add_theme_color_override("font_color",Color("98703d") if type==preview_delivery_type else Color("382c1c"))
+  delivery_choices[type].add_theme_color_override("font_color",CyberStyle.CYAN if type==preview_delivery_type else CyberStyle.TEXT)
 
 func prepare_demo_sources() -> void:
  if demo_sources_ready:return
@@ -1692,7 +1693,7 @@ func refresh_demo_choices() -> void:
  for choice in demo_choices:
   var selected:bool=demo_choice_selected and str(casting_animation.get("demo_choice","cross"))==choice
   demo_choices[choice].set_pressed_no_signal(selected)
-  demo_choices[choice].add_theme_color_override("font_color",Color("98703d") if selected else Color("382c1c"))
+  demo_choices[choice].add_theme_color_override("font_color",CyberStyle.CYAN if selected else CyberStyle.TEXT)
   var profile:Dictionary=demo_source_cache.get(choice,DEMO_ANIMATIONS[choice].get("profile",DEMO_ANIMATIONS[choice]))
   var type_:=CastType.normalize(str(demo_animation_types.get(choice,DEMO_ANIMATIONS[choice].get("animation_type",CastType.kind(profile)))))
   var parts:=CastType.component_types(profile)
@@ -1998,7 +1999,7 @@ func refresh() -> void:
  if not is_instance_valid(controls):return
  for type in categories:
   categories[type].modulate=Color.WHITE
-  categories[type].add_theme_color_override("font_color",Color("98703d") if type==category else Color("382c1c"))
+  categories[type].add_theme_color_override("font_color",CyberStyle.CYAN if type==category else CyberStyle.TEXT)
  controls.visible=category in ["Projectiles","Summons"]
  arena_settings.visible=category=="Arena Settings"
  empty_label.visible=not controls.visible and not arena_settings.visible
@@ -2010,7 +2011,7 @@ func refresh() -> void:
  empty_label.text=category+"\nNothing created here yet."
  for value in element_buttons:
   element_buttons[value].modulate=Color.WHITE
-  element_buttons[value].add_theme_color_override("font_color",Color("98703d") if value==element else Color("382c1c"))
+  element_buttons[value].add_theme_color_override("font_color",CyberStyle.CYAN if value==element else CyberStyle.TEXT)
  size_slider.max_value=radius_limit()
  size_input.max_value=radius_limit()
  testing_toggle.set_pressed_no_signal(testing_sizes)

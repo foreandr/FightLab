@@ -1,6 +1,6 @@
 extends Node
 ## Local, page-scoped screenshots using the real rig and shared animation evaluator.
-const CACHE="user://animation_thumbnails_v2/"
+const CACHE="user://animation_thumbnails_cyber_v3/"
 var actor:CharacterBody3D
 var viewport:SubViewport
 var camera:Camera3D
@@ -18,7 +18,7 @@ func initialize_stage()->void:
  viewport=SubViewport.new();viewport.size=Vector2i(256,176);viewport.own_world_3d=true
  viewport.render_target_update_mode=SubViewport.UPDATE_DISABLED;add_child(viewport)
  var environment:=WorldEnvironment.new();environment.environment=Environment.new()
- environment.environment.background_mode=Environment.BG_COLOR;environment.environment.background_color=Color("392c22")
+ environment.environment.background_mode=Environment.BG_COLOR;environment.environment.background_color=preload("res://scripts/ui_design.gd").VOID
  environment.environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
  environment.environment.ambient_light_color=Color.WHITE;environment.environment.ambient_light_energy=0.75;viewport.add_child(environment)
  var light:=DirectionalLight3D.new();light.rotation_degrees=Vector3(-40,-35,0);light.light_energy=1.3;viewport.add_child(light)

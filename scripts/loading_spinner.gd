@@ -1,4 +1,5 @@
 extends ProgressBar
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Shared loading wheel. Progress values remain available to diagnostics.
 func _ready()->void:
  process_mode=Node.PROCESS_MODE_ALWAYS
@@ -13,5 +14,5 @@ func _draw()->void:
  var center:=size*0.5
  var radius:=minf(13.0,minf(size.x,size.y)*0.36)
  var angle:=float(Time.get_ticks_msec())/1000.0*4.0
- draw_arc(center,radius,0,TAU,48,Color("c9b48c"),3,true)
- draw_arc(center,radius,angle,angle+TAU*0.7,40,Color("98703d"),3,true)
+ draw_arc(center,radius,0,TAU,48,CyberStyle.LINE,3,true)
+ draw_arc(center,radius,angle,angle+TAU*0.7,40,CyberStyle.CYAN,3,true)

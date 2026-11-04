@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 const LoadingPacer=preload("res://scripts/loading_progress_pacer.gd")
 var page := "Home"
 var content: VBoxContainer
@@ -15,82 +16,27 @@ func _ready() -> void:
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
 	var music:=get_tree().root.get_node_or_null("SharedMusic")
 	if music:music.enter_context("menu",self)
-	var background:=TextureRect.new()
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	var gradient:=Gradient.new()
-	gradient.colors=PackedColorArray([Color("49321f"),Color("21160f")])
-	var texture:=GradientTexture2D.new()
-	texture.gradient=gradient
-	texture.fill_from=Vector2(0,0)
-	texture.fill_to=Vector2(1,1)
-	background.texture=texture
-	add_child(background)
+	theme=CyberStyle.theme()
+	var background=preload("res://scripts/cyber_menu_backdrop.gd").new()
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(background)
 	var outer:=MarginContainer.new()
 	outer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
-		outer.add_theme_constant_override("margin_" + side, 28)
+	for side in ["left","right","top","bottom"]:outer.add_theme_constant_override("margin_"+side,36)
 	add_child(outer)
-	var book:=PanelContainer.new()
-	var cover:=StyleBoxFlat.new()
-	cover.bg_color=Color("d8c7a4")
-	cover.border_color=Color("765b38")
-	cover.set_border_width_all(3)
-	cover.set_corner_radius_all(12)
-	book.add_theme_stylebox_override("panel",cover)
-	outer.add_child(book)
-	var book_margin:=MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
-		book_margin.add_theme_constant_override("margin_" + side, 18)
-	book.add_child(book_margin)
-	var spread:=HBoxContainer.new()
-	spread.add_theme_constant_override("separation",0)
-	book_margin.add_child(spread)
-	var left_page:=PanelContainer.new()
-	left_page.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	left_page.size_flags_stretch_ratio=0.72
-	var page_style:=StyleBoxFlat.new()
-	page_style.bg_color=Color("e8ddc4")
-	page_style.border_color=Color("c3ad82")
-	page_style.set_border_width_all(1)
-	page_style.set_corner_radius_all(6)
-	left_page.add_theme_stylebox_override("panel",page_style)
-	spread.add_child(left_page)
-	var left_margin:=MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
-		left_margin.add_theme_constant_override("margin_" + side, 34)
-	left_page.add_child(left_margin)
-	content=VBoxContainer.new()
-	content.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	content.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation",14)
-	left_margin.add_child(content)
-	var spine:=ColorRect.new()
-	spine.color=Color("98794d")
-	spine.custom_minimum_size.x=12
-	spine.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	spread.add_child(spine)
-	var right_page:=PanelContainer.new()
-	right_page.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	right_page.size_flags_stretch_ratio=1.28
-	var right_style:=page_style.duplicate() as StyleBoxFlat
-	right_style.bg_color=Color("e8ddc4")
-	right_page.add_theme_stylebox_override("panel",right_style)
-	spread.add_child(right_page)
-	var right_margin:=MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
-		right_margin.add_theme_constant_override("margin_" + side, 58)
-	right_page.add_child(right_margin)
-	var cover_content:=VBoxContainer.new()
-	cover_content.alignment=BoxContainer.ALIGNMENT_CENTER
-	cover_content.add_theme_constant_override("separation",22)
-	right_margin.add_child(cover_content)
-	var placeholder:=Label.new()
-	placeholder.text="WILL FILL THIS LATER"
-	placeholder.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	placeholder.add_theme_font_size_override("font_size",22)
-	placeholder.add_theme_color_override("font_color",Color("655740"))
-	cover_content.add_child(placeholder)
+	var layout:=HBoxContainer.new();layout.add_theme_constant_override("separation",40);outer.add_child(layout)
+	var menu_panel:=PanelContainer.new();menu_panel.custom_minimum_size.x=320
+	menu_panel.add_theme_stylebox_override("panel",CyberStyle.box(Color("09141ff5"),CyberStyle.LINE));layout.add_child(menu_panel)
+	var margin:=MarginContainer.new()
+	for side in ["left","right","top","bottom"]:margin.add_theme_constant_override("margin_"+side,20)
+	menu_panel.add_child(margin)
+	var stack:=VBoxContainer.new();stack.add_theme_constant_override("separation",18);margin.add_child(stack)
+	var brand:=Label.new();brand.text="FIGHTLAB";brand.add_theme_font_override("font",CyberStyle.BOLD);brand.add_theme_font_size_override("font_size",46);brand.add_theme_color_override("font_color",CyberStyle.CYAN);stack.add_child(brand)
+	var line:=HSeparator.new();stack.add_child(line)
+	content=VBoxContainer.new();content.size_flags_vertical=Control.SIZE_EXPAND_FILL;content.add_theme_constant_override("separation",10);stack.add_child(content)
+	var version:=Label.new();version.text="BUILD  /  FIGHT  /  EVOLVE";version.add_theme_font_size_override("font_size",14);version.add_theme_color_override("font_color",CyberStyle.MUTED);stack.add_child(version)
+	var right:=VBoxContainer.new();right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;right.alignment=BoxContainer.ALIGNMENT_END;right.add_theme_constant_override("separation",12);layout.add_child(right)
+	var heading:=Label.new();heading.text="MAKE YOUR MOVE.";heading.add_theme_font_override("font",CyberStyle.BOLD);heading.add_theme_font_size_override("font_size",52);heading.add_theme_color_override("font_color",CyberStyle.TEXT);right.add_child(heading)
+	var subtitle:=Label.new();subtitle.text="Your animations. Your spells. Your fight.";subtitle.add_theme_font_size_override("font_size",22);subtitle.add_theme_color_override("font_color",CyberStyle.MUTED);right.add_child(subtitle)
 	show_page(str(get_tree().get_meta("home_page","Home")))
 	if get_tree().has_meta("home_page"):get_tree().remove_meta("home_page")
 	if get_tree().get_meta("return_to_dev",false):
@@ -111,18 +57,9 @@ func nav(text_: String,callback: Callable) -> void:
 	node.custom_minimum_size=Vector2(0,44)
 	node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	node.add_theme_font_size_override("font_size",20)
-	var normal:=StyleBoxFlat.new()
-	normal.bg_color=Color("20354a")
-	normal.set_corner_radius_all(8)
-	normal.border_color=Color("45677d")
-	normal.set_border_width_all(1)
-	var hover:=normal.duplicate()
-	hover.bg_color=Color("304e66")
-	var pressed:=normal.duplicate()
-	pressed.bg_color=Color("142333")
-	node.add_theme_stylebox_override("normal",normal)
-	node.add_theme_stylebox_override("hover",hover)
-	node.add_theme_stylebox_override("pressed",pressed)
+	var icon_name:String={"Story":"story","Free Fight":"shield","Sandbox":"simulation","Create":"person","Store":"store","Settings":"info","Back":"previous"}.get(text_,"")
+	if not icon_name.is_empty():node.icon=preload("res://scripts/animation_row_icons.gd").get_icon(icon_name)
+	node.alignment=HORIZONTAL_ALIGNMENT_LEFT
 	node.pressed.connect(callback)
 	content.add_child(node)
 	navigation_buttons[text_]=node
@@ -147,28 +84,28 @@ func show_page(next: String) -> void:
 			nav("Dev",func():show_page("Dev"))
 			nav("Quit",func():get_tree().quit())
 		"Free Fight":
-			label("FREE FIGHT",24,Color("655740"))
+			label("FREE FIGHT",24,CyberStyle.MUTED)
 			nav("CPU 1v1",func():open_scene("res://scenes/cpu_duel.tscn"))
 			nav("Back",func():show_page("Home"))
 		"Create":
-			label("CREATE",24,Color("655740"))
+			label("CREATE",24,CyberStyle.MUTED)
 			nav("Character",open_create_character)
 			nav("Animation",func():open_create_workspace("Animation"))
 			nav("Spell",func():open_create_workspace("Spell"))
 			nav("Back",func():show_page("Home"))
 		"Dev":
-			label("DEV",24,Color("655740"))
+			label("DEV",24,CyberStyle.MUTED)
 			nav("Checkpoints",func():open_scene("res://scenes/story_dev_menu.tscn"))
 			nav("Animation Pavlov",func():open_scene("res://scenes/animation_pavlov.tscn"))
 			nav("Clothing Pavlov",func():open_scene("res://scenes/clothing_pavlov.tscn"))
 			nav("Back",func():show_page("Home"))
 		"Options":
-			label("OPTIONS",24,Color("655740"))
+			label("OPTIONS",24,CyberStyle.MUTED)
 			nav("Settings",func():preload("res://scripts/game_settings_access.gd").service().open())
 			nav("Sound",func():preload("res://scripts/game_settings_access.gd").service().open("Sound"))
 			nav("Controls",open_controls)
 			var fullscreen := get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
-			label("Display: " + ("Fullscreen" if fullscreen else "Windowed"),20,Color("655740"))
+			label("Display: " + ("Fullscreen" if fullscreen else "Windowed"),20,CyberStyle.MUTED)
 			nav("Fullscreen",func():_set_fullscreen(true))
 			nav("Windowed",func():_set_fullscreen(false))
 			navigation_buttons["Fullscreen"].disabled=fullscreen
@@ -263,8 +200,8 @@ func _show_scene_loading(title_text:String) -> void:
 	card.offset_right=190
 	card.offset_bottom=48
 	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("e8ddc4")
-	style.border_color=Color("98794d")
+	style.bg_color=CyberStyle.PANEL
+	style.border_color=CyberStyle.CYAN
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,6)
@@ -278,13 +215,13 @@ func _show_scene_loading(title_text:String) -> void:
 	title.text=title_text
 	title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size",22)
-	title.add_theme_color_override("font_color",Color("382c1c"))
+	title.add_theme_color_override("font_color",CyberStyle.TEXT)
 	content_box.add_child(title)
 	scene_loading_status=Label.new()
 	scene_loading_status.text="Preparing Create scene…"
 	scene_loading_status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	scene_loading_status.add_theme_font_size_override("font_size",13)
-	scene_loading_status.add_theme_color_override("font_color",Color("382c1c"))
+	scene_loading_status.add_theme_color_override("font_color",CyberStyle.TEXT)
 	content_box.add_child(scene_loading_status)
 	scene_loading_progress=preload("res://scripts/loading_spinner.gd").new()
 	scene_loading_progress.min_value=0

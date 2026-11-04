@@ -1,4 +1,5 @@
 extends "res://scripts/combat_testing_sandbox.gd"
+const CyberStyle=preload("res://scripts/ui_design.gd")
 const Settings=preload("res://scripts/game_settings_access.gd")
 const FocusVisuals=preload("res://scripts/focus_visuals.gd")
 var focus_marker:Label3D
@@ -279,11 +280,11 @@ const MIN_CUSTOM_FRAMES := 2
 const MAX_CUSTOM_FRAMES := 900
 const HAND_FINGERS := ["thumb","index","middle","ring","pinky"]
 const HAND_GESTURES := ["Custom","Open","Fist","Point","Peace","Middle","Shocker","Pinky","Thumbs up"]
-const BOOK_INK := Color("382c1c")
-const BOOK_PAPER := Color("e8ddc4")
-const BOOK_PAPER_LIGHT := Color("f0e8d5")
-const BOOK_BORDER := Color("b5a27f")
-const BOOK_GOLD := Color("98703d")
+const BOOK_INK := CyberStyle.TEXT
+const BOOK_PAPER := CyberStyle.PANEL
+const BOOK_PAPER_LIGHT := CyberStyle.RAISED
+const BOOK_BORDER := CyberStyle.LINE
+const BOOK_GOLD := CyberStyle.CYAN
 const JUMP_JOINTS := [
 	{"bone":"upperarm_l","axis":2,"label":"Left arm raise","min":-145.0,"max":145.0},
 	{"bone":"upperarm_r","axis":2,"label":"Right arm raise","min":-145.0,"max":145.0},
@@ -877,53 +878,7 @@ func panel(parent: Node,bounds: Vector4,wide:=false) -> Panel:
 	return node
 
 func _book_theme() -> Theme:
-	var theme:=Theme.new()
-	for type_name in ["HBoxContainer","VBoxContainer"]:theme.set_constant("separation",type_name,UI_EDGE_GAP)
-	theme.set_stylebox("panel","PanelContainer",_book_box(BOOK_PAPER,BOOK_BORDER))
-	for control_type in ["Label"]:
-		theme.set_color("font_color",control_type,BOOK_INK)
-		theme.set_color("font_hover_color",control_type,BOOK_INK)
-		theme.set_color("font_pressed_color",control_type,BOOK_INK)
-		theme.set_color("font_focus_color",control_type,BOOK_INK)
-		theme.set_color("font_disabled_color",control_type,Color("84765f"))
-	var button_normal:=_book_box(Color("d8c7a4"),BOOK_BORDER)
-	var button_hover:=_book_box(Color("e3d3b3"),BOOK_GOLD)
-	var button_pressed:=_book_box(Color("c9b38b"),BOOK_GOLD)
-	var button_disabled:=_book_box(Color("c5b99f"),Color("b5a27f"))
-	for control_type in ["Button","OptionButton"]:
-		theme.set_stylebox("normal",control_type,button_normal)
-		theme.set_stylebox("hover",control_type,button_hover)
-		theme.set_stylebox("pressed",control_type,button_pressed)
-		theme.set_stylebox("disabled",control_type,button_disabled)
-		theme.set_stylebox("focus",control_type,button_hover)
-		theme.set_color("font_color",control_type,BOOK_INK)
-		theme.set_color("font_hover_color",control_type,BOOK_INK)
-		theme.set_color("font_pressed_color",control_type,BOOK_INK)
-		theme.set_color("font_focus_color",control_type,BOOK_INK)
-		theme.set_color("font_disabled_color",control_type,Color("84765f"))
-	for control_type in ["LineEdit","SpinBox"]:
-		var field_style:=_book_box(BOOK_PAPER_LIGHT,BOOK_BORDER)
-		theme.set_stylebox("normal",control_type,field_style)
-		theme.set_stylebox("focus",control_type,_book_box(Color("fff8e9"),BOOK_GOLD))
-		theme.set_color("font_color",control_type,BOOK_INK)
-		theme.set_color("font_placeholder_color",control_type,Color("84765f"))
-	for control_type in ["HSlider","VSlider"]:
-		theme.set_stylebox("slider",control_type,_book_box(Color("c9b38b"),BOOK_BORDER))
-		theme.set_stylebox("grabber_area",control_type,_book_box(Color("b08a4b"),Color("98703d")))
-	theme.set_stylebox("panel","TabContainer",_book_box(BOOK_PAPER_LIGHT,BOOK_BORDER))
-	for tab_type in ["TabContainer","TabBar"]:
-		theme.set_stylebox("tab_selected",tab_type,_book_box(BOOK_PAPER_LIGHT,BOOK_GOLD))
-		theme.set_stylebox("tab_unselected",tab_type,_book_box(BOOK_PAPER,BOOK_BORDER))
-		theme.set_stylebox("tab_hovered",tab_type,_book_box(Color("e3d3b3"),BOOK_GOLD))
-		theme.set_color("font_selected_color",tab_type,BOOK_INK)
-		theme.set_color("font_unselected_color",tab_type,Color("77664d"))
-		theme.set_color("font_hovered_color",tab_type,BOOK_INK)
-	theme.set_color("font_color","CheckButton",BOOK_INK)
-	theme.set_color("font_hover_color","CheckButton",BOOK_INK)
-	theme.set_stylebox("panel","TooltipPanel",_book_box(BOOK_PAPER_LIGHT,BOOK_BORDER))
-	theme.set_color("font_color","TooltipLabel",BOOK_INK)
-	theme.set_color("font_shadow_color","TooltipLabel",Color.TRANSPARENT)
-	return theme
+	return CyberStyle.theme().duplicate(true)
 
 func _set_edge_padding(style:StyleBox) -> void:
 	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:style.set_content_margin(side,UI_EDGE_GAP)
@@ -947,14 +902,14 @@ func _book_box(fill:Color,border:Color) -> StyleBoxFlat:
 
 func _set_button_accent(button_:Button,selected:bool) -> void:
 	button_.modulate=Color.WHITE
-	button_.add_theme_stylebox_override("normal",_book_box(Color("d8c7a4") if selected else BOOK_PAPER_LIGHT,BOOK_GOLD if selected else BOOK_BORDER))
-	button_.add_theme_stylebox_override("hover",_book_box(Color("e3d3b3"),BOOK_GOLD))
-	button_.add_theme_stylebox_override("pressed",_book_box(Color("c9b38b"),BOOK_GOLD))
-	button_.add_theme_stylebox_override("disabled",_book_box(Color("c5b99f"),BOOK_BORDER))
+	button_.add_theme_stylebox_override("normal",_book_box(CyberStyle.RAISED if selected else BOOK_PAPER_LIGHT,BOOK_GOLD if selected else BOOK_BORDER))
+	button_.add_theme_stylebox_override("hover",_book_box(CyberStyle.HOVER,BOOK_GOLD))
+	button_.add_theme_stylebox_override("pressed",_book_box(CyberStyle.SELECTED,BOOK_GOLD))
+	button_.add_theme_stylebox_override("disabled",_book_box(CyberStyle.RAISED,BOOK_BORDER))
 	button_.add_theme_color_override("font_color",BOOK_GOLD if selected else BOOK_INK)
 	button_.add_theme_color_override("font_hover_color",BOOK_INK)
 	button_.add_theme_color_override("font_pressed_color",BOOK_INK)
-	button_.add_theme_color_override("font_disabled_color",Color("84765f"))
+	button_.add_theme_color_override("font_disabled_color",CyberStyle.DISABLED)
 
 func _toggle_options_menu() -> void:
 	for section in workspace_nav_panels:
@@ -1255,7 +1210,7 @@ func build_timeline(parent:Control) -> void:
 		box.add_theme_constant_override("separation",UI_EDGE_GAP)
 		motion_row.add_child(box)
 		var readout:=menu_label(box,key,12)
-		var color:Color={"Effort":Color("98703d"),"Stamina depletion":Color("398351"),"Damage":Color("b84438"),"Mana saved":Color("397fab")}[key]
+		var color:Color={"Effort":CyberStyle.CYAN,"Stamina depletion":Color("398351"),"Damage":Color("b84438"),"Mana saved":Color("397fab")}[key]
 		readout.add_theme_color_override("font_color",color)
 		var slider:=HSlider.new()
 		slider.custom_minimum_size=Vector2(100,24)
@@ -3966,14 +3921,14 @@ func build_custom_random_tools(parent:TabContainer) -> void:
 			check.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 			check.custom_minimum_size.y=32
 			var normal:=StyleBoxFlat.new()
-			normal.bg_color=Color("f0e8d5")
+			normal.bg_color=CyberStyle.RAISED
 			normal.border_color=BOOK_BORDER
 			normal.set_border_width_all(1)
 			normal.set_corner_radius_all(5)
 			normal.content_margin_left=UI_EDGE_GAP
 			normal.content_margin_right=UI_EDGE_GAP
 			var pressed:StyleBoxFlat=normal.duplicate()
-			pressed.bg_color=Color("d8c7a4")
+			pressed.bg_color=CyberStyle.RAISED
 			pressed.border_color=BOOK_GOLD
 			pressed.set_border_width_all(1)
 			check.add_theme_stylebox_override("normal",normal)

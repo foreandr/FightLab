@@ -1,4 +1,5 @@
 extends Node3D
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Name and three live resource bars that follow each arena fighter.
 var fighter: CharacterBody3D
 var display_name := ""
@@ -31,7 +32,7 @@ func _ready() -> void:
 	name_label.name="FighterName"
 	name_label.position.y=0.34
 	name_label.text=display_name
-	name_label.modulate=Color("fff4d8")
+	name_label.modulate=CyberStyle.TEXT
 	name_label.outline_modulate=outline_color
 	add_child(name_label)
 	_add_resource_bar("HEALTH", 0.11, Color("ed414b"))

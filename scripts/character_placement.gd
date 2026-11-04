@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 const Settings=preload("res://scripts/game_settings_access.gd")
 ## Simple story staging area for spawning, selecting, and arranging characters.
 
@@ -158,7 +159,7 @@ func _build_interface() -> void:
 	var spawn_heading := Label.new()
 	spawn_heading.text = "ADD CHARACTER"
 	spawn_heading.add_theme_font_size_override("font_size", 11)
-	spawn_heading.add_theme_color_override("font_color", Color("d8b975"))
+	spawn_heading.add_theme_color_override("font_color", CyberStyle.CYAN)
 	content.add_child(spawn_heading)
 	var masculine := _button("+  Masculine", Color("355f82"))
 	masculine.pressed.connect(func(): _spawn_character("Masculine"))
@@ -169,7 +170,7 @@ func _build_interface() -> void:
 	var selection_heading := Label.new()
 	selection_heading.text = "SELECTED"
 	selection_heading.add_theme_font_size_override("font_size", 11)
-	selection_heading.add_theme_color_override("font_color", Color("d8b975"))
+	selection_heading.add_theme_color_override("font_color", CyberStyle.CYAN)
 	content.add_child(selection_heading)
 	selected_label = Label.new()
 	selected_label.text = "None"
@@ -240,7 +241,7 @@ func _spawn_character(body_type: String, saved_profile: Dictionary = {}, positio
 			"hair": "Buns" if body_type == "Feminine" else "Buzz",
 			"hair_color": Color("3c2b25"),
 			"outfit_color": Color("426c91") if body_type == "Masculine" else Color("75558e"),
-			"trim_color": Color("d0b77b"),
+			"trim_color": CyberStyle.CYAN,
 			"height": 1.0,
 			"rotation": rotation_override,
 		}

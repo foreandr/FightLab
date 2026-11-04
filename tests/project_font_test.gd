@@ -4,7 +4,7 @@ func _initialize() -> void:call_deferred("run")
 func verify_controls(node:Node) -> void:
 	if node is Control:
 		var font:Font=node.get_theme_font("font")
-		assert(font.get_font_name()=="Cinzel","Wrong font at "+str(node.get_path())+": "+font.get_font_name())
+		assert(font.get_font_name().begins_with("Rajdhani"),"Wrong font at "+str(node.get_path())+": "+font.get_font_name())
 		checked+=1
 	for child in node.get_children():verify_controls(child)
 func capture(name_:String) -> void:
@@ -13,7 +13,7 @@ func capture(name_:String) -> void:
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("user://logs/font_"+name_+".png")
 func run() -> void:
-	assert(load(ProjectSettings.get_setting("gui/theme/custom_font")).get_font_name()=="Cinzel")
+	assert(load(ProjectSettings.get_setting("gui/theme/custom_font")).get_font_name().begins_with("Rajdhani"))
 	change_scene_to_file("res://scenes/home.tscn")
 	await capture("home")
 	change_scene_to_file("res://scenes/story_opponents.tscn")

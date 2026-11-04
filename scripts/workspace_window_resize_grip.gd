@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 var window:Control
 var edges:=Vector2.ZERO
 
@@ -24,5 +25,5 @@ func _gui_input(event:InputEvent) -> void:
 
 func _draw() -> void:
 	if edges==Vector2.ONE:
-		for offset in [4.0,8.0,12.0]:draw_line(Vector2(size.x-offset,size.y-2),Vector2(size.x-2,size.y-offset),Color("98703d"),1.5)
+		for offset in [4.0,8.0,12.0]:draw_line(Vector2(size.x-offset,size.y-2),Vector2(size.x-2,size.y-offset),CyberStyle.CYAN,1.5)
 	elif get_global_rect().has_point(get_global_mouse_position()):draw_rect(Rect2(Vector2.ZERO,size),Color(0.69,0.54,0.30,0.45))

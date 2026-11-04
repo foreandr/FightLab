@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Post-fight loot shown as the same compact item-card inventory used by Loadout.
 
 const ICON := preload("res://scripts/gear_inventory_icon.gd")
@@ -26,11 +27,11 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var book_theme := Theme.new()
-	book_theme.set_color("font_color", "Label", Color("382c1c"))
-	book_theme.set_color("font_color", "Button", Color("382c1c"))
+	book_theme.set_color("font_color", "Label", CyberStyle.TEXT)
+	book_theme.set_color("font_color", "Button", CyberStyle.TEXT)
 	theme = book_theme
 	var bg := ColorRect.new()
-	bg.color = Color("302116")
+	bg.color = CyberStyle.VOID
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var margin := MarginContainer.new()
@@ -39,8 +40,8 @@ func _build_ui() -> void:
 	add_child(margin)
 	var page := PanelContainer.new()
 	var page_style := StyleBoxFlat.new()
-	page_style.bg_color = Color("e8ddc4")
-	page_style.border_color = Color("765b38")
+	page_style.bg_color = CyberStyle.PANEL
+	page_style.border_color = CyberStyle.LINE
 	page_style.set_border_width_all(2)
 	page.add_theme_stylebox_override("panel", page_style)
 	margin.add_child(page)
@@ -53,7 +54,7 @@ func _build_ui() -> void:
 	page_margin.add_child(column)
 	var eyebrow := Label.new()
 	eyebrow.text = "BOOK 1  ·  CHAPTER 1  ·  COLOSSEUM"
-	eyebrow.add_theme_color_override("font_color", Color("e9c982"))
+	eyebrow.add_theme_color_override("font_color", CyberStyle.CYAN)
 	column.add_child(eyebrow)
 	var title := Label.new()
 	title.text = "LOOT FOUND"
@@ -61,13 +62,13 @@ func _build_ui() -> void:
 	column.add_child(title)
 	var intro := Label.new()
 	intro.text = _loot_guidance()
-	intro.add_theme_color_override("font_color", Color("655740"))
+	intro.add_theme_color_override("font_color", CyberStyle.MUTED)
 	column.add_child(intro)
 	var panel := PanelContainer.new()
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("e8ddc4")
-	panel_style.border_color = Color("b5a27f")
+	panel_style.bg_color = CyberStyle.PANEL
+	panel_style.border_color = CyberStyle.LINE
 	panel_style.set_border_width_all(1)
 	panel_style.set_corner_radius_all(10)
 	panel.add_theme_stylebox_override("panel", panel_style)
@@ -80,7 +81,7 @@ func _build_ui() -> void:
 	inside.add_child(stack)
 	var heading := Label.new()
 	heading.text = "OPPONENT'S GEAR"
-	heading.add_theme_color_override("font_color", Color("e9c982"))
+	heading.add_theme_color_override("font_color", CyberStyle.CYAN)
 	stack.add_child(heading)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -120,7 +121,7 @@ func _populate() -> void:
 	if loot.is_empty():
 		var empty := Label.new()
 		empty.text = "No loot was found this time."
-		empty.add_theme_color_override("font_color", Color("655740"))
+		empty.add_theme_color_override("font_color", CyberStyle.MUTED)
 		grid.add_child(empty)
 	for item in _sort_by_rarity(loot):
 		if item is Dictionary: grid.add_child(_make_card(item))
@@ -128,7 +129,7 @@ func _populate() -> void:
 	if spells.is_empty():
 		var empty_spells:=Label.new()
 		empty_spells.text="No new spells this time."
-		empty_spells.add_theme_color_override("font_color",Color("655740"))
+		empty_spells.add_theme_color_override("font_color",CyberStyle.MUTED)
 		spell_grid.add_child(empty_spells)
 	for spell in spells:
 		if spell is Dictionary:spell_grid.add_child(_make_spell_card(spell))
@@ -239,7 +240,7 @@ func _add_new_badge(card:Control)->void:
 	badge.position=Vector2(7,7)
 	badge.custom_minimum_size=Vector2(48,24)
 	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("e9c982")
+	style.bg_color=CyberStyle.CYAN
 	style.border_color=Color("fff1c8")
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(5)

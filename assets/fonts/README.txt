@@ -1,17 +1,18 @@
 FightLab shared typography
 
-The project-wide font is assets/fonts/game_font.tres, referenced by
-gui/theme/custom_font in project.godot. Menus, themed dialogs, custom timeline
-drawing and Label3D world labels inherit this font through Godot's theme system.
-Do not add per-screen font overrides. To change the family later, replace the
-base_font reference in game_font.tres once.
+Active interface family: Rajdhani SemiBold / Bold, Indian Type Foundry.
+Source: https://github.com/google/fonts/tree/main/ofl/rajdhani
+License: SIL Open Font License 1.1; bundled in Rajdhani-OFL.txt.
 
-Current font: Cinzel variable (weights 400–900), unmodified.
+scripts/ui_design.gd owns the interface font tokens. The matching project-wide
+font alias is assets/fonts/game_font.tres, referenced by gui/theme/custom_font.
+CyberInterface applies this family to local legacy themes, dynamic controls and
+Label3D names. Custom UI drawing uses the same shared font token. New screens
+should inherit the theme instead of adding their own font family.
+
+Historical family retained on disk: Cinzel variable (weights 400–900), unmodified.
 Copyright 2020 The Cinzel Project Authors.
 Source: https://github.com/google/fonts/tree/main/ofl/cinzel
 Upstream: https://github.com/NDISCOVER/Cinzel
-License: SIL Open Font License 1.1, included in OFL.txt and embedded in
-game_font.tres metadata so exported builds retain the notice and license.
-
-Cinzel is the user's approved interim alternative to Trajan Pro. Trajan Pro
-is not bundled. Keep OFL.txt with Cinzel when distributing the game.
+License: SIL OFL 1.1, bundled in OFL.txt. Keep that notice with Cinzel if shipping
+historical assets. Trajan Pro is not bundled.

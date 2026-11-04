@@ -1,4 +1,5 @@
 extends VBoxContainer
+const CyberStyle=preload("res://scripts/ui_design.gd")
 ## Browse named definitions; the shared builder/runtime still bind and execute them.
 const TYPES:=["Projectile","Beam","Targeted","Touch","Barrier"]
 const PAGE_SIZE:=9
@@ -26,7 +27,7 @@ func setup(owner_builder:Node,content:VBoxContainer)->void:
  builder.editor.menu_label(self,"Choose a saved spell",18)
  var row:=HBoxContainer.new();add_child(row)
  search=LineEdit.new();search.placeholder_text="Search saved spells…";search.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(search)
- search.add_theme_color_override("font_placeholder_color",Color("806d4d"))
+ search.add_theme_color_override("font_placeholder_color",CyberStyle.MUTED)
  search.text_changed.connect(func(_text:String):filter_records())
  var refresh:Button=builder.editor.button(row,"↻",reload_catalog);refresh.tooltip_text="Refresh saved spells";refresh.focus_mode=Control.FOCUS_ALL
  var tabs:=GridContainer.new();tabs.columns=3;add_child(tabs)

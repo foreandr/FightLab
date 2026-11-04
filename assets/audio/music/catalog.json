@@ -54,7 +54,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Juhani%20Junkala%20-%20Epic%20Boss%20Battle%20%5BSeamlessly%20Looping%5D.wav",
       "source_filename": "Juhani Junkala - Epic Boss Battle [Seamlessly Looping].wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/boss_battle_music_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 2.0,
@@ -69,7 +69,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "battle_theme_0",
@@ -80,7 +81,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Battle.mp3",
       "source_filename": "Battle.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/battle_theme_0_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 38.0,
@@ -95,7 +96,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "hopeorchestral_battle_music",
@@ -106,7 +108,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/hope_orchestral_battle_music_bpm165_0.ogg",
       "source_filename": "hope_orchestral_battle_music_bpm165.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/hopeorchestral_battle_music_loop.ogg",
       "loop_seconds": 67.0,
       "source_start_seconds": 0.0,
@@ -121,7 +123,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "war_theme",
@@ -132,7 +135,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/war%20theme%20ver%202_0.ogg",
       "source_filename": "war theme ver 2.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/war_theme_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 42.0,
@@ -147,7 +150,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "the_final_battle",
@@ -158,7 +162,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/the_final_battle.ogg",
       "source_filename": "the_final_battle.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/the_final_battle_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 70.0,
@@ -173,7 +177,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "eye_of_the_storm_0",
@@ -184,7 +189,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Eye%20of%20the%20Storm_1.mp3",
       "source_filename": "Eye of the Storm.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/eye_of_the_storm_0_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 34.0,
@@ -199,7 +204,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "battle_theme_a",
@@ -210,7 +216,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/battleThemeA.mp3",
       "source_filename": "battleThemeA.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/battle_theme_a_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 14.0,
@@ -225,7 +231,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "determined_pursuit_epic_orchestra_loop",
@@ -236,7 +243,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/determined_pursuit_loop.wav",
       "source_filename": "determined_pursuit_loop.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/determined_pursuit_epic_orchestra_loop_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 34.0,
@@ -251,7 +258,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "a_legend_will_rise_orchestral",
@@ -262,7 +270,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/A%20Legend%20Will%20Rise.mp3",
       "source_filename": "A Legend Will Rise.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/a_legend_will_rise_orchestral_loop.ogg",
       "loop_seconds": 65.0,
       "source_start_seconds": 0.0,
@@ -277,7 +285,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "ancient_power_of_serpents",
@@ -288,7 +297,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Ancient_Power_Of_Serpents_0.ogg",
       "source_filename": "Ancient_Power_Of_Serpents.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/ancient_power_of_serpents_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 14.0,
@@ -303,7 +312,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "col_legno",
@@ -314,7 +324,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Vehicle%20-%20OGA%20-%20Col%20Legno.wav",
       "source_filename": "Vehicle - OGA - Col Legno.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/col_legno_loop.ogg",
       "loop_seconds": 67.0,
       "source_start_seconds": 0.0,
@@ -329,7 +339,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "new_sunrise",
@@ -340,7 +351,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/New%20Sunrise.wav",
       "source_filename": "New Sunrise.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/new_sunrise_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 46.0,
@@ -355,7 +366,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "evil_approach",
@@ -366,7 +378,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Evil%20Approach.wav",
       "source_filename": "Evil Approach.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/evil_approach_loop.ogg",
       "loop_seconds": 65.0,
       "source_start_seconds": 0.0,
@@ -381,7 +393,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "siberian_intro",
@@ -392,7 +405,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Vehicle%20-%20OGA%20-%20Siberian%20Intro.wav",
       "source_filename": "Vehicle - OGA - Siberian Intro.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/siberian_intro_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 22.0,
@@ -407,7 +420,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "dramatic_boss_encounter",
@@ -418,7 +432,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Heavy%20Concept%20A%20Bass%20Master.wav",
       "source_filename": "Heavy Concept A Bass Master.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/dramatic_boss_encounter_loop.ogg",
       "loop_seconds": 36.0,
       "source_start_seconds": 0.0,
@@ -433,7 +447,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "epic_endgame_cinematic",
@@ -444,7 +459,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/ChoirChordsBassMaster.wav",
       "source_filename": "ChoirChordsBassMaster.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/epic_endgame_cinematic_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 2.0,
@@ -459,7 +474,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "sinister_boss_appears",
@@ -470,7 +486,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Sinister%20Boss%20Appears.wav",
       "source_filename": "Sinister Boss Appears.wav",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/sinister_boss_appears_loop.ogg",
       "loop_seconds": 42.0,
       "source_start_seconds": 0.0,
@@ -485,7 +501,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "battle_theme_b_for_rpg",
@@ -496,7 +513,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/battleThemeB.mp3",
       "source_filename": "battleThemeB.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/battle_theme_b_for_rpg_loop.ogg",
       "loop_seconds": 63.0,
       "source_start_seconds": 0.0,
@@ -511,7 +528,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "random_encounter_4",
@@ -522,7 +540,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/randdom1_0.ogg",
       "source_filename": "randdom1.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/random_encounter_4_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 10.0,
@@ -537,7 +555,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "jungle_battle_loop",
@@ -548,7 +567,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/BattleLoop2_0.ogg",
       "source_filename": "BattleLoop2.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/jungle_battle_loop_loop.ogg",
       "loop_seconds": 35.0,
       "source_start_seconds": 0.0,
@@ -563,7 +582,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "boss_fight_0",
@@ -574,7 +594,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/bosstheme_WO_low_0.mp3",
       "source_filename": "bosstheme_WO_low.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/boss_fight_0_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 2.0,
@@ -589,7 +609,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "unexplored_short_ver_orchestra_music",
@@ -600,7 +621,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Unexplored%20short%20ver.mp3",
       "source_filename": "Unexplored short ver.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/unexplored_short_ver_orchestra_music_loop.ogg",
       "loop_seconds": 23.0,
       "source_start_seconds": 0.0,
@@ -615,7 +636,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "the_hope",
@@ -626,7 +648,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Hope.mp3",
       "source_filename": "Hope.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/the_hope_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 62.0,
@@ -641,7 +663,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "fantasy_battlegrounds",
@@ -652,7 +675,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/battleground_remastered_0.mp3",
       "source_filename": "battleground_remastered.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/fantasy_battlegrounds_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 2.0,
@@ -667,7 +690,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "celtic_loop",
@@ -678,7 +702,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/celtic_0.mp3",
       "source_filename": "celtic.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/celtic_loop_loop.ogg",
       "loop_seconds": 39.0,
       "source_start_seconds": 0.0,
@@ -693,7 +717,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "prepare_to_fight",
@@ -704,7 +729,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/prepare_to_fight.mp3",
       "source_filename": "prepare_to_fight.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/prepare_to_fight_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 10.0,
@@ -719,7 +744,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "runecraft_music_fantasy_esque",
@@ -730,7 +756,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/desolation%20of%20skraal.mp3",
       "source_filename": "desolation of skraal.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/runecraft_music_fantasy_esque_loop.ogg",
       "loop_seconds": 38.0,
       "source_start_seconds": 0.0,
@@ -745,7 +771,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "outlive_short_version",
@@ -756,7 +783,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Outlive_Short%20Ver_0.mp3",
       "source_filename": "Outlive_Short Ver.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/outlive_short_version_loop.ogg",
       "loop_seconds": 21.16,
       "source_start_seconds": 0.0,
@@ -771,7 +798,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "fantasy_orchestral_theme",
@@ -782,7 +810,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/FantasyOrchestralTheme_1.mp3",
       "source_filename": "FantasyOrchestralTheme.mp3",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/fantasy_orchestral_theme_loop.ogg",
       "loop_seconds": 70.0,
       "source_start_seconds": 86.0,
@@ -797,7 +825,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "swordfight",
@@ -808,7 +837,7 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "audio_source": "https://opengameart.org/sites/default/files/Swordfight_0.ogg",
       "source_filename": "Swordfight.ogg",
-      "status": "pool",
+      "status": "archived_style",
       "asset": "res://assets/audio/music/swordfight_loop.ogg",
       "loop_seconds": 51.0,
       "source_start_seconds": 0.0,
@@ -823,7 +852,8 @@
         "orchestral",
         "combat"
       ],
-      "permission": "CC0 public domain dedication verified on source page"
+      "permission": "CC0 public domain dedication verified on source page",
+      "archive_reason": "Orchestral/fantasy soundtrack retired from active pool for cyberpunk UI direction; original assets retained."
     },
     {
       "id": "infraction_just_evil",
@@ -860,6 +890,38 @@
       "permission": "Creator description requires an InAudio subscription for commercial projects. No game-use license held; reference only.",
       "license_checked": "2026-11-03",
       "license_evidence": "https://www.youtube.com/watch?v=E_LxkqQvHkI"
+    },
+    {
+      "id": "space_adventure_synth",
+      "title": "Space Adventure",
+      "creator": "MintoDog",
+      "source_url": "https://opengameart.org/content/space-adventure",
+      "audio_source": "https://opengameart.org/sites/default/files/space_adventure_bpm140_0.ogg",
+      "asset": "res://assets/audio/music/space_adventure_synth_loop.ogg",
+      "license": "CC0-1.0",
+      "status": "pool",
+      "tags": [
+        "synthwave",
+        "electronic",
+        "cyberpunk"
+      ],
+      "loop": "Seamless loop supplied by creator"
+    },
+    {
+      "id": "synthwave_house",
+      "title": "Synthwave House Loop",
+      "creator": "Fupi",
+      "source_url": "https://opengameart.org/content/synthwave-house-loop",
+      "audio_source": "https://opengameart.org/sites/default/files/synthwavehouse_0.ogg",
+      "asset": "res://assets/audio/music/synthwave_house_loop.ogg",
+      "license": "CC0-1.0",
+      "status": "pool",
+      "tags": [
+        "synthwave",
+        "electronic",
+        "cyberpunk"
+      ],
+      "loop": "Seamless loop supplied by creator"
     }
   ],
   "selection": "Shared random pool for menus and combat; no immediate repeats when multiple loops are available"
