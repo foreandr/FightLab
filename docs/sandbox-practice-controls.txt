@@ -2,8 +2,10 @@ Sandbox practice controls (2026-11-03)
 
 1 / Play: experimental held cast. The existing per-animation min/max duration
 and shared cost/damage formulas still determine strength. At 1/3, 2/3 and full
-hold, CastChargeFeedback brightens/thickens an emitter's skinned outline and
-CombatAudio plays progressively higher cached charge tones. Each threshold fires
+hold, CastChargeFeedback strengthens the shared body-conforming barrier shell
+and CombatAudio plays progressively higher cached charge tones. The visual
+source is independent of actual shields, so charge neither grants shielding nor
+clears a real barrier when it fades. Each threshold fires
 once per hold. Release/cancel fades the overlay; feedback adds no damage bonus.
 This actor-owned presentation component can be reused by other input adapters.
 

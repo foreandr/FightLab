@@ -29,7 +29,8 @@ func run():
  b.process_demo_preview(0.5)
  assert(is_equal_approx(b.demo_duration,1.15))
  assert(b.held_cast.feedback.tier==1)
- assert(not b.held_cast.feedback.regions[b.held_cast.feedback.bone].is_empty(),"Charge outline has no actual skin region")
+ assert(not b.held_cast.feedback.overlays.is_empty(),"Charge has no body barrier shell")
+ assert(not s.actor.self_barrier.active(),"Charge accidentally granted a shield")
  assert(s.field.shot_serial==shots and not b.released,"Emitted during hold")
  b.process_demo_preview(0.2);assert(b.held_cast.feedback.tier==2)
  b.process_demo_preview(0.3);assert(b.held_cast.feedback.tier==3)
@@ -40,6 +41,8 @@ func run():
  assert(s.field.audio.streams.charge_1.data!=s.field.audio.streams.charge_2.data and s.field.audio.streams.charge_2.data!=s.field.audio.streams.charge_3.data)
  assert(is_equal_approx(b.demo_duration,1.6),"Exceeded animation maximum")
  assert(s.field.shot_serial==shots)
+ await RenderingServer.frame_post_draw
+ root.get_texture().get_image().save_png("res://work/charge_body_shell.png")
  var cost:float=b.demo_preview_spec().stamina_cost
  b.held_cast.release(b);b.process_demo_preview(0.001)
  assert(not b.held_cast.feedback.holding)
