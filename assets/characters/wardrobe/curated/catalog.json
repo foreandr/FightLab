@@ -1,0 +1,3375 @@
+[
+  {
+    "author": "SimónMT",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4243564.0,
+    "file": "obj_5e4a17118c334c9d8fe8feeea234eddb.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "4cddc6be08828bfad4fb8c0b85aa83dad622486466d8cd947d91c05dbbbc563c",
+    "id": "obj_5e4a17118c334c9d8fe8feeea234eddb",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Casco Vikingo - Viking Helmet",
+    "original_name": "Casco Vikingo - Viking Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_5e4a17118c334c9d8fe8feeea234eddb.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "SimónMT · CC BY · Objaverse / Sketchfab",
+    "triangles": 2214.0,
+    "url": "https://sketchfab.com/3d-models/5e4a17118c334c9d8fe8feeea234eddb",
+    "value": "Pavlov:obj_5e4a17118c334c9d8fe8feeea234eddb",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_5e4a17118c334c9d8fe8feeea234eddb_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_5e4a17118c334c9d8fe8feeea234eddb_feminine.png"
+    }
+  },
+  {
+    "author": "Creator",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 238848.0,
+    "file": "obj_73bd8b48a875414f9bc60b40a320b190.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "d28b82fdc22ec68a7e9b7c1dbc355422ac40c5ed26a1d097187ff33efe1ce349",
+    "id": "obj_73bd8b48a875414f9bc60b40a320b190",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Samurai Helmet",
+    "original_name": "Low Poly Samurai Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_73bd8b48a875414f9bc60b40a320b190.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Creator · CC BY · Objaverse / Sketchfab",
+    "triangles": 6769.0,
+    "url": "https://sketchfab.com/3d-models/73bd8b48a875414f9bc60b40a320b190",
+    "value": "Pavlov:obj_73bd8b48a875414f9bc60b40a320b190",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_73bd8b48a875414f9bc60b40a320b190_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_73bd8b48a875414f9bc60b40a320b190_feminine.png"
+    }
+  },
+  {
+    "author": "Chuwakcz",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 5845040.0,
+    "file": "obj_cc2eeb3748ca486a8a97b4a55fba5658.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "245a553d41c72a934e336ccdab416be3ca89ccf7039b0a0b0d221226527c0fb5",
+    "id": "obj_cc2eeb3748ca486a8a97b4a55fba5658",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Viking Helmet (11)",
+    "original_name": "Viking Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_cc2eeb3748ca486a8a97b4a55fba5658.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Chuwakcz · CC BY · Objaverse / Sketchfab",
+    "triangles": 2190.0,
+    "url": "https://sketchfab.com/3d-models/cc2eeb3748ca486a8a97b4a55fba5658",
+    "value": "Pavlov:obj_cc2eeb3748ca486a8a97b4a55fba5658",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_cc2eeb3748ca486a8a97b4a55fba5658_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_cc2eeb3748ca486a8a97b4a55fba5658_feminine.png"
+    }
+  },
+  {
+    "author": "Arjun_Mahendaran",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 388548.0,
+    "file": "obj_e4182812e12946889aa4b4019cedc8d1.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "e17c44521ad5c8c6f32102282218ecf20f86056507402657c6f8ffa7c0075be5",
+    "id": "obj_e4182812e12946889aa4b4019cedc8d1",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Halo: ODST Helmet",
+    "original_name": "Halo: ODST Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_e4182812e12946889aa4b4019cedc8d1.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Arjun_Mahendaran · CC BY · Objaverse / Sketchfab",
+    "triangles": 2230.0,
+    "url": "https://sketchfab.com/3d-models/e4182812e12946889aa4b4019cedc8d1",
+    "value": "Pavlov:obj_e4182812e12946889aa4b4019cedc8d1",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_e4182812e12946889aa4b4019cedc8d1_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_e4182812e12946889aa4b4019cedc8d1_feminine.png"
+    }
+  },
+  {
+    "author": "gauravsingh",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1561028.0,
+    "file": "obj_70e3569d418f43f69d4927508927d81a.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5f54e5c984d626f4aa4ce3df74d3f4b2f550ed5c686836d04c31cc9ad60271f6",
+    "id": "obj_70e3569d418f43f69d4927508927d81a",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "A VIKING HELMET",
+    "original_name": "A VIKING HELMET",
+    "path": "res://assets/characters/wardrobe/library/models/obj_70e3569d418f43f69d4927508927d81a.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "gauravsingh · CC BY · Objaverse / Sketchfab",
+    "triangles": 2096.0,
+    "url": "https://sketchfab.com/3d-models/70e3569d418f43f69d4927508927d81a",
+    "value": "Pavlov:obj_70e3569d418f43f69d4927508927d81a",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_70e3569d418f43f69d4927508927d81a_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_70e3569d418f43f69d4927508927d81a_feminine.png"
+    }
+  },
+  {
+    "author": "m.altay",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 133108.0,
+    "file": "obj_c9bca14c868b4565a8de722d9883c543.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "aaac9273e09657966449a2decd724b2dc1a82ff6131270340c607d675d74ff19",
+    "id": "obj_c9bca14c868b4565a8de722d9883c543",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Crusader Great Helmet Low Poly",
+    "original_name": "Crusader Great Helmet Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_c9bca14c868b4565a8de722d9883c543.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "m.altay · CC BY · Objaverse / Sketchfab",
+    "triangles": 2404.0,
+    "url": "https://sketchfab.com/3d-models/c9bca14c868b4565a8de722d9883c543",
+    "value": "Pavlov:obj_c9bca14c868b4565a8de722d9883c543",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_c9bca14c868b4565a8de722d9883c543_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_c9bca14c868b4565a8de722d9883c543_feminine.png"
+    }
+  },
+  {
+    "author": "JohnyNawalony",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1159296.0,
+    "file": "obj_b0b7e489f934497599cd08957c7a48ea.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a39e096009703f701e29024756589baab0e5e806dc1ed7d71252db4a1425b153",
+    "id": "obj_b0b7e489f934497599cd08957c7a48ea",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Norwegian Viking Helmet [Gjermundbu type)",
+    "original_name": "Norwegian Viking Helmet [Gjermundbu type)",
+    "path": "res://assets/characters/wardrobe/library/models/obj_b0b7e489f934497599cd08957c7a48ea.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "JohnyNawalony · CC BY · Objaverse / Sketchfab",
+    "triangles": 2614.0,
+    "url": "https://sketchfab.com/3d-models/b0b7e489f934497599cd08957c7a48ea",
+    "value": "Pavlov:obj_b0b7e489f934497599cd08957c7a48ea",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_b0b7e489f934497599cd08957c7a48ea_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_b0b7e489f934497599cd08957c7a48ea_feminine.png"
+    }
+  },
+  {
+    "author": "Miro Sali",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2615428.0,
+    "file": "obj_d5df54cf298f4d808990450d57ccfe03.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5541edd43587a8a2c78e4fe9de5f77b9719bc0c5eac3c254e6c2471d3d12caa3",
+    "id": "obj_d5df54cf298f4d808990450d57ccfe03",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Roman Helmet",
+    "original_name": "Low Poly Roman Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_d5df54cf298f4d808990450d57ccfe03.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Miro Sali · CC BY · Objaverse / Sketchfab",
+    "triangles": 2628.0,
+    "url": "https://sketchfab.com/3d-models/d5df54cf298f4d808990450d57ccfe03",
+    "value": "Pavlov:obj_d5df54cf298f4d808990450d57ccfe03",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_d5df54cf298f4d808990450d57ccfe03_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_d5df54cf298f4d808990450d57ccfe03_feminine.png"
+    }
+  },
+  {
+    "author": "chiun905062",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3130316.0,
+    "file": "obj_c640614e4c664c1cb24310a5a12de2ee.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "3962e3652574095c530efc4a589a59d9f5ffcaa3aefe44797c61139b867b22c6",
+    "id": "obj_c640614e4c664c1cb24310a5a12de2ee",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Stylized Viking Helmet",
+    "original_name": "Stylized Viking Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_c640614e4c664c1cb24310a5a12de2ee.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "chiun905062 · CC BY · Objaverse / Sketchfab",
+    "triangles": 2840.0,
+    "url": "https://sketchfab.com/3d-models/c640614e4c664c1cb24310a5a12de2ee",
+    "value": "Pavlov:obj_c640614e4c664c1cb24310a5a12de2ee",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_c640614e4c664c1cb24310a5a12de2ee_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_c640614e4c664c1cb24310a5a12de2ee_feminine.png"
+    }
+  },
+  {
+    "author": "Raystani E. de Oliveira",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3823064.0,
+    "file": "obj_ae3a2b2ea8e9492fae8a4a6bea9f3505.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b80f1ef7365a6ca28b93531207bf33e9a6031dbd4d8288ecd2e2805d754c6d94",
+    "id": "obj_ae3a2b2ea8e9492fae8a4a6bea9f3505",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low poly helmet (1)",
+    "original_name": "Low poly helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_ae3a2b2ea8e9492fae8a4a6bea9f3505.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Raystani E. de Oliveira · CC BY · Objaverse / Sketchfab",
+    "triangles": 1452.0,
+    "url": "https://sketchfab.com/3d-models/ae3a2b2ea8e9492fae8a4a6bea9f3505",
+    "value": "Pavlov:obj_ae3a2b2ea8e9492fae8a4a6bea9f3505",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_ae3a2b2ea8e9492fae8a4a6bea9f3505_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_ae3a2b2ea8e9492fae8a4a6bea9f3505_feminine.png"
+    }
+  },
+  {
+    "author": "hrydell",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 540972.0,
+    "file": "obj_f4d536baf41d4d1c80b89bccceded00f.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "13f7ce89fea7c2deea1fda39832fa4ea76ff8ec16f58692420d6b234b982d891",
+    "id": "obj_f4d536baf41d4d1c80b89bccceded00f",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Futuristic Samurai Helmet textured",
+    "original_name": "Futuristic Samurai Helmet textured",
+    "path": "res://assets/characters/wardrobe/library/models/obj_f4d536baf41d4d1c80b89bccceded00f.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "hrydell · CC BY · Objaverse / Sketchfab",
+    "triangles": 3299.0,
+    "url": "https://sketchfab.com/3d-models/f4d536baf41d4d1c80b89bccceded00f",
+    "value": "Pavlov:obj_f4d536baf41d4d1c80b89bccceded00f",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_f4d536baf41d4d1c80b89bccceded00f_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_f4d536baf41d4d1c80b89bccceded00f_feminine.png"
+    }
+  },
+  {
+    "author": "username10199",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3188656.0,
+    "file": "obj_578c3ccab50b42a9a7ee350c287c8e67.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5e7d203280ac4c9897ec1fa565dcbd1957bd5a3c88972989da823d5b32661499",
+    "id": "obj_578c3ccab50b42a9a7ee350c287c8e67",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Demon helmet",
+    "original_name": "Demon helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_578c3ccab50b42a9a7ee350c287c8e67.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "username10199 · CC BY · Objaverse / Sketchfab",
+    "triangles": 906.0,
+    "url": "https://sketchfab.com/3d-models/578c3ccab50b42a9a7ee350c287c8e67",
+    "value": "Pavlov:obj_578c3ccab50b42a9a7ee350c287c8e67",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_578c3ccab50b42a9a7ee350c287c8e67_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_578c3ccab50b42a9a7ee350c287c8e67_feminine.png"
+    }
+  },
+  {
+    "author": "badbanshee",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 421036.0,
+    "file": "obj_ecc1611f5087463995e20b36e58d4e01.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "97ab25bcffd20a61d7ab26766b50067017543e818196fe5b48c8309525604b2a",
+    "id": "obj_ecc1611f5087463995e20b36e58d4e01",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Fantasy Helmet Low Poly",
+    "original_name": "Fantasy Helmet Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_ecc1611f5087463995e20b36e58d4e01.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "badbanshee · CC BY · Objaverse / Sketchfab",
+    "triangles": 870.0,
+    "url": "https://sketchfab.com/3d-models/ecc1611f5087463995e20b36e58d4e01",
+    "value": "Pavlov:obj_ecc1611f5087463995e20b36e58d4e01",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_ecc1611f5087463995e20b36e58d4e01_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_ecc1611f5087463995e20b36e58d4e01_feminine.png"
+    }
+  },
+  {
+    "author": "Luckkk3d",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2982532.0,
+    "file": "obj_c4f4f9810f45462cbc5bcb6068be19c8.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "7d4048741c41bdf13c8807286e585fc973fc951308ae9549096b0e9ae838808d",
+    "id": "obj_c4f4f9810f45462cbc5bcb6068be19c8",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet Viking (1)",
+    "original_name": "Helmet Viking",
+    "path": "res://assets/characters/wardrobe/library/models/obj_c4f4f9810f45462cbc5bcb6068be19c8.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Luckkk3d · CC BY · Objaverse / Sketchfab",
+    "triangles": 3658.0,
+    "url": "https://sketchfab.com/3d-models/c4f4f9810f45462cbc5bcb6068be19c8",
+    "value": "Pavlov:obj_c4f4f9810f45462cbc5bcb6068be19c8",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_c4f4f9810f45462cbc5bcb6068be19c8_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_c4f4f9810f45462cbc5bcb6068be19c8_feminine.png"
+    }
+  },
+  {
+    "author": "Infamous_Dr_Steve",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 573924.0,
+    "file": "obj_e6543928a5f24d9e852e7c14d8a1eee4.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "6570b84186e6bd62df77949f09817488a01c8943d15a1122f392c48e78acb441",
+    "id": "obj_e6543928a5f24d9e852e7c14d8a1eee4",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Textured Low-Poly Viking  Helmet",
+    "original_name": "Textured Low-Poly Viking  Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_e6543928a5f24d9e852e7c14d8a1eee4.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Infamous_Dr_Steve · CC BY · Objaverse / Sketchfab",
+    "triangles": 688.0,
+    "url": "https://sketchfab.com/3d-models/e6543928a5f24d9e852e7c14d8a1eee4",
+    "value": "Pavlov:obj_e6543928a5f24d9e852e7c14d8a1eee4",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_e6543928a5f24d9e852e7c14d8a1eee4_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_e6543928a5f24d9e852e7c14d8a1eee4_feminine.png"
+    }
+  },
+  {
+    "author": "Yanez Designs",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 127468.0,
+    "file": "obj_b3c5e3f6962f48e3bee866fdad11adb3.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b9c9819b83d0ee0d9b3d4d60f1a41d25bbacef7223cdfc5f88dfb9afa586c91c",
+    "id": "obj_b3c5e3f6962f48e3bee866fdad11adb3",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "3d Knight Helmet",
+    "original_name": "3d Knight Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_b3c5e3f6962f48e3bee866fdad11adb3.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Yanez Designs · CC BY · Objaverse / Sketchfab",
+    "triangles": 3756.0,
+    "url": "https://sketchfab.com/3d-models/b3c5e3f6962f48e3bee866fdad11adb3",
+    "value": "Pavlov:obj_b3c5e3f6962f48e3bee866fdad11adb3",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_b3c5e3f6962f48e3bee866fdad11adb3_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_b3c5e3f6962f48e3bee866fdad11adb3_feminine.png"
+    }
+  },
+  {
+    "author": "circles",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2119968.0,
+    "file": "obj_19b5c8574bb84229944d9753ff8bed38.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "209c3fcd872d3dec6b821fc599503a7f348f4dbadffa87d80f9db55b241bd43b",
+    "id": "obj_19b5c8574bb84229944d9753ff8bed38",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci-Fi Helmet (1)",
+    "original_name": "Sci-Fi Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_19b5c8574bb84229944d9753ff8bed38.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "circles · CC BY · Objaverse / Sketchfab",
+    "triangles": 3794.0,
+    "url": "https://sketchfab.com/3d-models/19b5c8574bb84229944d9753ff8bed38",
+    "value": "Pavlov:obj_19b5c8574bb84229944d9753ff8bed38",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_19b5c8574bb84229944d9753ff8bed38_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_19b5c8574bb84229944d9753ff8bed38_feminine.png"
+    }
+  },
+  {
+    "author": "KSOID",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2481524.0,
+    "file": "obj_84f9afc2e753487d8f817511eadf445d.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "93701522ef52024ce391d015d256d0621568fbfa1d900a0177743c63b87092a5",
+    "id": "obj_84f9afc2e753487d8f817511eadf445d",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval knight helmet.",
+    "original_name": "Medieval knight helmet.",
+    "path": "res://assets/characters/wardrobe/library/models/obj_84f9afc2e753487d8f817511eadf445d.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "KSOID · CC BY · Objaverse / Sketchfab",
+    "triangles": 602.0,
+    "url": "https://sketchfab.com/3d-models/84f9afc2e753487d8f817511eadf445d",
+    "value": "Pavlov:obj_84f9afc2e753487d8f817511eadf445d",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_84f9afc2e753487d8f817511eadf445d_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_84f9afc2e753487d8f817511eadf445d_feminine.png"
+    }
+  },
+  {
+    "author": "leoxx300",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 93104.0,
+    "file": "obj_45422fcf8d6444fd98737fc32b0c71ac.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "0c0bdda1d48062012a2859da4e77e509642c760975bd5a7c1ed7419d3531c468",
+    "id": "obj_45422fcf8d6444fd98737fc32b0c71ac",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "sci-fi helmet",
+    "original_name": "sci-fi helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_45422fcf8d6444fd98737fc32b0c71ac.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "leoxx300 · CC BY · Objaverse / Sketchfab",
+    "triangles": 598.0,
+    "url": "https://sketchfab.com/3d-models/45422fcf8d6444fd98737fc32b0c71ac",
+    "value": "Pavlov:obj_45422fcf8d6444fd98737fc32b0c71ac",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_45422fcf8d6444fd98737fc32b0c71ac_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_45422fcf8d6444fd98737fc32b0c71ac_feminine.png"
+    }
+  },
+  {
+    "author": "Choges Craft Channel",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 625768.0,
+    "file": "obj_0b7fd2ce0a8647bca826b5ae0febe035.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "728322650fceeb761d21e754ddc85a2e517f21793c335106f1d38412abeeb00a",
+    "id": "obj_0b7fd2ce0a8647bca826b5ae0febe035",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Samurai helmet (1)",
+    "original_name": "Samurai helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_0b7fd2ce0a8647bca826b5ae0febe035.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Choges Craft Channel · CC BY · Objaverse / Sketchfab",
+    "triangles": 3830.0,
+    "url": "https://sketchfab.com/3d-models/0b7fd2ce0a8647bca826b5ae0febe035",
+    "value": "Pavlov:obj_0b7fd2ce0a8647bca826b5ae0febe035",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_0b7fd2ce0a8647bca826b5ae0febe035_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_0b7fd2ce0a8647bca826b5ae0febe035_feminine.png"
+    }
+  },
+  {
+    "author": "4kuma.design",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 84308.0,
+    "file": "obj_a55ad61abd044fe59fabf4dcd1d050cb.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "c5730e3091f55c44a1ca35d96ced195f6c30ac5bf2c02e3df5ed5479806f56b4",
+    "id": "obj_a55ad61abd044fe59fabf4dcd1d050cb",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Celty Helmet Low Poly",
+    "original_name": "Celty Helmet Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_a55ad61abd044fe59fabf4dcd1d050cb.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "4kuma.design · CC BY · Objaverse / Sketchfab",
+    "triangles": 406.0,
+    "url": "https://sketchfab.com/3d-models/a55ad61abd044fe59fabf4dcd1d050cb",
+    "value": "Pavlov:obj_a55ad61abd044fe59fabf4dcd1d050cb",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_a55ad61abd044fe59fabf4dcd1d050cb_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_a55ad61abd044fe59fabf4dcd1d050cb_feminine.png"
+    }
+  },
+  {
+    "author": "AaronJOlson",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 932744.0,
+    "file": "obj_0c8a8b8566e24538ae9ced0afee6e368.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b96d2b4f08c4ad1fa758d9beff55c1edbb1e15890f2fafc696e1385ff70c618d",
+    "id": "obj_0c8a8b8566e24538ae9ced0afee6e368",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval Helmet Low Poly Basemesh",
+    "original_name": "Medieval Helmet Low Poly Basemesh",
+    "path": "res://assets/characters/wardrobe/library/models/obj_0c8a8b8566e24538ae9ced0afee6e368.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "AaronJOlson · CC BY · Objaverse / Sketchfab",
+    "triangles": 4004.0,
+    "url": "https://sketchfab.com/3d-models/0c8a8b8566e24538ae9ced0afee6e368",
+    "value": "Pavlov:obj_0c8a8b8566e24538ae9ced0afee6e368",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_0c8a8b8566e24538ae9ced0afee6e368_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_0c8a8b8566e24538ae9ced0afee6e368_feminine.png"
+    }
+  },
+  {
+    "author": "shamanoff",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3936524.0,
+    "file": "obj_94701874d8b949718708b018c8d4f61d.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "62e117611f2db8d1c79b9847699a2d6fde3ef2c211c4e5f09c58eb7cddfc2e94",
+    "id": "obj_94701874d8b949718708b018c8d4f61d",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Combat helmet K6-3",
+    "original_name": "Combat helmet K6-3",
+    "path": "res://assets/characters/wardrobe/library/models/obj_94701874d8b949718708b018c8d4f61d.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "shamanoff · CC BY · Objaverse / Sketchfab",
+    "triangles": 4242.0,
+    "url": "https://sketchfab.com/3d-models/94701874d8b949718708b018c8d4f61d",
+    "value": "Pavlov:obj_94701874d8b949718708b018c8d4f61d",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_94701874d8b949718708b018c8d4f61d_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_94701874d8b949718708b018c8d4f61d_feminine.png"
+    }
+  },
+  {
+    "author": "Beware The Black Cat",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2665468.0,
+    "file": "obj_320228a23941429d9221a7d05463bf31.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b4b6e0e57ef4880bdde3049265c8cf2cb1d3841cb661f2dfabef2e4c60dbfe73",
+    "id": "obj_320228a23941429d9221a7d05463bf31",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Lenneth's winged helmet Low Poly",
+    "original_name": "Lenneth's winged helmet Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_320228a23941429d9221a7d05463bf31.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Beware The Black Cat · CC BY · Objaverse / Sketchfab",
+    "triangles": 4260.0,
+    "url": "https://sketchfab.com/3d-models/320228a23941429d9221a7d05463bf31",
+    "value": "Pavlov:obj_320228a23941429d9221a7d05463bf31",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_320228a23941429d9221a7d05463bf31_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_320228a23941429d9221a7d05463bf31_feminine.png"
+    }
+  },
+  {
+    "author": "打螺丝",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4171156.0,
+    "file": "obj_5697331ee00c4f13ad18005a6c82f7ef.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "e434a9297e93390298b33c15d093c33fa619c87d875f011c60012cef29aa2fdf",
+    "id": "obj_5697331ee00c4f13ad18005a6c82f7ef",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "scifi helmet (1)",
+    "original_name": "scifi helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_5697331ee00c4f13ad18005a6c82f7ef.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "打螺丝 · CC BY · Objaverse / Sketchfab",
+    "triangles": 4324.0,
+    "url": "https://sketchfab.com/3d-models/5697331ee00c4f13ad18005a6c82f7ef",
+    "value": "Pavlov:obj_5697331ee00c4f13ad18005a6c82f7ef",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_5697331ee00c4f13ad18005a6c82f7ef_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_5697331ee00c4f13ad18005a6c82f7ef_feminine.png"
+    }
+  },
+  {
+    "author": "Raystani E. de Oliveira",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2780372.0,
+    "file": "obj_173f4358418c4407b905df3d51f54c9c.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5f39d933fcde9f7c2e586e75dd864080b309d05ea7b180983d0ec199ec54ad9e",
+    "id": "obj_173f4358418c4407b905df3d51f54c9c",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Helmet.",
+    "original_name": "Low Poly Helmet.",
+    "path": "res://assets/characters/wardrobe/library/models/obj_173f4358418c4407b905df3d51f54c9c.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Raystani E. de Oliveira · CC BY · Objaverse / Sketchfab",
+    "triangles": 4620.0,
+    "url": "https://sketchfab.com/3d-models/173f4358418c4407b905df3d51f54c9c",
+    "value": "Pavlov:obj_173f4358418c4407b905df3d51f54c9c",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_173f4358418c4407b905df3d51f54c9c_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_173f4358418c4407b905df3d51f54c9c_feminine.png"
+    }
+  },
+  {
+    "author": "jude.p",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2120204.0,
+    "file": "obj_c07e04ab147745be8d864f7c35186101.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a74fe29019ee7dfbac1c440d54b6df2afd0a44850d9ea4804dba4f6b778e7796",
+    "id": "obj_c07e04ab147745be8d864f7c35186101",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci-fi Helmet (3)",
+    "original_name": "Sci-fi Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_c07e04ab147745be8d864f7c35186101.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "jude.p · CC BY · Objaverse / Sketchfab",
+    "triangles": 4913.0,
+    "url": "https://sketchfab.com/3d-models/c07e04ab147745be8d864f7c35186101",
+    "value": "Pavlov:obj_c07e04ab147745be8d864f7c35186101",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_c07e04ab147745be8d864f7c35186101_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_c07e04ab147745be8d864f7c35186101_feminine.png"
+    }
+  },
+  {
+    "author": "Kirayuu",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1626984.0,
+    "file": "obj_19209cccc6af49e99198f406f643417a.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "71790f3e227c9a47b7ef54997a93031750294fb3ac427bda05edc00a34d5a955",
+    "id": "obj_19209cccc6af49e99198f406f643417a",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Knights Helmet",
+    "original_name": "Knights Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_19209cccc6af49e99198f406f643417a.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Kirayuu · CC BY · Objaverse / Sketchfab",
+    "triangles": 5295.0,
+    "url": "https://sketchfab.com/3d-models/19209cccc6af49e99198f406f643417a",
+    "value": "Pavlov:obj_19209cccc6af49e99198f406f643417a",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_19209cccc6af49e99198f406f643417a_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_19209cccc6af49e99198f406f643417a_feminine.png"
+    }
+  },
+  {
+    "author": "EJcal",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 171660.0,
+    "file": "obj_fa31a65b6dbe443eaf121bab4766e3c2.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "2a30aff1c30bfe2876c9f2fa87ab7d0f9eaf640fb9b754cfcc96bb9425ce5690",
+    "id": "obj_fa31a65b6dbe443eaf121bab4766e3c2",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Spartan Helmet Low Poly",
+    "original_name": "Spartan Helmet Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_fa31a65b6dbe443eaf121bab4766e3c2.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "EJcal · CC BY · Objaverse / Sketchfab",
+    "triangles": 5808.0,
+    "url": "https://sketchfab.com/3d-models/fa31a65b6dbe443eaf121bab4766e3c2",
+    "value": "Pavlov:obj_fa31a65b6dbe443eaf121bab4766e3c2",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_fa31a65b6dbe443eaf121bab4766e3c2_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_fa31a65b6dbe443eaf121bab4766e3c2_feminine.png"
+    }
+  },
+  {
+    "author": "GregoryManuel",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3398160.0,
+    "file": "obj_07762a872cfe49d4ae697d9b0206261f.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "af3b0040dc5e6ba63a1f8e7a2db47b15f3642070c618cdd43d4519dc3aa09149",
+    "id": "obj_07762a872cfe49d4ae697d9b0206261f",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci-Fi Pilot Helmet",
+    "original_name": "Sci-Fi Pilot Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_07762a872cfe49d4ae697d9b0206261f.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "GregoryManuel · CC BY · Objaverse / Sketchfab",
+    "triangles": 11142.0,
+    "url": "https://sketchfab.com/3d-models/07762a872cfe49d4ae697d9b0206261f",
+    "value": "Pavlov:obj_07762a872cfe49d4ae697d9b0206261f",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_07762a872cfe49d4ae697d9b0206261f_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_07762a872cfe49d4ae697d9b0206261f_feminine.png"
+    }
+  },
+  {
+    "author": "Rotuma",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3386408.0,
+    "file": "obj_7fa36e99bd334e5a9d9bc861ba176121.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "107402739bd693eaeb21b0333978308122bb02f903c4f1fa8e70c8c8c05a6e0b",
+    "id": "obj_7fa36e99bd334e5a9d9bc861ba176121",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Valkyrie Armour Helmet",
+    "original_name": "Valkyrie Armour Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_7fa36e99bd334e5a9d9bc861ba176121.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Rotuma · CC BY · Objaverse / Sketchfab",
+    "triangles": 13192.0,
+    "url": "https://sketchfab.com/3d-models/7fa36e99bd334e5a9d9bc861ba176121",
+    "value": "Pavlov:obj_7fa36e99bd334e5a9d9bc861ba176121",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_7fa36e99bd334e5a9d9bc861ba176121_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_7fa36e99bd334e5a9d9bc861ba176121_feminine.png"
+    }
+  },
+  {
+    "author": "Matt Dixon",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1884360.0,
+    "file": "obj_0f732c36ba5e4b50b7451de3b489006a.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a829fdee5358cc1839a38ffe1ad2cff5c4838a7f25021572d5d70b06679b3410",
+    "id": "obj_0f732c36ba5e4b50b7451de3b489006a",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "ODST Helmet from HALO",
+    "original_name": "ODST Helmet from HALO",
+    "path": "res://assets/characters/wardrobe/library/models/obj_0f732c36ba5e4b50b7451de3b489006a.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Matt Dixon · CC BY · Objaverse / Sketchfab",
+    "triangles": 16126.0,
+    "url": "https://sketchfab.com/3d-models/0f732c36ba5e4b50b7451de3b489006a",
+    "value": "Pavlov:obj_0f732c36ba5e4b50b7451de3b489006a",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_0f732c36ba5e4b50b7451de3b489006a_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_0f732c36ba5e4b50b7451de3b489006a_feminine.png"
+    }
+  },
+  {
+    "author": "PatelDev",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 575448.0,
+    "file": "obj_46388925effc462d9fcbea9ebdd97345.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "98ceb0ab2e42b6a67f11a1d72bff89ae42615c7f85006fd34722adb42638f7e8",
+    "id": "obj_46388925effc462d9fcbea9ebdd97345",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Viking Helmet (3)",
+    "original_name": "Viking Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_46388925effc462d9fcbea9ebdd97345.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "PatelDev · CC BY · Objaverse / Sketchfab",
+    "triangles": 17584.0,
+    "url": "https://sketchfab.com/3d-models/46388925effc462d9fcbea9ebdd97345",
+    "value": "Pavlov:obj_46388925effc462d9fcbea9ebdd97345",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_46388925effc462d9fcbea9ebdd97345_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_46388925effc462d9fcbea9ebdd97345_feminine.png"
+    }
+  },
+  {
+    "author": "syncsketch",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2397680.0,
+    "file": "obj_68796504927448c1a7c08f82d8c73a83.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "0db7849d59774d6cbc0bdf47f8561ddd7f8bdd04a6237eef83f71664e1d4f83b",
+    "id": "obj_68796504927448c1a7c08f82d8c73a83",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "viking-helmet",
+    "original_name": "viking-helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_68796504927448c1a7c08f82d8c73a83.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "syncsketch · CC BY · Objaverse / Sketchfab",
+    "triangles": 18314.0,
+    "url": "https://sketchfab.com/3d-models/68796504927448c1a7c08f82d8c73a83",
+    "value": "Pavlov:obj_68796504927448c1a7c08f82d8c73a83",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_68796504927448c1a7c08f82d8c73a83_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_68796504927448c1a7c08f82d8c73a83_feminine.png"
+    }
+  },
+  {
+    "author": "Lazanja",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4542684.0,
+    "file": "obj_95e47870edc146b797162bd45826277b.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "de5e405912f33bb8d0be3843dc64aa57e310fbd9d9a1af7f996b606900eed403",
+    "id": "obj_95e47870edc146b797162bd45826277b",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Imperial Roman Leather Helmet",
+    "original_name": "Imperial Roman Leather Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_95e47870edc146b797162bd45826277b.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Lazanja · CC BY · Objaverse / Sketchfab",
+    "triangles": 18486.0,
+    "url": "https://sketchfab.com/3d-models/95e47870edc146b797162bd45826277b",
+    "value": "Pavlov:obj_95e47870edc146b797162bd45826277b",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_95e47870edc146b797162bd45826277b_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_95e47870edc146b797162bd45826277b_feminine.png"
+    }
+  },
+  {
+    "author": "SchrisArt",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2109452.0,
+    "file": "obj_3a6697cb743e4aab963383283119ffe7.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "abf8aadef095aaae2d0eccd3e1314d25cf23d4ee82157ee0eed8211a28706aa0",
+    "id": "obj_3a6697cb743e4aab963383283119ffe7",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci-Fi Helmet (4)",
+    "original_name": "Sci-Fi Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_3a6697cb743e4aab963383283119ffe7.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "SchrisArt · CC BY · Objaverse / Sketchfab",
+    "triangles": 19860.0,
+    "url": "https://sketchfab.com/3d-models/3a6697cb743e4aab963383283119ffe7",
+    "value": "Pavlov:obj_3a6697cb743e4aab963383283119ffe7",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_3a6697cb743e4aab963383283119ffe7_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_3a6697cb743e4aab963383283119ffe7_feminine.png"
+    }
+  },
+  {
+    "author": "WhiteOak",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 168552.0,
+    "file": "obj_1e5fa26f3b924696945989ec398d8469.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "9f2b84bc0bcc554d2c1ace66220f10acf194d41b137e26541f91ced601e94e85",
+    "id": "obj_1e5fa26f3b924696945989ec398d8469",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet (19)",
+    "original_name": "Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_1e5fa26f3b924696945989ec398d8469.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "WhiteOak · CC BY · Objaverse / Sketchfab",
+    "triangles": 2208.0,
+    "url": "https://sketchfab.com/3d-models/1e5fa26f3b924696945989ec398d8469",
+    "value": "Pavlov:obj_1e5fa26f3b924696945989ec398d8469",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_1e5fa26f3b924696945989ec398d8469_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_1e5fa26f3b924696945989ec398d8469_feminine.png"
+    }
+  },
+  {
+    "author": "formula models maker",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 425484.0,
+    "file": "obj_844b6231123c43cd858019422f5a4611.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a711c0a93e11cc7fd576cf7f62984b091428f0c3094d2e78142db657d267f747",
+    "id": "obj_844b6231123c43cd858019422f5a4611",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "F1 helmet",
+    "original_name": "F1 helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_844b6231123c43cd858019422f5a4611.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "formula models maker · CC BY · Objaverse / Sketchfab",
+    "triangles": 2182.0,
+    "url": "https://sketchfab.com/3d-models/844b6231123c43cd858019422f5a4611",
+    "value": "Pavlov:obj_844b6231123c43cd858019422f5a4611",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_844b6231123c43cd858019422f5a4611_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_844b6231123c43cd858019422f5a4611_feminine.png"
+    }
+  },
+  {
+    "author": "wewwuworks",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 134672.0,
+    "file": "obj_90c727ebe344455c9ce569a7cc0a9839.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b8ac4cd5bae078296e3f7c5590efc6ed043540909d0f706d834d69d5e9f8bfe1",
+    "id": "obj_90c727ebe344455c9ce569a7cc0a9839",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mech-Helmet",
+    "original_name": "Mech-Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_90c727ebe344455c9ce569a7cc0a9839.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "wewwuworks · CC BY · Objaverse / Sketchfab",
+    "triangles": 2222.0,
+    "url": "https://sketchfab.com/3d-models/90c727ebe344455c9ce569a7cc0a9839",
+    "value": "Pavlov:obj_90c727ebe344455c9ce569a7cc0a9839",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_90c727ebe344455c9ce569a7cc0a9839_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_90c727ebe344455c9ce569a7cc0a9839_feminine.png"
+    }
+  },
+  {
+    "author": "Thomas.Osterhammel",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1234068.0,
+    "file": "obj_f6052b841e4c4b0bae02b4094b1318de.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "4d32a0e1b088289afffefaa4b0de82c5c6423c424f2b2a4308de3341f366eff1",
+    "id": "obj_f6052b841e4c4b0bae02b4094b1318de",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval helmet (1)",
+    "original_name": "Medieval helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_f6052b841e4c4b0bae02b4094b1318de.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Thomas.Osterhammel · CC BY · Objaverse / Sketchfab",
+    "triangles": 2236.0,
+    "url": "https://sketchfab.com/3d-models/f6052b841e4c4b0bae02b4094b1318de",
+    "value": "Pavlov:obj_f6052b841e4c4b0bae02b4094b1318de",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_f6052b841e4c4b0bae02b4094b1318de_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_f6052b841e4c4b0bae02b4094b1318de_feminine.png"
+    }
+  },
+  {
+    "author": "rdcooley",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 3882160.0,
+    "file": "obj_5e88595b20004658bba018f9b6878920.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "1bf97308e7f5905fe1db07025fd92216979e5e06ce03be8e048921bd2a3dfc18",
+    "id": "obj_5e88595b20004658bba018f9b6878920",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet1",
+    "original_name": "Helmet1",
+    "path": "res://assets/characters/wardrobe/library/models/obj_5e88595b20004658bba018f9b6878920.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "rdcooley · CC BY · Objaverse / Sketchfab",
+    "triangles": 2242.0,
+    "url": "https://sketchfab.com/3d-models/5e88595b20004658bba018f9b6878920",
+    "value": "Pavlov:obj_5e88595b20004658bba018f9b6878920",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_5e88595b20004658bba018f9b6878920_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_5e88595b20004658bba018f9b6878920_feminine.png"
+    }
+  },
+  {
+    "author": "Tomislav Tomljenović",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 6002944.0,
+    "file": "obj_7419e5a6654d4dd79e8da2c4f1170b92.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "21b826d6e80da177a62f5ad6def48f68144e069cc0975f92824e0ecf11618377",
+    "id": "obj_7419e5a6654d4dd79e8da2c4f1170b92",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "German WW1 Helmet",
+    "original_name": "German WW1 Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_7419e5a6654d4dd79e8da2c4f1170b92.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Tomislav Tomljenović · CC BY · Objaverse / Sketchfab",
+    "triangles": 2128.0,
+    "url": "https://sketchfab.com/3d-models/7419e5a6654d4dd79e8da2c4f1170b92",
+    "value": "Pavlov:obj_7419e5a6654d4dd79e8da2c4f1170b92",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_7419e5a6654d4dd79e8da2c4f1170b92_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_7419e5a6654d4dd79e8da2c4f1170b92_feminine.png"
+    }
+  },
+  {
+    "author": "Netrix",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2982792.0,
+    "file": "obj_65a9decce2ad43ba97f36c622cafa613.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "aa24d1ca807a8c4c5561389a5ae924bf84f97cbd89d176f53347d96e5d6ac944",
+    "id": "obj_65a9decce2ad43ba97f36c622cafa613",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "helmet vietnam war",
+    "original_name": "helmet vietnam war",
+    "path": "res://assets/characters/wardrobe/library/models/obj_65a9decce2ad43ba97f36c622cafa613.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Netrix · CC BY · Objaverse / Sketchfab",
+    "triangles": 2310.0,
+    "url": "https://sketchfab.com/3d-models/65a9decce2ad43ba97f36c622cafa613",
+    "value": "Pavlov:obj_65a9decce2ad43ba97f36c622cafa613",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_65a9decce2ad43ba97f36c622cafa613_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_65a9decce2ad43ba97f36c622cafa613_feminine.png"
+    }
+  },
+  {
+    "author": "HaizorWill",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4339340.0,
+    "file": "obj_ad5907514a5343e3aca5ae0357b485a3.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "230157054faad8e7379fa54914de54cbf0e8acaec3a42287f05e8a6e71d621f1",
+    "id": "obj_ad5907514a5343e3aca5ae0357b485a3",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "MICH 2001 military helmet",
+    "original_name": "MICH 2001 military helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_ad5907514a5343e3aca5ae0357b485a3.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "HaizorWill · CC BY · Objaverse / Sketchfab",
+    "triangles": 2088.0,
+    "url": "https://sketchfab.com/3d-models/ad5907514a5343e3aca5ae0357b485a3",
+    "value": "Pavlov:obj_ad5907514a5343e3aca5ae0357b485a3",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_ad5907514a5343e3aca5ae0357b485a3_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_ad5907514a5343e3aca5ae0357b485a3_feminine.png"
+    }
+  },
+  {
+    "author": "MoonSun41",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 75616.0,
+    "file": "obj_bbd39b424eee4a028c966bc9cdd55edd.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "4786734aa1bf725a01c61454fe0fab45fb79f7395aabb0fa6ad4f78f4cada96a",
+    "id": "obj_bbd39b424eee4a028c966bc9cdd55edd",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Simple Medieval Guard Helmet",
+    "original_name": "Simple Medieval Guard Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_bbd39b424eee4a028c966bc9cdd55edd.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "MoonSun41 · CC BY · Objaverse / Sketchfab",
+    "triangles": 2320.0,
+    "url": "https://sketchfab.com/3d-models/bbd39b424eee4a028c966bc9cdd55edd",
+    "value": "Pavlov:obj_bbd39b424eee4a028c966bc9cdd55edd",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_bbd39b424eee4a028c966bc9cdd55edd_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_bbd39b424eee4a028c966bc9cdd55edd_feminine.png"
+    }
+  },
+  {
+    "author": "Jonas André",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 803676.0,
+    "file": "obj_b2f9c198e30043f09170fa4eef12733a.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "36d9a15d25b30490f3fc8c1aa4dbca21c95e0deb9f1f21eb72b498d2529da8ee",
+    "id": "obj_b2f9c198e30043f09170fa4eef12733a",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval helmet (2)",
+    "original_name": "Medieval helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_b2f9c198e30043f09170fa4eef12733a.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Jonas André · CC BY · Objaverse / Sketchfab",
+    "triangles": 2326.0,
+    "url": "https://sketchfab.com/3d-models/b2f9c198e30043f09170fa4eef12733a",
+    "value": "Pavlov:obj_b2f9c198e30043f09170fa4eef12733a",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_b2f9c198e30043f09170fa4eef12733a_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_b2f9c198e30043f09170fa4eef12733a_feminine.png"
+    }
+  },
+  {
+    "author": "infectedfury",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helm"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1690012.0,
+    "file": "obj_25461fb372fe4ed0887fca7a1de20f01.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5404238c4894305635763c3b6aef5e5feb6ebdac780fbb031a8b69a252102251",
+    "id": "obj_25461fb372fe4ed0887fca7a1de20f01",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci fi Dome Helm",
+    "original_name": "Sci fi Dome Helm",
+    "path": "res://assets/characters/wardrobe/library/models/obj_25461fb372fe4ed0887fca7a1de20f01.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "infectedfury · CC BY · Objaverse / Sketchfab",
+    "triangles": 2332.0,
+    "url": "https://sketchfab.com/3d-models/25461fb372fe4ed0887fca7a1de20f01",
+    "value": "Pavlov:obj_25461fb372fe4ed0887fca7a1de20f01",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_25461fb372fe4ed0887fca7a1de20f01_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_25461fb372fe4ed0887fca7a1de20f01_feminine.png"
+    }
+  },
+  {
+    "author": "le0tard",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1897728.0,
+    "file": "obj_a8813ea1e0ce47ab97a416637a7520d7.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "983282234e565d6f7eb9580a96fef28a999a1b219c661a7cbc512f09d624f804",
+    "id": "obj_a8813ea1e0ce47ab97a416637a7520d7",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mandalorian Helmet (3)",
+    "original_name": "Mandalorian Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_a8813ea1e0ce47ab97a416637a7520d7.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "le0tard · CC BY · Objaverse / Sketchfab",
+    "triangles": 2346.0,
+    "url": "https://sketchfab.com/3d-models/a8813ea1e0ce47ab97a416637a7520d7",
+    "value": "Pavlov:obj_a8813ea1e0ce47ab97a416637a7520d7",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_a8813ea1e0ce47ab97a416637a7520d7_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_a8813ea1e0ce47ab97a416637a7520d7_feminine.png"
+    }
+  },
+  {
+    "author": "Adriancgmask",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4107304.0,
+    "file": "obj_e8d501c7729246fd92d55083d80d8cbb.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "89857dfb32223b12cf7c09c7fe376e8c25f0a25a5b8883731bab96358627fd8e",
+    "id": "obj_e8d501c7729246fd92d55083d80d8cbb",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "SPARTA HELMET (2)",
+    "original_name": "SPARTA HELMET",
+    "path": "res://assets/characters/wardrobe/library/models/obj_e8d501c7729246fd92d55083d80d8cbb.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Adriancgmask · CC BY · Objaverse / Sketchfab",
+    "triangles": 2348.0,
+    "url": "https://sketchfab.com/3d-models/e8d501c7729246fd92d55083d80d8cbb",
+    "value": "Pavlov:obj_e8d501c7729246fd92d55083d80d8cbb",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_e8d501c7729246fd92d55083d80d8cbb_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_e8d501c7729246fd92d55083d80d8cbb_feminine.png"
+    }
+  },
+  {
+    "author": "Simon Pasi",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3241656.0,
+    "file": "obj_20bca941712d48fbbc8759c17ff28b8c.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a69c87f13c1ba0888d47627ddc934aaab387fab75c04c0888c0c7179659ba2fb",
+    "id": "obj_20bca941712d48fbbc8759c17ff28b8c",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Hiccup's helmet",
+    "original_name": "Hiccup's helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_20bca941712d48fbbc8759c17ff28b8c.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Simon Pasi · CC BY · Objaverse / Sketchfab",
+    "triangles": 2352.0,
+    "url": "https://sketchfab.com/3d-models/20bca941712d48fbbc8759c17ff28b8c",
+    "value": "Pavlov:obj_20bca941712d48fbbc8759c17ff28b8c",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_20bca941712d48fbbc8759c17ff28b8c_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_20bca941712d48fbbc8759c17ff28b8c_feminine.png"
+    }
+  },
+  {
+    "author": "Spyros Frigas",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helm",
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2649592.0,
+    "file": "obj_e22b00ad710043bea3ed2845491f14b7.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "7cf11615a94cc84785591cc3747024550460ad3414aba514f56389b2187fa3d2",
+    "id": "obj_e22b00ad710043bea3ed2845491f14b7",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Azur's Crown Helm",
+    "original_name": "Azur's Crown Helm",
+    "path": "res://assets/characters/wardrobe/library/models/obj_e22b00ad710043bea3ed2845491f14b7.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Spyros Frigas · CC BY · Objaverse / Sketchfab",
+    "triangles": 2368.0,
+    "url": "https://sketchfab.com/3d-models/e22b00ad710043bea3ed2845491f14b7",
+    "value": "Pavlov:obj_e22b00ad710043bea3ed2845491f14b7",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_e22b00ad710043bea3ed2845491f14b7_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_e22b00ad710043bea3ed2845491f14b7_feminine.png"
+    }
+  },
+  {
+    "author": "dyran",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 443340.0,
+    "file": "obj_92957df2d674478e8f4ae7650b698946.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "dd9d4de8d226340043f6db03f982ca28af6a2579804f77257a1ecd30b9ad4f8a",
+    "id": "obj_92957df2d674478e8f4ae7650b698946",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Spartanhelmet",
+    "original_name": "Spartanhelmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_92957df2d674478e8f4ae7650b698946.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "dyran · CC BY · Objaverse / Sketchfab",
+    "triangles": 2008.0,
+    "url": "https://sketchfab.com/3d-models/92957df2d674478e8f4ae7650b698946",
+    "value": "Pavlov:obj_92957df2d674478e8f4ae7650b698946",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_92957df2d674478e8f4ae7650b698946_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_92957df2d674478e8f4ae7650b698946_feminine.png"
+    }
+  },
+  {
+    "author": "Deewad",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1290852.0,
+    "file": "obj_69181b94800140b5954819c9a052eaa8.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "de5121c5210776e0f53b5e0a573b3a4b6fcda907b16b1a66ba31e96ca48e832b",
+    "id": "obj_69181b94800140b5954819c9a052eaa8",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Horned Helmet",
+    "original_name": "Horned Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_69181b94800140b5954819c9a052eaa8.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Deewad · CC BY · Objaverse / Sketchfab",
+    "triangles": 2000.0,
+    "url": "https://sketchfab.com/3d-models/69181b94800140b5954819c9a052eaa8",
+    "value": "Pavlov:obj_69181b94800140b5954819c9a052eaa8",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_69181b94800140b5954819c9a052eaa8_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_69181b94800140b5954819c9a052eaa8_feminine.png"
+    }
+  },
+  {
+    "author": "Abimael Gonzalez",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2531276.0,
+    "file": "obj_5f36e167b2ab46209c4a2750d8e21035.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "2f223fd1955b18a7cefab3796b6181dd0634add643d1bf06af5fb871036c02a8",
+    "id": "obj_5f36e167b2ab46209c4a2750d8e21035",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet (63)",
+    "original_name": "Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_5f36e167b2ab46209c4a2750d8e21035.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Abimael Gonzalez · CC BY · Objaverse / Sketchfab",
+    "triangles": 2404.0,
+    "url": "https://sketchfab.com/3d-models/5f36e167b2ab46209c4a2750d8e21035",
+    "value": "Pavlov:obj_5f36e167b2ab46209c4a2750d8e21035",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_5f36e167b2ab46209c4a2750d8e21035_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_5f36e167b2ab46209c4a2750d8e21035_feminine.png"
+    }
+  },
+  {
+    "author": "Efarys",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3374112.0,
+    "file": "obj_de59443d3e6344d8b2d51936ce5a91d9.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "7461a05c4d91ff8dc55b0a996aee4ab3cface678bb0f22e6316b208f791812aa",
+    "id": "obj_de59443d3e6344d8b2d51936ce5a91d9",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Inquisitor's Helmet",
+    "original_name": "Inquisitor's Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_de59443d3e6344d8b2d51936ce5a91d9.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Efarys · CC BY · Objaverse / Sketchfab",
+    "triangles": 2427.0,
+    "url": "https://sketchfab.com/3d-models/de59443d3e6344d8b2d51936ce5a91d9",
+    "value": "Pavlov:obj_de59443d3e6344d8b2d51936ce5a91d9",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_de59443d3e6344d8b2d51936ce5a91d9_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_de59443d3e6344d8b2d51936ce5a91d9_feminine.png"
+    }
+  },
+  {
+    "author": "TheWarArmoury",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1540316.0,
+    "file": "obj_4a2cb660185340d8a1adc526a6b01c37.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "6127023a958f8f75e5b08cda00e81ce230b6efff59826c47194f65cf4bdea37c",
+    "id": "obj_4a2cb660185340d8a1adc526a6b01c37",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet (54)",
+    "original_name": "Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_4a2cb660185340d8a1adc526a6b01c37.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "TheWarArmoury · CC BY · Objaverse / Sketchfab",
+    "triangles": 1956.0,
+    "url": "https://sketchfab.com/3d-models/4a2cb660185340d8a1adc526a6b01c37",
+    "value": "Pavlov:obj_4a2cb660185340d8a1adc526a6b01c37",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_4a2cb660185340d8a1adc526a6b01c37_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_4a2cb660185340d8a1adc526a6b01c37_feminine.png"
+    }
+  },
+  {
+    "author": "MR.Sirapop",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1429148.0,
+    "file": "obj_bd72919ce807487db11092781b23e51b.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a462825f20c7a23789a8cbf27a93f6272e03f7034546fc90f2b07c1e8400f2d0",
+    "id": "obj_bd72919ce807487db11092781b23e51b",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Helmet (50)",
+    "original_name": "Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_bd72919ce807487db11092781b23e51b.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "MR.Sirapop · CC BY · Objaverse / Sketchfab",
+    "triangles": 1924.0,
+    "url": "https://sketchfab.com/3d-models/bd72919ce807487db11092781b23e51b",
+    "value": "Pavlov:obj_bd72919ce807487db11092781b23e51b",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_bd72919ce807487db11092781b23e51b_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_bd72919ce807487db11092781b23e51b_feminine.png"
+    }
+  },
+  {
+    "author": "SkyeSladeUT",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 103488.0,
+    "file": "obj_4ca4ec79ab224114aa015184b7af8af6.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "73db52cfa44d2e2e03126134407174b8a3838a5849b2c281158ee2f6388e628f",
+    "id": "obj_4ca4ec79ab224114aa015184b7af8af6",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Loki Helmet",
+    "original_name": "Loki Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_4ca4ec79ab224114aa015184b7af8af6.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "SkyeSladeUT · CC BY · Objaverse / Sketchfab",
+    "triangles": 2480.0,
+    "url": "https://sketchfab.com/3d-models/4ca4ec79ab224114aa015184b7af8af6",
+    "value": "Pavlov:obj_4ca4ec79ab224114aa015184b7af8af6",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_4ca4ec79ab224114aa015184b7af8af6_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_4ca4ec79ab224114aa015184b7af8af6_feminine.png"
+    }
+  },
+  {
+    "author": "Christopher_R_Peterson",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2140616.0,
+    "file": "obj_f719e6cbbdf34716ae4a26508bb2b601.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "fa451b05a47b9b7da7e70228ee3d736197f8efef93c057db12938cd193dfd700",
+    "id": "obj_f719e6cbbdf34716ae4a26508bb2b601",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval Helmet ACG",
+    "original_name": "Medieval Helmet ACG",
+    "path": "res://assets/characters/wardrobe/library/models/obj_f719e6cbbdf34716ae4a26508bb2b601.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Christopher_R_Peterson · CC BY · Objaverse / Sketchfab",
+    "triangles": 2496.0,
+    "url": "https://sketchfab.com/3d-models/f719e6cbbdf34716ae4a26508bb2b601",
+    "value": "Pavlov:obj_f719e6cbbdf34716ae4a26508bb2b601",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_f719e6cbbdf34716ae4a26508bb2b601_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_f719e6cbbdf34716ae4a26508bb2b601_feminine.png"
+    }
+  },
+  {
+    "author": "LuisAR",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "helmet"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 866140.0,
+    "file": "obj_7fd18af9af9741cf9005fb99b9a51323.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "bc5517f0ad91da3626aa3680867f76f30886f001b9a60b66718f0474022044c0",
+    "id": "obj_7fd18af9af9741cf9005fb99b9a51323",
+    "kind": "helmet",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "ODST Helmet",
+    "original_name": "ODST Helmet",
+    "path": "res://assets/characters/wardrobe/library/models/obj_7fd18af9af9741cf9005fb99b9a51323.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "LuisAR · CC BY · Objaverse / Sketchfab",
+    "triangles": 2508.0,
+    "url": "https://sketchfab.com/3d-models/7fd18af9af9741cf9005fb99b9a51323",
+    "value": "Pavlov:obj_7fd18af9af9741cf9005fb99b9a51323",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_7fd18af9af9741cf9005fb99b9a51323_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_7fd18af9af9741cf9005fb99b9a51323_feminine.png"
+    }
+  },
+  {
+    "author": "TheoClarke",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 121728.0,
+    "file": "obj_6d1a92514b6b4dbaaee2e28cbcb365b9.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "3f9dfa99c48876cd970f45cf759cee7eef6d67c1c3f875a9e92370a90f34af53",
+    "id": "obj_6d1a92514b6b4dbaaee2e28cbcb365b9",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Simple Low Poly Crown (for Global Game Jam 2020)",
+    "original_name": "Simple Low Poly Crown (for Global Game Jam 2020)",
+    "path": "res://assets/characters/wardrobe/library/models/obj_6d1a92514b6b4dbaaee2e28cbcb365b9.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "TheoClarke · CC BY · Objaverse / Sketchfab",
+    "triangles": 1288.0,
+    "url": "https://sketchfab.com/3d-models/6d1a92514b6b4dbaaee2e28cbcb365b9",
+    "value": "Pavlov:obj_6d1a92514b6b4dbaaee2e28cbcb365b9",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_6d1a92514b6b4dbaaee2e28cbcb365b9_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_6d1a92514b6b4dbaaee2e28cbcb365b9_feminine.png"
+    }
+  },
+  {
+    "author": "ProvokeXero",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 296116.0,
+    "file": "obj_736fd22de2d540ea98af1364991dc8b5.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "8865e137efd0e4034f69928839cc963d59740c9e0232fd0003d1b33076e9b649",
+    "id": "obj_736fd22de2d540ea98af1364991dc8b5",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Crown (1)",
+    "original_name": "Low Poly Crown",
+    "path": "res://assets/characters/wardrobe/library/models/obj_736fd22de2d540ea98af1364991dc8b5.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "ProvokeXero · CC BY · Objaverse / Sketchfab",
+    "triangles": 3712.0,
+    "url": "https://sketchfab.com/3d-models/736fd22de2d540ea98af1364991dc8b5",
+    "value": "Pavlov:obj_736fd22de2d540ea98af1364991dc8b5",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_736fd22de2d540ea98af1364991dc8b5_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_736fd22de2d540ea98af1364991dc8b5_feminine.png"
+    }
+  },
+  {
+    "author": "Ret.ouchs",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2776284.0,
+    "file": "obj_df65e2b6c7b04354b3a6f9110b277e56.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "76b120919274b060c9fdba68339db185e7dc9d2684a44280a68327613f0d5b58",
+    "id": "obj_df65e2b6c7b04354b3a6f9110b277e56",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "stylized crown damaged",
+    "original_name": "stylized crown damaged",
+    "path": "res://assets/characters/wardrobe/library/models/obj_df65e2b6c7b04354b3a6f9110b277e56.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Ret.ouchs · CC BY · Objaverse / Sketchfab",
+    "triangles": 17899.0,
+    "url": "https://sketchfab.com/3d-models/df65e2b6c7b04354b3a6f9110b277e56",
+    "value": "Pavlov:obj_df65e2b6c7b04354b3a6f9110b277e56",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_df65e2b6c7b04354b3a6f9110b277e56_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_df65e2b6c7b04354b3a6f9110b277e56_feminine.png"
+    }
+  },
+  {
+    "author": "DanteML",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "hat"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1668360.0,
+    "file": "obj_11ac0f3af0d342f687074c287cc24fd9.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "81205880857c377da2af5e3802aac8d30c27ea48ba174b0dea5798c81a0c4e62",
+    "id": "obj_11ac0f3af0d342f687074c287cc24fd9",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mages Hat",
+    "original_name": "Mages Hat",
+    "path": "res://assets/characters/wardrobe/library/models/obj_11ac0f3af0d342f687074c287cc24fd9.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "DanteML · CC BY · Objaverse / Sketchfab",
+    "triangles": 2048.0,
+    "url": "https://sketchfab.com/3d-models/11ac0f3af0d342f687074c287cc24fd9",
+    "value": "Pavlov:obj_11ac0f3af0d342f687074c287cc24fd9",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_11ac0f3af0d342f687074c287cc24fd9_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_11ac0f3af0d342f687074c287cc24fd9_feminine.png"
+    }
+  },
+  {
+    "author": "DURVESH S",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 71284.0,
+    "file": "obj_78db98b8d5f746058530afbaae719197.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "91e9662811c2261f69da29fa663ba7f1d15aa297f3c8a0bb6e00d82def392bfb",
+    "id": "obj_78db98b8d5f746058530afbaae719197",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "KING'S CROWN",
+    "original_name": "KING'S CROWN",
+    "path": "res://assets/characters/wardrobe/library/models/obj_78db98b8d5f746058530afbaae719197.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "DURVESH S · CC BY · Objaverse / Sketchfab",
+    "triangles": 2654.0,
+    "url": "https://sketchfab.com/3d-models/78db98b8d5f746058530afbaae719197",
+    "value": "Pavlov:obj_78db98b8d5f746058530afbaae719197",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_78db98b8d5f746058530afbaae719197_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_78db98b8d5f746058530afbaae719197_feminine.png"
+    }
+  },
+  {
+    "author": "chroma3d",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "hat"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 74208.0,
+    "file": "obj_a75289462fb743d1b00fed586f101b7c.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "cc41ac266041a5609afce1083e06cff034c8343f26a230f07fd87f5201cca27f",
+    "id": "obj_a75289462fb743d1b00fed586f101b7c",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Cartoon Cowboy Hat Free",
+    "original_name": "Low Poly Cartoon Cowboy Hat Free",
+    "path": "res://assets/characters/wardrobe/library/models/obj_a75289462fb743d1b00fed586f101b7c.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "chroma3d · CC BY · Objaverse / Sketchfab",
+    "triangles": 2832.0,
+    "url": "https://sketchfab.com/3d-models/a75289462fb743d1b00fed586f101b7c",
+    "value": "Pavlov:obj_a75289462fb743d1b00fed586f101b7c",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_a75289462fb743d1b00fed586f101b7c_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_a75289462fb743d1b00fed586f101b7c_feminine.png"
+    }
+  },
+  {
+    "author": "Mister-Smash",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1982108.0,
+    "file": "obj_a01505c752944647956037757a1a93f7.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "e22d9c79ad656cab12ae33844802e0e572721423ced6215d7f4a1aea2e915d36",
+    "id": "obj_a01505c752944647956037757a1a93f7",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Crown rich (gold)",
+    "original_name": "Crown rich (gold)",
+    "path": "res://assets/characters/wardrobe/library/models/obj_a01505c752944647956037757a1a93f7.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Mister-Smash · CC BY · Objaverse / Sketchfab",
+    "triangles": 1550.0,
+    "url": "https://sketchfab.com/3d-models/a01505c752944647956037757a1a93f7",
+    "value": "Pavlov:obj_a01505c752944647956037757a1a93f7",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_a01505c752944647956037757a1a93f7_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_a01505c752944647956037757a1a93f7_feminine.png"
+    }
+  },
+  {
+    "author": "Stephanus Tavilrond",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "crown"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1726572.0,
+    "file": "obj_45d96f2f0e124ae8b06293add20991de.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "aac5e77db7eace4666cfa25ba977aa855a9d9e28b56185d8ff04463e965fb2f9",
+    "id": "obj_45d96f2f0e124ae8b06293add20991de",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Queen's Crown",
+    "original_name": "Queen's Crown",
+    "path": "res://assets/characters/wardrobe/library/models/obj_45d96f2f0e124ae8b06293add20991de.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Stephanus Tavilrond · CC BY · Objaverse / Sketchfab",
+    "triangles": 1536.0,
+    "url": "https://sketchfab.com/3d-models/45d96f2f0e124ae8b06293add20991de",
+    "value": "Pavlov:obj_45d96f2f0e124ae8b06293add20991de",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_45d96f2f0e124ae8b06293add20991de_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_45d96f2f0e124ae8b06293add20991de_feminine.png"
+    }
+  },
+  {
+    "author": "Yanez Designs",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "hat"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3736632.0,
+    "file": "obj_16c504d81f5843c3985d7f208c27b79a.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "04165b52e40f898144c51d128468cc27e80ffdfd55110dbe4cec8ac85585bed0",
+    "id": "obj_16c504d81f5843c3985d7f208c27b79a",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Cowboy Hat",
+    "original_name": "Low Poly Cowboy Hat",
+    "path": "res://assets/characters/wardrobe/library/models/obj_16c504d81f5843c3985d7f208c27b79a.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Yanez Designs · CC BY · Objaverse / Sketchfab",
+    "triangles": 1312.0,
+    "url": "https://sketchfab.com/3d-models/16c504d81f5843c3985d7f208c27b79a",
+    "value": "Pavlov:obj_16c504d81f5843c3985d7f208c27b79a",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_16c504d81f5843c3985d7f208c27b79a_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_16c504d81f5843c3985d7f208c27b79a_feminine.png"
+    }
+  },
+  {
+    "author": "Dimitrios.Ververidis",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "hat"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 98964.0,
+    "file": "obj_1f4fa3b947474d4ead7d9d054a8032cd.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b93873cdaee3abcf1c646d7693db2237080bddf08d832d78acd6c26be3d75fb4",
+    "id": "obj_1f4fa3b947474d4ead7d9d054a8032cd",
+    "kind": "hat",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Wizard Hat Low Poly",
+    "original_name": "Wizard Hat Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_1f4fa3b947474d4ead7d9d054a8032cd.glb",
+    "runtime": true,
+    "slot": "wardrobe_hat",
+    "source": "Dimitrios.Ververidis · CC BY · Objaverse / Sketchfab",
+    "triangles": 1282.0,
+    "url": "https://sketchfab.com/3d-models/1f4fa3b947474d4ead7d9d054a8032cd",
+    "value": "Pavlov:obj_1f4fa3b947474d4ead7d9d054a8032cd",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_1f4fa3b947474d4ead7d9d054a8032cd_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_1f4fa3b947474d4ead7d9d054a8032cd_feminine.png"
+    }
+  },
+  {
+    "author": "Troels BP",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1083252.0,
+    "file": "obj_4f9a1f4034c843bbb46ddc44758d379c.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "6d0283e8836b5fd30e4890b7b5b75029573633eec40db0eea34734f77301878b",
+    "id": "obj_4f9a1f4034c843bbb46ddc44758d379c",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Dancing Mask from Bali - Low poly version",
+    "original_name": "Dancing Mask from Bali - Low poly version",
+    "path": "res://assets/characters/wardrobe/library/models/obj_4f9a1f4034c843bbb46ddc44758d379c.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Troels BP · CC BY · Objaverse / Sketchfab",
+    "triangles": 2467.0,
+    "url": "https://sketchfab.com/3d-models/4f9a1f4034c843bbb46ddc44758d379c",
+    "value": "Pavlov:obj_4f9a1f4034c843bbb46ddc44758d379c",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_4f9a1f4034c843bbb46ddc44758d379c_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_4f9a1f4034c843bbb46ddc44758d379c_feminine.png"
+    }
+  },
+  {
+    "author": "a.perezneila",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2185436.0,
+    "file": "obj_076d3247d1804814895e4175727d76a2.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5d508b669891976fb81d3bf0281c63dc8bb1bc2239b82713e2e222daa4572760",
+    "id": "obj_076d3247d1804814895e4175727d76a2",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Warrior Mask",
+    "original_name": "Warrior Mask",
+    "path": "res://assets/characters/wardrobe/library/models/obj_076d3247d1804814895e4175727d76a2.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "a.perezneila · CC BY · Objaverse / Sketchfab",
+    "triangles": 2568.0,
+    "url": "https://sketchfab.com/3d-models/076d3247d1804814895e4175727d76a2",
+    "value": "Pavlov:obj_076d3247d1804814895e4175727d76a2",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_076d3247d1804814895e4175727d76a2_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_076d3247d1804814895e4175727d76a2_feminine.png"
+    }
+  },
+  {
+    "author": "thanoskt",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 576188.0,
+    "file": "obj_e4f4bdea1c3744e4baf27e15d80cb5d5.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "660b673976b63a659e3dc773a82ec2d2aa29ba65c38918657eafebd9b6e453aa",
+    "id": "obj_e4f4bdea1c3744e4baf27e15d80cb5d5",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Oni Mask Low Poly",
+    "original_name": "Oni Mask Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_e4f4bdea1c3744e4baf27e15d80cb5d5.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "thanoskt · CC BY · Objaverse / Sketchfab",
+    "triangles": 1530.0,
+    "url": "https://sketchfab.com/3d-models/e4f4bdea1c3744e4baf27e15d80cb5d5",
+    "value": "Pavlov:obj_e4f4bdea1c3744e4baf27e15d80cb5d5",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_e4f4bdea1c3744e4baf27e15d80cb5d5_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_e4f4bdea1c3744e4baf27e15d80cb5d5_feminine.png"
+    }
+  },
+  {
+    "author": "Nicolás Sazo",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2824780.0,
+    "file": "obj_efa48df1182d47ab9ebf7eafa571f536.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "d2b4e76c74d3ccde700c8fd6e8c2ee2d906a0113dbd5aea6303d339e01036264",
+    "id": "obj_efa48df1182d47ab9ebf7eafa571f536",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Jaguar Warrior Mask",
+    "original_name": "Jaguar Warrior Mask",
+    "path": "res://assets/characters/wardrobe/library/models/obj_efa48df1182d47ab9ebf7eafa571f536.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Nicolás Sazo · CC BY · Objaverse / Sketchfab",
+    "triangles": 3772.0,
+    "url": "https://sketchfab.com/3d-models/efa48df1182d47ab9ebf7eafa571f536",
+    "value": "Pavlov:obj_efa48df1182d47ab9ebf7eafa571f536",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_efa48df1182d47ab9ebf7eafa571f536_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_efa48df1182d47ab9ebf7eafa571f536_feminine.png"
+    }
+  },
+  {
+    "author": "Matthew_Games",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1909220.0,
+    "file": "obj_c7e0e5820f6a4df196060bc55d857350.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "ebbb348773e858ff41da01601f5559501ab7630d4b8904739d10cdb207ebad1d",
+    "id": "obj_c7e0e5820f6a4df196060bc55d857350",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Cyberpunk Stylized Mask",
+    "original_name": "Cyberpunk Stylized Mask",
+    "path": "res://assets/characters/wardrobe/library/models/obj_c7e0e5820f6a4df196060bc55d857350.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Matthew_Games · CC BY · Objaverse / Sketchfab",
+    "triangles": 4135.0,
+    "url": "https://sketchfab.com/3d-models/c7e0e5820f6a4df196060bc55d857350",
+    "value": "Pavlov:obj_c7e0e5820f6a4df196060bc55d857350",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_c7e0e5820f6a4df196060bc55d857350_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_c7e0e5820f6a4df196060bc55d857350_feminine.png"
+    }
+  },
+  {
+    "author": "MattMakesSwords",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3536924.0,
+    "file": "obj_a4cea22eddbf4e3fa7dd8d622642e635.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "2f8fcccafc6bd0c260481a8ff9f1bb6883d5aa8735e11b9f5c593801e11fe38a",
+    "id": "obj_a4cea22eddbf4e3fa7dd8d622642e635",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Russian GP-5  Gas Mask - (Filter Damaged)",
+    "original_name": "Russian GP-5  Gas Mask - (Filter Damaged)",
+    "path": "res://assets/characters/wardrobe/library/models/obj_a4cea22eddbf4e3fa7dd8d622642e635.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "MattMakesSwords · CC BY · Objaverse / Sketchfab",
+    "triangles": 4712.0,
+    "url": "https://sketchfab.com/3d-models/a4cea22eddbf4e3fa7dd8d622642e635",
+    "value": "Pavlov:obj_a4cea22eddbf4e3fa7dd8d622642e635",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_a4cea22eddbf4e3fa7dd8d622642e635_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_a4cea22eddbf4e3fa7dd8d622642e635_feminine.png"
+    }
+  },
+  {
+    "author": "Eques_inferno",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3319632.0,
+    "file": "obj_da21beea26034da9b889ec075bec6207.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "75587ed8b20c04224f0537e73a1c8c1ece4f00ade02c8112947d53e13caffe2c",
+    "id": "obj_da21beea26034da9b889ec075bec6207",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Japanese demon mask",
+    "original_name": "Japanese demon mask",
+    "path": "res://assets/characters/wardrobe/library/models/obj_da21beea26034da9b889ec075bec6207.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Eques_inferno · CC BY · Objaverse / Sketchfab",
+    "triangles": 7018.0,
+    "url": "https://sketchfab.com/3d-models/da21beea26034da9b889ec075bec6207",
+    "value": "Pavlov:obj_da21beea26034da9b889ec075bec6207",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_da21beea26034da9b889ec075bec6207_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_da21beea26034da9b889ec075bec6207_feminine.png"
+    }
+  },
+  {
+    "author": "vicente betoret ferrero",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 1518584.0,
+    "file": "obj_81a29e5a879b46209cc090797aceb624.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "04fcbf15be9d15704cf383c442773b0a1899cde3c0f5f5ca0a4c7c89846c3508",
+    "id": "obj_81a29e5a879b46209cc090797aceb624",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mascara Tribal low poly",
+    "original_name": "Mascara Tribal low poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_81a29e5a879b46209cc090797aceb624.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "vicente betoret ferrero · CC BY · Objaverse / Sketchfab",
+    "triangles": 9410.0,
+    "url": "https://sketchfab.com/3d-models/81a29e5a879b46209cc090797aceb624",
+    "value": "Pavlov:obj_81a29e5a879b46209cc090797aceb624",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_81a29e5a879b46209cc090797aceb624_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_81a29e5a879b46209cc090797aceb624_feminine.png"
+    }
+  },
+  {
+    "author": "vicente betoret ferrero",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1470784.0,
+    "file": "obj_121e1f848b4c44539518278dd0883df1.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "3f356cf0f6d27d5521258805d14466039330dce624bff0ba2f98901bafa67112",
+    "id": "obj_121e1f848b4c44539518278dd0883df1",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mardi Gras mask 2 low poly",
+    "original_name": "Mardi Gras mask 2 low poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_121e1f848b4c44539518278dd0883df1.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "vicente betoret ferrero · CC BY · Objaverse / Sketchfab",
+    "triangles": 9732.0,
+    "url": "https://sketchfab.com/3d-models/121e1f848b4c44539518278dd0883df1",
+    "value": "Pavlov:obj_121e1f848b4c44539518278dd0883df1",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_121e1f848b4c44539518278dd0883df1_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_121e1f848b4c44539518278dd0883df1_feminine.png"
+    }
+  },
+  {
+    "author": "vicente betoret ferrero",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 1355084.0,
+    "file": "obj_3b84e76775884c06a2c0d406bc594d3d.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "49072af7eb302155e579740d32e5a0c4d6a5703aa0ed0c238ae3c8c5b23e598d",
+    "id": "obj_3b84e76775884c06a2c0d406bc594d3d",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mascara Africana low poly",
+    "original_name": "Mascara Africana low poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_3b84e76775884c06a2c0d406bc594d3d.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "vicente betoret ferrero · CC BY · Objaverse / Sketchfab",
+    "triangles": 10146.0,
+    "url": "https://sketchfab.com/3d-models/3b84e76775884c06a2c0d406bc594d3d",
+    "value": "Pavlov:obj_3b84e76775884c06a2c0d406bc594d3d",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_3b84e76775884c06a2c0d406bc594d3d_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_3b84e76775884c06a2c0d406bc594d3d_feminine.png"
+    }
+  },
+  {
+    "author": "Francesco Coldesina",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "mask"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1615656.0,
+    "file": "obj_549c1a8e175848df82e24a08705ce08d.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a8730f17ef483876a0d324f8ac00cce56ab57ed7426e85f6738ae420e8a624a6",
+    "id": "obj_549c1a8e175848df82e24a08705ce08d",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mask Buthan Low Poly",
+    "original_name": "Mask Buthan Low Poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_549c1a8e175848df82e24a08705ce08d.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Francesco Coldesina · CC BY · Objaverse / Sketchfab",
+    "triangles": 12931.0,
+    "url": "https://sketchfab.com/3d-models/549c1a8e175848df82e24a08705ce08d",
+    "value": "Pavlov:obj_549c1a8e175848df82e24a08705ce08d",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_549c1a8e175848df82e24a08705ce08d_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_549c1a8e175848df82e24a08705ce08d_feminine.png"
+    }
+  },
+  {
+    "author": "vicente betoret ferrero",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 1601612.0,
+    "file": "obj_14544265adc647138cc6ad87289029ec.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "c301386efa90007613ef9926a99b0fc36d99d20b732a92e9bd5816a4b17ebe77",
+    "id": "obj_14544265adc647138cc6ad87289029ec",
+    "kind": "mask",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Mascara Maya low poly",
+    "original_name": "Mascara Maya low poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_14544265adc647138cc6ad87289029ec.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "vicente betoret ferrero · CC BY · Objaverse / Sketchfab",
+    "triangles": 12964.0,
+    "url": "https://sketchfab.com/3d-models/14544265adc647138cc6ad87289029ec",
+    "value": "Pavlov:obj_14544265adc647138cc6ad87289029ec",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_14544265adc647138cc6ad87289029ec_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_14544265adc647138cc6ad87289029ec_feminine.png"
+    }
+  },
+  {
+    "author": "S4FIRA",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 23392.0,
+    "file": "obj_b989fd5beb7a4694a67ad4ec3ca31bbd.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "09808e5dd5085f4da4ec0d0575e02b35cad70cc89264eb0198e8c1366849aeab",
+    "id": "obj_b989fd5beb7a4694a67ad4ec3ca31bbd",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Cirlce Glasses LOW POLY",
+    "original_name": "Cirlce Glasses LOW POLY",
+    "path": "res://assets/characters/wardrobe/library/models/obj_b989fd5beb7a4694a67ad4ec3ca31bbd.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "S4FIRA · CC BY · Objaverse / Sketchfab",
+    "triangles": 724.0,
+    "url": "https://sketchfab.com/3d-models/b989fd5beb7a4694a67ad4ec3ca31bbd",
+    "value": "Pavlov:obj_b989fd5beb7a4694a67ad4ec3ca31bbd",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_b989fd5beb7a4694a67ad4ec3ca31bbd_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_b989fd5beb7a4694a67ad4ec3ca31bbd_feminine.png"
+    }
+  },
+  {
+    "author": "Liaval",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 69644.0,
+    "file": "obj_0e23abfdf9cf472d99f204aeac552bf9.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "c334a9fdce3ba5fc0ed5cf81695c804acd4d9b97896179b0a0916ea4afc97933",
+    "id": "obj_0e23abfdf9cf472d99f204aeac552bf9",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Glasses",
+    "original_name": "Low Poly Glasses",
+    "path": "res://assets/characters/wardrobe/library/models/obj_0e23abfdf9cf472d99f204aeac552bf9.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Liaval · CC BY · Objaverse / Sketchfab",
+    "triangles": 484.0,
+    "url": "https://sketchfab.com/3d-models/0e23abfdf9cf472d99f204aeac552bf9",
+    "value": "Pavlov:obj_0e23abfdf9cf472d99f204aeac552bf9",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_0e23abfdf9cf472d99f204aeac552bf9_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_0e23abfdf9cf472d99f204aeac552bf9_feminine.png"
+    }
+  },
+  {
+    "author": "Una.K.C",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1270260.0,
+    "file": "obj_71057be13d3a4b2988b126d529c4bd19.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "3e69981b17f32098238594347257fc9033ab245c670d6d7a91c7a60f4307fad9",
+    "id": "obj_71057be13d3a4b2988b126d529c4bd19",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Glasses (1)",
+    "original_name": "Low Poly Glasses",
+    "path": "res://assets/characters/wardrobe/library/models/obj_71057be13d3a4b2988b126d529c4bd19.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "Una.K.C · CC BY · Objaverse / Sketchfab",
+    "triangles": 388.0,
+    "url": "https://sketchfab.com/3d-models/71057be13d3a4b2988b126d529c4bd19",
+    "value": "Pavlov:obj_71057be13d3a4b2988b126d529c4bd19",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_71057be13d3a4b2988b126d529c4bd19_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_71057be13d3a4b2988b126d529c4bd19_feminine.png"
+    }
+  },
+  {
+    "author": "LortDigital",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 19320.0,
+    "file": "obj_eb9bc6464f9f44cfba403a0cd1dc5cda.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "3d327ed812150d0412b52601bd54bd143a4dd2332281e7346fbe22ebf98abf7d",
+    "id": "obj_eb9bc6464f9f44cfba403a0cd1dc5cda",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Sun Glasses",
+    "original_name": "Low Poly Sun Glasses",
+    "path": "res://assets/characters/wardrobe/library/models/obj_eb9bc6464f9f44cfba403a0cd1dc5cda.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "LortDigital · CC BY · Objaverse / Sketchfab",
+    "triangles": 320.0,
+    "url": "https://sketchfab.com/3d-models/eb9bc6464f9f44cfba403a0cd1dc5cda",
+    "value": "Pavlov:obj_eb9bc6464f9f44cfba403a0cd1dc5cda",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_eb9bc6464f9f44cfba403a0cd1dc5cda_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_eb9bc6464f9f44cfba403a0cd1dc5cda_feminine.png"
+    }
+  },
+  {
+    "author": "KI NG",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 415580.0,
+    "file": "obj_77d26f5645504681afd8f8b0bc658a8b.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "d308de67e32bc55bffb9ce50fe24e3fe2ebdc77cb2ea9bae7c890a2717d21e17",
+    "id": "obj_77d26f5645504681afd8f8b0bc658a8b",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sun Glasses low poly",
+    "original_name": "Sun Glasses low poly",
+    "path": "res://assets/characters/wardrobe/library/models/obj_77d26f5645504681afd8f8b0bc658a8b.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "KI NG · CC BY · Objaverse / Sketchfab",
+    "triangles": 10092.0,
+    "url": "https://sketchfab.com/3d-models/77d26f5645504681afd8f8b0bc658a8b",
+    "value": "Pavlov:obj_77d26f5645504681afd8f8b0bc658a8b",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_77d26f5645504681afd8f8b0bc658a8b_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_77d26f5645504681afd8f8b0bc658a8b_feminine.png"
+    }
+  },
+  {
+    "author": "ArnoldE",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 582008.0,
+    "file": "obj_1a29942363754f798ac2dd9e61d857fc.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "b5b8416bb4918f4184c913a63fe5a302ed46bd43ff7dc7f94087b7a6541a6050",
+    "id": "obj_1a29942363754f798ac2dd9e61d857fc",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Glasses Spy tron 2 - Gafas PBR",
+    "original_name": "Glasses Spy tron 2 - Gafas PBR",
+    "path": "res://assets/characters/wardrobe/library/models/obj_1a29942363754f798ac2dd9e61d857fc.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "ArnoldE · CC BY · Objaverse / Sketchfab",
+    "triangles": 2198.0,
+    "url": "https://sketchfab.com/3d-models/1a29942363754f798ac2dd9e61d857fc",
+    "value": "Pavlov:obj_1a29942363754f798ac2dd9e61d857fc",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_1a29942363754f798ac2dd9e61d857fc_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_1a29942363754f798ac2dd9e61d857fc_feminine.png"
+    }
+  },
+  {
+    "author": "apetrova.hanna",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "sunglasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1400864.0,
+    "file": "obj_7b87a4420fae44a0875dcb4fd0ad6aa0.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "5f374c06ae81cded2d7be4b68ae5543afa99d520f1a3cd6757057c81275f317c",
+    "id": "obj_7b87a4420fae44a0875dcb4fd0ad6aa0",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sunglasses (13)",
+    "original_name": "Sunglasses",
+    "path": "res://assets/characters/wardrobe/library/models/obj_7b87a4420fae44a0875dcb4fd0ad6aa0.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "apetrova.hanna · CC BY · Objaverse / Sketchfab",
+    "triangles": 2328.0,
+    "url": "https://sketchfab.com/3d-models/7b87a4420fae44a0875dcb4fd0ad6aa0",
+    "value": "Pavlov:obj_7b87a4420fae44a0875dcb4fd0ad6aa0",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_7b87a4420fae44a0875dcb4fd0ad6aa0_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_7b87a4420fae44a0875dcb4fd0ad6aa0_feminine.png"
+    }
+  },
+  {
+    "author": "ValentynPetrov",
+    "body_part": "head",
+    "body_part_hints": [
+      "head"
+    ],
+    "body_part_keywords": [
+      "glasses"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 1797800.0,
+    "file": "obj_092d998579834a32acc69cfe59cb4139.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "2ab3d8c127a061f3f8fc47bc7b4351132d3d662c3ef1347237561271bd022f23",
+    "id": "obj_092d998579834a32acc69cfe59cb4139",
+    "kind": "glasses",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Glasses (49)",
+    "original_name": "Glasses",
+    "path": "res://assets/characters/wardrobe/library/models/obj_092d998579834a32acc69cfe59cb4139.glb",
+    "runtime": true,
+    "slot": "wardrobe_mask",
+    "source": "ValentynPetrov · CC BY · Objaverse / Sketchfab",
+    "triangles": 2438.0,
+    "url": "https://sketchfab.com/3d-models/092d998579834a32acc69cfe59cb4139",
+    "value": "Pavlov:obj_092d998579834a32acc69cfe59cb4139",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_092d998579834a32acc69cfe59cb4139_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_092d998579834a32acc69cfe59cb4139_feminine.png"
+    }
+  },
+  {
+    "author": "ilya_a",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "backpack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 199452.0,
+    "file": "obj_f6a69b6ebbbc4f6baa151eef92213271.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "193a8c6d70c15571324ed19037b2e500f782cbb99f46439c78077ddb8b35bf81",
+    "id": "obj_f6a69b6ebbbc4f6baa151eef92213271",
+    "kind": "backpack",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Free Assets: Low poly Backpack",
+    "original_name": "Free Assets: Low poly Backpack",
+    "path": "res://assets/characters/wardrobe/library/models/obj_f6a69b6ebbbc4f6baa151eef92213271.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "ilya_a · CC BY · Objaverse / Sketchfab",
+    "triangles": 2624.0,
+    "url": "https://sketchfab.com/3d-models/f6a69b6ebbbc4f6baa151eef92213271",
+    "value": "Pavlov:obj_f6a69b6ebbbc4f6baa151eef92213271",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_f6a69b6ebbbc4f6baa151eef92213271_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_f6a69b6ebbbc4f6baa151eef92213271_feminine.png"
+    }
+  },
+  {
+    "author": "Alexander_allen85",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "backpack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 53704.0,
+    "file": "obj_25ec8358707c4b0680bd045d4680b2f1.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "957940dd5548c743d01520ca0717eee6dfb80bae67e149dd3c92a757dc8b0ddb",
+    "id": "obj_25ec8358707c4b0680bd045d4680b2f1",
+    "kind": "backpack",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "low poly backpack (494 tris)",
+    "original_name": "low poly backpack (494 tris)",
+    "path": "res://assets/characters/wardrobe/library/models/obj_25ec8358707c4b0680bd045d4680b2f1.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "Alexander_allen85 · CC BY · Objaverse / Sketchfab",
+    "triangles": 494.0,
+    "url": "https://sketchfab.com/3d-models/25ec8358707c4b0680bd045d4680b2f1",
+    "value": "Pavlov:obj_25ec8358707c4b0680bd045d4680b2f1",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_25ec8358707c4b0680bd045d4680b2f1_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_25ec8358707c4b0680bd045d4680b2f1_feminine.png"
+    }
+  },
+  {
+    "author": "james_ball",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "backpack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 2281228.0,
+    "file": "obj_dd1924c1cb6b4d11b235f5a00dbda415.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "f1e43a6cbbe06d56be6234fec833d87fbaca27f8a4e3f1f7125257819eaf9c9b",
+    "id": "obj_dd1924c1cb6b4d11b235f5a00dbda415",
+    "kind": "backpack",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Low Poly Feminine Fantasy Backpack",
+    "original_name": "Low Poly Feminine Fantasy Backpack",
+    "path": "res://assets/characters/wardrobe/library/models/obj_dd1924c1cb6b4d11b235f5a00dbda415.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "james_ball · CC BY · Objaverse / Sketchfab",
+    "triangles": 396.0,
+    "url": "https://sketchfab.com/3d-models/dd1924c1cb6b4d11b235f5a00dbda415",
+    "value": "Pavlov:obj_dd1924c1cb6b4d11b235f5a00dbda415",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_dd1924c1cb6b4d11b235f5a00dbda415_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_dd1924c1cb6b4d11b235f5a00dbda415_feminine.png"
+    }
+  },
+  {
+    "author": "TaylorBunker",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "backpack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 4869624.0,
+    "file": "obj_ac36a8e160894709bbcd8eebb4bd8c29.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a814655aab102e238b673389bd8c6ee8ccf05d540bb05ef4c646c96d73122b8b",
+    "id": "obj_ac36a8e160894709bbcd8eebb4bd8c29",
+    "kind": "backpack",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Sci-fi Backpack",
+    "original_name": "Sci-fi Backpack",
+    "path": "res://assets/characters/wardrobe/library/models/obj_ac36a8e160894709bbcd8eebb4bd8c29.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "TaylorBunker · CC BY · Objaverse / Sketchfab",
+    "triangles": 5889.0,
+    "url": "https://sketchfab.com/3d-models/ac36a8e160894709bbcd8eebb4bd8c29",
+    "value": "Pavlov:obj_ac36a8e160894709bbcd8eebb4bd8c29",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_ac36a8e160894709bbcd8eebb4bd8c29_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_ac36a8e160894709bbcd8eebb4bd8c29_feminine.png"
+    }
+  },
+  {
+    "author": "sudreyskr",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "rucksack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 3554384.0,
+    "file": "obj_ba8cd12090ce40ca8a649cf6d8cf8096.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "41670660b0a02ae04b4da21273e09fb2dcb1cd8af15531883baecea9588031ab",
+    "id": "obj_ba8cd12090ce40ca8a649cf6d8cf8096",
+    "kind": "backpack",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Rucksack",
+    "original_name": "Rucksack",
+    "path": "res://assets/characters/wardrobe/library/models/obj_ba8cd12090ce40ca8a649cf6d8cf8096.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "sudreyskr · CC BY · Objaverse / Sketchfab",
+    "triangles": 2304.0,
+    "url": "https://sketchfab.com/3d-models/ba8cd12090ce40ca8a649cf6d8cf8096",
+    "value": "Pavlov:obj_ba8cd12090ce40ca8a649cf6d8cf8096",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_ba8cd12090ce40ca8a649cf6d8cf8096_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_ba8cd12090ce40ca8a649cf6d8cf8096_feminine.png"
+    }
+  },
+  {
+    "author": "Quaternius",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "backpack"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 99444.0,
+    "file": "2g9Jm7kvIU.glb",
+    "id": "poly_2g9Jm7kvIU",
+    "kind": "backpack",
+    "license": "CC0 1.0",
+    "name": "Backpack · Quaternius",
+    "original_name": "Backpack · Quaternius",
+    "slot": "wardrobe_back",
+    "source": "Quaternius · CC0 1.0 · Poly Pizza",
+    "success": true,
+    "triangles": 1748.0,
+    "url": "https://poly.pizza/m/2g9Jm7kvIU",
+    "value": "Pavlov:poly_2g9Jm7kvIU",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/poly_2g9Jm7kvIU_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/poly_2g9Jm7kvIU_feminine.png"
+    }
+  },
+  {
+    "author": "Seanguerrez",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "cape"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 268976.0,
+    "file": "obj_463db5e1336945a6b64f0eb6bfe3f52d.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "d2c7a7cf1fe738c9c480342fadcdfaebedaed2196ce69d9cc883498aca0969d7",
+    "id": "obj_463db5e1336945a6b64f0eb6bfe3f52d",
+    "kind": "cape",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Superhero Cape Low Poly Base Mesh Leather Textur",
+    "original_name": "Superhero Cape Low Poly Base Mesh Leather Textur",
+    "path": "res://assets/characters/wardrobe/library/models/obj_463db5e1336945a6b64f0eb6bfe3f52d.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "Seanguerrez · CC BY · Objaverse / Sketchfab",
+    "triangles": 7204.0,
+    "url": "https://sketchfab.com/3d-models/463db5e1336945a6b64f0eb6bfe3f52d",
+    "value": "Pavlov:obj_463db5e1336945a6b64f0eb6bfe3f52d",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_463db5e1336945a6b64f0eb6bfe3f52d_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_463db5e1336945a6b64f0eb6bfe3f52d_feminine.png"
+    }
+  },
+  {
+    "author": "Oscar R",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "cape"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 280516.0,
+    "file": "obj_320c029e234c4afdbd6008838bd64db3.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a211644fe19a0ae056d18c6b9a849bfbf9ccb5025be674c600443337b1ac00bb",
+    "id": "obj_320c029e234c4afdbd6008838bd64db3",
+    "kind": "cape",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Moff Gideon Cape - The Mandalorian",
+    "original_name": "Moff Gideon Cape - The Mandalorian",
+    "path": "res://assets/characters/wardrobe/library/models/obj_320c029e234c4afdbd6008838bd64db3.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "Oscar R · CC BY · Objaverse / Sketchfab",
+    "triangles": 2552.0,
+    "url": "https://sketchfab.com/3d-models/320c029e234c4afdbd6008838bd64db3",
+    "value": "Pavlov:obj_320c029e234c4afdbd6008838bd64db3",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_320c029e234c4afdbd6008838bd64db3_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_320c029e234c4afdbd6008838bd64db3_feminine.png"
+    }
+  },
+  {
+    "author": "martinlrssn",
+    "body_part": "back",
+    "body_part_hints": [
+      "back"
+    ],
+    "body_part_keywords": [
+      "cape"
+    ],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "title_keywords",
+    "bytes": 711004.0,
+    "file": "obj_5265f36176f64c5cb89b717a620ff35e.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "e29c394c3b0a2a49ca31c1bb3439d9de1c643a737df32dde355322ef1b7b8fa2",
+    "id": "obj_5265f36176f64c5cb89b717a620ff35e",
+    "kind": "cape",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Grey Cape Project MDU",
+    "original_name": "Grey Cape Project MDU",
+    "path": "res://assets/characters/wardrobe/library/models/obj_5265f36176f64c5cb89b717a620ff35e.glb",
+    "runtime": true,
+    "slot": "wardrobe_back",
+    "source": "martinlrssn · CC BY · Objaverse / Sketchfab",
+    "triangles": 3038.0,
+    "url": "https://sketchfab.com/3d-models/5265f36176f64c5cb89b717a620ff35e",
+    "value": "Pavlov:obj_5265f36176f64c5cb89b717a620ff35e",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_5265f36176f64c5cb89b717a620ff35e_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_5265f36176f64c5cb89b717a620ff35e_feminine.png"
+    }
+  },
+  {
+    "author": "StubbornFunkyDonkey",
+    "body_part": "misc",
+    "body_part_hints": [],
+    "body_part_keywords": [],
+    "body_part_metadata_version": 1.0,
+    "body_part_source": "unknown",
+    "bytes": 4747056.0,
+    "file": "obj_3beae58e696d4607a6fbe81341cd3570.glb",
+    "fit_status": "Automatic fit awaiting human review",
+    "geometry_sha256": "a922f09fc1f54d5d6194989b24dde1752a548831034b1da233bab4182811cefc",
+    "id": "obj_3beae58e696d4607a6fbe81341cd3570",
+    "kind": "belt",
+    "license": "CC BY",
+    "license_id": "by",
+    "name": "Medieval Warhorn",
+    "original_name": "Medieval Warhorn",
+    "path": "res://assets/characters/wardrobe/library/models/obj_3beae58e696d4607a6fbe81341cd3570.glb",
+    "runtime": true,
+    "slot": "wardrobe_belt",
+    "source": "StubbornFunkyDonkey · CC BY · Objaverse / Sketchfab",
+    "triangles": 2984.0,
+    "url": "https://sketchfab.com/3d-models/3beae58e696d4607a6fbe81341cd3570",
+    "value": "Pavlov:obj_3beae58e696d4607a6fbe81341cd3570",
+    "review_status": "Selected after front, side and rear inspection on the shared character",
+    "preview_images": {
+      "Masculine": "res://assets/characters/wardrobe/curated/previews/obj_3beae58e696d4607a6fbe81341cd3570_masculine.png",
+      "Feminine": "res://assets/characters/wardrobe/curated/previews/obj_3beae58e696d4607a6fbe81341cd3570_feminine.png"
+    }
+  }
+]

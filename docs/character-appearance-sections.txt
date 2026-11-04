@@ -59,3 +59,9 @@ Tests: character_downloaded_wardrobe_test.gd and character_gear_transition_test.
 The second uses an actual loadout UI fixture without touching the player's save.
 The existing GLES null-material cleanup warning can occur when that loadout
 preview is destroyed; no new shader compilation or fitted surface-array errors.
+
+2026-11-04 curation update
+The creator now shows the reviewed selection in curated/catalog.json instead of
+exposing the entire raw archive. All raw IDs/files remain local and accessible
+to developer review and existing saves. See wardrobe-curation.txt for counts,
+fit limitations, source attribution and measured preview performance.

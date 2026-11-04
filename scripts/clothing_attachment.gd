@@ -99,7 +99,9 @@ static func attach(skeleton: Skeleton3D, item: Dictionary, slot: String, size :=
 			if item.kind == "hood":
 				factor = minf(0.31 / box.size.x,0.40 / box.size.y)
 				target.y = -0.09
-			elif str(item.name).to_lower().contains("helmet"): target.y = 0.0
+			elif item.kind=="helmet" or str(item.name).to_lower().contains("helmet"):
+				factor=minf(0.33/box.size.x,minf(0.39/box.size.y,0.34/box.size.z))
+				center=box.get_center();target=Vector3(0,0.11,0)
 		elif item.kind == "glasses":
 			factor = 0.20 / box.size.x
 			target = Vector3(0,0.095,0.07)

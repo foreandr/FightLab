@@ -14,7 +14,7 @@ func run():
  var frames=0
  while not library.loaded: frames+=1;await process_frame
  await settle()
- assert(frames>0 and library.total>23000)
+ assert(frames>0 and library.archive_total>23000 and library.total>0 and library.total<=100)
  assert(c.appearance_slots.size()==14)
  print("LIBRARY READY ",library.total," background frames ",frames," unwanted ",library.unwanted)
  var decisions=Pool.decisions()
@@ -22,7 +22,7 @@ func run():
   assert(c.appearance_slots.has(slot),"Missing section "+slot)
   for item in library.for_slot(slot):assert(decisions.get_value("decisions",item.id,"pending")!="unwanted")
  # Stable ID values, human names, search, selection, actual mesh attachment and size.
- for slot in ["wardrobe_hat","wardrobe_boots","wardrobe_pants","wardrobe_shirt","wardrobe_hands","wardrobe_necklace","wardrobe_back"]:
+ for slot in library.slots:
   c.open_appearance_section(slot)
   await settle()
   var item:Dictionary=library.for_slot(slot)[0]
@@ -40,8 +40,8 @@ func run():
   c.profile[slot]="None"
  # Explicit PVM torso regression: size changes the fitted mesh immediately.
  var garment:Dictionary={}
- for item in library.for_slot("wardrobe_shirt"):
-  if item.get("format","")=="pvm":garment=item;break
+ for item in Pool.imported():
+  if item.get("slot","")=="wardrobe_shirt" and item.get("format","")=="pvm":garment=item;break
  c.choose_appearance("wardrobe_shirt",str(garment.value))
  var fitted=c.preview.skeleton.find_child("PavlovShirt_*",false,false)
  assert(fitted!=null)

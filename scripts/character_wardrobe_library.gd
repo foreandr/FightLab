@@ -7,13 +7,14 @@ var loaded := false
 var loading := false
 var slots: Dictionary = {}
 var total := 0
+var archive_total := 0
 var missing := 0
 var unwanted := 0
 var stamp := ""
 var worker: Thread
 func metadata_stamp() -> String:
 	var result := ""
-	for path in MANIFESTS + [Pool.SAVE]: result += (str(FileAccess.get_modified_time(path)) if FileAccess.file_exists(path) else "0") + ":"
+	for path in MANIFESTS + [Pool.SAVE,preload("res://scripts/curated_wardrobe.gd").MANIFEST]: result += (str(FileAccess.get_modified_time(path)) if FileAccess.file_exists(path) else "0") + ":"
 	return result
 func request() -> void:
 	if loading: return
@@ -27,6 +28,7 @@ func request() -> void:
 func _process(_delta: float) -> void:
 	if not loading or worker.is_alive(): return
 	var result: Dictionary = worker.wait_to_finish()
+	archive_total = result.archive_total
 	slots = result.slots; total = result.total; missing = result.missing; unwanted = result.unwanted
 	# Publish shared lookup tables on the main thread. Equipping an item must not
 	# synchronously parse the entire library again inside StoryCharacter.
@@ -48,17 +50,25 @@ func _read_metadata() -> Dictionary:
 			if not item is Dictionary or (item.has("triangles") and int(item.triangles) <= 4): continue
 			imported.append(item)
 	preload("res://scripts/clothing_names.gd").make_unique(imported)
+	# Do not mutate the thumbnail service's main-thread cache from this worker.
+	var reviewed := {}
+	var selection: Variant = JSON.parse_string(FileAccess.get_file_as_string(preload("res://scripts/curated_wardrobe.gd").MANIFEST))
+	if selection is Array:
+		for entry in selection:
+			if entry is Dictionary: reviewed[str(entry.value)] = entry
 	var decisions := Pool.decisions()
 	var index := {}; var count := 0; var absent := 0; var rejected := 0
 	for item in imported:
 		if str(decisions.get_value("decisions",str(item.id),"pending")) == "unwanted": rejected += 1; continue
 		var path := str(item.get("path",Pool.IMPORT_BASE + str(item.get("file",""))))
 		if not FileAccess.file_exists(path): absent += 1; continue
+		if not reviewed.has(str(item.value)): continue
+		item.merge(reviewed[str(item.value)],true)
 		var slot := str(item.get("slot",""))
 		if slot.is_empty(): continue
 		if not index.has(slot): index[slot] = []
 		index[slot].append(item); count += 1
 	for entries in index.values(): entries.sort_custom(func(a: Dictionary,b: Dictionary): return str(a.name).naturalnocasecmp_to(str(b.name)) < 0)
-	return {"slots":index,"total":count,"missing":absent,"unwanted":rejected,"imported":imported}
+	return {"archive_total":imported.size(),"slots":index,"total":count,"missing":absent,"unwanted":rejected,"imported":imported}
 func _exit_tree() -> void:
 	if worker != null and worker.is_started(): worker.wait_to_finish()

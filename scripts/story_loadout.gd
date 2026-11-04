@@ -889,6 +889,7 @@ func _build_preview_panel(columns: HBoxContainer) -> void:
 	rim_light.omni_range = 6
 	viewport.add_child(rim_light)
 	preview = PreviewCharacter.new()
+	preview.prepared_preview_enabled = true
 	viewport.add_child(preview)
 	preview.appearance_rebuilt.connect(func(): barrier_preview_materials=BodyBarrierOverlay.apply(preview.skeleton))
 	call_deferred("_populate_preview")

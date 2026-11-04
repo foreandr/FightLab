@@ -75,7 +75,7 @@ func show_page() -> void:
 	var total := maxi(1,ceili(filtered.size() / 6.0))
 	page = clampi(page,0,total-1); previous.disabled = page == 0; next.disabled = page >= total-1
 	page_label.text = "%d / %d  ·  %d items" % [page+1,total,filtered.size()]
-	library_status.text = "Loading downloaded clothing…" if slot != "hair" and not WardrobeLibrary.loaded else ("No matching items" if filtered.is_empty() else "")
+	library_status.text = "Loading reviewed clothing…" if slot != "hair" and not WardrobeLibrary.loaded else ("No matching items" if filtered.is_empty() else "")
 	library_status.visible = not library_status.text.is_empty()
 	for index in range(page*6,mini(page*6+6,filtered.size())):
 		var item: Dictionary = filtered[index]

@@ -465,6 +465,7 @@ func _build_ui() -> void:
 	floor.material_override = floor_material
 	viewport.add_child(floor)
 	preview = PreviewCharacter.new()
+	preview.prepared_preview_enabled = true
 	preview.position.y = 0.0
 	viewport.add_child(preview)
 
@@ -1078,6 +1079,8 @@ func close_appearance_section() -> void:
 func choose_appearance(slot: String, value: String) -> void:
 	profile = appearance_candidate(slot,value)
 	_select_text(appearance_slots[slot].option, value)
+	appearance_slots[slot].color.color = profile.get(appearance_slots[slot].color_key,Color.WHITE)
+	if appearance_picker != null and appearance_picker.slot == slot and is_instance_valid(appearance_picker.colors): appearance_picker.colors.color = appearance_slots[slot].color.color
 	_refresh_preview()
 
 func refresh_appearance_items(slot: String) -> void:
@@ -1097,6 +1100,8 @@ func refresh_appearance_items(slot: String) -> void:
 func appearance_candidate(slot: String, value: String) -> Dictionary:
 	var candidate := profile.duplicate(true)
 	candidate[slot] = value
+	if not preload("res://scripts/curated_wardrobe.gd").item(value).is_empty() and appearance_slots.has(slot):
+		candidate[appearance_slots[slot].color_key] = Color.WHITE
 	if slot == "wardrobe_shirt" and value.begins_with("Pavlov:"):
 		var item := preload("res://scripts/clothing_pool.gd").item_for_value(value)
 		if str(item.get("kind","")) == "outfit":

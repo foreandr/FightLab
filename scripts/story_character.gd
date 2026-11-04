@@ -7,6 +7,7 @@ const EXTERNAL_WARDROBE := "res://assets/characters/wardrobe/external/"
 
 signal appearance_rebuilt
 var gear_transitions_enabled := true
+var prepared_preview_enabled := false
 var gear_transition: RefCounted
 func set_profile_animated(next_profile: Dictionary) -> void:
 	var changed: Array[String] = []
@@ -27,7 +28,14 @@ var model: Node3D
 var skeleton: Skeleton3D
 var animator: AnimationPlayer
 var spin := 0.0
-var head_mesh_cache: Dictionary = {}
+static var head_mesh_cache: Dictionary = {}
+static var head_mesh_order: Array[String] = []
+static var wardrobe_mesh_cache: Dictionary = {}
+static var wardrobe_mesh_order: Array[String] = []
+func _cache_wardrobe_mesh(key: String, mesh: Mesh) -> Mesh:
+	while wardrobe_mesh_order.size()>=96:wardrobe_mesh_cache.erase(wardrobe_mesh_order.pop_front())
+	wardrobe_mesh_cache[key]=mesh;wardrobe_mesh_order.append(key)
+	return mesh
 
 func play_preview_animation(animation_id: String) -> bool:
 	if animator == null:return false
@@ -53,7 +61,7 @@ func play_preview_animation(animation_id: String) -> bool:
 		if animation_library != null:
 			# AnimationMixer caches can become invalid when a resource-cached
 			# AnimationLibrary is registered directly on a runtime preview rig.
-			animator.add_animation_library(library, animation_library.duplicate(true))
+			animator.add_animation_library(library, animation_library.duplicate(false))
 	if not animator.has_animation(clip_name):
 		push_warning("Loadout preview has no animation clip: %s" % clip_name)
 		return false
@@ -115,6 +123,23 @@ func set_profile(next_profile: Dictionary) -> void:
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
+	if prepared_preview_enabled:
+		var ready_scene:=preload("res://scripts/prepared_character_preview.gd").get_scene(profile)
+		if ready_scene!=null:
+			model=ready_scene.instantiate();add_child(model)
+			skeleton=model.find_child("Skeleton3D",true,false)
+			animator=model.find_child("StoryPreviewAnimationPlayer",true,false)
+			if animator != null:
+				# PackedScene instances share resources unless explicitly detached.
+				# Keep mixer ownership independent while reusing immutable clips.
+				for library_name in animator.get_animation_library_list():
+					var preview_library := animator.get_animation_library(library_name).duplicate(false)
+					animator.remove_animation_library(library_name)
+					animator.add_animation_library(library_name,preview_library)
+			scale=Vector3.ONE*float(profile.get("height",1.0))
+			if animator!=null:animator.play(preload("res://scripts/default_idle.gd").resolve(self,animator,profile.get("idle_animation")))
+			appearance_rebuilt.emit()
+			return
 	var body_type := str(profile.get("body", "Masculine"))
 	var gender := "Male" if body_type == "Masculine" else "Female"
 	var packed := load(CHARACTER_BASE + "Superhero_%s_FullBody.gltf" % gender) as PackedScene
@@ -141,10 +166,11 @@ func set_profile(next_profile: Dictionary) -> void:
 	_apply_backwear()
 	_ensure_preview_surface_materials()
 	animator = AnimationPlayer.new()
+	animator.name="StoryPreviewAnimationPlayer"
 	model.add_child(animator)
 	var library := load(BASE + "animations/UAL1_Standard.glb") as AnimationLibrary
 	if library != null:
-		animator.add_animation_library("ual1", library.duplicate(true))
+		animator.add_animation_library("ual1", library.duplicate(false))
 		# Let Godot advance preview animations through its normal scene update.
 		# Manually calling AnimationPlayer.advance() from _process can crash when
 		# switching dynamically loaded character animation libraries at runtime.
@@ -153,6 +179,7 @@ func set_profile(next_profile: Dictionary) -> void:
 			animator.play(preload("res://scripts/default_idle.gd").resolve(self,animator,profile.get("idle_animation")))
 	if is_inside_tree(): _finish_pavlov_wardrobe()
 	else: ready.connect(_finish_pavlov_wardrobe,CONNECT_ONE_SHOT)
+	if prepared_preview_enabled and is_inside_tree():preload("res://scripts/prepared_character_preview.gd").store(profile,model)
 	appearance_rebuilt.emit()
 
 func _finish_pavlov_wardrobe() -> void:
@@ -321,6 +348,8 @@ func _body_mesh_for_wardrobe(source: Mesh, gender: String) -> Mesh:
 	if visible_body.get_surface_count() == 0:
 		push_error("Could not isolate uncovered body regions for modular clothing")
 		visible_body = source.duplicate() as ArrayMesh
+	while head_mesh_order.size()>=32: head_mesh_cache.erase(head_mesh_order.pop_front())
+	head_mesh_order.append(cache_key)
 	head_mesh_cache[cache_key] = visible_body
 	return visible_body
 
@@ -691,6 +720,8 @@ func _attach_wardrobe_piece(path: String, gender: String, tint: Color, garment_s
 func _wardrobe_side_mesh(source: Mesh, side: String) -> Mesh:
 	if not source is ArrayMesh:
 		return source
+	var cache_key := str(source.get_instance_id())+"/side/"+side
+	if wardrobe_mesh_cache.has(cache_key):return wardrobe_mesh_cache[cache_key]
 	var source_array := source as ArrayMesh
 	var filtered := ArrayMesh.new()
 	var wanted_suffix := "_l" if side == "left" else "_r"
@@ -734,11 +765,13 @@ func _wardrobe_side_mesh(source: Mesh, side: String) -> Mesh:
 			arrays[Mesh.ARRAY_INDEX] = kept_indices
 			filtered.add_surface_from_arrays(source_array.surface_get_primitive_type(surface), arrays)
 			filtered.surface_set_material(filtered.get_surface_count() - 1, material if material != null else _fallback_surface_material())
-	return filtered if filtered.get_surface_count() > 0 else source
+	return _cache_wardrobe_mesh(cache_key,filtered if filtered.get_surface_count() > 0 else source)
 
 func _wardrobe_hide_arm_side(source: Mesh, side: String) -> Mesh:
 	if not source is ArrayMesh:
 		return source
+	var cache_key := str(source.get_instance_id())+"/hide/"+side
+	if wardrobe_mesh_cache.has(cache_key):return wardrobe_mesh_cache[cache_key]
 	var source_array := source as ArrayMesh
 	var filtered := ArrayMesh.new()
 	var wanted_suffix := "_l" if side == "left" else "_r"
@@ -778,11 +811,13 @@ func _wardrobe_hide_arm_side(source: Mesh, side: String) -> Mesh:
 			arrays[Mesh.ARRAY_INDEX] = kept_indices
 			filtered.add_surface_from_arrays(source_array.surface_get_primitive_type(surface), arrays)
 			filtered.surface_set_material(filtered.get_surface_count() - 1, material if material != null else _fallback_surface_material())
-	return filtered if filtered.get_surface_count() > 0 else source
+	return _cache_wardrobe_mesh(cache_key,filtered if filtered.get_surface_count() > 0 else source)
 
 func _scale_wardrobe_cloth(source: Mesh, amount: float) -> Mesh:
 	if not source is ArrayMesh:
 		return source
+	var cache_key := str(source.get_instance_id())+"/size/"+str(snappedf(amount,0.0001))
+	if wardrobe_mesh_cache.has(cache_key):return wardrobe_mesh_cache[cache_key]
 	var source_array := source as ArrayMesh
 	var cloth_min := Vector3(INF, INF, INF)
 	var cloth_max := Vector3(-INF, -INF, -INF)
@@ -811,7 +846,7 @@ func _scale_wardrobe_cloth(source: Mesh, amount: float) -> Mesh:
 			arrays[Mesh.ARRAY_VERTEX] = vertices
 		resized.add_surface_from_arrays(source_array.surface_get_primitive_type(surface), arrays)
 		resized.surface_set_material(surface, material if material != null else _fallback_surface_material())
-	return resized
+	return _cache_wardrobe_mesh(cache_key,resized)
 
 func _apply_hair(gender: String) -> void:
 	var hairstyle := str(profile.get("hair", "Short"))

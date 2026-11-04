@@ -1,0 +1,59 @@
+Wardrobe visual review and preview performance — 2026-11-04
+
+Creator selection
+100 downloaded additions selected after inspecting front, side and rear renders
+on the actual shared character: 70 headwear, 20 masks/eyewear, 9 back accessories,
+and 1 belt accessory. Both masculine and feminine default bodies were rendered.
+The existing fitted villager clothes and 40 hairstyles remain available.
+
+This is NOT 100 approved items per body part. Shirts, trousers, gloves and boots
+in the tested archive frequently intersect skin, float, include unrelated props,
+or have incompatible bind poses. None was approved to pad those categories.
+91 experimental converted modular parts also failed visual review and were not
+added. Reaching roughly 100 good options per slot still requires more properly
+fitted, distinct garments. Fit is reviewed at normal proportions/size; arbitrary
+combinations, extreme resizing and every possible combat pose are not certified.
+
+Preservation and provenance
+All 23,460 raw catalog records and their downloaded files are preserved locally.
+Unreviewed assets remain available to the developer Pavlov archive and existing
+stable saved IDs still resolve. No user rejection decisions were changed.
+The small reviewed manifest controls the creator only. It does not automatically
+approve assets for random CPUs. Source URLs, authors and licenses remain on each
+entry in assets/characters/wardrobe/curated/catalog.json. Preview images are
+rendered derivatives of those listed sources and carry the same attribution.
+The original large download library remains local rather than entering Git.
+
+Performance changes
+Visible reviewed cards use prepared PNGs instead of building six extra avatars.
+A bounded eight-rig preview cache reuses completed appearance configurations.
+Body visibility meshes and resized outfit meshes are shared with bounded caches.
+Animation libraries have separate mixer ownership but reuse immutable clips;
+deep-copying the whole library on every clothes change has been removed.
+The shared gear-dissolve shader uses a cheaper hash and slightly larger cells.
+Creator and gear edit use this same transition and preview path. Combat unchanged.
+
+Measurements on this machine
+Original 43-item review: warm repeat build median 170.6 ms, p95 233.6 ms.
+After caching, 508-item review: repeat median 1.84 ms, p95 3.06 ms.
+Later 111-item body review: repeat median 2.00 ms, p95 2.67 ms.
+Animation-library copy alone: deep copy 46–63 ms; shallow copy 0.16–2.26 ms.
+Cold first selections still load/fit models: later sample median 82.9 ms,
+p95 151.4 ms, excluding initial engine/body warmup. These are construction
+timings, not a claim of equivalent improvement in total frame rate.
+
+Verification
+curated_wardrobe_performance_test: archive preserved, reviewed-only visibility,
+image files present, independent skeletons and animation-library ownership,
+different concurrent poses, live sizing, bounded caches.
+character_downloaded_wardrobe_test: all 14 sections, search, selection, saved
+size settings, legacy imported torso compatibility.
+character_gear_transition_test: rendered out/in transition, rapid selection,
+size changes mid-transition, creator and loadout share effect, overlays restored.
+Known pre-existing GLES null-material warnings during loadout teardown remain.
+
+Local review artifacts (not distributed in the game)
+work/wardrobe_props_sheet_0.png through wardrobe_props_sheet_31.png: 508 candidates.
+work/female_motion_sheet_0.png through female_motion_sheet_6.png: second-body review.
+work/wardrobe_motion_sample/: selected headgear and back accessories during jogging.
+work/curated_wardrobe_overview.png: selected examples.
