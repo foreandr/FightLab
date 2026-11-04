@@ -1,4 +1,5 @@
 extends Control
+const CyberStyle=preload("res://scripts/ui_design.gd")
 
 var editor
 
@@ -10,5 +11,5 @@ func _draw() -> void:
 	if editor==null:return
 	var end_x:=clampf(float(editor.timeline_duration)*editor.TIMELINE_PIXELS_PER_SECOND,0.0,size.x)
 	if end_x>=size.x:return
-	draw_rect(Rect2(end_x,0,size.x-end_x,size.y),Color(0.28,0.26,0.22,0.25))
-	draw_line(Vector2(end_x,0),Vector2(end_x,size.y),Color("9b7844"),1.0)
+	draw_rect(Rect2(end_x,0,size.x-end_x,size.y),Color(CyberStyle.VOID,0.65))
+	draw_line(Vector2(end_x,0),Vector2(end_x,size.y),CyberStyle.LINE,1.0)
