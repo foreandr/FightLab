@@ -1806,7 +1806,7 @@ func capture_demo_pose() -> Array[Transform3D]:
  return CastPose.capture(editor.actor)
 
 func cast_pose_aim(progress:float) -> Dictionary:
- if not previews_projectile():return {}
+ if not previews_projectile() and not previews_touch():return {}
  if not demo_offensive():return {}
  var target:Vector3
  if is_instance_valid(spell_focus_target):target=CombatAim.focused_chest(spell_focus_target)

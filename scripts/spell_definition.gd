@@ -76,7 +76,7 @@ static func base_spec(record:Dictionary,binding:Dictionary={})->Dictionary:
   var contacts:Array=binding.get("contacts",[str(binding.get("hand","hand_r"))])
   if contacts.is_empty():return {}
   for contact in contacts:
-   if contact not in rules.TOUCH_CONTACT_BONES:return {}
+   if rules.touch_contact_bone(contact).is_empty():return {}
   base=rules.touch_base(contacts,record.element)
   if record.element=="Fire":base=rules.allocate(base,record.allocation,record.element,1.0)
  elif record.delivery_type=="Barrier":base=rules.self_barrier_base(float(record.barrier.strength),float(record.barrier.duration))

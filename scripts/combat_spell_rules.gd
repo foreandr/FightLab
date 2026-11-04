@@ -46,7 +46,20 @@ static func left_jab_strike()->Array:
 static func right_jab_strike()->Array:
 	return ["right_jab","practice/right_jab","hand_r",0.12,0.48,8.0,8.0,1.0]
 
+static func touch_contact_bone(value:Variant)->String:
+	if not value is String:return ""
+	var bone:String={"head":"Head","mouth":"Head","ball_l":"foot_l","ball_r":"foot_r"}.get(value,value)
+	return bone if bone in TOUCH_CONTACT_BONES else ""
+
+static func canonical_touch_contacts(contacts:Array)->Array[String]:
+	var result:Array[String]=[]
+	for value in contacts:
+		var bone:=touch_contact_bone(value)
+		if not bone.is_empty() and bone not in result:result.append(bone)
+	return result
+
 static func touch_base(contacts:Array,element:String="None")->Dictionary:
+	contacts=canonical_touch_contacts(contacts)
 	var fire:=element=="Fire"
 	return {"id":"physical_touch","name":"Physical Touch","effect":"touch","delivery_type":"Touch","hand":str(contacts[0]) if not contacts.is_empty() else "hand_l","mana":PROJECTILE_BASE_MANA+(FIRE_MANA_SURCHARGE if fire else 0.0),"damage":0.0,"projectile_element":"Fire" if fire else "None","potency":1.0 if fire else 0.0,"burn_duration":Burn.DURATION,"touch_contacts":contacts.duplicate()}
 
@@ -117,12 +130,7 @@ static func touch_contact_count(spec:Dictionary) -> int:
 	if str(spec.get("delivery_type",""))!="Touch":return 1
 	var contacts:Variant=spec.get("touch_contacts",[])
 	if not contacts is Array:return 1
-	var unique:Dictionary={}
-	for value in contacts:
-		if not value is String:continue
-		var bone:String={"head":"Head","mouth":"Head","ball_l":"foot_l","ball_r":"foot_r"}.get(value,value)
-		if bone in TOUCH_CONTACT_BONES:unique[bone]=true
-	return maxi(1,unique.size())
+	return maxi(1,canonical_touch_contacts(contacts).size())
 
 static func resource_split(base:Dictionary,duration:float,offensive:bool) -> Dictionary:
 	var original:float=physical(duration,offensive).stamina
