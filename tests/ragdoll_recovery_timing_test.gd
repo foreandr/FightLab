@@ -20,24 +20,27 @@ func run():
  Engine.physics_ticks_per_second=240;Engine.time_scale=4
  change_scene_to_file("res://scenes/cpu_duel.tscn");await process_frame;await process_frame
  w=current_scene;w.set_physics_process(false);a=w.fighters[0]
- await knockdown();await tick(10)
+ await knockdown()
+ assert(not a.recovery_timing.offered())
+ assert(a.try_quick_recovery()=="" and a.recovery_timing.waiting(),"Early Space consumed the unseen recovery chance")
+ await tick(10)
  assert(a.mode=="ragdoll" and a.stamina>25 and a.mana>25,"Ragdoll stopped resource recovery")
  assert(is_equal_approx(a.stamina,20+34.0*10/60) and is_equal_approx(a.stamina,a.mana),"Ragdoll recovery not exactly once at shared rate")
- a.recovery_timing.age=Timing.WINDOW*0.90
+ a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.90
  var stamina:float=a.stamina
  assert(a.try_quick_recovery()=="Perfect" and a.stamina==stamina)
  assert(a.try_quick_recovery()=="Perfect" and a.stamina==stamina,"Repeat attempt charged or changed result")
  var fast:float=await getup();assert(is_equal_approx(fast,0.65))
  a.stamina=20;a.mana=20;a.stamina_delay=0;a.mana_delay=0
  await tick(3);assert(a.stamina>20 and is_equal_approx(a.stamina,a.mana),"Getting up stopped regeneration")
- await knockdown();a.recovery_timing.age=Timing.WINDOW*0.75
+ await knockdown();a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.75
  stamina=a.stamina
  assert(a.try_quick_recovery()=="Good" and is_equal_approx(stamina-a.stamina,10))
  var medium:float=await getup();assert(is_equal_approx(medium,1.10) and medium>fast)
- await knockdown();a.recovery_timing.age=Timing.WINDOW*0.2
+ await knockdown();a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.2
  stamina=a.stamina;assert(a.try_quick_recovery()=="Miss" and a.stamina==stamina)
  var slow:float=await getup();assert(slow>medium)
- await knockdown();a.stamina=5;a.recovery_timing.age=Timing.WINDOW*0.75
+ await knockdown();a.stamina=5;a.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.75
  assert(a.try_quick_recovery()=="Miss" and a.stamina==5,"Yellow succeeds without stamina")
  a.reset_fighter(Vector3.ZERO);assert(not a.recovery_timing.running)
  await knockdown();a.health=0

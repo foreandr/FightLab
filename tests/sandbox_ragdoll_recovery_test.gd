@@ -10,7 +10,11 @@ func run():
  var actor=screen.actor;var cpu=screen.target
  assert(actor.player_controlled and not cpu.player_controlled,"Sandbox does not declare human/CPU ownership")
  actor.start_ragdoll(Vector3.BACK*200.0,actor.bone_point("spine_03"))
- actor.recovery_timing.age=Timing.WINDOW*0.92
+ await process_frame;await process_frame
+ assert(not actor.recovery_prompt.visible,"Recovery prompt appeared immediately")
+ actor.recovery_timing.step(Timing.OPPORTUNITY_DELAY-0.01,actor)
+ assert(not actor.recovery_timing.offered() and actor.try_quick_recovery()=="")
+ actor.recovery_timing.age=Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.92
  await process_frame
  assert(is_instance_valid(actor.recovery_prompt) and actor.recovery_prompt.visible,"Sandbox recovery prompt is missing")
  var stamina:float=actor.stamina
@@ -27,7 +31,7 @@ func run():
  for trial in 40:
   cpu.reset_fighter(Vector3(0,0,3));cpu.stamina=100;cpu.mana=100;screen.field.round_active=true
   cpu.start_ragdoll(Vector3.BACK*200.0,cpu.bone_point("spine_03"))
-  for i in 115:
+  for i in 190:
    cpu.recovery_timing.step(0.01,cpu)
    if not cpu.recovery_timing.waiting():break
   var result:String=cpu.recovery_timing.result
@@ -41,13 +45,13 @@ func run():
  cpu.reset_fighter(cpu.position);cpu.player_controlled=false
  cpu.start_ragdoll(Vector3.BACK*200.0,cpu.bone_point("spine_03"))
  cpu.recovery_timing.cpu_policy.target_progress=0.92
- for i in 110:
+ for i in 180:
   cpu.tick(0.01)
   if not cpu.recovery_timing.waiting():break
  assert(cpu.recovery_timing.result=="Perfect","Shared actor tick never ran CPU recovery")
  cpu.reset_fighter(cpu.position);cpu.player_controlled=true
  cpu.start_ragdoll(Vector3.BACK*200.0,cpu.bone_point("spine_03"))
- cpu.recovery_timing.step(Timing.WINDOW*0.95,cpu)
+ cpu.recovery_timing.step(Timing.OPPORTUNITY_DELAY+Timing.WINDOW*0.95,cpu)
  assert(cpu.recovery_timing.result.is_empty(),"CPU recovery took over human input")
  cpu.health=0;cpu.recovery_timing.step(0.01,cpu)
  assert(cpu.recovery_timing.result.is_empty(),"Dead CPU tried recovery")

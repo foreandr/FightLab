@@ -1,6 +1,7 @@
 extends RefCounted
 ## One shared, simulation-clock recovery attempt per knockdown.
 const WINDOW:=1.10
+const OPPORTUNITY_DELAY:=0.65
 const YELLOW_START:=0.65
 const PERFECT_START:=0.86
 const YELLOW_STAMINA:=10.0
@@ -20,14 +21,15 @@ func begin()->void:
 func clear()->void:
  age=0.0;result="";running=false;cpu_policy.clear()
 func waiting()->bool:return running and result.is_empty()
-func progress()->float:return clampf(age/WINDOW,0.0,1.0)
+func offered()->bool:return running and age>=OPPORTUNITY_DELAY
+func progress()->float:return clampf((age-OPPORTUNITY_DELAY)/WINDOW,0.0,1.0)
 func step(delta:float,actor:Node=null)->void:
  if not waiting():return
  age+=maxf(0.0,delta)
- if age>WINDOW:result="Miss"
- elif is_instance_valid(actor):cpu_policy.step(actor,self)
+ if age>OPPORTUNITY_DELAY+WINDOW:result="Miss"
+ elif offered() and is_instance_valid(actor):cpu_policy.step(actor,self)
 func attempt(actor:Node)->String:
- if not waiting() or actor.health<=0 or not is_instance_valid(actor.ragdoll):return result
+ if not waiting() or not offered() or actor.health<=0 or not is_instance_valid(actor.ragdoll):return result
  if progress()>=PERFECT_START and progress()<=1.0:result="Perfect"
  elif progress()>=YELLOW_START and actor.spend_stamina(YELLOW_STAMINA):result="Good"
  else:result="Miss"

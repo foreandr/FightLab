@@ -9,7 +9,7 @@ func setup(actor:Node)->void:
 func actor():return actor_ref.get_ref() if actor_ref!=null else null
 func _process(_delta:float)->void:
  var owner_=actor()
- visible=is_instance_valid(owner_) and owner_.player_controlled and owner_.health>0 and is_instance_valid(owner_.ragdoll) and owner_.recovery_timing.running
+ visible=is_instance_valid(owner_) and owner_.player_controlled and owner_.health>0 and is_instance_valid(owner_.ragdoll) and owner_.recovery_timing.offered()
  if visible:queue_redraw()
 func _input(event:InputEvent)->void:
  if not visible or not event is InputEventKey or not event.pressed or event.echo:return
