@@ -3,6 +3,24 @@ extends RefCounted
 const CastType=preload("res://scripts/animation_cast_type.gd")
 const LABELS=["All types","Arm","Leg","Head","Movement"]
 
+static func action_words(entry:Dictionary)->Array[String]:
+	var text:=""
+	for field in ["title","category","step"]:text+=" "+str(entry.get(field,""))
+	for tag in entry.get("tags",[]):text+=" "+str(tag)
+	var camel:=RegEx.new();camel.compile("([a-z])([A-Z])")
+	var words:=RegEx.new();words.compile("[a-z]+")
+	var result:Array[String]=[]
+	for found in words.search_all(camel.sub(text,"$1 $2",true).to_lower()):result.append(found.get_string())
+	return result
+
+static func is_airborne(entry:Dictionary)->bool:
+	var jump=preload("res://scripts/animation_jump_motion.gd")
+	if jump.requires_air(entry) or not jump.settings(entry).is_empty() or str(entry.get("air_state",""))=="Airborne":return true
+	return _has(action_words(entry),["air","airborne","aerial","jump","jumping","flip","backflip","backflips","twist","fly","flying","leap","leaping","cartwheel","dive","diving"])
+
+static func is_grab(entry:Dictionary)->bool:
+	return _has(action_words(entry),["grab","grabs","grabbing","grapple","grappling","clinch","clinching","wrestle","wrestling","takedown","takedowns","armbar","choke","chokes","choking","headlock","suplex"])
+
 static func is_idle(entry:Dictionary)->bool:
 	# A browsing section, not a new combat pose-ownership type.
 	var title:=str(entry.get("title",""))

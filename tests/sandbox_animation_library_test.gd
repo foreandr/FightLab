@@ -26,7 +26,7 @@ func run():
  assert(builder.demo_choice_selected and builder.demo_offensive() and not browser.confirm.disabled)
  browser.confirm_selection();assert(builder.creation_step=="delivery" and builder.playing,"Arbitrary animation cannot test")
  builder.show_creation_step("demo")
- browser.set_type("Movement");browser.set_air("Airborne");browser.search.text="jump";browser.apply_filters()
+ browser.set_type("Air");browser.search.text="jump";browser.apply_filters()
  assert(not browser.matches_.is_empty())
  assert(browser.detail_loads==0)
  var community:Dictionary={}

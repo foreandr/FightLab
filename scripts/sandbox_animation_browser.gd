@@ -14,8 +14,6 @@ var detail_loads:=0
 var worker:Thread
 var closing:=false
 var search:LineEdit
-var air_buttons:Dictionary={}
-var selected_air:="Grounded"
 var type_buttons:Dictionary={}
 var selected_type:="Movement"
 var selected_id:=""
@@ -45,16 +43,8 @@ func setup(editor:Control)->void:
  debounce=Timer.new();debounce.one_shot=true;debounce.wait_time=0.2;add_child(debounce)
  search.text_changed.connect(func(_value):debounce.start());debounce.timeout.connect(apply_filters)
  var tabs:=HBoxContainer.new();add_child(tabs)
- for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"]]:
+ for pair in [["Movement","Movement"],["Idle","Idle"],["Arm","Arms"],["Leg","Legs"],["Head","Head"],["Air","Air"],["Grabs","Grabs"]]:
   var kind:String=pair[0];var tab:Button=host.button(tabs,pair[1],func():set_type(kind));tab.toggle_mode=true;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;type_buttons[kind]=tab
- var row:=HBoxContainer.new();add_child(row)
- var group:=ButtonGroup.new();group.allow_unpress=false
- for state in ["Grounded","Airborne"]:
-  var radio:=CheckBox.new();radio.text="Ground" if state=="Grounded" else "Air"
-  radio.name="Sandbox"+state;radio.button_group=group;radio.focus_mode=Control.FOCUS_ALL
-  radio.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(radio);air_buttons[state]=radio
-  radio.pressed.connect(func():set_air(state))
-  radio.set_pressed_no_signal(state==selected_air)
  status=host.menu_label(self,"Opening animation index…",12)
  var scroll:=ScrollContainer.new();scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;add_child(scroll)
  grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_theme_constant_override("h_separation",6);grid.add_theme_constant_override("v_separation",6);scroll.add_child(grid)
@@ -152,25 +142,21 @@ func add_record(entry:Dictionary,origin:String,used:Dictionary,clips:Dictionary)
  used[id]=true;clips[str(entry.get("clip",""))]=true
  var copy:=entry.duplicate();copy["_origin"]=origin;copy["_id"]=id;copy["_origin_rank"]=["Your library","Built-in","Community"].find(origin)
  copy["store_animation_type"]=str(entry.store_animation_type) if entry.has("store_animation_type") else Types.kind(entry)
- copy["_section"]="Idle" if Types.is_idle(copy) else copy.store_animation_type
- if not copy.has("air_state"):
-  var words:=" "+str(entry.get("title",""))+" "+str(entry.get("kind",""))
-  copy["air_state"]="Airborne" if ["jump","flip","air","twist","fly","leap","fall","cartwheel"].any(func(h):return words.to_lower().contains(h)) else "Grounded"
- if preload("res://scripts/animation_jump_motion.gd").requires_air(copy):copy["air_state"]="Airborne"
+ copy["_grab"]=Types.is_grab(copy)
+ copy["air_state"]="Airborne" if Types.is_airborne(copy) else "Grounded"
+ copy["_section"]="Air" if copy.air_state=="Airborne" else ("Grabs" if copy._grab else ("Idle" if Types.is_idle(copy) else copy.store_animation_type))
  copy["_search"]=(str(entry.get("title",""))+" "+str(entry.get("tags",[]))+" "+str(entry.get("store_creator",entry.get("creator_name","")))+" "+str(entry.get("category",""))).to_lower()
  records.append(copy)
 func set_type(kind:String)->void:
  if not type_buttons.has(kind):return
  selected_type=kind;apply_filters()
-func set_air(state:String)->void:
- if not air_buttons.has(state):return
- selected_air=state;apply_filters()
 func apply_filters()->void:
  page=0;matches_.clear()
  var query:=search.text.strip_edges().to_lower()
  for entry in records:
-  if entry._section!=selected_type:continue
-  if str(entry.get("air_state","Grounded"))!=selected_air:continue
+  if selected_type=="Grabs":
+   if not entry._grab:continue
+  elif entry._section!=selected_type:continue
   if not query.is_empty():
    if ":" in query or '"' in query:
     if not Library.matches(entry,query):continue
@@ -183,7 +169,6 @@ func apply_filters()->void:
     if not found:continue
   matches_.append(entry)
  for kind in type_buttons:type_buttons[kind].set_pressed_no_signal(kind==selected_type)
- for state in air_buttons:air_buttons[state].set_pressed_no_signal(state==selected_air)
  show_page()
 func turn_page(direction:int)->void:
  page=clampi(page+direction,0,maxi(0,ceili(matches_.size()/float(PAGE_SIZE))-1));show_page()
@@ -209,6 +194,7 @@ func select_animation(record:Dictionary)->bool:
   entry=Index.load_entry(details_path,int(entry._detail_offset),int(entry._detail_size));detail_loads+=1
  if entry.is_empty():selection.text="Animation data unavailable";return false
  entry["sandbox_animation"]=true;entry["demo_choice"]="sandbox"
+ entry["air_state"]=str(record.air_state)
  entry["animation_type"]=str(record.store_animation_type)
  entry["sandbox_offensive"]=record._section!="Idle" and (str(record.get("group","Motion"))=="Attack" or record.store_animation_type in ["Arm","Leg","Head"])
  entry=preload("res://scripts/animation_jump_motion.gd").with_airborne_takeoff(entry)

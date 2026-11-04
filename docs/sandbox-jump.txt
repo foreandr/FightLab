@@ -13,8 +13,10 @@ existing preview pose blend.
 Matrix classified as Movement describes its whole-body source, not a blanket
 movement lock. AnimationCastType.applies currently enables type restrictions only
 for Touch spells; Projectile/Barrier and unpaired Sandbox previews allow movement.
-That rule is unchanged. Jump/Grab would be action filters, separate from body
-regions; no new Grab mechanics or categories were introduced by this change.
+That rule is unchanged. Air and Grabs are now browsing sections, separate from
+authored body-region types. Air collects airborne moves; Grabs collects grabs,
+clinches and grappling. Airborne grabs appear in both. The Ground/Air radio row
+is removed. No new Grab combat mechanics were introduced.
 
 Validation: tests/sandbox_jump_input_test.gd exercises real Space input, tap/hold
 height and stamina, grounded/airborne states, casting during a jump, regional pose
